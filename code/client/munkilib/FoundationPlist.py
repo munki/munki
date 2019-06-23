@@ -148,7 +148,7 @@ def writePlistToString(rootObject):
             error = "Unknown error"
         raise NSPropertyListSerializationException(error)
     else:
-        return str(plistData)
+        return bytes(plistData)
 
 
 if __name__ == '__main__':

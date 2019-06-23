@@ -269,16 +269,16 @@ def parsePkgRefs(filename, path_to_pkg=None):
             if 'identifier' in keys and 'version' in keys:
                 pkginfo = {}
                 pkginfo['packageid'] = \
-                       ref.attributes['identifier'].value.encode('UTF-8')
+                       ref.attributes['identifier'].value
                 pkginfo['version'] = \
-                    ref.attributes['version'].value.encode('UTF-8')
+                    ref.attributes['version'].value
                 payloads = ref.getElementsByTagName('payload')
                 if payloads:
                     keys = list(payloads[0].attributes.keys())
                     if 'installKBytes' in keys:
                         pkginfo['installed_size'] = int(float(
                             payloads[0].attributes[
-                                'installKBytes'].value.encode('UTF-8')))
+                                'installKBytes'].value))
                     if pkginfo not in info:
                         info.append(pkginfo)
                 # if there isn't a payload, no receipt is left by a flat
@@ -291,21 +291,20 @@ def parsePkgRefs(filename, path_to_pkg=None):
             for ref in pkgrefs:
                 keys = list(ref.attributes.keys())
                 if 'id' in keys:
-                    pkgid = ref.attributes['id'].value.encode('UTF-8')
+                    pkgid = ref.attributes['id'].value
                     if not pkgid in pkgref_dict:
                         pkgref_dict[pkgid] = {'packageid': pkgid}
                     if 'version' in keys:
                         pkgref_dict[pkgid]['version'] = \
-                            ref.attributes['version'].value.encode('UTF-8')
+                            ref.attributes['version'].value
                     if 'installKBytes' in keys:
                         pkgref_dict[pkgid]['installed_size'] = int(float(
-                            ref.attributes['installKBytes'].value.encode(
-                                'UTF-8')))
+                            ref.attributes['installKBytes'].value))
                     if ref.firstChild:
                         text = ref.firstChild.wholeText
                         if text.endswith('.pkg'):
                             if text.startswith('file:'):
-                                relativepath = unquote(text[5:].encode('UTF-8'))
+                                relativepath = unquote(text[5:])
                                 pkgdir = os.path.dirname(
                                     path_to_pkg or filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
@@ -313,7 +312,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                             else:
                                 if text.startswith('#'):
                                     text = text[1:]
-                                relativepath = unquote(text.encode('UTF-8'))
+                                relativepath = unquote(text)
                                 thisdir = os.path.dirname(filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
                                     thisdir, relativepath)
@@ -352,7 +351,7 @@ def getFlatPackageInfo(pkgpath):
     proc = subprocess.Popen(cmd_toc, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (toc, err) = proc.communicate()
-    toc = toc.strip().split('\n')
+    toc = toc.decode('UTF-8').strip().split('\n')
     if proc.returncode == 0:
         # Walk trough the TOC entries
         for toc_entry in toc:
@@ -367,7 +366,7 @@ def getFlatPackageInfo(pkgpath):
                     break
                 else:
                     display.display_warning(
-                        "An error occurred while extracting %s: %s",
+                        u"An error occurred while extracting %s: %s",
                         toc_entry, err)
             # If there are PackageInfo files elsewhere, gather them up
             elif toc_entry.endswith('.pkg/PackageInfo'):
@@ -379,7 +378,7 @@ def getFlatPackageInfo(pkgpath):
                     infoarray.extend(parsePkgRefs(packageinfoabspath))
                 else:
                     display.display_warning(
-                        "An error occurred while extracting %s: %s",
+                        u"An error occurred while extracting %s: %s",
                         toc_entry, err)
         if not infoarray:
             for toc_entry in [item for item in toc
@@ -395,7 +394,7 @@ def getFlatPackageInfo(pkgpath):
                     break
                 else:
                     display.display_warning(
-                        "An error occurred while extracting %s: %s",
+                        u"An error occurred while extracting %s: %s",
                         toc_entry, err)
 
         if not infoarray:

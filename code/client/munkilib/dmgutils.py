@@ -195,9 +195,9 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
             return mountpoints
 
     # Attempt to mount the dmg
-    stdin = ''
+    stdin = b''
     if dmg_has_sla(dmgpath):
-        stdin = 'Y\n'
+        stdin = b'Y\n'
         display.display_detail(
             'NOTE: %s has embedded Software License Agreement' % dmgname)
     cmd = ['/usr/bin/hdiutil', 'attach', dmgpath, '-nobrowse', '-plist']
