@@ -35,7 +35,8 @@ import tempfile
 from munkilib.cliutils import ConfigurationSaveError
 from munkilib.cliutils import configure as _configure
 from munkilib.cliutils import pref, path2url
-from munkilib.cliutils import raw_input_with_default
+from munkilib.cliutils import get_input_with_default
+from munkilib.wrappers import get_input
 
 from munkilib import info
 from munkilib import dmgutils
@@ -83,7 +84,7 @@ def edit_pkginfo_in_editor(pkginfo):
     """Opens pkginfo list in the user's chosen editor."""
     editor = pref('editor')
     if editor:
-        answer = raw_input('Edit pkginfo before upload? [y/n]: ')
+        answer = get_input('Edit pkginfo before upload? [y/n]: ')
         if answer.lower().startswith('y'):
             filedesc, filepath = tempfile.mkstemp()
             # we just want the path; close the file descriptor
@@ -92,7 +93,7 @@ def edit_pkginfo_in_editor(pkginfo):
                 FoundationPlist.writePlist(pkginfo, filepath)
             except FoundationPlist.FoundationPlistException as err:
                 print(u'Could not save pkginfo to temp file: %s'
-                      % unicode(err), file=sys.stderr)
+                      % err, file=sys.stderr)
                 return pkginfo
 
             if editor.endswith('.app'):
@@ -111,11 +112,11 @@ def edit_pkginfo_in_editor(pkginfo):
                     # wait for user to finish with GUI editor.
                     answer = 'no'
                     while not answer.lower().startswith('y'):
-                        answer = raw_input('Pkginfo editing complete? [y/n]: ')
+                        answer = get_input('Pkginfo editing complete? [y/n]: ')
                 try:
                     edited_pkginfo = FoundationPlist.readPlist(filepath)
                 except FoundationPlist.FoundationPlistException as err:
-                    print(u'Problem reading edited pkginfo: %s' % unicode(err),
+                    print(u'Problem reading edited pkginfo: %s' % err,
                           file=sys.stderr)
                     os.remove(filepath)
                     return pkginfo
@@ -130,19 +131,19 @@ def prompt_for_subdirectory(repo, subdirectory):
         pkgsinfo_list = munkiimportlib.list_items_of_kind(repo, 'pkgsinfo')
     except munkirepo.RepoError as err:
         raise munkiimportlib.RepoCopyError(
-            u'Unable to get list of current pkgsinfo: %s' % unicode(err))
+            u'Unable to get list of current pkgsinfo: %s' % err)
     # filter the list of pkgsinfo to a list of subdirectories
     subdir_set = set()
     for item in pkgsinfo_list:
         subdir_set.add(os.path.dirname(item))
 
     while True:
-        newdir = raw_input(
+        newdir = get_input(
             'Upload item to subdirectory path [%s]: ' % subdirectory)
         if newdir:
             destination_path = os.path.join('pkgsinfo', newdir)
             if destination_path not in subdir_set:
-                answer = raw_input('Path %s doesn\'t exist. Create it? [y/n] '
+                answer = get_input('Path %s doesn\'t exist. Create it? [y/n] '
                                    % destination_path)
                 if answer.lower().startswith('y'):
                     break
@@ -253,7 +254,7 @@ def main():
     # now add all the shared makepkginfo options
     pkginfolib.add_option_groups(parser)
 
-    sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
+    #sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
 
     # there are a lot of valid combinations of option flags and arguments
@@ -324,7 +325,7 @@ def main():
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
     except munkirepo.RepoError as err:
-        print(u'Could not connect to munki repo: %s' % unicode(err),
+        print(u'Could not connect to munki repo: %s' % err,
               file=sys.stderr)
         exit(-1)
 
@@ -400,15 +401,14 @@ def main():
                       ('Version', 'version'),
                       ('Installer item path', 'installer_item_location'))
             for (name, key) in fields:
-                print('%21s: %s' % (
-                    name, matchingpkginfo.get(key, '').encode('UTF-8')))
+                print('%21s: %s' % (name, matchingpkginfo.get(key, '')))
             print()
             if exactmatch:
-                answer = raw_input('Import this item anyway? [y/n] ')
+                answer = get_input('Import this item anyway? [y/n] ')
                 if not answer.lower().startswith('y'):
                     cleanup_and_exit(0)
 
-            answer = raw_input('Use existing item as a template? [y/n] ')
+            answer = get_input('Use existing item as a template? [y/n] ')
             if answer.lower().startswith('y'):
                 pkginfo['name'] = matchingpkginfo['name']
                 pkginfo['display_name'] = (
@@ -453,8 +453,8 @@ def main():
             if kind == 'bool':
                 default = str(pkginfo.get(key, False))
             else:
-                default = pkginfo.get(key, '').encode('UTF-8')
-            pkginfo[key] = raw_input_with_default(prompt, default)
+                default = pkginfo.get(key, '')
+            pkginfo[key] = get_input_with_default(prompt, default)
             if kind == 'bool':
                 value = pkginfo[key].lower().strip()
                 pkginfo[key] = value.startswith(('y', 't'))
@@ -462,7 +462,7 @@ def main():
         # special handling for catalogs array
         prompt = '%20s: ' % 'Catalogs'
         default = ', '.join(pkginfo['catalogs'])
-        newvalue = raw_input_with_default(prompt, default)
+        newvalue = get_input_with_default(prompt, default)
         pkginfo['catalogs'] = [item.strip()
                                for item in newvalue.split(',')]
 
@@ -480,17 +480,16 @@ def main():
         #    if kind == 'bool':
         #        print '%20s: %s' % (name, pkginfo.get(key, False))
         #    else:
-        #        print '%20s: %s' % (name, pkginfo.get(key, '').encode('UTF-8'))
-        #print '%20s: %s' % (
-        #    'Catalogs', ', '.join(pkginfo['catalogs']).encode('UTF-8'))
+        #        print '%20s: %s' % (name, pkginfo.get(key, ''))
+        #print '%20s: %s' % 'Catalogs', ', '.join(pkginfo['catalogs'])
         #print
-        answer = raw_input('Import this item? [y/n] ')
+        answer = get_input('Import this item? [y/n] ')
         if not answer.lower().startswith('y'):
             cleanup_and_exit(0)
 
         if options.subdirectory == '':
             if (not is_applemetadata and
-                    isinstance(repo, munkirepo.FileRepo.FileRepo)):
+                    isinstance(repo, munkirepo.FileRepo)):
                 repo_pkgs_path = os.path.join(repo.root, 'pkgs')
                 installer_item_abspath = os.path.abspath(installer_item)
                 if installer_item_abspath.startswith(repo_pkgs_path):
@@ -523,7 +522,7 @@ def main():
           not is_applemetadata and
           not pkginfo.get('installer_type') == 'profile'):
         print('No existing product icon found.')
-        answer = raw_input('Attempt to create a product icon? [y/n] ')
+        answer = get_input('Attempt to create a product icon? [y/n] ')
         if answer.lower().startswith('y'):
             print('Attempting to extract and upload icon...')
             options.extract_icon = True
@@ -597,7 +596,7 @@ def main():
         cleanup_and_exit(-1)
 
     if not options.nointeractive:
-        answer = raw_input('Rebuild catalogs? [y/n] ')
+        answer = get_input('Rebuild catalogs? [y/n] ')
         if answer.lower().startswith('y'):
             make_catalogs(repo, options)
 
