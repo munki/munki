@@ -289,7 +289,7 @@ class AppleUpdates(object):
         except (sync.ReplicationError, fetch.Error) as err:
             display.display_warning(
                 'Could not download Apple SUS catalog:')
-            display.display_warning('\t%s', unicode(err))
+            display.display_warning(u'\t%s', err)
             return False
 
         if not force_check and not self._force_check_necessary(before_hash):
@@ -312,7 +312,7 @@ class AppleUpdates(object):
             except sync.ReplicationError as err:
                 display.display_warning(
                     'Could not replicate software update metadata:')
-                display.display_warning('\t%s', unicode(err))
+                display.display_warning(u'\t%s', err)
                 return False
             return True
         else:

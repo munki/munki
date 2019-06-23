@@ -39,6 +39,12 @@ from . import prefs
 from . import reports
 from . import FoundationPlist
 
+try:
+    _ = xrange
+except NameError:
+    # no xrange in Python 3
+    xrange = range
+
 
 # This many hours before a force install deadline, start notifying the user.
 FORCE_INSTALL_WARNING_HOURS = 4

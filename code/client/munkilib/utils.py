@@ -148,7 +148,7 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
                                 stderr=subprocess.PIPE)
     except (OSError, IOError) as err:
         raise RunExternalScriptError(
-            'Error %s when attempting to run %s' % (unicode(err), script))
+            u'Error %s when attempting to run %s' % (err, script))
     (stdout, stderr) = proc.communicate()
     return (proc.returncode, stdout.decode('UTF-8', 'replace'),
             stderr.decode('UTF-8', 'replace'))

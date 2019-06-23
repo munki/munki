@@ -56,7 +56,7 @@ def hash_icons(repo, output_fn=None):
             icondata = repo.get('icons/' + icon_ref)
             icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
         except munkirepo.RepoError as err:
-            errors.append(u'RepoError for %s: %s' % (icon_ref, unicode(err)))
+            errors.append(u'RepoError for %s: %s' % (icon_ref, err))
         except IOError as err:
             errors.append(u'IO error for %s: %s' % (icon_ref, err))
         except BaseException as err:
@@ -169,7 +169,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
     except munkirepo.RepoError as err:
         raise MakeCatalogsError(
-            "Error getting list of pkgsinfo items: %s" % unicode(err))
+            u"Error getting list of pkgsinfo items: %s" % err)
 
     # get a list of pkgs items
     if output_fn:
@@ -178,7 +178,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
         pkgs_list = list_items_of_kind(repo, 'pkgs')
     except munkirepo.RepoError as err:
         raise MakeCatalogsError(
-            "Error getting list of pkgs items: %s" % unicode(err))
+            u"Error getting list of pkgs items: %s" % err)
 
     # start with empty catalogs dict
     catalogs = {}
@@ -265,7 +265,7 @@ def makecatalogs(repo, options, output_fn=None):
     except munkirepo.RepoError:
         catalog_list = []
     for catalog_name in catalog_list:
-        if catalog_name not in catalogs.keys():
+        if catalog_name not in list(catalogs.keys()):
             catalog_ref = os.path.join('catalogs', catalog_name)
             try:
                 repo.delete(catalog_ref)
@@ -283,7 +283,7 @@ def makecatalogs(repo, options, output_fn=None):
                     output_fn("Created %s..." % catalogpath)
             except munkirepo.RepoError as err:
                 errors.append(
-                    u'Failed to create catalog %s: %s' % (key, unicode(err)))
+                    u'Failed to create catalog %s: %s' % (key, err))
         else:
             errors.append(
                 "WARNING: Did not create catalog %s because it is empty" % key)
@@ -296,7 +296,7 @@ def makecatalogs(repo, options, output_fn=None):
             print("Created %s..." % (icon_hashes_plist))
         except munkirepo.RepoError as err:
             errors.append(
-                u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
+                u'Failed to create %s: %s' % (icon_hashes_plist, err))
 
     # Return any errors
     return errors

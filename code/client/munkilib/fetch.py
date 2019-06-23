@@ -175,7 +175,7 @@ def writeCachedChecksum(file_path, fhash=None):
     if not fhash:
         fhash = munkihash.getsha256hash(file_path)
     if len(fhash) == 64:
-        xattr.setxattr(file_path, XATTR_SHA, fhash)
+        xattr.setxattr(file_path, XATTR_SHA, fhash.encode("UTF-8"))
         return fhash
     return None
 
@@ -529,11 +529,11 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
         raise
 
     except HTTPError as err:
-        err = 'HTTP result %s: %s' % tuple(err)
+        err = 'HTTP result %s: %s' % (err.args[0], err.args[1])
         raise GurlDownloadError(err)
 
     except GurlError as err:
-        err = 'Error %s: %s' % tuple(err)
+        err = 'Error %s: %s' % (err.args[0], err.args[1])
         raise GurlDownloadError(err)
 
     err = None

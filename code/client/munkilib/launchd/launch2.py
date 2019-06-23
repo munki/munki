@@ -25,6 +25,11 @@ from ctypes import *
 libc = CDLL("/usr/lib/libc.dylib")
 # pylint: enable=invalid-name
 
+try:
+    _ = xrange
+except NameError:
+    # no xrange in Python 3
+    xrange = range
 
 # int launch_activate_socket(const char *name, int **fds, size_t *cnt)
 libc.launch_activate_socket.restype = c_int
@@ -49,11 +54,7 @@ def launch_activate_socket(name):
                                % os.strerror(err))
 
         # Return a list of file descriptors.
-        try:
-            return list(fds[x] for x in xrange(cnt.value))
-        except NameError:
-            # "xrange" in Python 2 is just "range" in Python 3:
-            return list(fds[x] for x in range(cnt.value))
+        return list(fds[x] for x in xrange(cnt.value))
 
     finally:
         if fds:

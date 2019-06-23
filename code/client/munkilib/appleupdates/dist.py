@@ -62,7 +62,7 @@ def get_firmware_alert_text(dom):
     type_is_firmware = False
     options = dom.getElementsByTagName('options')
     for option in options:
-        if 'type' in option.attributes.keys():
+        if 'type' in list(option.attributes.keys()):
             type_value = option.attributes['type'].value
             if type_value == 'firmware':
                 type_is_firmware = True
@@ -72,7 +72,11 @@ def get_firmware_alert_text(dom):
         readmes = dom.getElementsByTagName('readme')
         if readmes:
             html = readmes[0].firstChild.data
-            html_data = buffer(html.encode('utf-8'))
+            try:
+                html_data = buffer(html.encode('utf-8'))
+            except NameError:
+                # Python 3
+                html_data = memoryview(html.encode('utf-8'))
             attributed_string, _ = NSAttributedString.alloc(
                 ).initWithHTML_documentAttributes_(html_data, None)
             firmware_alert_text = attributed_string.string()
@@ -90,7 +94,7 @@ def get_blocking_apps_from_dom(dom):
     for item in must_close_items:
         apps = item.getElementsByTagName('app')
         for app in apps:
-            keys = app.attributes.keys()
+            keys = list(app.attributes.keys())
             if 'id' in keys:
                 must_close_app_ids.append(app.attributes['id'].value)
 
@@ -139,10 +143,10 @@ def populate_pkgs_from_pkg_refs(dom, pkgs):
     '''Uses pkg-ref elements in the dom to populate data in the pkgs dict'''
     dom_pkg_refs = dom.getElementsByTagName('pkg-ref') or []
     for pkg_ref in dom_pkg_refs:
-        if not 'id' in pkg_ref.attributes.keys():
+        if not 'id' in list(pkg_ref.attributes.keys()):
             continue
         pkg_id = pkg_ref.attributes['id'].value
-        if not pkg_id in pkgs.keys():
+        if not pkg_id in list(pkgs.keys()):
             # this pkg_id was not in our choice list
             continue
         if pkg_ref.firstChild:
@@ -152,16 +156,16 @@ def populate_pkgs_from_pkg_refs(dom, pkgs):
                     pkgs[pkg_id]['name'] = pkg_name
             except AttributeError:
                 pass
-        if 'onConclusion' in pkg_ref.attributes.keys():
+        if 'onConclusion' in list(pkg_ref.attributes.keys()):
             pkgs[pkg_id]['RestartAction'] = (
                 pkg_ref.attributes['onConclusion'].value)
-        if 'version' in pkg_ref.attributes.keys():
+        if 'version' in list(pkg_ref.attributes.keys()):
             pkgs[pkg_id]['version'] = (
                 pkg_ref.attributes['version'].value)
-        if 'installKBytes' in pkg_ref.attributes.keys():
+        if 'installKBytes' in list(pkg_ref.attributes.keys()):
             pkgs[pkg_id]['installed_size'] = int(
                 pkg_ref.attributes['installKBytes'].value)
-        if 'packageIdentifier' in pkg_ref.attributes.keys():
+        if 'packageIdentifier' in list(pkg_ref.attributes.keys()):
             pkgs[pkg_id]['packageid'] = (
                 pkg_ref.attributes['packageIdentifier'].value)
 
@@ -172,10 +176,10 @@ def get_su_choice_and_pkgs(dom):
     # look for <choices-outline ui='SoftwareUpdate'
     choice_outlines = dom.getElementsByTagName('choices-outline') or []
     for outline in choice_outlines:
-        if ('ui' in outline.attributes.keys() and
+        if ('ui' in list(outline.attributes.keys()) and
                 outline.attributes['ui'].value == 'SoftwareUpdate'):
             lines = outline.getElementsByTagName('line')
-            if lines and 'choice' in lines[0].attributes.keys():
+            if lines and 'choice' in list(lines[0].attributes.keys()):
                 su_choice_id_key = (
                     lines[0].attributes['choice'].value)
 
@@ -185,7 +189,7 @@ def get_su_choice_and_pkgs(dom):
     su_choice = {}
     choice_elements = dom.getElementsByTagName('choice') or []
     for choice in choice_elements:
-        keys = choice.attributes.keys()
+        keys = list(choice.attributes.keys())
         if not 'id' in keys:
             continue
         choice_id = choice.attributes['id'].value
@@ -195,9 +199,9 @@ def get_su_choice_and_pkgs(dom):
                 su_choice[key] = choice.attributes[key].value
             choice_pkg_refs = choice.getElementsByTagName('pkg-ref') or []
             for pkg in choice_pkg_refs:
-                if 'id' in pkg.attributes.keys():
+                if 'id' in list(pkg.attributes.keys()):
                     pkg_id = pkg.attributes['id'].value
-                    if not pkg_id in pkgs.keys():
+                    if not pkg_id in list(pkgs.keys()):
                         pkgs[pkg_id] = {}
 
     # now look through all pkg-refs in dom so we can assemble all

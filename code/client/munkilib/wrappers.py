@@ -125,11 +125,15 @@ def is_a_string(something):
         return isinstance(something, str)
 
 
-def unicode_or_str(something):
+def unicode_or_str(something, encoding="UTF-8"):
     '''Wrapper for unicode vs str'''
     try:
         # Python 2
+        if isinstance(something, str):
+            return unicode(something, encoding)
         return unicode(something)
     except NameError:
         # Python 3
+        if isinstance(something, bytes):
+            return str(something, encoding)
         return str(something)

@@ -32,6 +32,7 @@ import subprocess
 from . import display
 from . import osutils
 from . import prefs
+from .wrappers import unicode_or_str
 
 
 DEFAULT_KEYCHAIN_NAME = 'munki.keychain'
@@ -498,7 +499,7 @@ def debug_output():
             display.display_debug1(
                 security('show-keychain-info', keychainfile))
     except SecurityError as err:
-        display.display_error(unicode(err))
+        display.display_error(unicode_or_str(err))
 
 
 class SecurityError(Exception):

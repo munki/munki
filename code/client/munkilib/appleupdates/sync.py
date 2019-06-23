@@ -57,6 +57,7 @@ from .. import osutils
 from .. import prefs
 from .. import processes
 from .. import FoundationPlist
+from ..wrappers import unicode_or_str
 
 
 # Apple Software Update Catalog URLs.
@@ -252,7 +253,7 @@ class AppleUpdateSync(object):
         try:
             catalog_url = self.get_apple_catalogurl()
         except CatalogNotFoundError as err:
-            display.display_error(unicode(err))
+            display.display_error(unicode_or_str(err))
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
