@@ -35,6 +35,7 @@ from munkilib.admin import makecatalogslib
 from munkilib.cliutils import pref, path2url
 from munkilib.cliutils import get_version
 from munkilib import munkirepo
+from munkilib.wrappers import unicode_or_str
 
 # define a unicode function for Python 3
 try:
@@ -89,7 +90,7 @@ def main():
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
     except munkirepo.RepoError as err:
-        print(u'Could not connect to munki repo: %s' % unicode(err),
+        print(u'Could not connect to munki repo: %s' % unicode_or_str(err),
               file=sys.stderr)
         exit(-1)
 
