@@ -477,7 +477,6 @@ class Gurl(NSObject):
         if completionHandler:
             # tell the session task to continue
             completionHandler(NSURLSessionResponseAllow)
-        self.log('exiting handleResponse_withCompletionHandler_')
 
     def URLSession_dataTask_didReceiveResponse_completionHandler_(
             self, _session, _task, response, completionHandler):

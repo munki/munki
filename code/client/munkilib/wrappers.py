@@ -105,24 +105,28 @@ def writePlistToString(data):
 # pylint: enable=C0103
 
 
-# raw_input/input wrapper
+# remap raw_input in Python 3
+try:
+    _ = raw_input
+except NameError:
+    raw_input = input
+
 def get_input(prompt=None):
     '''Python 2 and 3 wrapper for raw_input/input'''
-    try:
-        return raw_input(prompt)
-    except NameError:
-        # raw_input doesn't exist in Python 3
-        return input(prompt)
+    if not prompt:
+        prompt = ""
+    return raw_input(prompt)
 
+
+# remap basestring in Python 3
+try:
+    _ = basestring
+except NameError:
+    basestring = str
 
 def is_a_string(something):
     '''Wrapper for basestring vs str'''
-    try:
-        # Python 2
-        return isinstance(something, basestring)
-    except NameError:
-        # Python 3
-        return isinstance(something, str)
+    return isinstance(something, basestring)
 
 
 def unicode_or_str(something, encoding="UTF-8"):

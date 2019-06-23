@@ -157,6 +157,12 @@ class Job(object):
         self.plist['StandardErrorPath'] = self.stderr_path
         if environment_vars:
             self.plist['EnvironmentVariables'] = environment_vars
+        # create stdout and stderr files
+        try:
+            open(self.stdout_path, 'wb').close()
+            open(self.stderr_path, 'wb').close()
+        except (OSError, IOError) as err:
+            raise LaunchdJobException(err)
         # write out launchd plist
         FoundationPlist.writePlist(self.plist, self.plist_path)
         # set owner, group and mode to those required

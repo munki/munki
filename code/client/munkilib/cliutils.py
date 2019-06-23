@@ -50,7 +50,7 @@ except ImportError:
     from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
-from munkilib.wrappers import unicode_or_str
+from munkilib.wrappers import unicode_or_str, get_input
 
 FOUNDATION_SUPPORT = True
 try:
@@ -167,7 +167,7 @@ if 'libedit' in readline.__doc__:
 # pylint: enable=invalid-name
 
 
-def raw_input_with_default(prompt, default_text):
+def get_input_with_default(prompt, default_text):
     '''Get input from user with a prompt and a suggested default value'''
 
     # 10.6's libedit doesn't have the rl_set_prompt function, so we fall back
@@ -176,10 +176,10 @@ def raw_input_with_default(prompt, default_text):
     if darwin_vers == 10:
         if default_text:
             prompt = '%s [%s]: ' % (prompt.rstrip(': '), default_text)
-            return (unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding) or
+            return (unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding) or
                     unicode_or_str(default_text))
         # no default value, just call raw_input
-        return unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding)
+        return unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding)
 
     # A nasty, nasty hack to get around Python readline limitations under
     # macOS. Gives us editable default text for configuration and munkiimport
@@ -187,21 +187,26 @@ def raw_input_with_default(prompt, default_text):
     def insert_default_text(prompt, text):
         '''Helper function'''
         time.sleep(0.01)
+        if not isinstance(prompt, bytes):
+            prompt = prompt.encode(sys.stdin.encoding)
         libedit.rl_set_prompt(prompt)
+        if isinstance(text, bytes):
+            text = text.decode(sys.stdin.encoding)
         readline.insert_text(text)
         libedit.rl_forced_update_display()
 
     readline.clear_history()
     if not default_text:
-        return unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding)
+        return unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding)
     elif libedit:
         # readline module was compiled against libedit
-        thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return unicode_or_str(raw_input(), encoding=sys.stdin.encoding)
+        thread.start_new_thread(
+            insert_default_text, (prompt, default_text))
+        return unicode_or_str(get_input(), encoding=sys.stdin.encoding)
     else:
         readline.set_startup_hook(lambda: readline.insert_text(default_text))
         try:
-            return unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding)
+            return unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding)
         finally:
             readline.set_startup_hook()
 
@@ -216,7 +221,7 @@ def configure(prompt_list):
     darwin_vers = int(os.uname()[2].split('.')[0])
     edited_prefs = {}
     for (key, prompt) in prompt_list:
-        newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
+        newvalue = get_input_with_default('%15s: ' % prompt, pref(key))
         if darwin_vers == 10:
             # old behavior in SL: hitting return gives you an empty string,
             # and means accept the default value.
