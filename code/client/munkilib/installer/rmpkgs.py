@@ -395,13 +395,13 @@ def init_database(forcerebuild=False):
                 "Could not remove out-of-date receipt database.")
             return False
 
-    receiptsdir = '/Library/Receipts'
+    receiptsdir = u'/Library/Receipts'
     receiptlist = []
     if os.path.exists(receiptsdir):
         receiptlist = [item for item in osutils.listdir(receiptsdir)
-                       if item.endswith('.pkg')]
+                       if item.endswith(u'.pkg')]
 
-    bomsdir = '/Library/Receipts/boms'
+    bomsdir = u'/Library/Receipts/boms'
     bomslist = []
     if os.path.exists(bomsdir):
         bomslist = [item for item in osutils.listdir(bomsdir)
@@ -414,11 +414,11 @@ def init_database(forcerebuild=False):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
-        line = proc.stdout.readline()
+        line = proc.stdout.readline().decode('UTF-8')
         if not line and (proc.poll() != None):
             break
 
-        pkglist.append(line.rstrip('\n'))
+        pkglist.append(line.rstrip(u'\n'))
 
     pkgcount = len(receiptlist) + len(bomslist) + len(pkglist)
     conn = sqlite3.connect(PACKAGEDB)
@@ -619,7 +619,7 @@ def remove_receipts(pkgkeylist, noupdateapplepkgdb):
             (output, dummy_err) = proc.communicate()
             if output:
                 display.display_detail(
-                    str(output).decode('UTF-8').rstrip('\n'))
+                    output.decode('UTF-8').rstrip('\n'))
 
     display.display_percent_done(2, 4)
 
