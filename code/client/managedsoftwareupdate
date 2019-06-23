@@ -74,6 +74,7 @@ else:
     from munkilib import updatecheck
     from munkilib import utils
     from munkilib import FoundationPlist
+    from munkilib.wrappers import unicode_or_str
 
     import munkilib.authrestart.client as authrestartd
 
@@ -214,7 +215,7 @@ def runScript(script, display_name, runtype):
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
     except utils.RunExternalScriptError as err:
-        display.display_warning(unicode(err))
+        display.display_warning(unicode_or_str(err))
     return result
 
 
@@ -593,7 +594,7 @@ def main():
         '--show-config', action='store_true',
         help='Print the current configuration and exit.')
     config_options.add_option(
-        '--id', default='',
+        '--id', default=u'',
         help='String to use as ClientIdentifier for this run only.')
     config_options.add_option(
         '--set-bootstrap-mode', action='store_true',
@@ -858,7 +859,7 @@ def main():
     if not skip_munki_check:
         try:
             updatecheckresult = updatecheck.check(
-                client_id=options.id.decode('UTF-8'))
+                client_id=unicode_or_str(options.id))
         except:
             display.display_error('Unexpected error in updatecheck:')
             munkilog.log(traceback.format_exc())
