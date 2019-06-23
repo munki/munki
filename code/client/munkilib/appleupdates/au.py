@@ -26,7 +26,13 @@ import glob
 import hashlib
 import os
 import subprocess
-import urllib2
+
+try:
+    # Python 2
+    from urllib2 import quote
+except ImportError:
+    # Python 3
+    from urllib.parse import quote
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -566,7 +572,7 @@ class AppleUpdates(object):
                     'Missing local Software Update catalog at %s',
                     self.applesync.local_catalog_path)
                 return False  # didn't do anything, so no restart needed
-            catalog_url = 'file://localhost' + urllib2.quote(
+            catalog_url = 'file://localhost' + quote(
                 self.applesync.local_catalog_path)
 
         su_start_date = NSDate.new()
