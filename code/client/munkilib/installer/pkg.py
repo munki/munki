@@ -89,7 +89,7 @@ def pkg_needs_restart(pkgpath, options):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    restartaction = str(output).decode('UTF-8').rstrip('\n')
+    restartaction = output.decode('UTF-8').rstrip('\n')
     return (restartaction == 'RequireRestart' or
             restartaction == 'RecommendRestart')
 

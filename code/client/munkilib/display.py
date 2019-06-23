@@ -29,7 +29,7 @@ from . import munkilog
 from . import prefs
 from . import reports
 from . import munkistatus
-
+from .wrappers import unicode_or_str
 
 
 def _getsteps(num_of_steps, limit):
@@ -82,21 +82,27 @@ def str_to_ascii(a_string):
       str, ascii form, no >7bit chars
     """
     try:
-        return unicode(a_string).encode('ascii', 'ignore')
+        return unicode_or_str(a_string).encode('ascii', 'ignore')
     except UnicodeDecodeError:
         return a_string.decode('ascii', 'ignore')
 
 
 def _to_unicode(obj, encoding='UTF-8'):
-    """Coerces basestring obj to unicode"""
+    """Coerces obj to unicode"""
     try:
         if isinstance(obj, basestring):
             if not isinstance(obj, unicode):
                 obj = unicode(obj, encoding)
+        else:
+            # all other types convert to unicode
+            obj = unicode(obj)
     except NameError:
         # Python 3
         if isinstance(obj, bytes):
             obj = obj.decode(encoding)
+        else:
+            # all other types convert to str
+            obj = str(obj)
     return obj
 
 

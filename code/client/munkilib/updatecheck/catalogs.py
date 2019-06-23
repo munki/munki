@@ -32,6 +32,7 @@ from .. import pkgutils
 from .. import prefs
 from .. import utils
 from .. import FoundationPlist
+from ..wrappers import is_a_string
 
 
 def make_catalog_db(catalogitems):
@@ -78,7 +79,7 @@ def make_catalog_db(catalogitems):
     # now fix possible admin errors where 'update_for' is a string instead
     # of a list of strings
     for update in updaters:
-        if isinstance(update['update_for'], basestring):
+        if is_a_string(update['update_for']):
             # convert to list of strings
             update['update_for'] = [update['update_for']]
 
@@ -164,6 +165,9 @@ def get_all_items_with_name(name, cataloglist):
         return cmp(pkgutils.MunkiLooseVersion(item_b['version']),
                    pkgutils.MunkiLooseVersion(item_a['version']))
 
+    def item_version(item):
+        return pkgutils.MunkiLooseVersion(item['version'])
+
     itemlist = []
     # we'll throw away any included version info
     name = split_name_and_version(name)[0]
@@ -190,7 +194,7 @@ def get_all_items_with_name(name, cataloglist):
 
     if itemlist:
         # sort so latest version is first
-        itemlist.sort(compare_item_versions)
+        itemlist.sort(key=item_version)
     return itemlist
 
 
@@ -573,11 +577,11 @@ def get_item_detail(name, cataloglist, vers='',
             indexlist = []
             if vers == 'latest':
                 # order all our items, highest version first
-                versionlist = itemsmatchingname.keys()
-                versionlist.sort(compare_versions)
+                versionlist = list(itemsmatchingname.keys())
+                versionlist.sort(key=pkgutils.MunkiLooseVersion)
                 for versionkey in versionlist:
                     indexlist.extend(itemsmatchingname[versionkey])
-            elif vers in itemsmatchingname.keys():
+            elif vers in list(itemsmatchingname.keys()):
                 # get the specific requested version
                 indexlist = itemsmatchingname[vers]
 

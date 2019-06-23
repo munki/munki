@@ -69,7 +69,7 @@ def rotate_pdapp_log():
         try:
             os.rename(pdapplog_path, newlogname)
         except OSError as err:
-            munkilog.log('Could not rotate PDApp.log: %s', unicode(err))
+            munkilog.log(u'Could not rotate PDApp.log: %s' % err)
 
 
 class AdobeInstallProgressMonitor(object):

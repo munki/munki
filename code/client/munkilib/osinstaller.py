@@ -467,9 +467,9 @@ def startosinstall(installer, finishing_tasks=None, installinfo=None):
         return True
     except StartOSInstallError as err:
         display.display_error(
-            u'Error starting macOS install: %s', unicode(err))
+            u'Error starting macOS install: %s', err)
         munkilog.log(
-            'Starting macOS install: FAILED: %s' % unicode(err), 'Install.log')
+            u'Starting macOS install: FAILED: %s' % err, 'Install.log')
         return False
 
 

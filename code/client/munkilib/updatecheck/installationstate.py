@@ -32,6 +32,7 @@ from .. import osutils
 from .. import profiles
 from .. import scriptutils
 from .. import utils
+from ..wrappers import unicode_or_str
 
 
 def installed_state(item_pl):
@@ -112,9 +113,9 @@ def installed_state(item_pl):
                 elif comparison == 2:
                     # this item is newer
                     foundnewer = True
-            except utils.Error as errmsg:
+            except utils.Error as err:
                 # some problem with the installs data
-                display.display_error(unicode(errmsg))
+                display.display_error(unicode_or_str(err))
                 # return 1 so we're marked as not needing to be installed
                 return 1
 
@@ -130,9 +131,9 @@ def installed_state(item_pl):
                     return 0
                 elif comparison == 2:
                     foundnewer = True
-            except utils.Error as errmsg:
+            except utils.Error as err:
                 # some problem with the receipts data
-                display.display_error(unicode(errmsg))
+                display.display_error(unicode_or_str(err))
                 # return 1 so we're marked as not needing to be installed
                 return 1
 
@@ -187,9 +188,9 @@ def some_version_installed(item_pl):
                 if compare.compare_item_version(item) == 0:
                     # not there
                     return False
-            except utils.Error as errmsg:
+            except utils.Error as err:
                 # some problem with the installs data
-                display.display_error(unicode(errmsg))
+                display.display_error(unicode_or_str(err))
                 return False
 
     # if there is no 'installs' key, then we'll use receipt info
@@ -201,9 +202,9 @@ def some_version_installed(item_pl):
                 if compare.compare_receipt_version(item) == 0:
                     # not there
                     return False
-            except utils.Error as errmsg:
+            except utils.Error as err:
                 # some problem with the installs data
-                display.display_error(unicode(errmsg))
+                display.display_error(unicode_or_str(err))
                 return False
 
     # if we got this far, we passed all the tests, so the item

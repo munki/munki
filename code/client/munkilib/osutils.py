@@ -179,7 +179,7 @@ def osascript(osastring):
     if proc.returncode != 0:
         print('Error: ', err, file=sys.stderr)
     if out:
-        return str(out).decode('UTF-8').rstrip('\n')
+        return out.decode('UTF-8').rstrip('\n')
     return u''
 
 

@@ -199,8 +199,7 @@ class FileRepo(Repo):
                 try:
                     os.mkdir(self.root)
                 except (OSError, IOError) as err:
-                    raise RepoError(
-                        u'Could not make repo mountpoint: %s' % unicode(err))
+                    raise RepoError(u'Could not make repo mountpoint: %s' % err)
                 if self.baseurl.startswith('afp:'):
                     cmd = ['/sbin/mount_afp', '-i', self.baseurl, self.root]
                 elif self.baseurl.startswith('smb:'):

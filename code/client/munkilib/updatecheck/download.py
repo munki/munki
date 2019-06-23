@@ -399,8 +399,8 @@ def cache():
             download_installeritem(item, install_info, precaching=True)
         except fetch.Error as err:
             display.display_warning(
-                'Failed to precache the installer for %s because %s',
-                item['name'], unicode(err))
+                u'Failed to precache the installer for %s because %s',
+                item['name'], err)
     display.display_info("###    Ending precaching session     ###")
 
 

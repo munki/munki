@@ -50,7 +50,13 @@ from . import prefs
 from . import reports
 from . import utils
 from . import FoundationPlist
+from .wrappers import unicode_or_str
 
+try:
+    _ = xrange
+except NameError:
+    # no xrange in Python 3
+    xrange = range
 
 # Always ignore these directories when discovering applications.
 APP_DISCOVERY_EXCLUSION_DIRS = set([
@@ -146,7 +152,12 @@ class Popen(subprocess.Popen):
             fds.append(self.stderr)
 
         if std_in is not None and sys.stdin is not None:
-            sys.stdin.write(std_in)
+            try:
+                # Python 3
+                sys.stdin.buffer.write(std_in)
+            except AttributeError:
+                # Python 2
+                sys.stdin.write(std_in)
 
         returncode = None
         inactive = 0
@@ -169,11 +180,11 @@ class Popen(subprocess.Popen):
             returncode = self.poll()
 
         if self.stdout is not None:
-            stdout_str = ''.join(stdout)
+            stdout_str = b''.join(stdout)
         else:
             stdout_str = None
         if self.stderr is not None:
-            stderr_str = ''.join(stderr)
+            stderr_str = b''.join(stderr)
         else:
             stderr_str = None
 
@@ -186,14 +197,14 @@ def _unsigned(i):
     return i & 0xFFFFFFFF
 
 
-def _asciiz_to_str(a_string):
+def _asciiz_to_bytestr(a_bytestring):
     """Transform a null-terminated string of any length into a Python str.
     Returns a normal Python str that has been terminated.
     """
-    i = a_string.find('\0')
+    i = a_bytestring.find(b'\0')
     if i > -1:
-        a_string = a_string[0:i]
-    return a_string
+        a_bytestring = a_bytestring[0:i]
+    return a_bytestring
 
 
 def _f_flags_to_set(f_flags):
@@ -232,8 +243,8 @@ def get_filesystems():
 
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
     # see man GETFSSTAT(2) for struct
-    statfs_32_struct = '=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
-    statfs_64_struct = '=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
+    statfs_32_struct = b'=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
+    statfs_64_struct = b'=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
     os_version = osutils.getOsVersion(as_tuple=True)
     if os_version <= (10, 5):
         mode = 32
@@ -271,21 +282,21 @@ def get_filesystems():
              f_ffree, f_fsid_0, f_fsid_1, f_owner, f_type, f_flags,
              f_fssubtype,
              f_fstypename, f_mntonname, f_mntfromname) = struct.unpack(
-                 statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
+                 statfs_struct, bytes(buf[ofs:ofs+sizeof_statfs_struct]))
         elif mode == 32:
             (f_otype, f_oflags, f_bsize, f_iosize, f_blocks, f_bfree, f_bavail,
              f_files, f_ffree, f_fsid, f_owner, f_reserved1, f_type, f_flags,
              f_reserved2_0, f_reserved2_1, f_fstypename, f_mntonname,
              f_mntfromname) = struct.unpack(
-                 statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
+                 statfs_struct, bytes(buf[ofs:ofs+sizeof_statfs_struct]))
 
         try:
-            stat_val = os.stat(_asciiz_to_str(f_mntonname))
+            stat_val = os.stat(_asciiz_to_bytestr(f_mntonname))
             output[stat_val.st_dev] = {
                 'f_flags_set': _f_flags_to_set(f_flags),
-                'f_fstypename': _asciiz_to_str(f_fstypename),
-                'f_mntonname': _asciiz_to_str(f_mntonname),
-                'f_mntfromname': _asciiz_to_str(f_mntfromname),
+                'f_fstypename': _asciiz_to_bytestr(f_fstypename),
+                'f_mntonname': _asciiz_to_bytestr(f_mntonname),
+                'f_mntfromname': _asciiz_to_bytestr(f_mntfromname),
             }
         except OSError:
             pass
@@ -634,7 +645,7 @@ def getMachineFacts():
     installer is applicable to this OS or hardware"""
     # pylint: disable=C0103
     machine = dict()
-    machine['hostname'] = os.uname()[1].decode('UTF-8')
+    machine['hostname'] = unicode_or_str(os.uname()[1])
     machine['arch'] = os.uname()[4]
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     machine['os_build_number'] = get_os_build()
@@ -692,7 +703,7 @@ def get_conditions():
             except utils.ScriptNotFoundError:
                 pass  # script is not required, so pass
             except utils.RunExternalScriptError as err:
-                print(unicode(err), file=sys.stderr)
+                print(unicode_or_str(err), file=sys.stderr)
     else:
         # /usr/local/munki/conditions does not exist
         pass

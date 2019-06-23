@@ -50,6 +50,7 @@ except ImportError:
     from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
+from munkilib.wrappers import unicode_or_str
 
 FOUNDATION_SUPPORT = True
 try:
@@ -175,10 +176,10 @@ def raw_input_with_default(prompt, default_text):
     if darwin_vers == 10:
         if default_text:
             prompt = '%s [%s]: ' % (prompt.rstrip(': '), default_text)
-            return (unicode(raw_input(prompt), encoding=sys.stdin.encoding) or
-                    unicode(default_text))
+            return (unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding) or
+                    unicode_or_str(default_text))
         # no default value, just call raw_input
-        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+        return unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding)
 
     # A nasty, nasty hack to get around Python readline limitations under
     # macOS. Gives us editable default text for configuration and munkiimport
@@ -192,15 +193,15 @@ def raw_input_with_default(prompt, default_text):
 
     readline.clear_history()
     if not default_text:
-        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+        return unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding)
     elif libedit:
         # readline module was compiled against libedit
         thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return unicode(raw_input(), encoding=sys.stdin.encoding)
+        return unicode_or_str(raw_input(), encoding=sys.stdin.encoding)
     else:
         readline.set_startup_hook(lambda: readline.insert_text(default_text))
         try:
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+            return unicode_or_str(raw_input(prompt), encoding=sys.stdin.encoding)
         finally:
             readline.set_startup_hook()
 

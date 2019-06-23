@@ -64,8 +64,7 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current pkgs: %s'
-                            % unicode(err))
+        raise RepoCopyError(u'Unable to get list of current pkgs: %s' % err)
     while destination_path_name in pkgs_list:
         #print 'File %s already exists...' % destination_path_name
         # try appending numbers until we have a unique name
@@ -77,7 +76,7 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
         repo.put_from_local_file(destination_path_name, itempath)
     except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to copy %s to %s: %s'
-                            % (itempath, destination_path_name, unicode(err)))
+                            % (itempath, destination_path_name, err))
     else:
         return destination_path_name
 
@@ -97,8 +96,7 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s'
-                            % unicode(err))
+        raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s' % err)
     while pkginfo_path in pkgsinfo_list:
         index += 1
         pkginfo_name = '%s-%s__%s%s' % (pkginfo['name'], pkginfo['version'],
@@ -113,8 +111,8 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
         repo.put(pkginfo_path, pkginfo_str)
         return pkginfo_path
     except munkirepo.RepoError as err:
-        raise RepoCopyError('Unable to save pkginfo to %s: %s'
-                            % (pkginfo_path, unicode(err)))
+        raise RepoCopyError(u'Unable to save pkginfo to %s: %s'
+                            % (pkginfo_path, err))
 
 
 class CatalogDBException(Exception):
@@ -247,12 +245,12 @@ def find_matching_pkginfo(repo, pkginfo):
             # there _are_ existing pkgsinfo items.
             # warn about the problem since we can't seem to read catalogs/all
             print(u'Could not get a list of existing items from the repo: %s'
-                  % unicode(err))
+                  % err)
         return {}
     except CatalogDBException as err:
         # other error while processing catalogs/all
         print (u'Could not get a list of existing items from the repo: %s'
-               % unicode(err))
+               % err)
         return {}
 
     if 'installer_item_hash' in pkginfo:
@@ -268,8 +266,8 @@ def find_matching_pkginfo(repo, pkginfo):
         if pkgids:
             possiblematches = catdb['receipts'].get(pkgids[0])
             if possiblematches:
-                versionlist = possiblematches.keys()
-                versionlist.sort(compare_version_keys)
+                versionlist = list(possiblematches.keys())
+                versionlist.sort(key=pkgutils.MunkiLooseVersion)
                 # go through possible matches, newest version first
                 for versionkey in versionlist:
                     testpkgindexes = possiblematches[versionkey]
@@ -289,8 +287,8 @@ def find_matching_pkginfo(repo, pkginfo):
             app = applist[0]['path']
             possiblematches = catdb['applications'].get(app)
             if possiblematches:
-                versionlist = possiblematches.keys()
-                versionlist.sort(compare_version_keys)
+                versionlist = list(possiblematches.keys())
+                versionlist.sort(key=pkgutils.MunkiLooseVersion)
                 indexes = catdb['applications'][app][versionlist[0]]
                 return catdb['items'][indexes[0]]
 
@@ -298,8 +296,8 @@ def find_matching_pkginfo(repo, pkginfo):
         identifier = pkginfo['PayloadIdentifier']
         possiblematches = catdb['profiles'].get(identifier)
         if possiblematches:
-            versionlist = possiblematches.keys()
-            versionlist.sort(compare_version_keys)
+            versionlist = list(possiblematches.keys())
+            versionlist.sort(key=pkgutils.MunkiLooseVersion)
             indexes = catdb['profiles'][identifier][versionlist[0]]
             return catdb['items'][indexes[0]]
 
@@ -309,8 +307,8 @@ def find_matching_pkginfo(repo, pkginfo):
         pkginfo.get('installer_item_location', ''))
     possiblematches = catdb['installer_items'].get(installer_item_name)
     if possiblematches:
-        versionlist = possiblematches.keys()
-        versionlist.sort(compare_version_keys)
+        versionlist = list(possiblematches.keys())
+        versionlist.sort(key=pkgutils.MunkiLooseVersion)
         indexes = catdb['installer_items'][installer_item_name][versionlist[0]]
         return catdb['items'][indexes[0]]
 
@@ -332,8 +330,7 @@ def icon_exists_in_repo(repo, pkginfo):
     try:
         icon_list = list_items_of_kind(repo, 'icons')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current icons: %s'
-                            % unicode(err))
+        raise RepoCopyError(u'Unable to get list of current icons: %s' % err)
     if icon_path in icon_list:
         return True
     return False
@@ -455,7 +452,7 @@ def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
             return repo_png_path
         except munkirepo.RepoError as err:
             raise RepoCopyError(u'Error uploading icon to %s: %s'
-                                % (repo_png_path, unicode(err)))
+                                % (repo_png_path, err))
     else:
         raise RepoCopyError(u'Error converting %s to png.' % icon_path)
 
@@ -469,22 +466,21 @@ def copy_icon_to_repo(repo, iconpath):
     try:
         icon_list = list_items_of_kind(repo, 'icons')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current icons: %s'
-                            % unicode(err))
+        raise RepoCopyError(u'Unable to get list of current icons: %s' % err)
     if destination_path_name in icon_list:
         # remove any existing icon in the repo
         try:
             repo.delete(destination_path_name)
         except munkirepo.RepoError as err:
-            raise RepoCopyError('Could not remove existing %s: %s'
-                                % (destination_path_name, unicode(err)))
-    print('Copying %s to %s...' % (icon_name, destination_path_name))
+            raise RepoCopyError(u'Could not remove existing %s: %s'
+                                % (destination_path_name, err))
+    print(u'Copying %s to %s...' % (icon_name, destination_path_name))
     try:
         repo.put_from_local_file(destination_path_name, iconpath)
         return destination_path_name
     except munkirepo.RepoError as err:
-        raise RepoCopyError('Unable to copy %s to %s: %s'
-                            % (iconpath, destination_path_name, unicode(err)))
+        raise RepoCopyError(u'Unable to copy %s to %s: %s'
+                            % (iconpath, destination_path_name, err))
 
 
 def extract_and_copy_icon(repo, installer_item, pkginfo, import_multiple=True):

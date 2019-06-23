@@ -39,6 +39,7 @@ from Foundation import kCFPreferencesCurrentHost
 # pylint: enable=E0611
 
 from .constants import BUNDLE_ID
+from .wrappers import is_a_string
 
 #####################################################
 # managed installs preferences/metadata
@@ -283,7 +284,7 @@ def print_config():
         value = pref(pref_name)
         where = get_config_level(BUNDLE_ID, pref_name, value)
         repr_value = value
-        if isinstance(value, basestring):
+        if is_a_string(value):
             repr_value = repr(value)
         print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
             pref_name, repr_value, where))
@@ -296,7 +297,7 @@ def print_config():
         value = CFPreferencesCopyAppValue(pref_name, domain)
         where = get_config_level(domain, pref_name, value)
         repr_value = value
-        if isinstance(value, basestring):
+        if is_a_string(value):
             repr_value = repr(value)
         print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
             pref_name, repr_value, where))

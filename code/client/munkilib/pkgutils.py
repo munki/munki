@@ -265,7 +265,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
     if pkgrefs:
         # this is a PackageInfo file
         for ref in pkgrefs:
-            keys = ref.attributes.keys()
+            keys = list(ref.attributes.keys())
             if 'identifier' in keys and 'version' in keys:
                 pkginfo = {}
                 pkginfo['packageid'] = \
@@ -274,7 +274,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
                     ref.attributes['version'].value.encode('UTF-8')
                 payloads = ref.getElementsByTagName('payload')
                 if payloads:
-                    keys = payloads[0].attributes.keys()
+                    keys = list(payloads[0].attributes.keys())
                     if 'installKBytes' in keys:
                         pkginfo['installed_size'] = int(float(
                             payloads[0].attributes[
@@ -289,7 +289,7 @@ def parsePkgRefs(filename, path_to_pkg=None):
             # this is a Distribution or .dist file
             pkgref_dict = {}
             for ref in pkgrefs:
-                keys = ref.attributes.keys()
+                keys = list(ref.attributes.keys())
                 if 'id' in keys:
                     pkgid = ref.attributes['id'].value.encode('UTF-8')
                     if not pkgid in pkgref_dict:

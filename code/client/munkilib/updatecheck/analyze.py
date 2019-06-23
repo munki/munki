@@ -37,6 +37,7 @@ from .. import info
 from .. import munkilog
 from .. import prefs
 from .. import processes
+from ..wrappers import is_a_string
 
 
 def item_in_installinfo(item_pl, thelist, vers=''):
@@ -368,7 +369,7 @@ def process_install(manifestitem, cataloglist, installinfo,
         dependencies = item_pl['requires']
         # fix things if 'requires' was specified as a string
         # instead of an array of strings
-        if isinstance(dependencies, basestring):
+        if is_a_string(dependencies):
             dependencies = [dependencies]
         for item in dependencies:
             display.display_detail(
@@ -642,10 +643,10 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
 
     manifest can be a path to a manifest file or a dictionary object.
     """
-    if isinstance(manifest, basestring):
+    if is_a_string(manifest):
         display.display_debug1(
-            "** Processing manifest %s for %s" %
-            (os.path.basename(manifest), manifest_key))
+            "** Processing manifest %s for %s",
+            os.path.basename(manifest), manifest_key)
         manifestdata = manifestutils.get_manifest_data(manifest)
     else:
         manifestdata = manifest

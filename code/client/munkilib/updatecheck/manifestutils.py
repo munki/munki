@@ -39,6 +39,7 @@ from .. import keychain
 from .. import prefs
 from .. import reports
 from .. import FoundationPlist
+from ..wrappers import unicode_or_str
 
 
 PRIMARY_MANIFEST_TAG = '_primary_manifest_'
@@ -163,7 +164,7 @@ def get_primary_manifest(alternate_id=''):
         manifest = get_manifest(clientidentifier)
     else:
         # no client identifier specified, so try the hostname
-        hostname = os.uname()[1].decode('UTF-8')
+        hostname = unicode_or_str(os.uname()[1])
         # os.uname()[1] seems to always return UTF-8 for hostnames that
         # contain unicode characters, so we decode to Unicode
         clientidentifier = hostname
@@ -252,13 +253,12 @@ def get_manifest_data(manifestpath):
     try:
         plist = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
-        display.display_error('Could not read plist: %s', manifestpath)
+        display.display_error(u'Could not read plist: %s', manifestpath)
         if os.path.exists(manifestpath):
             try:
                 os.unlink(manifestpath)
             except OSError as err:
-                display.display_error(
-                    'Failed to delete plist: %s', unicode(err))
+                display.display_error(u'Failed to delete plist: %s', err)
         else:
             display.display_error('plist does not exist.')
     return plist
@@ -271,10 +271,9 @@ def get_manifest_value_for_key(manifestpath, keyname):
         return plist.get(keyname, None)
     except AttributeError as err:
         display.display_error(
-            'Failed to get manifest value for key: %s (%s)',
+            u'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
-        display.display_error(
-            'Manifest is likely corrupt: %s', unicode(err))
+        display.display_error(u'Manifest is likely corrupt: %s', err)
         return None
 
 

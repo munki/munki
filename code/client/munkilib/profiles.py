@@ -121,7 +121,7 @@ def store_profile_receipt_data(identifier, hash_value):
             'FileHash': hash_value,
             'ProfileInstallDate': install_date
         }
-    elif identifier in profile_data.keys():
+    elif identifier in list(profile_data.keys()):
         del profile_data[identifier]
     try:
         FoundationPlist.writePlist(profile_data, profile_receipt_data_path())
