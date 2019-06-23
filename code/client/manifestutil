@@ -50,7 +50,7 @@ def get_installer_item_names(repo, catalog_limit_list):
         catalogs_list = repo.itemlist('catalogs')
     except munkirepo.RepoError as err:
         print((
-            'Could not retrieve catalogs: %s' % unicode(err)), file=sys.stderr)
+            u'Could not retrieve catalogs: %s' % err), file=sys.stderr)
         return []
     for catalog_name in catalogs_list:
         if catalog_name in catalog_limit_list:
@@ -59,8 +59,8 @@ def get_installer_item_names(repo, catalog_limit_list):
                 catalog = readPlistFromString(data)
             except munkirepo.RepoError as err:
                 print((
-                    'Could not retrieve catalog %s: %s'
-                    % (catalog_name, unicode(err))), file=sys.stderr)
+                    u'Could not retrieve catalog %s: %s'
+                    % (catalog_name, err)), file=sys.stderr)
             except (IOError, OSError, PlistReadError):
                 # skip items that aren't valid plists
                 # or that we can't read
@@ -80,7 +80,7 @@ def get_manifest_names(repo):
         manifest_names = repo.itemlist('manifests')
     except munkirepo.RepoError as err:
         print((
-            'Could not retrieve manifests: %s' % unicode(err)), file=sys.stderr)
+            u'Could not retrieve manifests: %s' % err), file=sys.stderr)
         manifest_names = []
     manifest_names.sort()
     return manifest_names
@@ -92,7 +92,7 @@ def get_catalogs(repo):
         catalog_names = repo.itemlist('catalogs')
     except munkirepo.RepoError as err:
         print((
-            'Could not retrieve catalogs: %s' % unicode(err)), file=sys.stderr)
+            u'Could not retrieve catalogs: %s' % err), file=sys.stderr)
         catalog_names = []
     catalog_names.sort()
     return catalog_names
@@ -146,10 +146,10 @@ def get_manifest(repo, manifest_name):
         return readPlistFromString(data)
     except munkirepo.RepoError as err:
         print(u'Could not retrieve manifest %s: %s'
-              % (manifest_name, unicode(err)), file=sys.stderr)
+              % (manifest_name, err), file=sys.stderr)
         return None
     except (IOError, OSError, PlistReadError) as err:
-        print(u'Could not read manifest %s: %s' % (manifest_name, unicode(err)),
+        print(u'Could not read manifest %s: %s' % (manifest_name, err),
               file=sys.stderr)
         return None
 
@@ -167,7 +167,7 @@ def save_manifest(repo, manifest_dict, manifest_name, overwrite_existing=False):
         repo.put(manifest_ref, data)
         return True
     except (IOError, OSError, PlistWriteError, munkirepo.RepoError) as err:
-        print(u'Saving %s failed: %s' % (manifest_name, unicode(err)),
+        print(u'Saving %s failed: %s' % (manifest_name, err),
               file=sys.stderr)
         return False
 
@@ -191,7 +191,7 @@ def manifest_rename(repo, source_manifest_name, dest_manifest_name,
         return True
     except munkirepo.RepoError as err:
         print(u'Renaming %s to %s failed: %s'
-              % (source_manifest_name, dest_manifest_name, unicode(err)),
+              % (source_manifest_name, dest_manifest_name, err),
               file=sys.stderr)
         return False
 
@@ -380,7 +380,7 @@ def find(repo, args):
             data = repo.get(manifest_ref)
             manifest = readPlistFromString(data)
         except (IOError, OSError, PlistReadError, munkirepo.RepoError) as err:
-            print(u'Error reading %s: %s' % (manifest_ref, unicode(err)),
+            print(u'Error reading %s: %s' % (manifest_ref, err),
                   file=sys.stderr)
             continue
         if keyname:
@@ -1077,7 +1077,7 @@ def connect_to_repo():
     try:
         repo = munkirepo.connect(repo_url, repo_plugin)
     except munkirepo.RepoError as err:
-        print(u'Repo error: %s' % unicode(err), file=sys.stderr)
+        print(u'Repo error: %s' % err, file=sys.stderr)
         exit(-1)
     return repo
 
