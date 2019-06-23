@@ -24,8 +24,19 @@ Functions for downloading resources from the Munki server
 from __future__ import absolute_import, print_function
 
 import os
-import urllib2
-import urlparse
+
+try:
+    # Python 2
+    from urllib2 import quote
+except ImportError:
+    # Python 3
+    from urllib.parse import quote
+try:
+    # Python 2
+    from urlparse import urlparse
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse
 
 from .. import display
 from .. import fetch
@@ -47,7 +58,7 @@ def get_url_basename(url):
          "/path/foo.dmg" => "foo.dmg"
     """
 
-    url_parse = urlparse.urlparse(url)
+    url_parse = urlparse(url)
     return os.path.basename(url_parse.path)
 
 
@@ -141,7 +152,7 @@ def download_installeritem(item_pl,
     else:
         if not downloadbaseurl.endswith('/'):
             downloadbaseurl = downloadbaseurl + '/'
-        pkgurl = downloadbaseurl + urllib2.quote(location.encode('UTF-8'))
+        pkgurl = downloadbaseurl + quote(location.encode('UTF-8'))
 
     pkgname = get_url_basename(location)
     display.display_debug2('Download base URL is: %s', downloadbaseurl)
@@ -260,7 +271,7 @@ def download_icons(item_list):
                 # download this icon
                 continue
             item_name = item.get('display_name') or item['name']
-            icon_url = icon_base_url + urllib2.quote(icon_name.encode('UTF-8'))
+            icon_url = icon_base_url + quote(icon_name.encode('UTF-8'))
             try:
                 fetch.munki_resource(
                     icon_url,
@@ -313,8 +324,7 @@ def download_client_resources():
     message = 'Getting client resources...'
     downloaded_resource_path = None
     for filename in filenames:
-        resource_url = resource_base_url + urllib2.quote(
-            filename.encode('UTF-8'))
+        resource_url = resource_base_url + quote(filename.encode('UTF-8'))
         try:
             fetch.munki_resource(
                 resource_url, resource_archive_path, message=message)
@@ -343,7 +353,7 @@ def download_catalog(catalogname):
         catalogbaseurl = catalogbaseurl + '/'
     display.display_debug2('Catalog base URL is: %s', catalogbaseurl)
     catalog_dir = os.path.join(prefs.pref('ManagedInstallDir'), 'catalogs')
-    catalogurl = catalogbaseurl + urllib2.quote(catalogname.encode('UTF-8'))
+    catalogurl = catalogbaseurl + quote(catalogname.encode('UTF-8'))
     catalogpath = os.path.join(catalog_dir, catalogname)
     display.display_detail('Getting catalog %s...', catalogname)
     message = 'Retrieving catalog "%s"...' % catalogname

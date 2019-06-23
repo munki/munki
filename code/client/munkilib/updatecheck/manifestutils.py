@@ -24,7 +24,13 @@ Functions for working with manifest files
 from __future__ import absolute_import, print_function
 
 import os
-import urllib2
+
+try:
+    # Python 2
+    from urllib2 import quote
+except ImportError:
+    # Python 3
+    from urllib.parse import quote
 
 from .. import display
 from .. import fetch
@@ -89,7 +95,7 @@ def get_manifest(manifest_name, suppress_errors=False):
                                 'manifests')
 
     manifesturl = (
-        manifestbaseurl + urllib2.quote(manifest_name.encode('UTF-8')))
+        manifestbaseurl + quote(manifest_name.encode('UTF-8')))
 
     display.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     display.display_detail('Getting manifest %s...', manifest_name)

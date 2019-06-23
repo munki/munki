@@ -21,7 +21,11 @@ Created by Greg Neagle on 2017-01-01.
 """
 from __future__ import absolute_import, print_function
 
-from urllib import quote_plus
+try:
+    from urllib import quote_plus
+except ImportError:
+    # Python 3
+    from urllib.parse import quote_plus
 
 from .. import display
 from .. import fetch
