@@ -18,14 +18,27 @@ gurl.py
 
 Created by Greg Neagle on 2013-11-21.
 Modified in Feb 2016 to add support for NSURLSession.
+Updated June 2019 for compatibility with Python 3 and PyObjC 5.1.2+
 
 curl replacement using NSURLConnection and friends
+
+Tested with PyObjC 2.5.1 (inlcuded with macOS)
+and with PyObjC 5.2b1. Should also work with PyObjC 5.1.2.
+May fail with other versions of PyObjC due to issues with completion handler
+signatures.
 """
 from __future__ import absolute_import, print_function
 
 import os
-from urlparse import urlparse
 import xattr
+
+try:
+    # Python 2
+    from urlparse import urlparse
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse
+
 
 # builtin super doesn't work with Cocoa classes in recent PyObjC releases.
 # pylint: disable=redefined-builtin,no-name-in-module
@@ -82,17 +95,23 @@ if NSURLSESSION_AVAILABLE:
     # define a helper function for block callbacks
     import ctypes
     import objc
-    _objc_so = ctypes.cdll.LoadLibrary(
-        os.path.join(objc.__path__[0], '_objc.so'))
-    PyObjCMethodSignature_WithMetaData = (
-        _objc_so.PyObjCMethodSignature_WithMetaData)
-    PyObjCMethodSignature_WithMetaData.restype = ctypes.py_object
+    CALLBACK_HELPER_AVAILABLE = True
+    try:
+        _objc_so = ctypes.cdll.LoadLibrary(
+            os.path.join(objc.__path__[0], '_objc.so'))
+    except OSError:
+        # could not load _objc.so
+        CALLBACK_HELPER_AVAILABLE = False
+    else:
+        PyObjCMethodSignature_WithMetaData = (
+            _objc_so.PyObjCMethodSignature_WithMetaData)
+        PyObjCMethodSignature_WithMetaData.restype = ctypes.py_object
 
-    def objc_method_signature(signature_str):
-        '''Return a PyObjCMethodSignature given a call signature in string
-        format'''
-        return PyObjCMethodSignature_WithMetaData(
-            ctypes.create_string_buffer(signature_str), None, False)
+        def objc_method_signature(signature_str):
+            '''Return a PyObjCMethodSignature given a call signature in string
+            format'''
+            return PyObjCMethodSignature_WithMetaData(
+                ctypes.create_string_buffer(signature_str), None, False)
 
 # pylint: enable=E0611
 
@@ -293,11 +312,15 @@ class Gurl(NSObject):
         '''Returns any stored headers for self.destination_path'''
         # try to read stored headers
         try:
-            stored_plist_str = xattr.getxattr(
+            stored_plist_bytestr = xattr.getxattr(
                 self.destination_path, self.GURL_XATTR)
         except (KeyError, IOError):
             return {}
-        data = buffer(stored_plist_str)
+        try:
+            data = buffer(stored_plist_bytestr)
+        except NameError:
+            # buffer replaced by memoryview in Python 3
+            data = memoryview(stored_plist_bytestr)
         dataObject, _plistFormat, error = (
             NSPropertyListSerialization.
             propertyListFromData_mutabilityOption_format_errorDescription_(
@@ -313,11 +336,14 @@ class Gurl(NSObject):
             dataFromPropertyList_format_errorDescription_(
                 headers, NSPropertyListXMLFormat_v1_0, None))
         if error:
-            string = ''
+            byte_string = b''
         else:
-            string = str(plistData)
+            try:
+                byte_string = bytes(plistData)
+            except NameError:
+                byte_string = str(plistData)
         try:
-            xattr.setxattr(self.destination_path, self.GURL_XATTR, string)
+            xattr.setxattr(self.destination_path, self.GURL_XATTR, byte_string)
         except IOError as err:
             self.log('Could not store metadata to %s: %s'
                      % (self.destination_path, err))
@@ -438,23 +464,26 @@ class Gurl(NSObject):
                 self.bytesReceived = local_filesize
                 self.expectedLength += local_filesize
                 # open file for append
-                self.destination = open(self.destination_path, 'a')
+                self.destination = open(self.destination_path, 'ab')
 
             elif str(self.status).startswith('2'):
                 # not resuming, just open the file for writing
-                self.destination = open(self.destination_path, 'w')
+                self.destination = open(self.destination_path, 'wb')
                 # store some headers with the file for use if we need to resume
                 # the download and for future checking if the file on the server
                 # has changed
                 self.storeHeaders_(download_data)
+
         if completionHandler:
             # tell the session task to continue
             completionHandler(NSURLSessionResponseAllow)
+        self.log('exiting handleResponse_withCompletionHandler_')
 
     def URLSession_dataTask_didReceiveResponse_completionHandler_(
             self, _session, _task, response, completionHandler):
         '''NSURLSessionDataDelegate method'''
-        completionHandler.__block_signature__ = objc_method_signature('v@i')
+        if CALLBACK_HELPER_AVAILABLE:
+            completionHandler.__block_signature__ = objc_method_signature('v@i')
         self.handleResponse_withCompletionHandler_(response, completionHandler)
 
     def connection_didReceiveResponse_(self, _connection, response):
@@ -526,7 +555,8 @@ class Gurl(NSObject):
         self.log(
             'URLSession_task_willPerformHTTPRedirection_newRequest_'
             'completionHandler_')
-        completionHandler.__block_signature__ = objc_method_signature('v@@')
+        if CALLBACK_HELPER_AVAILABLE:
+            completionHandler.__block_signature__ = objc_method_signature('v@@')
         self.handleRedirect_newRequest_withCompletionHandler_(
             response, request, completionHandler)
     # pylint: enable=too-many-arguments
@@ -534,8 +564,8 @@ class Gurl(NSObject):
     def connection_willSendRequest_redirectResponse_(
             self, _connection, request, response):
         '''NSURLConnectionDataDelegate method
-        Sent when the connection determines that it must change URLs in order to
-        continue loading a request.'''
+        Sent when the connection determines that it must change URLs in order
+        to continue loading a request.'''
         self.log('connection_willSendRequest_redirectResponse_')
         return self.handleRedirect_newRequest_withCompletionHandler_(
             response, request, None)
@@ -633,7 +663,8 @@ class Gurl(NSObject):
     def URLSession_task_didReceiveChallenge_completionHandler_(
             self, _session, _task, challenge, completionHandler):
         '''NSURLSessionTaskDelegate method'''
-        completionHandler.__block_signature__ = objc_method_signature('v@i@')
+        if CALLBACK_HELPER_AVAILABLE:
+            completionHandler.__block_signature__ = objc_method_signature('v@i@')
         self.log('URLSession_task_didReceiveChallenge_completionHandler_')
         self.handleChallenge_withCompletionHandler_(
             challenge, completionHandler)
@@ -649,9 +680,12 @@ class Gurl(NSObject):
     def handleReceivedData_(self, data):
         '''Handle received data'''
         if self.destination:
-            self.destination.write(str(data))
+            self.destination.write(data)
         else:
-            self.log(str(data).decode('UTF-8'))
+            try:
+                self.log(str(data))
+            except Exception:
+                pass
         self.bytesReceived += len(data)
         if self.expectedLength != NSURLResponseUnknownLength:
             self.percentComplete = int(
