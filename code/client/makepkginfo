@@ -70,7 +70,7 @@ def main():
     # add all our option groups
     pkginfolib.add_option_groups(parser)
 
-    sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
+    #sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
 
     if options.version:
@@ -136,7 +136,7 @@ def main():
         print(msg % item, file=sys.stderr)
 
     # and now, what we've all been waiting for...
-    print(FoundationPlist.writePlistToString(pkginfo))
+    print(FoundationPlist.writePlistToString(pkginfo).decode('UTF-8'))
 
 
 if __name__ == '__main__':
