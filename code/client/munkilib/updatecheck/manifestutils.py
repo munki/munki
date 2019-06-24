@@ -142,6 +142,7 @@ def get_manifest(manifest_name, suppress_errors=False):
         raise ManifestInvalidException(errormsg)
     else:
         # plist is valid
+        display.display_detail('Retrieved manifest %s', manifest_name)
         _MANIFESTS[manifest_name] = manifestpath
         return manifestpath
 
