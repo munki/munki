@@ -261,8 +261,8 @@ class AppleUpdateSync(object):
             except OSError as oserr:
                 raise ReplicationError(oserr)
         if os.path.exists(self.apple_download_catalog_path):
-            stored_os_vers = fetch.getxattr(
-                self.apple_download_catalog_path, XATTR_OS_VERS)
+            stored_os_vers = str(fetch.getxattr(
+                self.apple_download_catalog_path, XATTR_OS_VERS))
             if stored_os_vers != os_vers:
                 try:
                     # remove the cached apple catalog
@@ -274,8 +274,8 @@ class AppleUpdateSync(object):
         try:
             dummy_file_changed = self.get_su_resource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
-            xattr.setxattr(
-                self.apple_download_catalog_path, XATTR_OS_VERS, os_vers)
+            xattr.setxattr(self.apple_download_catalog_path,
+                           XATTR_OS_VERS, os_vers.encode("UTF-8"))
             self.copy_downloaded_catalog()
         except fetch.Error:
             raise
