@@ -194,7 +194,7 @@ def get_all_items_with_name(name, cataloglist):
 
     if itemlist:
         # sort so latest version is first
-        itemlist.sort(key=item_version)
+        itemlist.sort(key=item_version, reverse=True)
     return itemlist
 
 
@@ -578,7 +578,7 @@ def get_item_detail(name, cataloglist, vers='',
             if vers == 'latest':
                 # order all our items, highest version first
                 versionlist = list(itemsmatchingname.keys())
-                versionlist.sort(key=pkgutils.MunkiLooseVersion)
+                versionlist.sort(key=pkgutils.MunkiLooseVersion, reverse=True)
                 for versionkey in versionlist:
                     indexlist.extend(itemsmatchingname[versionkey])
             elif vers in list(itemsmatchingname.keys()):
