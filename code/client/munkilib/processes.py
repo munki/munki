@@ -39,7 +39,7 @@ def get_running_processes():
                             stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
     if proc.returncode == 0:
-        proc_list = [item for item in output.splitlines()
+        proc_list = [item for item in output.decode("UTF-8").splitlines()
                      if item.startswith('/')]
         launchcfmapp = ('/System/Library/Frameworks/Carbon.framework'
                         '/Versions/A/Support/LaunchCFMApp')
@@ -52,7 +52,7 @@ def get_running_processes():
             (output, dummy_err) = proc.communicate()
             if proc.returncode == 0:
                 carbon_apps = [item[len(launchcfmapp)+1:]
-                               for item in output.splitlines()
+                               for item in output.decode("UTF-8").splitlines()
                                if item.startswith(launchcfmapp)]
                 if carbon_apps:
                     proc_list.extend(carbon_apps)

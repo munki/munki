@@ -362,11 +362,12 @@ def getResourceIfChangedAtomically(url,
     # If we already have a downloaded file & its (cached) hash matches what
     # we need, do nothing, return unchanged.
     if resume and expected_hash and os.path.isfile(destinationpath):
-        xattr_hash = getxattr(destinationpath, XATTR_SHA)
+        xattr_hash = getxattr(destinationpath, XATTR_SHA).decode('UTF-8')
         if not xattr_hash:
             xattr_hash = writeCachedChecksum(destinationpath)
         if xattr_hash == expected_hash:
             #File is already current, no change.
+            munkilog.log("        Cached item is current.")
             return False
         elif prefs.pref(
                 'PackageVerificationMode').lower() in ['hash_strict', 'hash']:
@@ -374,7 +375,7 @@ def getResourceIfChangedAtomically(url,
                 os.unlink(destinationpath)
             except OSError:
                 pass
-        munkilog.log('Cached payload does not match hash in catalog, '
+        munkilog.log('Cached item does not match hash in catalog, '
                      'will check if changed and redownload: %s'
                      % destinationpath)
         # continue with normal if-modified-since/etag update methods.
