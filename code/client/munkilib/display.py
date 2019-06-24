@@ -93,16 +93,10 @@ def _to_unicode(obj, encoding='UTF-8'):
         if isinstance(obj, basestring):
             if not isinstance(obj, unicode):
                 obj = unicode(obj, encoding)
-        else:
-            # all other types convert to unicode
-            obj = unicode(obj)
     except NameError:
         # Python 3
         if isinstance(obj, bytes):
             obj = obj.decode(encoding)
-        else:
-            # all other types convert to str
-            obj = str(obj)
     return obj
 
 
