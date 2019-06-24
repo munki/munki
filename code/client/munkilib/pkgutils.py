@@ -105,15 +105,39 @@ class MunkiLooseVersion(version.LooseVersion):
             cmp_list.append(0)
         return cmp_list
 
-    def __cmp__(self, other):
-        if is_a_string(other):
+    def _normalized_values(self, other):
+        if not isinstance(other, version.LooseVersion):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
         self_cmp_version = self._pad(self.version, max_length)
         other_cmp_version = self._pad(other.version, max_length)
 
-        return cmp(self_cmp_version, other_cmp_version)
+        return (self_cmp_version, other_cmp_version)
+
+    def __eq__(self, other):
+        (self_cmp_version, other_cmp_version) = self._normalized_values(other)
+        return self_cmp_version == other_cmp_version
+
+    def __ne__(self, other):
+        (self_cmp_version, other_cmp_version) = self._normalized_values(other)
+        return self_cmp_version != other_cmp_version
+
+    def __lt__(self, other):
+        (self_cmp_version, other_cmp_version) = self._normalized_values(other)
+        return self_cmp_version < other_cmp_version
+
+    def __le__(self, other):
+        (self_cmp_version, other_cmp_version) = self._normalized_values(other)
+        return self_cmp_version <= other_cmp_version
+
+    def __gt__(self, other):
+        (self_cmp_version, other_cmp_version) = self._normalized_values(other)
+        return self_cmp_version > other_cmp_version
+
+    def __ge__(self, other):
+        (self_cmp_version, other_cmp_version) = self._normalized_values(other)
+        return self_cmp_version >= other_cmp_version
 
 
 def padVersionString(versString, tupleCount):

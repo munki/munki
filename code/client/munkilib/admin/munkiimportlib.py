@@ -267,7 +267,7 @@ def find_matching_pkginfo(repo, pkginfo):
             possiblematches = catdb['receipts'].get(pkgids[0])
             if possiblematches:
                 versionlist = list(possiblematches.keys())
-                versionlist.sort(key=pkgutils.MunkiLooseVersion)
+                versionlist.sort(key=pkgutils.MunkiLooseVersion, reverse=True)
                 # go through possible matches, newest version first
                 for versionkey in versionlist:
                     testpkgindexes = possiblematches[versionkey]
@@ -288,7 +288,7 @@ def find_matching_pkginfo(repo, pkginfo):
             possiblematches = catdb['applications'].get(app)
             if possiblematches:
                 versionlist = list(possiblematches.keys())
-                versionlist.sort(key=pkgutils.MunkiLooseVersion)
+                versionlist.sort(key=pkgutils.MunkiLooseVersion, reverse=True)
                 indexes = catdb['applications'][app][versionlist[0]]
                 return catdb['items'][indexes[0]]
 
@@ -297,7 +297,7 @@ def find_matching_pkginfo(repo, pkginfo):
         possiblematches = catdb['profiles'].get(identifier)
         if possiblematches:
             versionlist = list(possiblematches.keys())
-            versionlist.sort(key=pkgutils.MunkiLooseVersion)
+            versionlist.sort(key=pkgutils.MunkiLooseVersion, reverse=True)
             indexes = catdb['profiles'][identifier][versionlist[0]]
             return catdb['items'][indexes[0]]
 
@@ -308,7 +308,7 @@ def find_matching_pkginfo(repo, pkginfo):
     possiblematches = catdb['installer_items'].get(installer_item_name)
     if possiblematches:
         versionlist = list(possiblematches.keys())
-        versionlist.sort(key=pkgutils.MunkiLooseVersion)
+        versionlist.sort(key=pkgutils.MunkiLooseVersion, reverse=True)
         indexes = catdb['installer_items'][installer_item_name][versionlist[0]]
         return catdb['items'][indexes[0]]
 
