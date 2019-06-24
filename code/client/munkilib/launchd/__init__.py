@@ -85,7 +85,7 @@ def job_info(job_label):
     if proc.returncode or not output:
         return info
     else:
-        lines = str(output).splitlines()
+        lines = output.decode("UTF-8").splitlines()
         # search launchctl list output for our job label
         job_lines = [item for item in lines
                      if item.endswith('\t' + job_label)]
@@ -215,8 +215,8 @@ class Job(object):
             try:
                 # open the stdout and stderr output files and
                 # store their file descriptors for use
-                self.stdout = open(self.stdout_path, 'r')
-                self.stderr = open(self.stderr_path, 'r')
+                self.stdout = open(self.stdout_path, 'rb')
+                self.stderr = open(self.stderr_path, 'rb')
             except (OSError, IOError) as err:
                 raise LaunchdJobException(err)
 
