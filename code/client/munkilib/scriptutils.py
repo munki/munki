@@ -36,10 +36,10 @@ def _writefile(stringdata, path):
     '''Writes string data to path.
     Returns the path on success, empty string on failure.'''
     try:
-        fileobject = open(path, mode='w', buffering=1)
+        fileobject = open(path, mode='wb', buffering=1)
         # write line-by-line to ensure proper UNIX line-endings
         for line in stringdata.splitlines():
-            print(line.encode('UTF-8'), file=fileobject)
+            fileobject.write(line.encode('UTF-8') + b"\n")
         fileobject.close()
         return path
     except (OSError, IOError):
