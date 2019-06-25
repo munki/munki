@@ -88,8 +88,8 @@ def pkg_needs_restart(pkgpath, options):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_err) = proc.communicate()
-    restartaction = output.decode('UTF-8').rstrip('\n')
+    output = proc.communicate()[0].decode('UTF-8')
+    restartaction = output.rstrip('\n')
     return (restartaction == 'RequireRestart' or
             restartaction == 'RecommendRestart')
 

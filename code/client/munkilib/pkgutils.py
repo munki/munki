@@ -44,8 +44,6 @@ from . import osutils
 from . import utils
 from . import FoundationPlist
 
-from .wrappers import is_a_string
-
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -66,12 +64,14 @@ def getPkgRestartInfo(filename):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
+    out = out.decode('UTF-8')
+    err = err.decode('UTF-8')
     if proc.returncode:
         display.display_error("installer -query failed: %s %s", out, err)
         return {}
 
     if out:
-        restartAction = str(out).rstrip('\n')
+        restartAction = out.rstrip('\n')
         if restartAction != 'None':
             installerinfo['RestartAction'] = restartAction
 
@@ -133,8 +133,7 @@ class MunkiLooseVersion(version.LooseVersion):
                 # integer is less than character/string
                 if isinstance(value, int):
                     return -1
-                else:
-                    return 1
+                return 1
             else:
                 if cmp_result:
                     return cmp_result
@@ -450,7 +449,7 @@ def getFlatPackageInfo(pkgpath):
             display.display_warning(
                 'No valid Distribution or PackageInfo found.')
     else:
-        display.display_warning(err)
+        display.display_warning(err.decode('UTF-8'))
 
     # change back to original working dir
     os.chdir(cwd)
@@ -476,7 +475,7 @@ def getBomList(pkgpath):
                                 shell=False, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, dummy_err) = proc.communicate()
+        output = proc.communicate()[0].decode('UTF-8')
         if proc.returncode == 0:
             return output.splitlines()
     return []
@@ -622,7 +621,7 @@ def getInstalledPackageVersion(pkgid):
                             bufsize=1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
+    out = proc.communicate()[0]
 
     if out:
         try:
@@ -761,7 +760,7 @@ def getChoiceChangesXML(pkgitem):
         proc = subprocess.Popen(
             ['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
             bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (out, dummy_err) = proc.communicate()
+        out = proc.communicate()[0]
         if out:
             plist = FoundationPlist.readPlistFromString(out)
 
@@ -860,7 +859,7 @@ def getInstalledPackages():
     proc = subprocess.Popen(['/usr/sbin/pkgutil', '--regexp',
                              '--pkg-info-plist', '.*'], bufsize=8192,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
+    out = proc.communicate()[0]
     while out:
         (pliststr, out) = utils.getFirstPlist(out)
         if pliststr:

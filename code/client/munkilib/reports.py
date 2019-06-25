@@ -126,7 +126,7 @@ def archive_report():
         proc = subprocess.Popen(['/bin/ls', '-t1', archivepath],
                                 bufsize=1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, dummy_err) = proc.communicate()
+        output = proc.communicate()[0].decode('UTF-8')
         if output:
             archiveitems = [item
                             for item in str(output).splitlines()

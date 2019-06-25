@@ -377,7 +377,7 @@ class RepoCleaner(object):
             # we don't print stdout -- too much info
             #print output.rstrip('\n').decode('UTF-8')
 
-        errors = proc.stderr.read()
+        errors = proc.stderr.read().decode('UTF-8')
         if errors:
             print('\nThe following issues occurred while building catalogs:\n')
             print(errors)

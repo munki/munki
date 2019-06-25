@@ -285,7 +285,7 @@ def import_bom(bompath, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, dummy_err) = proc.communicate()
+    pliststr = proc.communicate()[0]
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "install-location" in plist:
@@ -328,7 +328,7 @@ def import_from_pkgutil(pkgname, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, dummy_err) = proc.communicate()
+    pliststr = proc.communicate()[0]
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "pkg-version" in plist:
@@ -616,10 +616,9 @@ def remove_receipts(pkgkeylist, noupdateapplepkgdb):
             proc = subprocess.Popen(cmd, bufsize=-1,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, dummy_err) = proc.communicate()
+            output = proc.communicate()[0].decode('UTF-8')
             if output:
-                display.display_detail(
-                    output.decode('UTF-8').rstrip('\n'))
+                display.display_detail(output.rstrip('\n'))
 
     display.display_percent_done(2, 4)
 

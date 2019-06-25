@@ -157,7 +157,7 @@ def get_client_cert_common_name():
         proc = subprocess.Popen(cmd,
                                 bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        (out, _err) = proc.communicate()
+        out = proc.communicate()[0].decode("UTF-8")
         if out:
             for i in out.split('/'):
                 if i.startswith('CN='):
@@ -517,8 +517,8 @@ def security(verb_name, *args):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, err) = proc.communicate()
     if proc.returncode:
-        raise SecurityError('%s: %s' % (proc.returncode, err))
-    return output or err
+        raise SecurityError('%s: %s' % (proc.returncode, err.decode("UTF-8")))
+    return (output or err).decode("UTF-8")
 
 
 def get_keychain_path():

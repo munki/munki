@@ -92,7 +92,7 @@ def hdiutil_info():
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        display.display_error(u'hdiutil info error: %s', err)
+        display.display_error(u'hdiutil info error: %s', err.decode("UTF-8"))
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
@@ -245,7 +245,8 @@ def unmountdmg(mountpoint):
                                 stderr=subprocess.PIPE)
         (dummy_output, err) = proc.communicate()
         if proc.returncode:
-            display.display_warning('Failed to unmount %s: %s', mountpoint, err)
+            display.display_warning(
+                'Failed to unmount %s: %s', mountpoint, err.decode("UTF-8"))
 
 
 if __name__ == '__main__':
