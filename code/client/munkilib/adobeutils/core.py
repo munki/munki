@@ -97,9 +97,9 @@ class AdobeInstallProgressMonitor(object):
         proc = subprocess.Popen(['/bin/ls', '-t1', logpath],
                                 bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, dummy_err) = proc.communicate()
+        output = proc.communicate()[0].decode('UTF-8')
         if output:
-            firstitem = str(output).splitlines()[0]
+            firstitem = output.splitlines()[0]
             if firstitem.endswith(".log"):
                 # store path of most recently modified log file
                 recent_adobe_log = os.path.join(logpath, firstitem)
@@ -144,9 +144,9 @@ class AdobeInstallProgressMonitor(object):
             proc = subprocess.Popen(cmd, bufsize=-1,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, dummy_err) = proc.communicate()
+            output = proc.communicate()[0].decode('UTF-8')
             if output:
-                lines = str(output).splitlines()
+                lines = output.splitlines()
                 completed_payloads = len(lines)
 
                 if (logfile not in self.payload_count

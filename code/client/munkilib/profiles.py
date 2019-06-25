@@ -54,7 +54,7 @@ def config_profile_info(ignore_cache=False):
     # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0]
+    stdout = proc.communicate()[0].decode('UTF-8')
     if proc.returncode != 0:
         display.display_error(
             'Could not obtain configuration profile info: %s' % stdout)
@@ -162,7 +162,8 @@ def read_signed_profile(profile_path):
     if proc.returncode:
         # security cms -D couldn't decode the file
         display.display_error(
-            'Error reading profile %s: %s' % (profile_path, stderr))
+            'Error reading profile %s: %s'
+            % (profile_path, stderr.decode('UTF-8')))
         return {}
     try:
         return FoundationPlist.readPlistFromString(stdout)
@@ -207,11 +208,11 @@ def install_profile(profile_path, profile_identifier):
     # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0]
+    stdout = proc.communicate()[0].decode('UTF-8')
     if proc.returncode != 0:
         display.display_error(
             u'Profile %s installation failed: %s'
-            % (os.path.basename(profile_path), stdout.decode('UTF-8')))
+            % (os.path.basename(profile_path), stdout))
         return False
     if profile_identifier:
         record_profile_receipt(profile_path, profile_identifier)
@@ -232,7 +233,7 @@ def remove_profile(identifier):
     # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0]
+    stdout = proc.communicate()[0].decode('UTF-8')
     if proc.returncode != 0:
         display.display_error(
             'Profile %s removal failed: %s' % (identifier, stdout))

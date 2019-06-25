@@ -24,7 +24,7 @@ def launchctld(identifier):
             cmd = ['/bin/launchctl', 'load', path]
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            output, err = proc.communicate()
+            output = proc.communicate()[0].decode("UTF-8")
             return output
         except KeyError:
             pass

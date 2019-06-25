@@ -81,11 +81,11 @@ def job_info(job_label):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    output = proc.communicate()[0]
+    output = proc.communicate()[0].decode('UTF-8')
     if proc.returncode or not output:
         return info
     else:
-        lines = output.decode("UTF-8").splitlines()
+        lines = output.splitlines()
         # search launchctl list output for our job label
         job_lines = [item for item in lines
                      if item.endswith('\t' + job_label)]
@@ -116,7 +116,7 @@ def stop_job(job_label):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    err = proc.communicate()[1]
+    err = proc.communicate()[1].decode('UTF-8')
     if proc.returncode:
         raise LaunchdJobException(err)
 
@@ -128,7 +128,7 @@ def remove_job(job_label):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    err = proc.communicate()[1]
+    err = proc.communicate()[1].decode('UTF-8')
     if proc.returncode:
         raise LaunchdJobException(err)
 
@@ -174,7 +174,7 @@ class Job(object):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        err = proc.communicate()[1]
+        err = proc.communicate()[1].decode('UTF-8')
         if proc.returncode:
             raise LaunchdJobException(err)
 

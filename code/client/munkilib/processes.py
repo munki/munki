@@ -37,9 +37,9 @@ def get_running_processes():
                             shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (output, dummy_err) = proc.communicate()
+    output = proc.communicate()[0].decode('UTF-8')
     if proc.returncode == 0:
-        proc_list = [item for item in output.decode("UTF-8").splitlines()
+        proc_list = [item for item in output.splitlines()
                      if item.startswith('/')]
         launchcfmapp = ('/System/Library/Frameworks/Carbon.framework'
                         '/Versions/A/Support/LaunchCFMApp')
@@ -49,10 +49,10 @@ def get_running_processes():
                                     shell=False, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, dummy_err) = proc.communicate()
+            output = proc.communicate()[0].decode('UTF-8')
             if proc.returncode == 0:
                 carbon_apps = [item[len(launchcfmapp)+1:]
-                               for item in output.decode("UTF-8").splitlines()
+                               for item in output.splitlines()
                                if item.startswith(launchcfmapp)]
                 if carbon_apps:
                     proc_list.extend(carbon_apps)
@@ -138,7 +138,7 @@ def find_processes(user=None, exe=None):
     argv = ['/bin/ps', '-x', '-w', '-w', '-a', '-o', 'pid=,user=,comm=']
     ps_proc = subprocess.Popen(
         argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, dummy_stderr) = ps_proc.communicate()
+    stdout = ps_proc.communicate()[0].decode('UTF-8')
 
     pids = {}
 

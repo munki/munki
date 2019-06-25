@@ -178,7 +178,7 @@ def getPIDforProcessName(processname):
                 pass
             else:
                 if process.find(processname) != -1:
-                    return str(pid)
+                    return pid
 
     return 0
 

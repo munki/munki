@@ -554,7 +554,7 @@ def get_hardware_info():
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_error) = proc.communicate()
+    output = proc.communicate()[0]
     try:
         plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array
@@ -574,7 +574,7 @@ def get_ip_addresses(kind):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_error) = proc.communicate()
+    output = proc.communicate()[0]
     try:
         plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array of length 1

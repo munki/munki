@@ -14,25 +14,13 @@ try:
 except ImportError:
     from urllib.parse import quote
 
-from xml.parsers.expat import ExpatError
-
 from munkilib.munkirepo import Repo, RepoError
-
 from munkilib.wrappers import get_input, readPlistFromString, PlistReadError
 
 DEBUG = False
 
 # TODO: make this more easily configurable
 CURL_CMD = '/usr/bin/curl'
-
-
-def get_input(prompt=None):
-    '''Python 2 and 3 wrapper for raw_input/input'''
-    try:
-        return raw_input(prompt)
-    except NameError:
-        # raw_input doesn't exist in Python 3
-        return input(prompt)
 
 
 class CurlError(Exception):
@@ -116,7 +104,8 @@ class MWA2APIRepo(Repo):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, err = proc.communicate()
-
+        output = output.decode('UTF-8')
+        err = err.decode('UTF-8')
         if DEBUG:
             # save our curl_directives for debugging
             fileref = open(directivepath)

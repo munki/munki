@@ -95,7 +95,7 @@ def getIdleSeconds():
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    ioreglines = str(output).splitlines()
+    ioreglines = output.decode("UTF-8").splitlines()
     idle_time = 0
     regex = re.compile(r'"?HIDIdleTime"?\s+=\s+(\d+)')
     for line in ioreglines:
@@ -117,7 +117,7 @@ def networkUp():
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    lines = str(output).splitlines()
+    lines = output.decode('UTF-8').splitlines()
     for line in lines:
         if 'inet' in line:
             parts = line.split()

@@ -125,9 +125,9 @@ def set_custom_catalogurl(catalog_url):
             bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (output, err) = proc.communicate()
         if output:
-            display.display_detail(output)
+            display.display_detail(output.decode('UTF-8'))
         if err:
-            display.display_error(err)
+            display.display_error(err.decode('UTF-8'))
 
 
 def reset_original_catalogurl():
@@ -163,9 +163,9 @@ def reset_original_catalogurl():
                                 stderr=subprocess.PIPE)
         (output, err) = proc.communicate()
         if output:
-            display.display_detail(output)
+            display.display_detail(output.decode('UTF-8'))
         if err:
-            display.display_error(err)
+            display.display_error(err.decode('UTF-8'))
 
     # remove ORIGINAL_CATALOG_URL_KEY
     CFPreferencesSetValue(

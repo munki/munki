@@ -119,8 +119,8 @@ def currentGUIusers():
     proc = subprocess.Popen('/usr/bin/who', shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_err) = proc.communicate()
-    lines = str(output).splitlines()
+    output = proc.communicate()[0].decode("UTF-8")
+    lines = output.splitlines()
     for line in lines:
         if 'console' in line:
             parts = line.split()
@@ -139,7 +139,7 @@ def pythonScriptRunning(scriptname):
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
+    out = proc.communicate()[0].decode("UTF-8")
     mypid = os.getpid()
     lines = str(out).splitlines()
     for line in lines:
@@ -177,7 +177,7 @@ def osascript(osastring):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode != 0:
-        print('Error: ', err, file=sys.stderr)
+        print('Error: ', err.decode('UTF-8'), file=sys.stderr)
     if out:
         return out.decode('UTF-8').rstrip('\n')
     return u''
