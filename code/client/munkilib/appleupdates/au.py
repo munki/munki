@@ -229,7 +229,7 @@ class AppleUpdates(object):
         proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = proc.communicate()[0].decode('UTF-8')
+        output = proc.communicate()[0] # don't decode because we need the bytes
 
         current_apple_packages_checksum = hashlib.sha256(output).hexdigest()
         old_apple_packages_checksum = prefs.pref(
