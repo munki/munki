@@ -323,7 +323,9 @@ class AppleUpdateSync(object):
                 package['MetadataURL'] = self.rewrite_url(
                     package['MetadataURL'])
         distributions = product['Distributions']
-        for dist_lang in distributions.keys():
+        # coerce distributions.keys() to list so we don't mutate the dictionary
+        # while enumerating it in Python 3
+        for dist_lang in list(distributions.keys()):
             distributions[dist_lang] = self.rewrite_url(
                 distributions[dist_lang])
 
@@ -475,7 +477,7 @@ class AppleUpdateSync(object):
             prefs.pref('AppleSoftwareUpdateLanguages') or ['English'])
         preferred_langs = (
             NSBundle.preferredLocalizationsFromArray_forPreferences_(
-                list_of_localizations, localization_preferences))
+                list(list_of_localizations), localization_preferences))
         if preferred_langs:
             return preferred_langs[0]
 
