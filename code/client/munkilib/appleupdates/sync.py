@@ -513,7 +513,7 @@ class AppleUpdateSync(object):
         if product:
             distributions = product.get('Distributions', {})
             if distributions:
-                available_languages = distributions.keys()
+                available_languages = list(distributions.keys())
                 if language:
                     preferred_language = language
                 else:
