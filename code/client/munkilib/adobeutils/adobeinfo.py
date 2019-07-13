@@ -156,7 +156,7 @@ def get_payload_info(dirpath):
                     installsize = ''
                     for node in totalsizes[0].childNodes:
                         installsize += node.nodeValue
-                    payloadinfo['installed_size'] = int(installsize)/1024
+                    payloadinfo['installed_size'] = int(installsize/1024)
 
     return payloadinfo
 
@@ -593,14 +593,14 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                                 package.get('Condition') == '' or
                                 '[installLanguage]==en_US' in
                                 package.get('Condition', '')):
-                            installed_size += package.get(
-                                'ExtractSize', 0) / 1024
+                            installed_size += int(package.get(
+                                'ExtractSize', 0) / 1024)
                             # We get much closer to Adobe's "HDSetup" calculated
                             # install space requirement if we include both the
                             # DownloadSize and ExtractSize data
                             # (DownloadSize is just the zip file size)
-                            installed_size += package.get(
-                                'DownloadSize', 0) / 1024
+                            installed_size += int(package.get(
+                                'DownloadSize', 0) / 1024)
                 # Add another 300MB for the CC app and plumbing in case they've
                 # never been installed on the system
                 installed_size += 307200
