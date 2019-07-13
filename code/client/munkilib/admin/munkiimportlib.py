@@ -230,11 +230,6 @@ def find_matching_pkginfo(repo, pkginfo):
     """Looks through repo catalogs looking for matching pkginfo
     Returns a pkginfo dictionary, or an empty dict"""
 
-    def compare_version_keys(value_a, value_b):
-        """Internal comparison function for use in sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(value_b),
-                   pkgutils.MunkiLooseVersion(value_a))
-
     try:
         catdb = make_catalog_db(repo)
     except CatalogReadException as err:
