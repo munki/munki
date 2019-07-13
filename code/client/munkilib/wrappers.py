@@ -105,17 +105,13 @@ def writePlistToString(data):
 # pylint: enable=C0103
 
 
-# remap raw_input in Python 3
+# Python 2 and 3 wrapper for raw_input/input
 try:
-    _ = raw_input
+    # Python 2
+    get_input = raw_input # pylint: disable=raw_input-builtin
 except NameError:
-    raw_input = input
-
-def get_input(prompt=None):
-    '''Python 2 and 3 wrapper for raw_input/input'''
-    if not prompt:
-        prompt = ""
-    return raw_input(prompt)
+    # Python 3
+    get_input = input # pylint: disable=input-builtin
 
 
 # remap basestring in Python 3
