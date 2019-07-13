@@ -24,10 +24,10 @@ Socket communications code adapted from autopkg's PkgCreator by Per Olofsson
 from __future__ import absolute_import, print_function
 
 import os
-import plistlib
 import select
 import socket
 
+from ..wrappers import writePlistToString
 
 AUTHRESTARTD_SOCKET = "/var/run/authrestartd"
 
@@ -52,14 +52,13 @@ class AuthRestartClient(object):
 
     def send_request(self, request):
         '''Send a request to authrestartd'''
-        self.socket.send(plistlib.writePlistToString(request))
-        with os.fdopen(self.socket.fileno()) as fileref:
-            # use select so we don't hang indefinitely if authrestartd dies
-            ready = select.select([fileref], [], [], 2)
-            if ready[0]:
-                reply = fileref.read()
-            else:
-                reply = ''
+        self.socket.send(writePlistToString(request))
+        # use select so we don't hang indefinitely if authrestartd dies
+        ready = select.select([self.socket.fileno()], [], [], 2)
+        if ready[0]:
+            reply = self.socket.recv(8192).decode("UTF-8")
+        else:
+            reply = ''
 
         if reply:
             return reply.rstrip()
@@ -177,6 +176,7 @@ def test():
     '''A function for doing some basic testing'''
     import getpass
     import pwd
+    from ..wrappers import get_input
 
     print('FileVault is active: %s' % fv_is_active())
     print('Recovery key is present: %s' % verify_recovery_key_present())
@@ -191,7 +191,7 @@ def test():
         else:
             print('store_password failed')
     print('Can attempt auth restart: %s' % verify_can_attempt_auth_restart())
-    answer = raw_input('Test auth restart (y/n)? ')
+    answer = get_input('Test auth restart (y/n)? ')
     if answer.lower().startswith('y'):
         print('Attempting auth restart...')
         if restart():
