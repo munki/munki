@@ -103,7 +103,7 @@ def getIdleSeconds():
         if idle_re:
             idle_time = idle_re.group(1)
             break
-    return int(int(idle_time)/1000000000)
+    return int(int(idle_time)/1000000000) # pylint: disable=old-division
 
 
 def networkUp():

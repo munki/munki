@@ -90,13 +90,13 @@ def readPlist(filepath):
 def readPlistFromString(data):
     '''Read a plist data from a string. Return the root object.'''
     try:
-        plistData = buffer(data)
+        plistData = memoryview(data)
     except TypeError as err:
         raise NSPropertyListSerializationException(err)
     except NameError:
-        # buffer replaced with memoryview in Python 3
+        # memoryview not available, use older buffer object
         try:
-            plistData = memoryview(data)
+            plistData = buffer(data) # pylint: disable=buffer-builtin
         except TypeError as err:
             raise NSPropertyListSerializationException(err)
     dataObject, dummy_plistFormat, error = (

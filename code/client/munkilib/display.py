@@ -89,6 +89,7 @@ def str_to_ascii(a_string):
 
 def _to_unicode(obj, encoding='UTF-8'):
     """Coerces obj to unicode"""
+    # pylint: disable=basestring-builtin, unicode-builtin
     try:
         if isinstance(obj, basestring):
             if not isinstance(obj, unicode):

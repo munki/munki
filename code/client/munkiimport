@@ -577,7 +577,7 @@ def main():
                 uploaded_pkgpath.partition('/')[2])
             itemsize = int(os.path.getsize(uninstaller_item))
             itemhash = munkihash.getsha256hash(uninstaller_item)
-            pkginfo['uninstaller_item_size'] = int(itemsize/1024)
+            pkginfo['uninstaller_item_size'] = int(itemsize/1024) # pylint: disable=old-division
             pkginfo['uninstaller_item_hash'] = itemhash
 
     # add icon to pkginfo if in repository

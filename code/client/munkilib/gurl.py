@@ -317,10 +317,10 @@ class Gurl(NSObject):
         except (KeyError, IOError):
             return {}
         try:
-            data = buffer(stored_plist_bytestr)
-        except NameError:
-            # buffer replaced by memoryview in Python 3
             data = memoryview(stored_plist_bytestr)
+        except NameError:
+            # no memoryview; use buffer instead
+            data = buffer(stored_plist_bytestr) # pylint: disable=buffer-builtin
         dataObject, _plistFormat, error = (
             NSPropertyListSerialization.
             propertyListFromData_mutabilityOption_format_errorDescription_(
@@ -482,7 +482,7 @@ class Gurl(NSObject):
             self, _session, _task, response, completionHandler):
         '''NSURLSessionDataDelegate method'''
         if CALLBACK_HELPER_AVAILABLE:
-            completionHandler.__block_signature__ = objc_method_signature('v@i')
+            completionHandler.__block_signature__ = objc_method_signature(b'v@i')
         self.handleResponse_withCompletionHandler_(response, completionHandler)
 
     def connection_didReceiveResponse_(self, _connection, response):
@@ -555,7 +555,7 @@ class Gurl(NSObject):
             'URLSession_task_willPerformHTTPRedirection_newRequest_'
             'completionHandler_')
         if CALLBACK_HELPER_AVAILABLE:
-            completionHandler.__block_signature__ = objc_method_signature('v@@')
+            completionHandler.__block_signature__ = objc_method_signature(b'v@@')
         self.handleRedirect_newRequest_withCompletionHandler_(
             response, request, completionHandler)
     # pylint: enable=too-many-arguments
@@ -663,7 +663,7 @@ class Gurl(NSObject):
             self, _session, _task, challenge, completionHandler):
         '''NSURLSessionTaskDelegate method'''
         if CALLBACK_HELPER_AVAILABLE:
-            completionHandler.__block_signature__ = objc_method_signature('v@i@')
+            completionHandler.__block_signature__ = objc_method_signature(b'v@i@')
         self.log('URLSession_task_didReceiveChallenge_completionHandler_')
         self.handleChallenge_withCompletionHandler_(
             challenge, completionHandler)
@@ -687,8 +687,10 @@ class Gurl(NSObject):
                 pass
         self.bytesReceived += len(data)
         if self.expectedLength != NSURLResponseUnknownLength:
+            # pylint: disable=old-division
             self.percentComplete = int(
                 float(self.bytesReceived)/float(self.expectedLength) * 100.0)
+            # pylint: enable=old-division
 
     def URLSession_dataTask_didReceiveData_(self, _session, _task, data):
         '''NSURLSessionDataDelegate method'''

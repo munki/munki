@@ -24,6 +24,7 @@ except ImportError:
     from urllib.parse import urlparse
 
 from munkilib.munkirepo import Repo, RepoError
+from munkilib.wrappers import get_input
 
 
 # NetFS share mounting code borrowed and liberally adapted from Michael Lynn's
@@ -73,6 +74,7 @@ class ShareAuthenticationNeededException(ShareMountException):
 
 def unicodeize(path):
     '''Convert a path to unicode'''
+    # pylint: disable=unicode-builtin
     # Python 3 all paths are unicode!
     if sys.version_info.major > 2:
         return path
@@ -150,7 +152,7 @@ def mount_share_url(share_url):
     try:
         mountpoint = mount_share(share_url)
     except ShareAuthenticationNeededException:
-        username = raw_input('Username: ')
+        username = get_input('Username: ')
         password = getpass.getpass()
         mountpoint = mount_share_with_credentials(share_url, username, password)
     return mountpoint

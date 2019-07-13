@@ -40,7 +40,7 @@ from munkilib.wrappers import unicode_or_str
 # define a unicode function for Python 3
 try:
     # Python 2
-    _ = unicode
+    _ = unicode # pylint: disable=unicode-builtin
 except NameError:
     # Python 3
     unicode = str
