@@ -119,7 +119,7 @@ def enough_disk_space(item_pl, installlist=None,
                                     item_pl.get('name'))
         display.display_warning(
             '    %sMB needed; %sMB available',
-            diskspaceneeded/1024, availablediskspace/1024)
+            int(diskspaceneeded/1024), int(availablediskspace/1024))
     return False
 
 

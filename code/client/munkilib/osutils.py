@@ -96,6 +96,7 @@ def listdir(path):
     # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
+    # pylint: disable=unicode-builtin
     if isinstance(path, str):
         try:
             path = unicode(path, 'utf-8')

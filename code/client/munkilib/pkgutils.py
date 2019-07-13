@@ -94,6 +94,8 @@ class MunkiLooseVersion(version.LooseVersion):
     "10.6" and "10.6.0" as equal'''
 
     def __init__(self, vstring=None):
+        """init method"""
+        # pylint: disable=unicode-builtin
         if vstring is None:
             # treat None like an empty string
             self.parse('')
@@ -104,6 +106,7 @@ class MunkiLooseVersion(version.LooseVersion):
                     # convert to string so version.LooseVersion doesn't choke
                     vstring = vstring.encode('UTF-8')
             except NameError:
+                # python 3
                 pass
             self.parse(str(vstring))
 
@@ -138,6 +141,10 @@ class MunkiLooseVersion(version.LooseVersion):
                 if cmp_result:
                     return cmp_result
         return cmp_result
+
+    def __hash__(self):
+        """Hash method"""
+        return hash(self.version)
 
     def __eq__(self, other):
         """Equals comparison"""

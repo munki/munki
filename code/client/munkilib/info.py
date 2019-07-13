@@ -53,7 +53,7 @@ from . import FoundationPlist
 from .wrappers import unicode_or_str
 
 try:
-    _ = xrange
+    _ = xrange # pylint: disable=xrange-builtin
 except NameError:
     # no xrange in Python 3
     xrange = range
@@ -626,7 +626,7 @@ def available_disk_space(volumepath='/'):
             'Error getting disk space in %s: %s', volumepath, str(err))
         return 0
      # f_bavail matches df(1) output
-    return int(stat_val.f_frsize * stat_val.f_bavail / 1024)
+    return int(stat_val.f_frsize * stat_val.f_bavail / 1024) # pylint: disable=old-division
 
 
 def get_os_build():

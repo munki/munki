@@ -26,7 +26,7 @@ libc = CDLL("/usr/lib/libc.dylib")
 # pylint: enable=invalid-name
 
 try:
-    _ = xrange
+    _ = xrange # pylint: disable=xrange-builtin
 except NameError:
     # no xrange in Python 3
     xrange = range

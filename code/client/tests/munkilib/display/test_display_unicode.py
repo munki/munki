@@ -27,10 +27,10 @@ from munkilib import display
 
 
 MSG_UNI = u'Günther\'s favorite thing is %s'
-MSG_STR = 'Günther\'s favorite thing is %s'
+MSG_STR = u'Günther\'s favorite thing is %s'.encode('UTF-8')
 
 ARG_UNI = u'Günther'
-ARG_STR = 'Günther'
+ARG_STR = u'Günther'.encode('UTF-8')
 
 
 def log(msg, logname=''):

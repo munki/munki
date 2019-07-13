@@ -160,12 +160,9 @@ def get_all_items_with_name(name, cataloglist):
       list of pkginfo items; sorted with newest version first. No precedence
       is given to catalog order.
     """
-    def compare_item_versions(item_a, item_b):
-        """Internal comparison function for use with sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(item_b['version']),
-                   pkgutils.MunkiLooseVersion(item_a['version']))
 
     def item_version(item):
+        """Returns a MunkiLooseVersion for pkginfo item"""
         return pkgutils.MunkiLooseVersion(item['version'])
 
     itemlist = []
@@ -174,7 +171,7 @@ def get_all_items_with_name(name, cataloglist):
 
     display.display_debug1('Looking for all items matching: %s...', name)
     for catalogname in cataloglist:
-        if not catalogname in _CATALOG.keys():
+        if not catalogname in list(_CATALOG.keys()):
             # in case catalogname refers to a non-existent catalog...
             continue
         # is name in the catalog name table?
@@ -207,7 +204,7 @@ def get_auto_removal_items(installinfo, cataloglist):
     """
     autoremovalnames = []
     for catalogname in cataloglist or []:
-        if catalogname in _CATALOG.keys():
+        if catalogname in list(_CATALOG.keys()):
             autoremovalnames += _CATALOG[catalogname]['autoremoveitems']
 
     processed_installs_names = [split_name_and_version(item)[0]
@@ -429,10 +426,6 @@ def get_item_detail(name, cataloglist, vers='',
     If no version is given at all, the latest version is assumed.
     Returns a pkginfo item, or None.
     """
-    def compare_versions(item_a, item_b):
-        """Internal comparison function for use in sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(item_b),
-                   pkgutils.MunkiLooseVersion(item_a))
 
     rejected_items = []
     machine = info.getMachineFacts()

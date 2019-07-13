@@ -40,7 +40,7 @@ from . import reports
 from . import FoundationPlist
 
 try:
-    _ = xrange
+    _ = xrange # pylint: disable=xrange-builtin
 except NameError:
     # no xrange in Python 3
     xrange = range
