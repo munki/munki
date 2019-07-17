@@ -50,7 +50,7 @@ from objc import super
 # pylint: disable=E0611
 
 
-from Foundation import (NSBundle, NSRunLoop, NSDate,
+from Foundation import (NSBundle, NSRunLoop, NSData, NSDate,
                         NSObject, NSURL, NSURLConnection,
                         NSMutableURLRequest,
                         NSURLRequestReloadIgnoringLocalCacheData,
@@ -316,11 +316,8 @@ class Gurl(NSObject):
                 self.destination_path, self.GURL_XATTR)
         except (KeyError, IOError):
             return {}
-        try:
-            data = memoryview(stored_plist_bytestr)
-        except NameError:
-            # no memoryview; use buffer instead
-            data = buffer(stored_plist_bytestr) # pylint: disable=buffer-builtin
+        data = NSData.dataWithBytes_length_(
+            stored_plist_bytestr, len(stored_plist_bytestr))
         dataObject, _plistFormat, error = (
             NSPropertyListSerialization.
             propertyListFromData_mutabilityOption_format_errorDescription_(
