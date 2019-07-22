@@ -49,6 +49,9 @@ def hash_icons(repo, output_fn=None):
     if '_icon_hashes.plist' in icon_list:
         icon_list.remove('_icon_hashes.plist')
     for icon_ref in icon_list:
+        # Skipping Synology index files
+        if '@eaDir' in icon_ref:
+            continue
         if output_fn:
             output_fn("Hashing %s..." % (icon_ref))
         # Try to read the icon file
@@ -186,6 +189,10 @@ def process_pkgsinfo(repo, options, output_fn=None):
 
     # Walk through the pkginfo files
     for pkginfo_ref in pkgsinfo_list:
+        # Skipping Synology index files
+        if '@eaDir' in pkginfo_ref:
+            continue
+        
         # Try to read the pkginfo file
         try:
             data = repo.get(pkginfo_ref)
