@@ -132,7 +132,7 @@ def get_localization_strings(dom):
                     text = strings.firstChild.wholeText
                     # strings data can be parsed by FoundationPlist
                     strings_data = FoundationPlist.readPlistFromString(
-                        "\n" + text)
+                        ("\n" + text).encode("UTF-8"))
                 except (AttributeError,
                         FoundationPlist.FoundationPlistException):
                     strings_data = {}
