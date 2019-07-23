@@ -65,10 +65,10 @@ def make_dmg(pkgpath):
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     while True:
-        output = proc.stdout.readline()
+        output = proc.stdout.readline().decode('UTF-8')
         if not output and (proc.poll() != None):
             break
-        line = output.rstrip('\n').decode('UTF-8')
+        line = output.rstrip('\n')
         if line:
             print(line)
         sys.stdout.flush()
