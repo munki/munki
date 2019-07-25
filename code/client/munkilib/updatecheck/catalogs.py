@@ -311,25 +311,22 @@ def analyze_installed_pkgs():
     installedpkgsmatchedtoname = {}
     for name in itemname_to_pkgid:
         # name is a Munki install item name
-        somepkgsfound = False
-        allpkgsfound = True
+        foundpkgcount = 0
         for pkgid in itemname_to_pkgid[name]:
             if pkgid in installedpkgs:
-                somepkgsfound = True
+                foundpkgcount += 1
                 if not name in installedpkgsmatchedtoname:
                     installedpkgsmatchedtoname[name] = []
                 # record this pkgid for Munki install item name
                 installedpkgsmatchedtoname[name].append(pkgid)
+        if foundpkgcount > 0:
+            if foundpkgcount == len(itemname_to_pkgid[name]):
+                # we found all receipts by pkgid on disk
+                installed.append(name)
             else:
-                # didn't find pkgid in installedpkgs
-                allpkgsfound = False
-        if allpkgsfound:
-            # we found all receipts by pkgid on disk
-            installed.append(name)
-        elif somepkgsfound:
-            # we found only some receipts for the item
-            # on disk
-            partiallyinstalled.append(name)
+                # we found only some receipts for the item
+                # on disk
+                partiallyinstalled.append(name)
 
     # we pay special attention to the items that seem partially installed.
     # we need to see if there are any packages that are unique to this item
