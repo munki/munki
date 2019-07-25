@@ -525,7 +525,28 @@ chmod +x "$PYTHONROOT/usr/local/munki"
 # Create package info file.
 PYTHONSIZE=$(du -sk $PYTHONROOT | cut -f1)
 NFILES=$(echo $(find $PYTHONROOT/ | wc -l))
-makeinfo python "$PKGTMP/info" "$PKGID" "$VERSION" $PYTHONROOT $NFILES norestart
+makeinfo python "$PKGTMP/info" "$PKGID" "$PYTHONVERSION" $PYTHONROOT $NFILES norestart
+
+#######################
+## no python choice  ##
+#######################
+
+echo "Creating no-python package template..."
+
+# Create directory structure.
+NOPYTHONROOT="$PKGTMP/munki_no_python"
+mkdir -m 1775 "$NOPYTHONROOT"
+mkdir -p "$NOPYTHONROOT/usr/local/munki"
+chmod -R 755 "$NOPYTHONROOT/usr"
+# Create symlink
+ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/python"
+# Set permissions.
+chmod -R go-w "$NOPYTHONROOT/usr/local/munki"
+chmod +x "$NOPYTHONROOT/usr/local/munki"
+# Create package info file.
+NOPYTHONSIZE=$(du -sk $NOPYTHONROOT | cut -f1)
+NFILES=$(echo $(find $NOPYTHONROOT/ | wc -l))
+makeinfo no_python "$PKGTMP/info" "$PKGID" "$VERSION" $NOPYTHONROOT $NFILES norestart
 
 
 #############################
@@ -551,12 +572,14 @@ APPTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lpro
 LAUNCHDTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionTitle)
 APPUSAGETITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionTitle)
 PYTHONTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_python/English.lproj/Description" IFPkgDescriptionTitle)
+NOPYTHONTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_no_python/English.lproj/Description" IFPkgDescriptionTitle)
 COREDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lproj/Description" IFPkgDescriptionDescription)
 ADMINDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionDescription)
 APPDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionDescription)
 LAUNCHDDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionDescription)
 APPUSAGEDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionDescription)
 PYTHONDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_python/English.lproj/Description" IFPkgDescriptionDescription)
+NOPYTHONDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_no_python/English.lproj/Description" IFPkgDescriptionDescription)
 CONFOUTLINE=""
 CONFCHOICE=""
 CONFREF=""
@@ -592,6 +615,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="launchd"/>
         <line choice="app_usage"/>
         <line choice="python"/>
+        <line choice="no_python"/>
         $CONFOUTLINE
     </choices-outline>
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -612,6 +636,9 @@ cat > "$DISTFILE" <<EOF
     <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
         <pkg-ref id="$PKGID.python"/>
     </choice>
+    <choice id="no_python" title="$NOPYTHONTITLE" description="$NOPYTHONDESC" selected='choices["python"].selected == false' enabled='choices["python"].selected == false'>
+        <pkg-ref id="$PKGID.no_python"/>
+    </choice>
     $CONFCHOICE
     <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
@@ -619,6 +646,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$LAUNCHDVERSION" auth="Root" onConclusion="RequireRestart">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.python" installKBytes="$PYTHONSIZE" version="$PYTHONVERSION" auth="Root">${PKGPREFIX}munkitools_python-$PYTHONVERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.no_python" installKBytes="$NOPYTHONSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_no_python-$VERSION.pkg</pkg-ref>
     $CONFREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
@@ -651,12 +679,13 @@ sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 sudo chown -hR root:wheel "$PYTHONROOT/usr"
+sudo chown -hR root:wheel "$NOPYTHONROOT/usr"
 
 ######################
 ## Run pkgbuild ##
 ######################
 CURRENTUSER=$(whoami)
-for pkg in core admin app launchd app_usage python; do
+for pkg in core admin app launchd app_usage python no_python; do
     case $pkg in
         "app")
             ver="$APPSVERSION"
