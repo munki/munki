@@ -106,7 +106,7 @@ def blocking_applications_running(pkginfoitem):
         # from 'installs' list if it exists
         appnames = [os.path.basename(item.get('path'))
                     for item in pkginfoitem.get('installs', [])
-                    if item['type'] == 'application']
+                    if item.get('type') == 'application']
 
     display.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
