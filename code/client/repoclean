@@ -120,13 +120,15 @@ class RepoCleaner(object):
             manifests_list = self.repo.itemlist('manifests')
         except munkirepo.RepoError as err:
             self.errors.append(
-                "Repo error getting list of manifests: %s" % unicode_or_str(err))
+                "Repo error getting list of manifests: %s"
+                % unicode_or_str(err))
             manifests_list = []
         for manifest_name in manifests_list:
             try:
                 data = self.repo.get(os.path.join('manifests', manifest_name))
                 manifest = readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, PlistReadError) as err:
+            except (munkirepo.RepoError, IOError,
+                    OSError, PlistReadError) as err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (manifest_name, unicode_or_str(err)))
                 continue
@@ -157,7 +159,8 @@ class RepoCleaner(object):
             pkgsinfo_list = self.repo.itemlist('pkgsinfo')
         except munkirepo.RepoError as err:
             self.errors.append(
-                "Repo error getting list of pkgsinfo: %s" % unicode_or_str(err))
+                "Repo error getting list of pkgsinfo: %s"
+                % unicode_or_str(err))
             pkgsinfo_list = []
 
         for pkginfo_name in pkgsinfo_list:
@@ -165,7 +168,8 @@ class RepoCleaner(object):
             try:
                 data = self.repo.get(pkginfo_identifier)
                 pkginfo = readPlistFromString(data)
-            except (munkirepo.RepoError, IOError, OSError, PlistReadError) as err:
+            except (munkirepo.RepoError, IOError,
+                    OSError, PlistReadError) as err:
                 self.errors.append("Unexpected error for %s: %s"
                                    % (pkginfo_name, unicode_or_str(err)))
                 continue
@@ -181,8 +185,8 @@ class RepoCleaner(object):
             uninstallpkgpath = pkginfo.get('uninstaller_item_location', '')
             uninstallpkgsize = pkginfo.get('uninstaller_item_size', 0) * 1024
 
-            # track required items; if these are in "Foo-1.0" format, we need to
-            # note these so we don't delete the specific referenced version
+            # track required items; if these are in "Foo-1.0" format, we need
+            # to note these so we don't delete the specific referenced version
             if 'requires' in pkginfo:
                 dependencies = pkginfo['requires']
                 # fix things if 'requires' was specified as a string
@@ -208,7 +212,8 @@ class RepoCleaner(object):
                 if is_a_string(update_items):
                     update_items = [update_items]
                 for update_item in update_items:
-                    update_item_name, dummy_vers = name_and_version(update_item)
+                    (update_item_name,
+                     dummy_vers) = name_and_version(update_item)
                     if update_item_name in self.manifest_items:
                         # add our name
                         self.manifest_items.add(name)
@@ -264,7 +269,8 @@ class RepoCleaner(object):
                     print("[not in any manifests]")
                 print("versions:")
             index = 0
-            for version in sorted(list(self.pkginfodb[key].keys()), key=LooseVersion):
+            for version in sorted(list(self.pkginfodb[key].keys()),
+                                  key=LooseVersion, reverse=True):
                 line_info = ''
                 index += 1
                 item_list = self.pkginfodb[key][version]
@@ -318,7 +324,8 @@ class RepoCleaner(object):
         print("pkg space savings:       %s" % pkg_size)
 
         if self.errors:
-            print("\nErrors encountered when processing repo:\n", file=sys.stderr)
+            print("\nErrors encountered when processing repo:\n",
+                  file=sys.stderr)
             for error in self.errors:
                 print(error, file=sys.stderr)
 
@@ -326,7 +333,8 @@ class RepoCleaner(object):
         '''Deletes items from the repo'''
         for item in self.items_to_delete:
             if 'resource_identifier' in item:
-                print('Removing %s' % item['resource_identifier'], file=sys.stderr)
+                print('Removing %s' % item['resource_identifier'],
+                      file=sys.stderr)
                 try:
                     self.repo.delete(item['resource_identifier'])
                 except munkirepo.RepoError as err:
@@ -381,7 +389,6 @@ class RepoCleaner(object):
         if errors:
             print('\nThe following issues occurred while building catalogs:\n')
             print(errors)
-
 
     def clean(self):
         '''Clean our repo!'''
