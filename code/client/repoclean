@@ -80,17 +80,28 @@ class RepoCleaner(object):
 
         def human_readable(size_in_bytes):
             """Returns sizes in human-readable units."""
-            units = [(" bytes", 2**10),
+            units = ((" bytes", 2**10),
                      (" KB", 2**20),
                      (" MB", 2**30),
                      (" GB", 2**40),
-                     (" TB", 2**50),]
-            for suffix, limit in units:
-                if size_in_bytes > limit:
+                     (" TB", 2**50),
+                     (" PB", 2**60),)
+            # set suffix and limit to last items in units in case the value
+            # is so big it falls off the edge
+            suffix = units[-1][0]
+            limit = units[-1][1]
+            # find an appropriate suffix
+            for test_suffix, test_limit in units:
+                if size_in_bytes > (test_limit - 1):
                     continue
                 else:
-                    return str(
-                        round(size_in_bytes/float(limit/2**10), 1)) + suffix
+                    suffix = test_suffix
+                    limit = test_limit
+                    break
+            if limit == 2**10:
+                # no decimal since "1.0 bytes" is silly
+                return str(size_in_bytes) + " bytes"
+            return str(round(size_in_bytes/float(limit/2**10), 1)) + suffix
 
         count = 0
         pkginfo_total_size = 0
