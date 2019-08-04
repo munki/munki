@@ -23,6 +23,7 @@ Logging functions for Munki
 """
 from __future__ import absolute_import, print_function
 
+import codecs
 import logging
 import logging.handlers
 import os
@@ -51,9 +52,9 @@ def log(msg, logname=''):
     else:
         logpath = os.path.join(os.path.dirname(prefs.pref('LogFile')), logname)
     try:
-        fileobj = open(logpath, mode='a', buffering=1)
+        fileobj = codecs.open(logpath, mode='a', buffering=1, encoding='UTF-8')
         try:
-            print(time.strftime(formatstr), msg, file=fileobj)
+            fileobj.write("%s %s\n" % (time.strftime(formatstr), msg))
         except (OSError, IOError):
             pass
         fileobj.close()
