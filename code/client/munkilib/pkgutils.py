@@ -218,6 +218,7 @@ def getVersionString(plist, key=None):
         # lets us use crappy values like '1.0 (100)'
         VersionString = plist[key].split()[0]
     if VersionString:
+        # check first character to see if it's a digit
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
@@ -229,7 +230,8 @@ def getVersionString(plist, key=None):
         # a future version of the Munki tools may drop this magic
         # and require admins to explicitly choose the CFBundleVersion
         # but for now Munki does some magic
-        VersionString = plist['CFBundleVersion'].encode('utf-8').split()[0]
+        VersionString = plist['CFBundleVersion'].split()[0]
+        # check first character to see if it's a digit
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
