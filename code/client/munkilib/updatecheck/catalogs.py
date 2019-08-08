@@ -117,7 +117,7 @@ def add_package_ids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
                 itemname_to_pkgid[name] = {}
 
             for receipt in item['receipts']:
-                if 'packageid' in receipt:
+                if 'packageid' in receipt and 'version' in receipt:
                     pkgid = receipt['packageid']
                     vers = receipt['version']
                     if not pkgid in itemname_to_pkgid[name]:
