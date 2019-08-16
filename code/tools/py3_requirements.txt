@@ -1,0 +1,3 @@
+xattr==0.9.6
+pyobjc==5.1.2
+six
