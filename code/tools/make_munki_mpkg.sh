@@ -15,6 +15,7 @@ CONFPKG=""
 # add this number to Git revision index to get "build" number
 # consistent with old SVN repo
 MAGICNUMBER=482
+BUILDPYTHON=NO
 
 # try to automagically find munki source root
 TOOLSDIR=$(dirname $0)
@@ -37,6 +38,7 @@ Usage: $(basename $0) [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
+    -p          Build Python.framework
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -47,7 +49,7 @@ EOF
 }
 
 
-while getopts "i:r:o:c:s:S:h" option
+while getopts "i:r:o:c:s:S:hp" option
 do
     case $option in
         "i")
@@ -67,6 +69,9 @@ do
             ;;
         "S" )
             APPSIGNINGCERT="$OPTARG"
+            ;;
+        "p")
+            BUILDPYTHON=YES
             ;;
         "h" | *)
             usage
@@ -104,15 +109,19 @@ if [ "$WHICH_GIT_RESULT" != "0" ]; then
     exit 1
 fi
 if [ ! -x "/usr/bin/pkgbuild" ]; then
-    echo "pkgbuild is not installed!"
+    echo "pkgbuild is not installed!" 1>&2
     exit 1
 fi
 if [ ! -x "/usr/bin/productbuild" ]; then
-    echo "productbuild is not installed!"
+    echo "productbuild is not installed!" 1>&2
     exit 1
 fi
 if [ ! -x "/usr/bin/xcodebuild" ]; then
-    echo "xcodebuild is not installed!"
+    echo "xcodebuild is not installed!" 1>&2
+    exit 1
+fi
+if [ ! -d "$MUNKIROOT/Python.framework" -a "$BUILDPYTHON" != "YES" ]; then
+    echo "Python.framework is missing!" 1>&2
     exit 1
 fi
 
@@ -120,8 +129,23 @@ fi
 MUNKIVERS=$(defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString)
 if [ "$?" != "0" ]; then
     echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
-    echo "Perhaps $MUNKIROOT does not contain the munki source?"  1>&2
+    echo "Perhaps $MUNKIROOT does not contain the munki source?" 1>&2
     exit 1
+fi
+
+# Build the Python framework if requested
+if [ "$BUILDPYTHON" == "YES" ]; then
+    PYTHONBUILDTOOL="${TOOLSDIR}/build_python_framework.sh"
+    if [ ! -x "${PYTHONBUILDTOOL}" ] ; then
+        echo "${PYTHONBUILDTOOL} is missing!" 1>&2
+        exit 1
+    fi
+    echo "Building Python.framework..."
+    "${PYTHONBUILDTOOL}"
+    if [ $? -ne 0 ]; then
+        echo "Building Python.framework failed!" 1>&2
+        exit 1
+    fi
 fi
 
 cd "$MUNKIROOT"
