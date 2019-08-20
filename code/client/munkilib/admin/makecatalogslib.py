@@ -200,8 +200,12 @@ def process_pkgsinfo(repo, options, output_fn=None):
             continue
 
         # don't copy admin notes to catalogs.
-        if pkginfo.get('notes'):
-            del pkginfo['notes']
+        try:
+            if pkginfo.get('notes'):
+                del pkginfo['notes']
+        except AttributeError, err:
+            errors.append("WARNING: %s admin notes may not be deleted" % pkginfo_ref)
+            continue
         # strip out any keys that start with "_"
         # (example: pkginfo _metadata)
         for key in pkginfo.keys():
