@@ -148,9 +148,16 @@ def run(options_list, catalog_url=None, stop_allowed=False):
         # as applicable
         # --list-specific output
         if mode == 'list':
-            if output.startswith('   * '):
+            if output.strip().startswith('*'):
                 # collect list of items available for install
-                update_entry = output[5:]
+                if output.startswith('   * '):
+                    update_entry = output[5:]
+                elif output.startswith('* Label: '):
+                    # seen in 10.15 betas
+                    update_entry = output[9:]
+                else:
+                    # unknown format
+                    continue
                 update_parts = update_entry.split('-')
                 # version is the bit after the last hyphen
                 # (let's hope there are no hyphens in the versions!)
