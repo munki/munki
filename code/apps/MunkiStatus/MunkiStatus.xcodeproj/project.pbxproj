@@ -14,6 +14,7 @@
 		C0544D4C20AF0EDA00DC86F6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */; };
 		C0544D4E20AF0EDA00DC86F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0544D4D20AF0EDA00DC86F6 /* Assets.xcassets */; };
 		C0544D5120AF0EDA00DC86F6 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0544D4F20AF0EDA00DC86F6 /* MainMenu.xib */; };
+		C0787F7B2315C6210054D130 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0787F7A2315C6210054D130 /* main.swift */; };
 		C0A7937E20AFAE0300F56DD5 /* MunkiStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */; };
 		C0A7938020B0EA7800F56DD5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A7937F20B0EA7800F56DD5 /* Utils.swift */; };
 /* End PBXBuildFile section */
@@ -70,6 +71,7 @@
 		C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C0544D4D20AF0EDA00DC86F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C0544D5020AF0EDA00DC86F6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C0787F7A2315C6210054D130 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiStatusViewController.swift; sourceTree = "<group>"; };
 		C0A7937F20B0EA7800F56DD5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -105,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				C04F825C20BB15F500F9C57D /* Localization.swift */,
+				C0787F7A2315C6210054D130 /* main.swift */,
 				C0168E8F20B1E1D80027BD78 /* LogViewController.swift */,
 				C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */,
 				C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */,
@@ -230,6 +233,7 @@
 			files = (
 				C0A7938020B0EA7800F56DD5 /* Utils.swift in Sources */,
 				C04F825D20BB15F500F9C57D /* Localization.swift in Sources */,
+				C0787F7B2315C6210054D130 /* main.swift in Sources */,
 				C0544D4C20AF0EDA00DC86F6 /* AppDelegate.swift in Sources */,
 				C0A7937E20AFAE0300F56DD5 /* MunkiStatusViewController.swift in Sources */,
 				C0168E9020B1E1D80027BD78 /* LogViewController.swift in Sources */,
