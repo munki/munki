@@ -451,7 +451,7 @@ chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 # sign MSC app
 if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing Managed Software Center.app..."
-    /usr/bin/codesign -s "$APPSIGNINGCERT" --verbose \
+    /usr/bin/codesign -s "$APPSIGNINGCERT" --options runtime --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
