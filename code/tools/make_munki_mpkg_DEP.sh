@@ -32,7 +32,7 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-b]"
+Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-S cert] [-b]"
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
@@ -40,12 +40,14 @@ Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-b]"
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
+    -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
+                the certificate's Common Name. Ex: "Developer ID Application: Munki (U8PN57A5N2)"
     -b          Enable munki bootstrap mode (will fire as soon as DEP release the Mac to the LoginWindow, to use with scenario where the Mac is bound to a domain during DEP)
 EOF
 }
 
 
-while getopts "i:r:o:c:s:hb" option
+while getopts "i:r:o:c:s:S:hb" option
 do
     case $option in
         "i")
@@ -62,6 +64,9 @@ do
             ;;
         "s")
             SIGNINGCERT="$OPTARG"
+            ;;
+        "S" )
+            APPSIGNINGCERT="$OPTARG"
             ;;
         "b")
             BOOTSTRAPMODE=1
@@ -421,6 +426,22 @@ cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resou
 cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
+
+# sign MSC app
+if [ "$APPSIGNINGCERT" != "" ]; then
+    echo "Signing Managed Software Center.app..."
+    /usr/bin/codesign -s "$APPSIGNINGCERT" --options runtime --verbose \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
+        "$APPROOT/Applications/Managed Software Center.app"
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
+        exit 2
+    fi
+fi
+
 # Create package info file.
 APPSIZE=`du -sk $APPROOT | cut -f1`
 NFILES=$(echo `find $APPROOT/ | wc -l`)
