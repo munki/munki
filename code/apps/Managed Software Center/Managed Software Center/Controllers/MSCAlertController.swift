@@ -407,7 +407,7 @@ class MSCAlertController: NSObject {
             alert.buttons[1].keyEquivalent = "\r"
             // set Continue button to be activated by Escape key
             alert.buttons[0].keyEquivalent = "\u{1B}"
-            msc_log("MSU", "alert_on_battery_power")
+            msc_log("MSC", "alert_on_battery_power")
             let response = alert.runModal()
             if response == .alertSecondButtonReturn {
                 // user clicked Cancel
