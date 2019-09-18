@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let keyword = AEKeyword(keyDirectObject)
         let urlDescriptor = event.paramDescriptor(forKeyword: keyword)
         if let urlString = urlDescriptor?.stringValue {
-            msc_log("MSU", "Called by external URL: \(urlString)")
+            msc_log("MSC", "Called by external URL: \(urlString)")
             if let url = URL(string: urlString) {
                 mainWindowController.handleMunkiURL(url)
             } else {
@@ -112,13 +112,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         if user_info["action"] as? String ?? "" == "open_url" {
             let urlString = user_info["value"] as? String ?? "munki://updates"
-            msc_log("MSU", "Got user notification to open \(urlString)")
+            msc_log("MSC", "Got user notification to open \(urlString)")
             if let url = URL(string: urlString) {
                 mainWindowController.handleMunkiURL(url)
             }
             center.removeDeliveredNotification(notification)
         } else {
-            msc_log("MSU", "Got user notification with unrecognized userInfo")
+            msc_log("MSC", "Got user notification with unrecognized userInfo")
         }
     }
     
