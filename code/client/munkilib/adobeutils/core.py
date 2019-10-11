@@ -305,7 +305,7 @@ def run_adobe_install_tool(
     #check output for errors
     output = proc.stdout.readlines()
     for line in output:
-        line = line.rstrip("\n")
+        line = line.decode("UTF-8").rstrip("\n")
         if line.startswith("Error"):
             display.display_error(line)
         if line.startswith("Exit Code:"):
