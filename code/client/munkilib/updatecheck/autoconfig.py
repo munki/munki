@@ -80,9 +80,10 @@ def guess_repo_url():
 
 
 def autodetect_repo_url_if_needed():
-    '''If Munki repo URL is not defined, attempt to discover one. If successful,
-    record the discovered URL in Munki's preferences.'''
-    if prefs.pref('SoftwareRepoURL'):
+    '''If Munki repo URL is not defined, (or is the insecure default) attempt
+    to discover one. If successful, record the discovered URL in Munki's
+    preferences.'''
+    if prefs.pref('SoftwareRepoURL') not in (None, prefs.DEFAULT_INSECURE_REPO_URL):
         # SoftwareRepoURL key is defined. exit.
         return
     all_keys_defined = True
