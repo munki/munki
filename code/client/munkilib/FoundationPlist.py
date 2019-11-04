@@ -130,7 +130,7 @@ def writePlist(dataObject, filepath):
 
 
 def writePlistToString(rootObject):
-    '''Return 'rootObject' as a plist-formatted string.'''
+    '''Return 'rootObject' as a plist-formatted (byte)string.'''
     plistData, error = (
         NSPropertyListSerialization.
         dataFromPropertyList_format_errorDescription_(

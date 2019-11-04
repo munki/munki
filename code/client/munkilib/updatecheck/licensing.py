@@ -72,7 +72,8 @@ def update_available_license_seats(installinfo):
         try:
             license_data = fetch.getDataFromURL(url)
             display.display_debug1('Got: %s', license_data)
-            license_dict = FoundationPlist.readPlistFromString(license_data)
+            license_dict = FoundationPlist.readPlistFromString(
+                license_data.encode("UTF-8"))
         except fetch.Error as err:
             # problem fetching from URL
             display.display_error('Error from %s: %s', url, err)
