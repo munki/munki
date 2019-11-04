@@ -5,7 +5,8 @@
 TOOLSDIR=$(dirname $0)
 REQUIREMENTS="${TOOLSDIR}/py3_requirements.txt"
 PYTHON_VERSION=3.7.4
-MUNKIROOT=$(dirname $(dirname "${TOOLSDIR}"))
+CODEDIR=$(dirname "${TOOLSDIR}")
+MUNKIROOT=$(dirname "${CODEDIR}")
 
 # Sanity checks.
 GIT=$(which git)
