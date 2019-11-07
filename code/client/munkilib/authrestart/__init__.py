@@ -40,8 +40,9 @@ def filevault_is_active():
         is_active = subprocess.check_output(
             active_cmd, stderr=subprocess.STDOUT).decode('UTF-8')
     except subprocess.CalledProcessError as exc:
-        if exc.output and 'false' in exc.output:
-            display.display_warning('FileVault appears to be disabled...')
+        if exc.output and 'false' in exc.output.decode('UTF-8'):
+            # fdesetup isactive returns 1 when FileVault is not active
+            display.display_debug1('FileVault appears to be disabled...')
         elif not exc.output:
             display.display_warning(
                 'Encountered problem determining FileVault status...')
@@ -49,7 +50,9 @@ def filevault_is_active():
             display.display_warning(exc.output)
         return False
     if 'true' in is_active:
+        display.display_debug1('FileVault appears to be enabled...')
         return True
+    display.display_debug1('Could not confirm FileVault is enabled...')
     return False
 
 
