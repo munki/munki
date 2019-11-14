@@ -393,7 +393,11 @@ def makepkginfo(installeritem, options):
 
     pkginfo = {}
     installs = []
-    if installeritem and os.path.exists(installeritem):
+    if installeritem:
+        if not os.path.exists(installeritem):
+            raise PkgInfoGenerationError(
+                "File %s does not exist" % installeritem)
+
         # Check if the item is a mount point for a disk image
         if dmgutils.pathIsVolumeMountPoint(installeritem):
             # Get the disk image path for the mount point
@@ -405,7 +409,10 @@ def makepkginfo(installeritem, options):
         itemhash = "N/A"
         if os.path.isfile(installeritem):
             itemsize = int(os.path.getsize(installeritem))
-            itemhash = munkihash.getsha256hash(installeritem)
+            try:
+                itemhash = munkihash.getsha256hash(installeritem)
+            except OSError as err:
+                raise PkgInfoGenerationError(err)
 
         if pkgutils.hasValidDiskImageExt(installeritem):
             if dmgutils.DMGisWritable(installeritem) and options.print_warnings:
