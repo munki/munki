@@ -38,7 +38,7 @@ Usage: $(basename $0) [-i id] [-r root] [-o dir] [-c package] [-s cert]"
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
-    -p          Build Python.framework
+    -p          Build Python.framework even if one exists
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -120,10 +120,7 @@ if [ ! -x "/usr/bin/xcodebuild" ]; then
     echo "xcodebuild is not installed!" 1>&2
     exit 1
 fi
-if [ ! -d "$MUNKIROOT/Python.framework" -a "$BUILDPYTHON" != "YES" ]; then
-    echo "Python.framework is missing!" 1>&2
-    exit 1
-fi
+
 
 # Get the munki version
 MUNKIVERS=$(defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString)
@@ -133,8 +130,8 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
-# Build the Python framework if requested
-if [ "$BUILDPYTHON" == "YES" ]; then
+# Build the Python framework if requested or missing
+if [ "$BUILDPYTHON" == "YES" -o ! -d "$MUNKIROOT/Python.framework" ]; then
     PYTHONBUILDTOOL="${TOOLSDIR}/build_python_framework.sh"
     if [ ! -x "${PYTHONBUILDTOOL}" ] ; then
         echo "${PYTHONBUILDTOOL} is missing!" 1>&2
