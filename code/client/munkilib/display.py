@@ -177,7 +177,7 @@ def display_detail(msg, *args):
     if verbose > 1:
         print('    %s' % msg)
         sys.stdout.flush()
-    if prefs.pref('LoggingLevel') > 0:
+    if int(prefs.pref('LoggingLevel')) > 0:
         munkilog.log(u'    ' + msg)
 
 
@@ -189,7 +189,7 @@ def display_debug1(msg, *args):
     if verbose > 2:
         print('    %s' % msg)
         sys.stdout.flush()
-    if prefs.pref('LoggingLevel') > 1:
+    if int(prefs.pref('LoggingLevel')) > 1:
         munkilog.log('DEBUG1: %s' % msg)
 
 
@@ -200,7 +200,7 @@ def display_debug2(msg, *args):
     msg = _concat_message(msg, *args)
     if verbose > 3:
         print('    %s' % msg)
-    if prefs.pref('LoggingLevel') > 2:
+    if int(prefs.pref('LoggingLevel')) > 2:
         munkilog.log('DEBUG2: %s' % msg)
 
 
