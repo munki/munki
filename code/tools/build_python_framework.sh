@@ -2,7 +2,7 @@
 #
 # Build script for Python 3 framework for Munki
 
-TOOLSDIR=$(dirname $0)
+TOOLSDIR=$(dirname "$0")
 REQUIREMENTS="${TOOLSDIR}/py3_requirements.txt"
 PYTHON_VERSION=3.7.4
 MUNKIROOT=$(dirname $(dirname "${TOOLSDIR}"))
