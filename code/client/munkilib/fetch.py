@@ -198,7 +198,7 @@ def header_dict_from_list(array):
 
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=Falsel:
+            resume=False, follow_redirects=False):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
