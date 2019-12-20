@@ -250,11 +250,13 @@ def download_icons(item_list):
         icon_path = os.path.join(icon_dir, icon_name)
         if os.path.isfile(icon_path):
             # have we already downloaded it? If so get the hash
-            local_hash = fetch.getxattr(
-                icon_path, fetch.XATTR_SHA).decode("UTF-8")
+            local_hash = fetch.getxattr(icon_path, fetch.XATTR_SHA)
             if not local_hash:
                 local_hash = munkihash.getsha256hash(icon_path)
                 fetch.writeCachedChecksum(icon_path, local_hash)
+            else:
+                # make sure it's a string and not a bytearray
+                local_hash = local_hash.decode("UTF-8")
         else:
             local_hash = 'nonexistent'
         icon_subdir = os.path.dirname(icon_path)
