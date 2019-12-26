@@ -123,7 +123,8 @@ fi
 
 
 # Get the munki version
-MUNKIVERS=$(defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString)
+
+MUNKIVERS=$(/usr/libexec/PlistBuddy -c 'print ":CFBundleShortVersionString"' "$MUNKIROOT/code/client/munkilib/version.plist")
 if [ "$?" != "0" ]; then
     echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
     echo "Perhaps $MUNKIROOT does not contain the munki source?" 1>&2
