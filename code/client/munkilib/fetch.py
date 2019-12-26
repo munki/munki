@@ -362,9 +362,11 @@ def getResourceIfChangedAtomically(url,
     # If we already have a downloaded file & its (cached) hash matches what
     # we need, do nothing, return unchanged.
     if resume and expected_hash and os.path.isfile(destinationpath):
-        xattr_hash = getxattr(destinationpath, XATTR_SHA).decode('UTF-8')
+        xattr_hash = getxattr(destinationpath, XATTR_SHA)
         if not xattr_hash:
             xattr_hash = writeCachedChecksum(destinationpath)
+        else:
+            xattr_hash = xattr_hash.decode('UTF-8')
         if xattr_hash == expected_hash:
             #File is already current, no change.
             munkilog.log("        Cached item is current.")
