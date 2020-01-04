@@ -84,7 +84,7 @@ def edit_pkginfo_in_editor(pkginfo):
     """Opens pkginfo list in the user's chosen editor."""
     editor = pref('editor')
     if editor:
-        answer = get_input('Edit pkginfo before upload? [y/n]: ')
+        answer = get_input('Edit pkginfo before upload? [y/N]: ')
         if answer.lower().startswith('y'):
             filedesc, filepath = tempfile.mkstemp()
             # we just want the path; close the file descriptor
@@ -112,7 +112,7 @@ def edit_pkginfo_in_editor(pkginfo):
                     # wait for user to finish with GUI editor.
                     answer = 'no'
                     while not answer.lower().startswith('y'):
-                        answer = get_input('Pkginfo editing complete? [y/n]: ')
+                        answer = get_input('Pkginfo editing complete? [y/N]: ')
                 try:
                     edited_pkginfo = FoundationPlist.readPlist(filepath)
                 except FoundationPlist.FoundationPlistException as err:
@@ -143,7 +143,7 @@ def prompt_for_subdirectory(repo, subdirectory):
         if newdir:
             destination_path = os.path.join('pkgsinfo', newdir)
             if destination_path not in subdir_set:
-                answer = get_input('Path %s doesn\'t exist. Create it? [y/n] '
+                answer = get_input('Path %s doesn\'t exist. Create it? [y/N] '
                                    % destination_path)
                 if answer.lower().startswith('y'):
                     break
@@ -175,7 +175,7 @@ def cleanup_and_exit(exitcode):
     # TODO: reimplement this
     #if repo and repo.mounted and repo.WE_MOUNTED_THE_REPO:
     #    if not NOINTERACTIVE:
-    #        answer = raw_input('Unmount the repo fileshare? [y/n] ')
+    #        answer = raw_input('Unmount the repo fileshare? [y/N] ')
     #        if answer.lower().startswith('y'):
     #            result = repo.unmount()
     #    else:
@@ -404,11 +404,11 @@ def main():
                 print('%21s: %s' % (name, matchingpkginfo.get(key, '')))
             print()
             if exactmatch:
-                answer = get_input('Import this item anyway? [y/n] ')
+                answer = get_input('Import this item anyway? [y/N] ')
                 if not answer.lower().startswith('y'):
                     cleanup_and_exit(0)
 
-            answer = get_input('Use existing item as a template? [y/n] ')
+            answer = get_input('Use existing item as a template? [y/N] ')
             if answer.lower().startswith('y'):
                 pkginfo['name'] = matchingpkginfo['name']
                 pkginfo['display_name'] = (
@@ -483,7 +483,7 @@ def main():
         #        print '%20s: %s' % (name, pkginfo.get(key, ''))
         #print '%20s: %s' % 'Catalogs', ', '.join(pkginfo['catalogs'])
         #print
-        answer = get_input('Import this item? [y/n] ')
+        answer = get_input('Import this item? [y/N] ')
         if not answer.lower().startswith('y'):
             cleanup_and_exit(0)
 
@@ -522,7 +522,7 @@ def main():
           not is_applemetadata and
           not pkginfo.get('installer_type') == 'profile'):
         print('No existing product icon found.')
-        answer = get_input('Attempt to create a product icon? [y/n] ')
+        answer = get_input('Attempt to create a product icon? [y/N] ')
         if answer.lower().startswith('y'):
             print('Attempting to extract and upload icon...')
             options.extract_icon = True
@@ -596,7 +596,7 @@ def main():
         cleanup_and_exit(-1)
 
     if not options.nointeractive:
-        answer = get_input('Rebuild catalogs? [y/n] ')
+        answer = get_input('Rebuild catalogs? [y/N] ')
         if answer.lower().startswith('y'):
             make_catalogs(repo, options)
 
