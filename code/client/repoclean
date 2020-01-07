@@ -410,10 +410,10 @@ class RepoCleaner(object):
             print()
             answer = get_input(
                 'Delete pkginfo and pkg items marked as [to be DELETED]? '
-                'WARNING: This action cannot be undone. [y/n] ')
+                'WARNING: This action cannot be undone. [y/N] ')
             if answer.lower().startswith('y'):
                 answer = get_input(
-                    'Are you sure? This action cannot be undone. [y/n] ')
+                    'Are you sure? This action cannot be undone. [y/N] ')
                 if answer.lower().startswith('y'):
                     self.delete_items()
                     self.make_catalogs()
