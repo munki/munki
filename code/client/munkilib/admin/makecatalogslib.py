@@ -228,7 +228,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
                 catalogs[catalogname] = []
             catalogs[catalogname].append(pkginfo)
             if output_fn:
-                output_fn("Adding %s to %s..." % (pkginfo_ref, catalogname))
+                output_fn("Adding %s to %s..." % (pkginfo_ref.encode('UTF-8'), catalogname))
 
     # look for catalog names that differ only in case
     duplicate_catalogs = []
