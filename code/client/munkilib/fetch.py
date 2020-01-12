@@ -198,7 +198,7 @@ def header_dict_from_list(array):
 
 def get_url(url, destinationpath,
             custom_headers=None, message=None, onlyifnewer=False,
-            resume=False, follow_redirects=False):
+            resume=False, follow_redirects=False, pkginfo=None):
     """Gets an HTTP or HTTPS URL and stores it in
     destination path. Returns a dictionary of headers, which includes
     http_result_code and http_result_description.
@@ -235,7 +235,8 @@ def get_url(url, destinationpath,
                'additional_headers': header_dict_from_list(custom_headers),
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
-               'logging_function': display.display_debug2}
+               'logging_function': display.display_debug2,
+               'pkginfo': pkginfo}
     display.display_debug2('Options: %s' % options)
 
     # Allow middleware to modify options
@@ -342,7 +343,8 @@ def getResourceIfChangedAtomically(url,
                                    message=None,
                                    resume=False,
                                    verify=False,
-                                   follow_redirects=False):
+                                   follow_redirects=False,
+                                   pkginfo=None):
     """Gets file from a URL.
        Checks first if there is already a file with the necessary checksum.
        Then checks if the file has changed on the server, resuming or
@@ -392,7 +394,8 @@ def getResourceIfChangedAtomically(url,
         changed = getHTTPfileIfChangedAtomically(
             url, destinationpath,
             custom_headers=custom_headers,
-            message=message, resume=resume, follow_redirects=follow_redirects)
+            message=message, resume=resume, follow_redirects=follow_redirects,
+            pkginfo=pkginfo)
     elif url_parse.scheme == 'file':
         changed = getFileIfChangedAtomically(url_parse.path, destinationpath)
     else:
@@ -417,7 +420,7 @@ def getResourceIfChangedAtomically(url,
 
 def munki_resource(
         url, destinationpath, message=None, resume=False, expected_hash=None,
-        verify=False):
+        verify=False, pkginfo=None):
 
     '''The high-level function for getting resources from the Munki repo.
     Gets a given URL from the Munki server.
@@ -439,7 +442,8 @@ def munki_resource(
                                           expected_hash=expected_hash,
                                           message=message,
                                           resume=resume,
-                                          verify=verify)
+                                          verify=verify,
+                                          pkginfo=pkginfo)
 
 
 def getFileIfChangedAtomically(path, destinationpath):
@@ -499,7 +503,8 @@ def getFileIfChangedAtomically(path, destinationpath):
 def getHTTPfileIfChangedAtomically(url, destinationpath,
                                    custom_headers=None,
                                    message=None, resume=False,
-                                   follow_redirects=False):
+                                   follow_redirects=False,
+                                   pkginfo=None):
     """Gets file from HTTP URL, checking first to see if it has changed on the
        server.
 
@@ -524,7 +529,8 @@ def getHTTPfileIfChangedAtomically(url, destinationpath,
                          message=message,
                          onlyifnewer=getonlyifnewer,
                          resume=resume,
-                         follow_redirects=follow_redirects)
+                         follow_redirects=follow_redirects,
+                         pkginfo=pkginfo)
 
     except ConnectionError:
         # connection errors should be handled differently; don't re-raise

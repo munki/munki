@@ -182,7 +182,8 @@ def download_installeritem(item_pl,
                                 resume=True,
                                 message=dl_message,
                                 expected_hash=expected_hash,
-                                verify=True)
+                                verify=True,
+                                pkginfo=item_pl)
 
 
 def clean_up_icons_dir(icons_to_keep):
