@@ -156,7 +156,7 @@ def get_payload_info(dirpath):
                     installsize = ''
                     for node in totalsizes[0].childNodes:
                         installsize += node.nodeValue
-                    payloadinfo['installed_size'] = int(installsize/1024)
+                    payloadinfo['installed_size'] = int(int(installsize)/1024)
 
     return payloadinfo
 
