@@ -40,15 +40,17 @@ def gethash(filename, hash_function):
     """
     if not os.path.isfile(filename):
         return 'NOT A FILE'
-
-    fileref = open(filename, 'rb')
-    while True:
-        chunk = fileref.read(2**16)
-        if not chunk:
-            break
-        hash_function.update(chunk)
-    fileref.close()
-    return hash_function.hexdigest()
+    try:
+        fileref = open(filename, 'rb')
+        while True:
+            chunk = fileref.read(2**16)
+            if not chunk:
+                break
+            hash_function.update(chunk)
+        fileref.close()
+        return hash_function.hexdigest()
+    except (OSError, IOError):
+        return 'HASH_ERROR'
 
 
 def getmd5hash(filename):
