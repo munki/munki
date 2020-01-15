@@ -107,7 +107,8 @@ def remove_quarantine_from_item(some_path):
     '''Removes com.apple.quarantine from some_path'''
     try:
         if "com.apple.quarantine" in xattr.xattr(some_path).list():
-            xattr.xattr(some_path).remove("com.apple.quarantine")
+            xattr.xattr(some_path).remove("com.apple.quarantine",
+                                          options=xattr.XATTR_NOFOLLOW)
     except BaseException as err:
         display.display_warning(
             "Error removing com.apple.quarantine from %s: %s", some_path, err)
