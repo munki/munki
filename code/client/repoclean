@@ -445,8 +445,8 @@ def main():
                       help='Optional plugin to connect to repo. If specified, '
                            'overrides any plugin specified via --configure.')
     parser.add_option('--auto', '-a', action='store_true',
-                      help='Do not prompt for confirmation before deleting repo items. '
-                            'Use with caution.')
+                      help='Automatically respond "y" to an y/n questions, '
+                           'use with caution.')
 
     options, arguments = parser.parse_args()
 
