@@ -408,15 +408,20 @@ class RepoCleaner(object):
         self.find_cleanup_items()
         if self.items_to_delete:
             print()
-            answer = get_input(
-                'Delete pkginfo and pkg items marked as [to be DELETED]? '
-                'WARNING: This action cannot be undone. [y/N] ')
-            if answer.lower().startswith('y'):
+            if not self.options.auto:
                 answer = get_input(
-                    'Are you sure? This action cannot be undone. [y/N] ')
+                    'Delete pkginfo and pkg items marked as [to be DELETED]? '
+                    'WARNING: This action cannot be undone. [y/N] ')
                 if answer.lower().startswith('y'):
-                    self.delete_items()
-                    self.make_catalogs()
+                    answer = get_input(
+                        'Are you sure? This action cannot be undone. [y/N] ')
+                    if answer.lower().startswith('y'):
+                        self.delete_items()
+                        self.make_catalogs()
+            else:
+                print('Auto mode selected, deleting pkginfo and pkg items marked as [to be DELETED]')
+                self.delete_items()
+                self.make_catalogs()
 
 
 def main():
@@ -439,6 +444,9 @@ def main():
     parser.add_option('--plugin', default=pref('plugin'),
                       help='Optional plugin to connect to repo. If specified, '
                            'overrides any plugin specified via --configure.')
+    parser.add_option('--auto', '-a', action='store_true',
+                      help='Automatically respond "y" to an y/n questions, '
+                           'use with caution.')
 
     options, arguments = parser.parse_args()
 
@@ -454,6 +462,11 @@ def main():
 
     if not options.plugin:
         options.plugin = 'FileRepo'
+    
+    if not options.auto:
+        options.auto = False
+    else:
+        options.auto = True
 
     try:
         options.keep = int(options.keep)
