@@ -277,6 +277,26 @@ def getAppBundleExecutable(bundlepath):
     return None
 
 
+def parseInfoFile(infofile):
+    '''Returns a dict of keys and values parsed from an .info file'''
+    infodict = {}
+    fileobj = open(infofile, mode='rb')
+    info = fileobj.read()
+    fileobj.close()
+    infolines = info.splitlines()
+    for line in infolines:
+        try:
+            parts = line.split(None, 1)
+            if len(parts) == 2:
+                key = parts[0].decode("UTF-8")
+                value = parts[1].decode("UTF-8")
+                infodict[key] = value
+        except UnicodeDecodeError:
+            # something we could not handle; just skip it
+            pass
+    return infodict
+
+
 def getBundleVersion(bundlepath, key=None):
     """
     Returns version number from a bundle.
@@ -298,16 +318,8 @@ def getBundleVersion(bundlepath, key=None):
         for item in osutils.listdir(infopath):
             if os.path.join(infopath, item).endswith('.info'):
                 infofile = os.path.join(infopath, item)
-                fileobj = open(infofile, mode='r')
-                info = fileobj.read()
-                fileobj.close()
-                infolines = info.splitlines()
-                for line in infolines:
-                    parts = line.split(None, 1)
-                    if len(parts) == 2:
-                        label = parts[0]
-                        if label == 'Version':
-                            return parts[1]
+                infodict = parseInfoFile(infofile)
+                return infodict.get("Version", "0.0.0.0.0")
 
     # didn't find a version number, so return 0...
     return '0.0.0.0.0'
@@ -533,20 +545,9 @@ def getOnePackageInfo(pkgpath):
                     pkginfo['filename'] = os.path.basename(pkgpath)
                     pkginfo['packageid'] = os.path.basename(pkgpath)
                     infofile = os.path.join(infopath, item)
-                    fileobj = open(infofile, mode='r')
-                    info = fileobj.read()
-                    fileobj.close()
-                    infolines = info.splitlines()
-                    pkginfo['version'] = '0.0'
-                    pkginfo['name'] = 'UNKNOWN'
-                    for line in infolines:
-                        parts = line.split(None, 1)
-                        if len(parts) == 2:
-                            label = parts[0]
-                            if label == 'Version':
-                                pkginfo['version'] = parts[1]
-                            if label == 'Title':
-                                pkginfo['name'] = parts[1]
+                    infodict = parseInfoFile(infofile)
+                    pkginfo['version'] = infodict.get('Version', '0.0')
+                    pkginfo['name'] = infodict.get('Title', 'UNKNOWN')
                     break
     return pkginfo
 
