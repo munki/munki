@@ -278,7 +278,8 @@ def getAppBundleExecutable(bundlepath):
 
 
 def parseInfoFile(infofile):
-    '''Returns a dict of keys and values parsed from an .info file'''
+    '''Returns a dict of keys and values parsed from an .info file
+    At least some of these old files use MacRoman encoding...'''
     infodict = {}
     fileobj = open(infofile, mode='rb')
     info = fileobj.read()
@@ -288,8 +289,14 @@ def parseInfoFile(infofile):
         try:
             parts = line.split(None, 1)
             if len(parts) == 2:
-                key = parts[0].decode("UTF-8")
-                value = parts[1].decode("UTF-8")
+                try:
+                    key = parts[0].decode("mac_roman")
+                except (LookupError, UnicodeDecodeError):
+                    key = parts[0].decode("UTF-8")
+                try:
+                    value = parts[1].decode("mac_roman")
+                except (LookupError, UnicodeDecodeError):
+                    value = parts[1].decode("UTF-8")
                 infodict[key] = value
         except UnicodeDecodeError:
             # something we could not handle; just skip it
