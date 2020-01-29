@@ -419,7 +419,8 @@ class RepoCleaner(object):
                         self.delete_items()
                         self.make_catalogs()
             else:
-                print('Auto mode selected, deleting pkginfo and pkg items marked as [to be DELETED]')
+                print('Auto mode selected, deleting pkginfo and pkg items '
+                      'marked as [to be DELETED]')
                 self.delete_items()
                 self.make_catalogs()
 
@@ -445,8 +446,8 @@ def main():
                       help='Optional plugin to connect to repo. If specified, '
                            'overrides any plugin specified via --configure.')
     parser.add_option('--auto', '-a', action='store_true', default=False,
-                      help='Do not prompt for confirmation before deleting repo items. '
-                            'Use with caution.')
+                      help='Do not prompt for confirmation before deleting '
+                           'repo items. Use with caution.')
 
     options, arguments = parser.parse_args()
 
