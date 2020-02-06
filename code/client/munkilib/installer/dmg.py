@@ -209,7 +209,10 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
 
         # mv temp_destination_path to final destination path
         try:
-            if os.path.isdir(destination_path):
+            if (os.path.islink(destination_path) or
+                    os.path.isfile(destination_path)):
+                os.unlink(destination_path)
+            elif os.path.isdir(destination_path):
                 shutil.rmtree(destination_path)
             os.rename(temp_destination_path, destination_path)
         except (OSError, IOError) as err:
