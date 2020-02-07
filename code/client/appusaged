@@ -41,6 +41,7 @@ import struct
 
 from munkilib import app_usage
 from munkilib import launchd
+from munkilib import munkilog
 from munkilib import prefs
 from munkilib.wrappers import readPlistFromString, PlistError, unicode_or_str
 
@@ -238,7 +239,7 @@ class AppUsageDaemon(SocketServer.UnixStreamServer):
         '''Configure logging'''
         try:
             logging_level = logging.INFO
-            if int(prefs.pref('LoggingLevel')) > 1:
+            if munkilog.logging_level() > 1:
                 logging_level = logging.DEBUG
             self.log.setLevel(logging_level)
 
