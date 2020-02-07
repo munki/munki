@@ -32,6 +32,14 @@ import time
 from . import prefs
 
 
+def logging_level():
+    '''Returns the logging level, which might be defined badly by the admin'''
+    try:
+        return int(prefs.pref('LoggingLevel'))
+    except TypeError:
+        return 1
+
+
 def log(msg, logname=''):
     """Generic logging function."""
     if len(msg) > 1000:
