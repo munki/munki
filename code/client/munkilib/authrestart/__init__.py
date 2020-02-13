@@ -169,7 +169,10 @@ def perform_auth_restart(username=None, password=None, delayminutes=0):
     if username:
         keys['Username'] = username
     inputplist = FoundationPlist.writePlistToString(keys)
-    display.display_info('Attempting an Authorized Restart now...')
+    if delayminutes == 0:
+        display.display_info('Attempting an Authorized Restart now...')
+    else:
+        display.display_info('Configuring a delayed Authorized Restart...')
     os_version_tuple = osutils.getOsVersion(as_tuple=True)
     if os_version_tuple >= (10, 12):
         cmd = ['/usr/bin/fdesetup', 'authrestart',
