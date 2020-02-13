@@ -154,24 +154,30 @@ class StartOSInstallRunner(object):
         # key (via munkilib.authrestart methods)
         if (authrestartd.verify_can_attempt_auth_restart() or
                 authrestart.can_attempt_auth_restart()):
-            #
-            # set a secret preference to tell the osinstaller process to exit
-            # instead of restart
-            # this is the equivalent of:
-            # `defaults write /Library/Preferences/.GlobalPreferences
-            #                 IAQuitInsteadOfReboot -bool YES`
-            #
-            # This preference is referred to in a framework inside the
-            # Install macOS.app:
-            # Contents/Frameworks/OSInstallerSetup.framework/Versions/A/
-            #     Frameworks/OSInstallerSetupInternal.framework/Versions/A/
-            #     OSInstallerSetupInternal
-            #
-            # It might go away in future versions of the macOS installer.
-            #
-            CFPreferencesSetValue(
-                'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+            os_version_tuple = osutils.getOsVersion(as_tuple=True)
+            if os_version_tuple >= (10, 12):
+                # setup delayed auth restart so that when startosinstall does a
+                # restart, it completes without user credentials
+                authrestartd.setup_delayed_authrestart()
+            else:
+                #
+                # set an undocumented  preference to tell the osinstaller
+                # process to exit instead of restart
+                # this is the equivalent of:
+                # `defaults write /Library/Preferences/.GlobalPreferences
+                #                 IAQuitInsteadOfReboot -bool YES`
+                #
+                # This preference is referred to in a framework inside the
+                # Install macOS.app:
+                # Contents/Frameworks/OSInstallerSetup.framework/Versions/A/
+                #     Frameworks/OSInstallerSetupInternal.framework/Versions/A/
+                #     OSInstallerSetupInternal
+                #
+                # It might go away in future versions of the macOS installer.
+                #
+                CFPreferencesSetValue(
+                    'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
+                    kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         # now tell startosinstall it's OK to proceed
         subprocess.call(['/usr/bin/killall', '-SIGUSR1', 'startosinstall'])
 
@@ -217,7 +223,7 @@ class StartOSInstallRunner(object):
                 'middle of a CoreStorage conversion.')
 
         if self.installinfo and 'preinstall_script' in self.installinfo:
-            # run the postinstall_script
+            # run the preinstall_script
             retcode = scriptutils.run_embedded_script(
                 'preinstall_script', self.installinfo)
             if retcode:
