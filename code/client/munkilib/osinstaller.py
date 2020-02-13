@@ -116,13 +116,13 @@ def setup_authrestart_if_applicable():
     # key (via munkilib.authrestart methods)
     if (authrestartd.verify_can_attempt_auth_restart() or
             authrestart.can_attempt_auth_restart()):
-        display.display_detail(
+        display.display_info(
             'FileVault is active and we can do an authrestart')
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 12):
             # setup delayed auth restart so that when startosinstall does a
             # restart, it completes without user credentials
-            display.display_detail('Setting up delayed authrestart...')
+            display.display_info('Setting up delayed authrestart...')
             authrestartd.setup_delayed_authrestart()
         else:
             #
@@ -140,7 +140,7 @@ def setup_authrestart_if_applicable():
             #
             # It might go away in future versions of the macOS installer.
             #
-            display.display_detail(
+            display.display_info(
                 'Configuring startosinstall to quit instead of restart...')
             CFPreferencesSetValue(
                 'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
