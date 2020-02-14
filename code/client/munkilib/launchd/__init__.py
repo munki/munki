@@ -137,7 +137,8 @@ class Job(object):
     '''launchd job object'''
 
     def __init__(self, cmd, environment_vars=None,
-                 job_label=None, cleanup_at_exit=True):
+                 job_label=None, cleanup_at_exit=True,
+                 universal_newlines=False):
         '''Initialize our launchd job'''
         tmpdir = osutils.tmpdir()
 
@@ -173,7 +174,8 @@ class Job(object):
         proc = subprocess.Popen(launchctl_cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE,
+                                universal_newlines=universal_newlines)
         err = proc.communicate()[1].decode('UTF-8')
         if proc.returncode:
             raise LaunchdJobException(err)

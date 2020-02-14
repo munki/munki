@@ -322,7 +322,8 @@ class StartOSInstallRunner(object):
         env = {'NSUnbufferedIO': 'YES'}
 
         try:
-            job = launchd.Job(cmd, environment_vars=env, cleanup_at_exit=False)
+            job = launchd.Job(cmd, environment_vars=env, cleanup_at_exit=False,
+                              universal_newlines=True)
             job.start()
         except launchd.LaunchdJobException as err:
             display.display_error(
@@ -365,7 +366,7 @@ class StartOSInstallRunner(object):
             startosinstall_output.append(info_output)
 
             # parse output for useful progress info
-            msg = info_output.rstrip('\n')
+            msg = info_output.rstrip('\n\r')
             if msg.startswith('Preparing to '):
                 display.display_status_minor(msg)
             elif msg.startswith('Preparing '):
