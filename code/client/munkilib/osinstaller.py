@@ -124,6 +124,11 @@ def setup_authrestart_if_applicable():
             # restart, it completes without user credentials
             display.display_info('Setting up delayed authrestart...')
             authrestartd.setup_delayed_authrestart()
+            # make sure the special secret InstallAssistant preference is not
+            # set
+            CFPreferencesSetValue(
+                'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         else:
             #
             # set an undocumented  preference to tell the osinstaller
