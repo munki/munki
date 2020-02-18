@@ -366,13 +366,14 @@ class StartOSInstallRunner(object):
             startosinstall_output.append(info_output)
 
             # parse output for useful progress info
-            msg = info_output.rstrip('\n\r')
+            msg = info_output.strip()
             if msg.startswith('Preparing to '):
                 display.display_status_minor(msg)
-            elif msg.startswith('Preparing '):
+            elif msg.startswith(('Preparing ', 'Preparing: ')):
                 # percent-complete messages
+                percent_str = msg.split()[-1].rstrip('%')
                 try:
-                    percent = int(float(msg[10:].rstrip().rstrip('.')))
+                    percent = int(float(percent_str))
                 except ValueError:
                     percent = -1
                 display.display_percent_done(percent, 100)
