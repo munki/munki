@@ -24,10 +24,10 @@ Socket communications code adapted from autopkg's PkgCreator by Per Olofsson
 from __future__ import absolute_import, print_function
 
 import os
-import prefs
 import select
 import socket
 
+from .. import prefs
 from ..wrappers import writePlistToString
 
 AUTHRESTARTD_SOCKET = "/var/run/authrestartd"
