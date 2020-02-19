@@ -196,7 +196,7 @@ def test():
     import pwd
     from ..wrappers import get_input
 
-    print('PerformAuthRestarts preference is: '
+    print('PerformAuthRestarts preference is: %s'
           % prefs.pref('PerformAuthRestarts'))
     print('FileVault is active: %s' % fv_is_active())
     print('Recovery key is present: %s' % verify_recovery_key_present())
