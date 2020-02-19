@@ -176,7 +176,11 @@ class Job(object):
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 universal_newlines=universal_newlines)
-        err = proc.communicate()[1].decode('UTF-8')
+        if universal_newlines:
+            # output is in text mode
+            err = proc.communicate()[1]
+        else:
+            err = proc.communicate()[1].decode('UTF-8')
         if proc.returncode:
             raise LaunchdJobException(err)
 
