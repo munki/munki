@@ -24,6 +24,7 @@ Socket communications code adapted from autopkg's PkgCreator by Per Olofsson
 from __future__ import absolute_import, print_function
 
 import os
+import prefs
 import select
 import socket
 
@@ -195,6 +196,8 @@ def test():
     import pwd
     from ..wrappers import get_input
 
+    print('PerformAuthRestarts preference is: '
+          % prefs.pref('PerformAuthRestarts'))
     print('FileVault is active: %s' % fv_is_active())
     print('Recovery key is present: %s' % verify_recovery_key_present())
     username = pwd.getpwuid(os.getuid()).pw_name
