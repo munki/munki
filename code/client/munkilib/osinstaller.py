@@ -371,7 +371,7 @@ class StartOSInstallRunner(object):
                 display.display_status_minor(msg)
             elif msg.startswith(('Preparing ', 'Preparing: ')):
                 # percent-complete messages
-                percent_str = msg.split()[-1].rstrip('%')
+                percent_str = msg.split()[-1].rstrip('%.')
                 try:
                     percent = int(float(percent_str))
                 except ValueError:
