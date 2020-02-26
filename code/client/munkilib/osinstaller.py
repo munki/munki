@@ -119,7 +119,7 @@ def setup_authrestart_if_applicable():
         display.display_info(
             'FileVault is active and we can do an authrestart')
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if os_version_tuple >= (10, 12):
+        if False: # was: os_version_tuple >= (10, 12):
             # setup delayed auth restart so that when startosinstall does a
             # restart, it completes without user credentials
             display.display_info('Setting up delayed authrestart...')
