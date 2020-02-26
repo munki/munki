@@ -322,8 +322,7 @@ class StartOSInstallRunner(object):
         env = {'NSUnbufferedIO': 'YES'}
 
         try:
-            job = launchd.Job(cmd, environment_vars=env, cleanup_at_exit=False,
-                              universal_newlines=True)
+            job = launchd.Job(cmd, environment_vars=env, cleanup_at_exit=False)
             job.start()
         except launchd.LaunchdJobException as err:
             display.display_error(
