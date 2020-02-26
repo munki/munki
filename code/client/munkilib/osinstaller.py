@@ -118,7 +118,7 @@ def setup_authrestart_if_applicable():
             authrestart.can_attempt_auth_restart()):
         display.display_info(
             'FileVault is active and we can do an authrestart')
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        #os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if False: # was: os_version_tuple >= (10, 12):
             # setup delayed auth restart so that when startosinstall does a
             # restart, it completes without user credentials
@@ -466,9 +466,21 @@ def get_catalog_info(mounted_dmgpath):
                 # "14.3GB of available storage to perform upgrade"
                 # http://www.apple.com/macos/how-to-upgrade/
                 installed_size = int(14.3 * 1024 * 1024)
+            elif vers.startswith('10.14'):
+                # Mojave:
+                # "12.5GB of available storage space, or up to 18.5GB of
+                # storage space when upgrading from OS X Yosemite or earlier."
+                # https://support.apple.com/en-us/HT210190
+                installed_size = int(18.5 * 1024 * 1024)
+            elif vers.startswith('10.15'):
+                # Catalina:
+                # "12.5GB of available storage space, or up to 18.5GB of
+                # storage space when upgrading from OS X Yosemite or earlier."
+                # https://support.apple.com/en-us/HT201475
+                installed_size = int(18.5 * 1024 * 1024)
             else:
                 # will need to modify for future macOS releases
-                installed_size = int(14.3 * 1024 * 1024)
+                installed_size = int(18.5 * 1024 * 1024)
             return {'RestartAction': 'RequireRestart',
                     'apple_item': True,
                     'description': description,
