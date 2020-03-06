@@ -757,7 +757,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             --info "$PKGTMP/info_$pkg" \
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
             --scripts "$SCRIPTS" \
-	    --preserve-xattr \
+            --preserve-xattr \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     else
         sudo /usr/bin/pkgbuild \
@@ -767,7 +767,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             --ownership preserve \
             --info "$PKGTMP/info_$pkg" \
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
-	    --preserve-xattr \
+            --preserve-xattr \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     fi
 
