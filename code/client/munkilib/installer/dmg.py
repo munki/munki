@@ -106,7 +106,8 @@ def create_missing_dirs(destpath):
 def remove_quarantine_from_item(some_path):
     '''Removes com.apple.quarantine from some_path'''
     try:
-        if "com.apple.quarantine" in xattr.xattr(some_path).list():
+        if "com.apple.quarantine" in xattr.xattr(some_path).list(
+                                          options=xattr.XATTR_NOFOLLOW):
             xattr.xattr(some_path).remove("com.apple.quarantine",
                                           options=xattr.XATTR_NOFOLLOW)
     except BaseException as err:
