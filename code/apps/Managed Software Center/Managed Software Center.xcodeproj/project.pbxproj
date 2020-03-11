@@ -623,6 +623,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MARKETING_VERSION = 5.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -640,6 +641,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MARKETING_VERSION = 5.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
