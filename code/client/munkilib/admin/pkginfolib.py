@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ pkginfolib
 Created by Greg Neagle on 2017-11-18.
 Routines used by makepkginfo to create pkginfo files
 """
+from __future__ import absolute_import, division, print_function
 
 # standard libs
 import optparse
@@ -193,10 +194,9 @@ def get_catalog_info_from_dmg(dmgpath, options):
         install_macos_app = osinstaller.find_install_macos_app(mountpoints[0])
         if (install_macos_app and options.print_warnings and
                 osinstaller.install_macos_app_is_stub(install_macos_app)):
-            print >> sys.stderr, (
-                'WARNING: %s appears to be an Install macOS application, but '
-                'it does not contain Contents/SharedSupport/InstallESD.dmg'
-                % os.path.basename(install_macos_app))
+            print('WARNING: %s appears to be an Install macOS application, but '
+                  'it does not contain Contents/SharedSupport/InstallESD.dmg'
+                  % os.path.basename(install_macos_app), file=sys.stderr)
         cataloginfo = osinstaller.get_catalog_info(mountpoints[0])
 
     if not cataloginfo:
@@ -297,7 +297,7 @@ def readfile(path):
         fileobject.close()
         return data
     except (OSError, IOError):
-        print >> sys.stderr, "Couldn't read %s" % path
+        print("Couldn't read %s" % path, file=sys.stderr)
         return ""
 
 
@@ -393,7 +393,11 @@ def makepkginfo(installeritem, options):
 
     pkginfo = {}
     installs = []
-    if installeritem and os.path.exists(installeritem):
+    if installeritem:
+        if not os.path.exists(installeritem):
+            raise PkgInfoGenerationError(
+                "File %s does not exist" % installeritem)
+
         # Check if the item is a mount point for a disk image
         if dmgutils.pathIsVolumeMountPoint(installeritem):
             # Get the disk image path for the mount point
@@ -405,16 +409,18 @@ def makepkginfo(installeritem, options):
         itemhash = "N/A"
         if os.path.isfile(installeritem):
             itemsize = int(os.path.getsize(installeritem))
-            itemhash = munkihash.getsha256hash(installeritem)
+            try:
+                itemhash = munkihash.getsha256hash(installeritem)
+            except OSError as err:
+                raise PkgInfoGenerationError(err)
 
         if pkgutils.hasValidDiskImageExt(installeritem):
             if dmgutils.DMGisWritable(installeritem) and options.print_warnings:
-                print >> sys.stderr, (
-                    "WARNING: %s is a writable disk image. "
-                    "Checksum verification is not supported." % installeritem)
-                print >> sys.stderr, (
-                    "WARNING: Consider converting %s to a read-only disk"
-                    "image." % installeritem)
+                print("WARNING: %s is a writable disk image. "
+                      "Checksum verification is not supported." % installeritem,
+                      file=sys.stderr)
+                print("WARNING: Consider converting %s to a read-only disk"
+                      "image." % installeritem, file=sys.stderr)
                 itemhash = "N/A"
             pkginfo = get_catalog_info_from_dmg(installeritem, options)
             if (pkginfo and
@@ -437,10 +443,9 @@ def makepkginfo(installeritem, options):
                     "%s doesn't appear to be a valid installer item!"
                     % installeritem)
             if os.path.isdir(installeritem) and options.print_warnings:
-                print >> sys.stderr, (
-                    "WARNING: %s is a bundle-style package!\n"
-                    "To use it with Munki, you should encapsulate it "
-                    "in a disk image.\n") % installeritem
+                print("WARNING: %s is a bundle-style package!\n"
+                      "To use it with Munki, you should encapsulate it "
+                      "in a disk image.\n" % installeritem, file=sys.stderr)
                 # need to walk the dir and add it all up
                 for (path, dummy_dirs, files) in os.walk(installeritem):
                     for name in files:
@@ -453,8 +458,8 @@ def makepkginfo(installeritem, options):
         elif pkgutils.hasValidConfigProfileExt(installeritem):
             try:
                 pkginfo = get_catalog_info_for_profile(installeritem)
-            except ProfileMetadataGenerationError, err:
-                print >> sys.stderr, err
+            except ProfileMetadataGenerationError as err:
+                print(err, file=sys.stderr)
                 raise PkgInfoGenerationError(
                     "%s doesn't appear to be a supported configuration "
                     "profile!" % installeritem)
@@ -484,11 +489,10 @@ def makepkginfo(installeritem, options):
         # ADOBE STUFF - though maybe generalizable in the future?
         if (pkginfo.get('installer_type') == "AdobeCCPInstaller" and
                 not options.uninstalleritem) and options.print_warnings:
-            print >> sys.stderr, (
-                "WARNING: This item appears to be an Adobe Creative "
-                "Cloud product install.\n"
-                "No uninstaller package was specified so product "
-                "removal will not be possible.")
+            print("WARNING: This item appears to be an Adobe Creative "
+                  "Cloud product install.\n"
+                  "No uninstaller package was specified so product "
+                  "removal will not be possible.", file=sys.stderr)
             pkginfo['uninstallable'] = False
             if 'uninstall_method' in pkginfo:
                 del pkginfo['uninstall_method']
@@ -562,8 +566,8 @@ def makepkginfo(installeritem, options):
             if fitem.startswith('/Library/Receipts'):
                 # no receipts, please!
                 if options.print_warnings:
-                    print >> sys.stderr, (
-                        "Item %s appears to be a receipt. Skipping." % fitem)
+                    print("Item %s appears to be a receipt. Skipping." % fitem,
+                          file=sys.stderr)
                 continue
             if os.path.exists(fitem):
                 iteminfodict = getiteminfo(fitem)
@@ -575,8 +579,8 @@ def makepkginfo(installeritem, options):
                         maxfileversion = thisitemversion
                 installs.append(iteminfodict)
             elif options.print_warnings:
-                print >> sys.stderr, (
-                    "Item %s doesn't exist. Skipping." % fitem)
+                print("Item %s doesn't exist. Skipping." % fitem,
+                      file=sys.stderr)
 
     if installs:
         pkginfo['installs'] = installs

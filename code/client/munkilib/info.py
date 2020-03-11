@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ Created by Greg Neagle on 2016-12-14.
 
 Utilities that retrieve information from the current machine.
 """
+from __future__ import absolute_import, print_function
+
 # standard libs
 import ctypes
 import ctypes.util
@@ -48,7 +50,13 @@ from . import prefs
 from . import reports
 from . import utils
 from . import FoundationPlist
+from .wrappers import unicode_or_str
 
+try:
+    _ = xrange # pylint: disable=xrange-builtin
+except NameError:
+    # no xrange in Python 3
+    xrange = range
 
 # Always ignore these directories when discovering applications.
 APP_DISCOVERY_EXCLUSION_DIRS = set([
@@ -95,7 +103,7 @@ class Popen(subprocess.Popen):
 
         output = []
         inactive = 0
-        while 1:
+        while True:
             (rlist, dummy_wlist, dummy_xlist) = select.select(
                 [fileobj], [], [], 1.0)
 
@@ -144,7 +152,12 @@ class Popen(subprocess.Popen):
             fds.append(self.stderr)
 
         if std_in is not None and sys.stdin is not None:
-            sys.stdin.write(std_in)
+            try:
+                # Python 3
+                sys.stdin.buffer.write(std_in)
+            except AttributeError:
+                # Python 2
+                sys.stdin.write(std_in)
 
         returncode = None
         inactive = 0
@@ -167,11 +180,11 @@ class Popen(subprocess.Popen):
             returncode = self.poll()
 
         if self.stdout is not None:
-            stdout_str = ''.join(stdout)
+            stdout_str = b''.join(stdout)
         else:
             stdout_str = None
         if self.stderr is not None:
-            stderr_str = ''.join(stderr)
+            stderr_str = b''.join(stderr)
         else:
             stderr_str = None
 
@@ -184,14 +197,14 @@ def _unsigned(i):
     return i & 0xFFFFFFFF
 
 
-def _asciiz_to_str(a_string):
+def _asciiz_to_bytestr(a_bytestring):
     """Transform a null-terminated string of any length into a Python str.
     Returns a normal Python str that has been terminated.
     """
-    i = a_string.find('\0')
+    i = a_bytestring.find(b'\0')
     if i > -1:
-        a_string = a_string[0:i]
-    return a_string
+        a_bytestring = a_bytestring[0:i]
+    return a_bytestring
 
 
 def _f_flags_to_set(f_flags):
@@ -230,8 +243,8 @@ def get_filesystems():
 
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
     # see man GETFSSTAT(2) for struct
-    statfs_32_struct = '=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
-    statfs_64_struct = '=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
+    statfs_32_struct = b'=hh ll ll ll lQ lh hl 2l 15s 90s 90s x 16x'
+    statfs_64_struct = b'=Ll QQ QQ Q ll l LLL 16s 1024s 1024s 32x'
     os_version = osutils.getOsVersion(as_tuple=True)
     if os_version <= (10, 5):
         mode = 32
@@ -269,21 +282,21 @@ def get_filesystems():
              f_ffree, f_fsid_0, f_fsid_1, f_owner, f_type, f_flags,
              f_fssubtype,
              f_fstypename, f_mntonname, f_mntfromname) = struct.unpack(
-                 statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
+                 statfs_struct, bytes(buf[ofs:ofs+sizeof_statfs_struct]))
         elif mode == 32:
             (f_otype, f_oflags, f_bsize, f_iosize, f_blocks, f_bfree, f_bavail,
              f_files, f_ffree, f_fsid, f_owner, f_reserved1, f_type, f_flags,
              f_reserved2_0, f_reserved2_1, f_fstypename, f_mntonname,
              f_mntfromname) = struct.unpack(
-                 statfs_struct, str(buf[ofs:ofs+sizeof_statfs_struct]))
+                 statfs_struct, bytes(buf[ofs:ofs+sizeof_statfs_struct]))
 
         try:
-            stat_val = os.stat(_asciiz_to_str(f_mntonname))
+            stat_val = os.stat(_asciiz_to_bytestr(f_mntonname))
             output[stat_val.st_dev] = {
                 'f_flags_set': _f_flags_to_set(f_flags),
-                'f_fstypename': _asciiz_to_str(f_fstypename),
-                'f_mntonname': _asciiz_to_str(f_mntonname),
-                'f_mntfromname': _asciiz_to_str(f_mntfromname),
+                'f_fstypename': _asciiz_to_bytestr(f_fstypename),
+                'f_mntonname': _asciiz_to_bytestr(f_mntonname),
+                'f_mntfromname': _asciiz_to_bytestr(f_mntfromname),
             }
         except OSError:
             pass
@@ -330,10 +343,10 @@ def is_excluded_filesystem(path, _retry=False):
             display.display_debug1(
                 'Trying isExcludedFilesystem again for %s' % path)
             return is_excluded_filesystem(path, True)
-        else:
-            display.display_debug1(
-                'Could not match path %s to a filesystem' % path)
-            return None
+        # _retry defined
+        display.display_debug1(
+            'Could not match path %s to a filesystem' % path)
+        return None
 
     exc_flags = ('read-only' in FILESYSTEMS[stat_val.st_dev]['f_flags_set'] or
                  'local' not in FILESYSTEMS[stat_val.st_dev]['f_flags_set'])
@@ -541,7 +554,7 @@ def get_hardware_info():
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_error) = proc.communicate()
+    output = proc.communicate()[0]
     try:
         plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array
@@ -561,7 +574,7 @@ def get_ip_addresses(kind):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_error) = proc.communicate()
+    output = proc.communicate()[0]
     try:
         plist = FoundationPlist.readPlistFromString(output)
         # system_profiler xml is an array of length 1
@@ -608,12 +621,12 @@ def available_disk_space(volumepath='/'):
         volumepath = '/'
     try:
         stat_val = os.statvfs(volumepath)
-    except OSError, err:
+    except OSError as err:
         display.display_error(
             'Error getting disk space in %s: %s', volumepath, str(err))
         return 0
      # f_bavail matches df(1) output
-    return int(stat_val.f_frsize * stat_val.f_bavail / 1024)
+    return int(stat_val.f_frsize * stat_val.f_bavail / 1024) # pylint: disable=old-division
 
 
 def get_os_build():
@@ -632,7 +645,7 @@ def getMachineFacts():
     installer is applicable to this OS or hardware"""
     # pylint: disable=C0103
     machine = dict()
-    machine['hostname'] = os.uname()[1].decode('UTF-8')
+    machine['hostname'] = unicode_or_str(os.uname()[1])
     machine['arch'] = os.uname()[4]
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     machine['os_build_number'] = get_os_build()
@@ -689,8 +702,8 @@ def get_conditions():
                     utils.runExternalScript(conditionalscriptpath))
             except utils.ScriptNotFoundError:
                 pass  # script is not required, so pass
-            except utils.RunExternalScriptError, err:
-                print >> sys.stderr, unicode(err)
+            except utils.RunExternalScriptError as err:
+                print(unicode_or_str(err), file=sys.stderr)
     else:
         # /usr/local/munki/conditions does not exist
         pass
@@ -727,7 +740,7 @@ def saveappdata():
             app_inventory,
             os.path.join(
                 prefs.pref('ManagedInstallDir'), 'ApplicationInventory.plist'))
-    except FoundationPlist.NSPropertyListSerializationException, err:
+    except FoundationPlist.NSPropertyListSerializationException as err:
         display.display_warning(
             'Unable to save inventory report: %s' % err)
 
@@ -810,7 +823,7 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
         info_object.update(additional_info)
     try:
         predicate = NSPredicate.predicateWithFormat_(predicate_string)
-    except BaseException, err:
+    except BaseException as err:
         display.display_warning('%s', err)
         # can't parse predicate, so return False
         return False
@@ -821,4 +834,4 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

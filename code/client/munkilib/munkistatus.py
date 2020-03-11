@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Created by Greg Neagle on 2009-09-24.
 Utility functions for using MunkiStatus.app
 to display status and progress.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import time
@@ -157,4 +158,4 @@ def restartAlert():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

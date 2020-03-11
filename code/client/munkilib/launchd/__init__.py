@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2011-2019 Greg Neagle.
+# Copyright 2011-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ Returns a file descriptor for a socket defined in a launchd plist.
 A wrapper for using launchd to run a process as root outside of Munki's
 process space. Needed to properly run /usr/sbin/softwareupdate, for example.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -80,11 +81,11 @@ def job_info(job_label):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    output = proc.communicate()[0]
+    output = proc.communicate()[0].decode('UTF-8')
     if proc.returncode or not output:
         return info
     else:
-        lines = str(output).splitlines()
+        lines = output.splitlines()
         # search launchctl list output for our job label
         job_lines = [item for item in lines
                      if item.endswith('\t' + job_label)]
@@ -115,7 +116,7 @@ def stop_job(job_label):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    err = proc.communicate()[1]
+    err = proc.communicate()[1].decode('UTF-8')
     if proc.returncode:
         raise LaunchdJobException(err)
 
@@ -127,7 +128,7 @@ def remove_job(job_label):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    err = proc.communicate()[1]
+    err = proc.communicate()[1].decode('UTF-8')
     if proc.returncode:
         raise LaunchdJobException(err)
 
@@ -156,6 +157,12 @@ class Job(object):
         self.plist['StandardErrorPath'] = self.stderr_path
         if environment_vars:
             self.plist['EnvironmentVariables'] = environment_vars
+        # create stdout and stderr files
+        try:
+            open(self.stdout_path, 'wb').close()
+            open(self.stderr_path, 'wb').close()
+        except (OSError, IOError) as err:
+            raise LaunchdJobException(err)
         # write out launchd plist
         FoundationPlist.writePlist(self.plist, self.plist_path)
         # set owner, group and mode to those required
@@ -167,7 +174,7 @@ class Job(object):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        err = proc.communicate()[1]
+        err = proc.communicate()[1].decode('UTF-8')
         if proc.returncode:
             raise LaunchdJobException(err)
 
@@ -208,9 +215,9 @@ class Job(object):
             try:
                 # open the stdout and stderr output files and
                 # store their file descriptors for use
-                self.stdout = open(self.stdout_path, 'r')
-                self.stderr = open(self.stderr_path, 'r')
-            except (OSError, IOError), err:
+                self.stdout = open(self.stdout_path, 'rb')
+                self.stderr = open(self.stderr_path, 'rb')
+            except (OSError, IOError) as err:
                 raise LaunchdJobException(err)
 
     def stop(self):
@@ -231,4 +238,4 @@ class Job(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

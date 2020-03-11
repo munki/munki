@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,23 @@ Created by Greg Neagle on 2016-12-14.
 
 Logging functions for Munki
 """
+from __future__ import absolute_import, print_function
 
+import codecs
 import logging
 import logging.handlers
 import os
 import time
 
 from . import prefs
+
+
+def logging_level():
+    '''Returns the logging level, which might be defined badly by the admin'''
+    try:
+        return int(prefs.pref('LoggingLevel'))
+    except TypeError:
+        return 1
 
 
 def log(msg, logname=''):
@@ -50,9 +60,9 @@ def log(msg, logname=''):
     else:
         logpath = os.path.join(os.path.dirname(prefs.pref('LogFile')), logname)
     try:
-        fileobj = open(logpath, mode='a', buffering=1)
+        fileobj = codecs.open(logpath, mode='a', buffering=1, encoding='UTF-8')
         try:
-            print >> fileobj, time.strftime(formatstr), msg.encode('UTF-8')
+            fileobj.write("%s %s\n" % (time.strftime(formatstr), msg))
         except (OSError, IOError):
             pass
         fileobj.close()
@@ -130,4 +140,4 @@ def reset_errors():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

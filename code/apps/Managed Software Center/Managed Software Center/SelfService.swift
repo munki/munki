@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/12/18.
-//  Copyright © 2018-2019 The Munki Project. All rights reserved.
+//  Copyright © 2018-2020 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -43,10 +43,11 @@ struct SelfService {
     }
 
     init() {
+        let selfServiceData = readSelfServiceManifest()
         _installs = Set(
-            readSelfServiceManifest()["managed_installs"] as? [String] ?? [String]())
+            selfServiceData["managed_installs"] as? [String] ?? [String]())
         _uninstalls = Set(
-            readSelfServiceManifest()["managed_uninstalls"] as? [String] ?? [String]())
+            selfServiceData["managed_uninstalls"] as? [String] ?? [String]())
     }
     
     mutating func subscribe(_ item_name: String) -> Bool {

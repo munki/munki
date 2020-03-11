@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 '''Python wrapper for original launchd checkin API'''
+from __future__ import absolute_import
 
 # pylint: disable=wildcard-import
 # pylint: disable=unused-wildcard-import
 from ctypes import *
 # pylint: enable=unused-wildcard-import
 # pylint: enable=wildcard-import
+
 # pylint: disable=invalid-name
 libc = CDLL("/usr/lib/libc.dylib")
-# pylint: enable=invalid-name
 
 
 c_launch_data_t = c_void_p
@@ -83,7 +84,7 @@ launch_data_new_string.argtypes = [c_char_p]
 launch_msg = libc.launch_msg
 launch_msg.restype = c_launch_data_t
 launch_msg.argtypes = [c_launch_data_t]
-
+# pylint: enable=invalid-name
 
 LAUNCH_KEY_SUBMITJOB = c_char_p("SubmitJob")
 LAUNCH_KEY_REMOVEJOB = c_char_p("RemoveJob")
@@ -204,7 +205,7 @@ LAUNCH_JOBSOCKETKEY_MULTICASTGROUP = c_char_p("MulticastGroup")
     LAUNCH_DATA_OPAQUE,
     LAUNCH_DATA_ERRNO,
     LAUNCH_DATA_MACHPORT
-) = range(1, 11)
+) = list(range(1, 11))
 
 
 class LaunchDCheckInError(Exception):
@@ -217,7 +218,7 @@ def get_launchd_socket_fds():
     # Return a dictionary with keys pointing to lists of file descriptors.
     launchd_socket_fds = dict()
 
-    def add_socket(launch_array, name, context=None):
+    def add_socket(launch_array, name, _context=None):
         '''Callback for dict iterator.'''
         if launch_data_get_type(launch_array) != LAUNCH_DATA_ARRAY:
             raise LaunchDCheckInError(
@@ -245,7 +246,7 @@ def get_launchd_socket_fds():
 
         if launch_data_get_type(checkin_response) == LAUNCH_DATA_ERRNO:
             errno = launch_data_get_errno(checkin_response)
-            raise LaunchDCheckInError("Checkin failed")
+            raise LaunchDCheckInError("Checkin failed. Error: %s" % errno)
 
         # Get a dictionary of sockets.
         sockets = launch_data_dict_lookup(

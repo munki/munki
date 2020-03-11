@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,13 @@ updatecheck.licensing
 Created by Greg Neagle on 2017-01-01.
 
 """
+from __future__ import absolute_import, print_function
 
-from urllib import quote_plus
+try:
+    from urllib import quote_plus
+except ImportError:
+    # Python 3
+    from urllib.parse import quote_plus
 
 from .. import display
 from .. import fetch
@@ -57,8 +62,7 @@ def update_available_license_seats(installinfo):
         while True:
             query_items = ['name=' + quote_plus(item)
                            for item in items_to_check[start_index:end_index]]
-            querystring = q_char + '&'.join(query_items)
-            url = license_info_url + querystring
+            url = license_info_url + q_char + '&'.join(query_items)
             if len(url) < 256:
                 break
             # drop an item and see if we're under 256 characters
@@ -68,8 +72,9 @@ def update_available_license_seats(installinfo):
         try:
             license_data = fetch.getDataFromURL(url)
             display.display_debug1('Got: %s', license_data)
-            license_dict = FoundationPlist.readPlistFromString(license_data)
-        except fetch.Error, err:
+            license_dict = FoundationPlist.readPlistFromString(
+                license_data.encode("UTF-8"))
+        except fetch.Error as err:
             # problem fetching from URL
             display.display_error('Error from %s: %s', url, err)
         except FoundationPlist.FoundationPlistException:
@@ -102,4 +107,4 @@ def update_available_license_seats(installinfo):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

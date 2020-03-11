@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,22 +20,30 @@ Created by Greg Neagle on 2016-12-14.
 
 Common pkg/receipt functions and classes used by the munki tools.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import re
 import shutil
 import subprocess
 import tempfile
-import urllib2
+
+try:
+    # Python 2
+    from urllib import unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import unquote
+
 
 from distutils import version
-from types import StringType
 from xml.dom import minidom
 
 from . import display
 from . import osutils
 from . import utils
 from . import FoundationPlist
+
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -56,16 +64,29 @@ def getPkgRestartInfo(filename):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
+    out = out.decode('UTF-8')
+    err = err.decode('UTF-8')
     if proc.returncode:
         display.display_error("installer -query failed: %s %s", out, err)
         return {}
 
     if out:
-        restartAction = str(out).rstrip('\n')
+        restartAction = out.rstrip('\n')
         if restartAction != 'None':
             installerinfo['RestartAction'] = restartAction
 
     return installerinfo
+
+
+def _cmp(x, y):
+    """
+    Replacement for built-in function cmp that was removed in Python 3
+
+    Compare the two objects x and y and return an integer according to
+    the outcome. The return value is negative if x < y, zero if x == y
+    and strictly positive if x > y.
+    """
+    return (x > y) - (x < y)
 
 
 class MunkiLooseVersion(version.LooseVersion):
@@ -73,14 +94,20 @@ class MunkiLooseVersion(version.LooseVersion):
     "10.6" and "10.6.0" as equal'''
 
     def __init__(self, vstring=None):
+        """init method"""
+        # pylint: disable=unicode-builtin
         if vstring is None:
             # treat None like an empty string
             self.parse('')
         if vstring is not None:
-            if isinstance(vstring, unicode):
-                # unicode string! Why? Oh well...
-                # convert to string so version.LooseVersion doesn't choke
-                vstring = vstring.encode('UTF-8')
+            try:
+                if isinstance(vstring, unicode):
+                    # unicode string! Why? Oh well...
+                    # convert to string so version.LooseVersion doesn't choke
+                    vstring = vstring.encode('UTF-8')
+            except NameError:
+                # python 3
+                pass
             self.parse(str(vstring))
 
     def _pad(self, version_list, max_length):
@@ -92,15 +119,56 @@ class MunkiLooseVersion(version.LooseVersion):
             cmp_list.append(0)
         return cmp_list
 
-    def __cmp__(self, other):
-        if isinstance(other, StringType):
+    def _compare(self, other):
+        """Complete comparison mechanism since LooseVersion's is broken
+        in Python 3"""
+        if not isinstance(other, version.LooseVersion):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
         self_cmp_version = self._pad(self.version, max_length)
         other_cmp_version = self._pad(other.version, max_length)
+        cmp_result = 0
+        for index, value in enumerate(self_cmp_version):
+            try:
+                cmp_result = _cmp(value, other_cmp_version[index])
+            except TypeError:
+                # integer is less than character/string
+                if isinstance(value, int):
+                    return -1
+                return 1
+            else:
+                if cmp_result:
+                    return cmp_result
+        return cmp_result
 
-        return cmp(self_cmp_version, other_cmp_version)
+    def __hash__(self):
+        """Hash method"""
+        return hash(self.version)
+
+    def __eq__(self, other):
+        """Equals comparison"""
+        return self._compare(other) == 0
+
+    def __ne__(self, other):
+        """Not-equals comparison"""
+        return self._compare(other) != 0
+
+    def __lt__(self, other):
+        """Less than comparison"""
+        return self._compare(other) < 0
+
+    def __le__(self, other):
+        """Less than or equals comparison"""
+        return self._compare(other) <= 0
+
+    def __gt__(self, other):
+        """Greater than comparison"""
+        return self._compare(other) > 0
+
+    def __ge__(self, other):
+        """Greater than or equals comparison"""
+        return self._compare(other) >= 0
 
 
 def padVersionString(versString, tupleCount):
@@ -150,6 +218,7 @@ def getVersionString(plist, key=None):
         # lets us use crappy values like '1.0 (100)'
         VersionString = plist[key].split()[0]
     if VersionString:
+        # check first character to see if it's a digit
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
@@ -161,7 +230,8 @@ def getVersionString(plist, key=None):
         # a future version of the Munki tools may drop this magic
         # and require admins to explicitly choose the CFBundleVersion
         # but for now Munki does some magic
-        VersionString = plist['CFBundleVersion'].encode('utf-8').split()[0]
+        VersionString = plist['CFBundleVersion'].split()[0]
+        # check first character to see if it's a digit
         if VersionString[0] in '0123456789':
             # starts with a number; that's good
             # now for another edge case thanks to Adobe:
@@ -207,6 +277,33 @@ def getAppBundleExecutable(bundlepath):
     return None
 
 
+def parseInfoFile(infofile):
+    '''Returns a dict of keys and values parsed from an .info file
+    At least some of these old files use MacRoman encoding...'''
+    infodict = {}
+    fileobj = open(infofile, mode='rb')
+    info = fileobj.read()
+    fileobj.close()
+    infolines = info.splitlines()
+    for line in infolines:
+        try:
+            parts = line.split(None, 1)
+            if len(parts) == 2:
+                try:
+                    key = parts[0].decode("mac_roman")
+                except (LookupError, UnicodeDecodeError):
+                    key = parts[0].decode("UTF-8")
+                try:
+                    value = parts[1].decode("mac_roman")
+                except (LookupError, UnicodeDecodeError):
+                    value = parts[1].decode("UTF-8")
+                infodict[key] = value
+        except UnicodeDecodeError:
+            # something we could not handle; just skip it
+            pass
+    return infodict
+
+
 def getBundleVersion(bundlepath, key=None):
     """
     Returns version number from a bundle.
@@ -228,16 +325,8 @@ def getBundleVersion(bundlepath, key=None):
         for item in osutils.listdir(infopath):
             if os.path.join(infopath, item).endswith('.info'):
                 infofile = os.path.join(infopath, item)
-                fileobj = open(infofile, mode='r')
-                info = fileobj.read()
-                fileobj.close()
-                infolines = info.splitlines()
-                for line in infolines:
-                    parts = line.split(None, 1)
-                    if len(parts) == 2:
-                        label = parts[0]
-                        if label == 'Version':
-                            return parts[1]
+                infodict = parseInfoFile(infofile)
+                return infodict.get("Version", "0.0.0.0.0")
 
     # didn't find a version number, so return 0...
     return '0.0.0.0.0'
@@ -252,20 +341,20 @@ def parsePkgRefs(filename, path_to_pkg=None):
     if pkgrefs:
         # this is a PackageInfo file
         for ref in pkgrefs:
-            keys = ref.attributes.keys()
+            keys = list(ref.attributes.keys())
             if 'identifier' in keys and 'version' in keys:
                 pkginfo = {}
                 pkginfo['packageid'] = \
-                       ref.attributes['identifier'].value.encode('UTF-8')
+                       ref.attributes['identifier'].value
                 pkginfo['version'] = \
-                    ref.attributes['version'].value.encode('UTF-8')
+                    ref.attributes['version'].value
                 payloads = ref.getElementsByTagName('payload')
                 if payloads:
-                    keys = payloads[0].attributes.keys()
+                    keys = list(payloads[0].attributes.keys())
                     if 'installKBytes' in keys:
                         pkginfo['installed_size'] = int(float(
                             payloads[0].attributes[
-                                'installKBytes'].value.encode('UTF-8')))
+                                'installKBytes'].value))
                     if pkginfo not in info:
                         info.append(pkginfo)
                 # if there isn't a payload, no receipt is left by a flat
@@ -276,24 +365,22 @@ def parsePkgRefs(filename, path_to_pkg=None):
             # this is a Distribution or .dist file
             pkgref_dict = {}
             for ref in pkgrefs:
-                keys = ref.attributes.keys()
+                keys = list(ref.attributes.keys())
                 if 'id' in keys:
-                    pkgid = ref.attributes['id'].value.encode('UTF-8')
+                    pkgid = ref.attributes['id'].value
                     if not pkgid in pkgref_dict:
                         pkgref_dict[pkgid] = {'packageid': pkgid}
                     if 'version' in keys:
                         pkgref_dict[pkgid]['version'] = \
-                            ref.attributes['version'].value.encode('UTF-8')
+                            ref.attributes['version'].value
                     if 'installKBytes' in keys:
                         pkgref_dict[pkgid]['installed_size'] = int(float(
-                            ref.attributes['installKBytes'].value.encode(
-                                'UTF-8')))
+                            ref.attributes['installKBytes'].value))
                     if ref.firstChild:
                         text = ref.firstChild.wholeText
                         if text.endswith('.pkg'):
                             if text.startswith('file:'):
-                                relativepath = urllib2.unquote(
-                                    text[5:].encode('UTF-8'))
+                                relativepath = unquote(text[5:])
                                 pkgdir = os.path.dirname(
                                     path_to_pkg or filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
@@ -301,13 +388,12 @@ def parsePkgRefs(filename, path_to_pkg=None):
                             else:
                                 if text.startswith('#'):
                                     text = text[1:]
-                                relativepath = urllib2.unquote(
-                                    text.encode('UTF-8'))
+                                relativepath = unquote(text)
                                 thisdir = os.path.dirname(filename)
                                 pkgref_dict[pkgid]['file'] = os.path.join(
                                     thisdir, relativepath)
 
-            for key in pkgref_dict.keys():
+            for key in pkgref_dict:
                 pkgref = pkgref_dict[key]
                 if 'file' in pkgref:
                     if os.path.exists(pkgref['file']):
@@ -341,12 +427,12 @@ def getFlatPackageInfo(pkgpath):
     proc = subprocess.Popen(cmd_toc, bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (toc, err) = proc.communicate()
-    toc = toc.strip().split('\n')
+    toc = toc.decode('UTF-8').strip().split('\n')
     if proc.returncode == 0:
         # Walk trough the TOC entries
         for toc_entry in toc:
             # If the TOC entry is a top-level PackageInfo, extract it
-            if toc_entry.startswith('PackageInfo') and len(infoarray) == 0:
+            if toc_entry.startswith('PackageInfo') and not infoarray:
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
                 result = subprocess.call(cmd_extract)
                 if result == 0:
@@ -356,7 +442,7 @@ def getFlatPackageInfo(pkgpath):
                     break
                 else:
                     display.display_warning(
-                        "An error occurred while extracting %s: %s",
+                        u"An error occurred while extracting %s: %s",
                         toc_entry, err)
             # If there are PackageInfo files elsewhere, gather them up
             elif toc_entry.endswith('.pkg/PackageInfo'):
@@ -368,9 +454,9 @@ def getFlatPackageInfo(pkgpath):
                     infoarray.extend(parsePkgRefs(packageinfoabspath))
                 else:
                     display.display_warning(
-                        "An error occurred while extracting %s: %s",
+                        u"An error occurred while extracting %s: %s",
                         toc_entry, err)
-        if len(infoarray) == 0:
+        if not infoarray:
             for toc_entry in [item for item in toc
                               if item.startswith('Distribution')]:
                 # Extract the Distribution file
@@ -384,14 +470,14 @@ def getFlatPackageInfo(pkgpath):
                     break
                 else:
                     display.display_warning(
-                        "An error occurred while extracting %s: %s",
+                        u"An error occurred while extracting %s: %s",
                         toc_entry, err)
 
-        if len(infoarray) == 0:
+        if not infoarray:
             display.display_warning(
                 'No valid Distribution or PackageInfo found.')
     else:
-        display.display_warning(err)
+        display.display_warning(err.decode('UTF-8'))
 
     # change back to original working dir
     os.chdir(cwd)
@@ -417,7 +503,7 @@ def getBomList(pkgpath):
                                 shell=False, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, dummy_err) = proc.communicate()
+        output = proc.communicate()[0].decode('UTF-8')
         if proc.returncode == 0:
             return output.splitlines()
     return []
@@ -466,20 +552,9 @@ def getOnePackageInfo(pkgpath):
                     pkginfo['filename'] = os.path.basename(pkgpath)
                     pkginfo['packageid'] = os.path.basename(pkgpath)
                     infofile = os.path.join(infopath, item)
-                    fileobj = open(infofile, mode='r')
-                    info = fileobj.read()
-                    fileobj.close()
-                    infolines = info.splitlines()
-                    pkginfo['version'] = '0.0'
-                    pkginfo['name'] = 'UNKNOWN'
-                    for line in infolines:
-                        parts = line.split(None, 1)
-                        if len(parts) == 2:
-                            label = parts[0]
-                            if label == 'Version':
-                                pkginfo['version'] = parts[1]
-                            if label == 'Title':
-                                pkginfo['name'] = parts[1]
+                    infodict = parseInfoFile(infofile)
+                    pkginfo['version'] = infodict.get('Version', '0.0')
+                    pkginfo['name'] = infodict.get('Title', 'UNKNOWN')
                     break
     return pkginfo
 
@@ -563,7 +638,7 @@ def getInstalledPackageVersion(pkgid):
                             bufsize=1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
+    out = proc.communicate()[0]
 
     if out:
         try:
@@ -587,7 +662,7 @@ def getInstalledPackageVersion(pkgid):
         for item in installitems:
             if item.endswith('.pkg'):
                 info = getBundlePackageInfo(os.path.join(receiptsdir, item))
-                if len(info):
+                if info:
                     infoitem = info[0]
                     foundbundleid = infoitem['packageid']
                     foundvers = infoitem['version']
@@ -666,10 +741,9 @@ def nameAndVersion(aString):
                 break
         vers = aString[index:]
         return (aString[0:index].rstrip(' .-_v'), vers)
-    else:
-        # no version number found,
-        # just return original string and empty string
-        return (aString, '')
+    # no version number found,
+    # just return original string and empty string
+    return (aString, '')
 
 
 def hasValidConfigProfileExt(path):
@@ -703,7 +777,7 @@ def getChoiceChangesXML(pkgitem):
         proc = subprocess.Popen(
             ['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
             bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (out, dummy_err) = proc.communicate()
+        out = proc.communicate()[0]
         if out:
             plist = FoundationPlist.readPlistFromString(out)
 
@@ -802,7 +876,7 @@ def getInstalledPackages():
     proc = subprocess.Popen(['/usr/sbin/pkgutil', '--regexp',
                              '--pkg-info-plist', '.*'], bufsize=8192,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
+    out = proc.communicate()[0]
     while out:
         (pliststr, out) = utils.getFirstPlist(out)
         if pliststr:
@@ -871,4 +945,4 @@ def isApplication(pathname):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

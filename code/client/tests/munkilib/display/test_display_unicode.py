@@ -6,7 +6,7 @@ test_display_unicode.py
 Unit tests for display.display_* functions.
 
 """
-# Copyright 2014-2019 Greg Neagle.
+# Copyright 2014-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ Unit tests for display.display_* functions.
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import absolute_import
 
 import unittest
 
@@ -26,10 +27,10 @@ from munkilib import display
 
 
 MSG_UNI = u'Günther\'s favorite thing is %s'
-MSG_STR = 'Günther\'s favorite thing is %s'
+MSG_STR = u'Günther\'s favorite thing is %s'.encode('UTF-8')
 
 ARG_UNI = u'Günther'
-ARG_STR = 'Günther'
+ARG_STR = u'Günther'.encode('UTF-8')
 
 
 def log(msg, logname=''):

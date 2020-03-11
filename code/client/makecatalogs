@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,14 +26,24 @@ Assumes a pkgsinfo directory under repopath.
 User calling this needs to be able to write to repo/catalogs.
 
 """
+from __future__ import absolute_import, print_function
 
 import optparse
 import sys
 
 from munkilib.admin import makecatalogslib
-from munkilib.cliutils import pref, path2url, print_utf8, print_err_utf8
+from munkilib.cliutils import pref, path2url
 from munkilib.cliutils import get_version
 from munkilib import munkirepo
+from munkilib.wrappers import unicode_or_str
+
+# define a unicode function for Python 3
+try:
+    # Python 2
+    _ = unicode # pylint: disable=unicode-builtin
+except NameError:
+    # Python 3
+    unicode = str
 
 
 def main():
@@ -44,7 +54,8 @@ def main():
                       help='Print the version of the munki tools and exit.')
     parser.add_option('--force', '-f', action='store_true', dest='force',
                       help='Disable sanity checks.')
-    parser.add_option('--skip-pkg-check', '-s', action='store_true', dest='skip_payload_check',
+    parser.add_option('--skip-pkg-check', '-s', action='store_true',
+                      dest='skip_payload_check',
                       help='Skip checking of pkg existence. Useful '
                            'when pkgs aren\'t on the same server '
                            'as pkginfo, catalogs and manifests.')
@@ -58,7 +69,7 @@ def main():
     options, arguments = parser.parse_args()
 
     if options.version:
-        print get_version()
+        print(get_version())
         exit(0)
 
     # backwards compatibility
@@ -78,19 +89,19 @@ def main():
     # Connect to the repo
     try:
         repo = munkirepo.connect(options.repo_url, options.plugin)
-    except munkirepo.RepoError, err:
-        print >> sys.stderr, (u'Could not connect to munki repo: %s'
-                              % unicode(err))
+    except munkirepo.RepoError as err:
+        print(u'Could not connect to munki repo: %s' % unicode_or_str(err),
+              file=sys.stderr)
         exit(-1)
 
     # Make the catalogs
-    errors = makecatalogslib.makecatalogs(repo, options, output_fn=print_utf8)
+    errors = makecatalogslib.makecatalogs(repo, options, output_fn=print)
 
     if errors:
         # group all errors at the end for better visibility
-        print
+        print()
         for error in errors:
-            print_err_utf8(error)
+            print(error, file=sys.stderr)
         exit(-1)
 
 

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-06.
 
 Utilities for working with Apple software update preferences
 """
+from __future__ import absolute_import, print_function
 
 import subprocess
 
@@ -124,9 +125,9 @@ def set_custom_catalogurl(catalog_url):
             bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (output, err) = proc.communicate()
         if output:
-            display.display_detail(output)
+            display.display_detail(output.decode('UTF-8'))
         if err:
-            display.display_error(err)
+            display.display_error(err.decode('UTF-8'))
 
 
 def reset_original_catalogurl():
@@ -162,9 +163,9 @@ def reset_original_catalogurl():
                                 stderr=subprocess.PIPE)
         (output, err) = proc.communicate()
         if output:
-            display.display_detail(output)
+            display.display_detail(output.decode('UTF-8'))
         if err:
-            display.display_error(err)
+            display.display_error(err.decode('UTF-8'))
 
     # remove ORIGINAL_CATALOG_URL_KEY
     CFPreferencesSetValue(
@@ -180,4 +181,4 @@ def reset_original_catalogurl():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

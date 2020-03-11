@@ -22,6 +22,7 @@ Common utility functions used throughout Munki.
 
 Note: this module should be 100% free of ObjC-dependent Python imports.
 """
+from __future__ import absolute_import, print_function
 
 
 import grp
@@ -34,6 +35,7 @@ class Memoize(dict):
     '''Class to cache the return values of an expensive function.
     This version supports only functions with non-keyword arguments'''
     def __init__(self, func):
+        super(Memoize, self).__init__()
         self.func = func
 
     def __call__(self, *args):
@@ -83,7 +85,7 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
     """
     try:
         file_stat = os.stat(file_path)
-    except OSError, err:
+    except OSError as err:
         raise VerifyFilePermissionsError(
             '%s does not exist. \n %s' % (file_path, str(err)))
 
@@ -103,7 +105,7 @@ def verifyFileOnlyWritableByMunkiAndRoot(file_path):
         # verify other users cannot write to the file.
         elif file_stat.st_mode & stat.S_IWOTH != 0:
             raise InsecureFilePermissionsError('world writable!')
-    except InsecureFilePermissionsError, err:
+    except InsecureFilePermissionsError as err:
         raise InsecureFilePermissionsError(
             '%s is not secure! %s' % (file_path, err.args[0]))
 
@@ -127,30 +129,30 @@ def runExternalScript(script, allow_insecure=False, script_args=()):
     if not allow_insecure:
         try:
             verifyFileOnlyWritableByMunkiAndRoot(script)
-        except VerifyFilePermissionsError, err:
+        except VerifyFilePermissionsError as err:
             msg = ('Skipping execution due to failed file permissions '
                    'verification: %s\n%s' % (script, str(err)))
             raise RunExternalScriptError(msg)
 
-    if os.access(script, os.X_OK):
-        cmd = [script]
-        if script_args:
-            cmd.extend(script_args)
-        proc = None
-        try:
-            proc = subprocess.Popen(cmd, shell=False,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-        except (OSError, IOError), err:
-            raise RunExternalScriptError(
-                'Error %s when attempting to run %s' % (unicode(err), script))
-        if proc:
-            (stdout, stderr) = proc.communicate()
-            return proc.returncode, stdout.decode('UTF-8', 'replace'), \
-                                    stderr.decode('UTF-8', 'replace')
-    else:
+    if not os.access(script, os.X_OK):
         raise RunExternalScriptError('%s not executable' % script)
+
+    cmd = [script]
+    if script_args:
+        cmd.extend(script_args)
+    proc = None
+    try:
+        proc = subprocess.Popen(cmd, shell=False,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    except (OSError, IOError) as err:
+        raise RunExternalScriptError(
+            u'Error %s when attempting to run %s' % (err, script))
+    (stdout, stderr) = proc.communicate()
+    return (proc.returncode, stdout.decode('UTF-8', 'replace'),
+            stderr.decode('UTF-8', 'replace'))
+
 
 
 def getPIDforProcessName(processname):
@@ -176,32 +178,32 @@ def getPIDforProcessName(processname):
                 pass
             else:
                 if process.find(processname) != -1:
-                    return str(pid)
+                    return pid
 
     return 0
 
 
-def getFirstPlist(textString):
-    """Gets the next plist from a text string that may contain one or
+def getFirstPlist(byteString):
+    """Gets the next plist from a byte string that may contain one or
     more text-style plists.
     Returns a tuple - the first plist (if any) and the remaining
     string after the plist"""
-    plist_header = '<?xml version'
-    plist_footer = '</plist>'
-    plist_start_index = textString.find(plist_header)
+    plist_header = b'<?xml version'
+    plist_footer = b'</plist>'
+    plist_start_index = byteString.find(plist_header)
     if plist_start_index == -1:
         # not found
-        return ("", textString)
-    plist_end_index = textString.find(
+        return (b"", byteString)
+    plist_end_index = byteString.find(
         plist_footer, plist_start_index + len(plist_header))
     if plist_end_index == -1:
         # not found
-        return ("", textString)
+        return (b"", byteString)
     # adjust end value
     plist_end_index = plist_end_index + len(plist_footer)
-    return (textString[plist_start_index:plist_end_index],
-            textString[plist_end_index:])
+    return (byteString[plist_start_index:plist_end_index],
+            byteString[plist_end_index:])
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -170,6 +170,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 				es,
@@ -181,6 +182,8 @@
 				nl,
 				ru,
 				sv,
+				da,
+				de,
 			);
 			mainGroup = C081D8AB1E5F4F5E00323D9C;
 			productRefGroup = C081D8B51E5F4F5E00323D9C /* Products */;
@@ -219,7 +222,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a pseudo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a pseudo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

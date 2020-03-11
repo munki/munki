@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2018-2019 Greg Neagle.
+# Copyright 2018-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ Much code based on and adapted from autopkgserver by Per Olofsson
 A privileged daemon that records app usage events and install requests to our
 app usage database.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -31,14 +32,18 @@ import time
 import stat
 import logging
 import logging.handlers
-import SocketServer
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
 import socket
-import plistlib
 import struct
 
 from munkilib import app_usage
 from munkilib import launchd
+from munkilib import munkilog
 from munkilib import prefs
+from munkilib.wrappers import readPlistFromString, PlistError, unicode_or_str
 
 
 APPNAME = 'appusaged'
@@ -89,6 +94,7 @@ class AppUsageHandler(object):
             self.log.info('%s', self.request)
             self.server.usage.log_application_usage(
                 self.request['event'], self.request['app_dict'])
+        return u""
 
 
 class RunHandler(SocketServer.StreamRequestHandler):
@@ -135,7 +141,7 @@ class RunHandler(SocketServer.StreamRequestHandler):
         cr_ngroups = 2
         cr_groups = 3
 
-        xucred_fmt = 'IIh%dI' % NGROUPS
+        xucred_fmt = b'IIh%dI' % NGROUPS
         res = struct.unpack(
             xucred_fmt,
             self.request.getsockopt(
@@ -165,10 +171,10 @@ class RunHandler(SocketServer.StreamRequestHandler):
 
             # Try to parse it.
             try:
-                plist = plistlib.readPlistFromString(plist_string)
-            except BaseException as err:
+                plist = readPlistFromString(plist_string)
+            except PlistError as err:
                 self.log.error('Malformed request')
-                self.request.send('ERROR:Malformed request\n')
+                self.request.send(u'ERROR:Malformed request\n'.encode('UTF-8'))
                 return
             self.log.debug('Parsed request plist')
 
@@ -176,7 +182,9 @@ class RunHandler(SocketServer.StreamRequestHandler):
             syntax_ok, errors = self.verify_request_syntax(plist)
             if not syntax_ok:
                 self.log.error('Plist syntax error')
-                self.request.send(''.join(['ERROR:%s\n' % e for e in errors]))
+                msg = (u''.join(
+                    [u'ERROR:%s\n' % e for e in errors])).encode('UTF-8')
+                self.request.send(msg)
                 return
 
             self.log.debug(
@@ -184,16 +192,20 @@ class RunHandler(SocketServer.StreamRequestHandler):
             try:
                 appusagehandler = AppUsageHandler(self.server, plist, uid)
                 result = appusagehandler.handle()
-                self.request.send(u'OK:%s\n' % result)
+                self.request.send(
+                    (u'OK:%s\n' % unicode_or_str(result)).encode('UTF-8'))
             except AppUsageHandlerError as err:
-                self.request.send(u'ERROR:%s\n' % unicode(err))
+                self.request.send(
+                    (u'ERROR:%s\n' % unicode_or_str(err)).encode('UTF-8'))
             except BaseException as err:
-                self.log.error('Run failed: %s' % unicode(err))
-                self.request.send(u'ERROR:%s\n' % unicode(err))
+                self.log.error(u'Run failed: %s' % unicode_or_str(err))
+                self.request.send(
+                    (u'ERROR:%s\n' % unicode_or_str(err)).encode('UTF-8'))
 
         except BaseException as err:
-            self.log.error('Caught exception: %s' % repr(err))
-            self.request.send('ERROR:Caught exception: %s' % repr(err))
+            self.log.error(u'Caught exception: %s' % repr(err))
+            self.request.send(
+                (u'ERROR:Caught exception: %s' % repr(err)).encode('UTF-8'))
             return
 
 class AppUsageDaemonError(Exception):
@@ -227,7 +239,7 @@ class AppUsageDaemon(SocketServer.UnixStreamServer):
         '''Configure logging'''
         try:
             logging_level = logging.INFO
-            if prefs.pref('LoggingLevel') > 1:
+            if munkilog.logging_level() > 1:
                 logging_level = logging.DEBUG
             self.log.setLevel(logging_level)
 
@@ -262,7 +274,7 @@ def main():
     '''Start our daemon, connect to socket and process events'''
     # Make sure we're launched as root
     if os.geteuid() != 0:
-        print >> sys.stderr, '%s must be run as root.' % APPNAME
+        print('%s must be run as root.' % APPNAME, file=sys.stderr)
         # Sleep to avoid respawn.
         time.sleep(10)
         return 1
@@ -278,13 +290,14 @@ def main():
     while True:
         info = os.stat(exepath)
         if info.st_uid != root_uid:
-            print >> sys.stderr, '%s must be owned by root.' % exepath
+            print('%s must be owned by root.' % exepath, file=sys.stderr)
             path_ok = False
         if info.st_gid not in (wheel_gid, admin_gid):
-            print >> sys.stderr, '%s must have group wheel or admin.' % exepath
+            print('%s must have group wheel or admin.' % exepath,
+                  file=sys.stderr)
             path_ok = False
         if info.st_mode & stat.S_IWOTH:
-            print >> sys.stderr, '%s mustn\'t be world writeable.' % exepath
+            print('%s mustn\'t be world writeable.' % exepath, file=sys.stderr)
             path_ok = False
         exepath = os.path.dirname(exepath)
         if exepath == '/':
@@ -299,9 +312,9 @@ def main():
     start_time = time.time()
 
     # Get socket file descriptors from launchd.
-    socket_fd = launchd.get_socket_fd(APPNAME)
+    socket_fd = launchd.get_socket_fd(APPNAME.encode('UTF-8'))
     if not socket_fd:
-        print >> sys.stderr, 'No socket provided to us by launchd'
+        print('No socket provided to us by launchd', file=sys.stderr)
         time.sleep(10)
         return 1
 

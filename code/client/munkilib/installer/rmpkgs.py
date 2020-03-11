@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ is made to revert to older versions of a file when uninstalling;
 only file removals are done.
 
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -284,7 +285,7 @@ def import_bom(bompath, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, dummy_err) = proc.communicate()
+    pliststr = proc.communicate()[0]
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "install-location" in plist:
@@ -327,7 +328,7 @@ def import_from_pkgutil(pkgname, curs):
     proc = subprocess.Popen(["/usr/sbin/pkgutil", "--pkg-info-plist", pkgid],
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (pliststr, dummy_err) = proc.communicate()
+    pliststr = proc.communicate()[0]
     if pliststr:
         plist = FoundationPlist.readPlistFromString(pliststr)
         if "pkg-version" in plist:
@@ -394,13 +395,13 @@ def init_database(forcerebuild=False):
                 "Could not remove out-of-date receipt database.")
             return False
 
-    receiptsdir = '/Library/Receipts'
+    receiptsdir = u'/Library/Receipts'
     receiptlist = []
     if os.path.exists(receiptsdir):
         receiptlist = [item for item in osutils.listdir(receiptsdir)
-                       if item.endswith('.pkg')]
+                       if item.endswith(u'.pkg')]
 
-    bomsdir = '/Library/Receipts/boms'
+    bomsdir = u'/Library/Receipts/boms'
     bomslist = []
     if os.path.exists(bomsdir):
         bomslist = [item for item in osutils.listdir(bomsdir)
@@ -413,11 +414,11 @@ def init_database(forcerebuild=False):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     while True:
-        line = proc.stdout.readline()
+        line = proc.stdout.readline().decode('UTF-8')
         if not line and (proc.poll() != None):
             break
 
-        pkglist.append(line.rstrip('\n'))
+        pkglist.append(line.rstrip(u'\n'))
 
     pkgcount = len(receiptlist) + len(bomslist) + len(pkglist)
     conn = sqlite3.connect(PACKAGEDB)
@@ -615,10 +616,9 @@ def remove_receipts(pkgkeylist, noupdateapplepkgdb):
             proc = subprocess.Popen(cmd, bufsize=-1,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, dummy_err) = proc.communicate()
+            output = proc.communicate()[0].decode('UTF-8')
             if output:
-                display.display_detail(
-                    str(output).decode('UTF-8').rstrip('\n'))
+                display.display_detail(output.rstrip('\n'))
 
     display.display_percent_done(2, 4)
 
@@ -675,10 +675,7 @@ def is_bundle(pathname):
         extension = os.path.splitext(basename)[1]
         if extension in bundle_extensions:
             return True
-        else:
-            return False
-    else:
-        return False
+    return False
 
 
 def inside_bundle(pathname):
@@ -732,7 +729,7 @@ def remove_filesystem_items(removalpaths, forcedeletebundles):
                     # directory is empty
                     try:
                         os.rmdir(pathtoremove)
-                    except (OSError, IOError), err:
+                    except (OSError, IOError) as err:
                         msg = "Couldn't remove directory %s - %s" % (
                             pathtoremove, err)
                         display.display_error(msg)
@@ -770,7 +767,7 @@ def remove_filesystem_items(removalpaths, forcedeletebundles):
                 # not a directory, just unlink it
                 try:
                     os.remove(pathtoremove)
-                except (OSError, IOError), err:
+                except (OSError, IOError) as err:
                     msg = "Couldn't remove item %s: %s" % (pathtoremove, err)
                     display.display_error(msg)
                     removalerrors = removalerrors + "\n" + msg
@@ -804,7 +801,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         return -3
 
     pkgkeyslist = getpkgkeys(pkgnames)
-    if len(pkgkeyslist) == 0:
+    if not pkgkeyslist:
         return -4
 
     if processes.stop_requested():
@@ -817,7 +814,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         if listfiles:
             removalpaths.sort()
             for item in removalpaths:
-                print "/" + item.encode('UTF-8')
+                print("/" + item.encode('UTF-8'))
         else:
             munkistatus.disableStopButton()
             remove_filesystem_items(removalpaths, forcedeletebundles)
@@ -838,4 +835,4 @@ PACKAGEDB = os.path.join(prefs.pref('ManagedInstallDir'), "b.receiptdb")
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

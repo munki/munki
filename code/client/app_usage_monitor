@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,11 @@ Borrowing lots of code and ideas from the crankd project, part of pymacadmin:
 and the application_usage scripts created by Google MacOps:
     https://github.com/google/macops/tree/master/crankd
 """
+from __future__ import absolute_import
 
 # standard Python libs
 import logging
 import os
-import plistlib
 import select
 import socket
 import sys
@@ -47,6 +47,9 @@ except ImportError:
     logging.critical("PyObjC wrappers for Apple frameworks are missing.")
     sys.exit(-1)
 
+# our libs
+from munkilib.wrappers import writePlistToString
+
 
 APPUSAGED_SOCKET = "/var/run/appusaged"
 
@@ -59,7 +62,7 @@ class AppUsageClientError(Exception):
 class AppUsageClient(object):
     '''Handles communication with auppusaged daemon'''
     def connect(self):
-        '''Connect to authrestartd'''
+        '''Connect to appusaged'''
         try:
             #pylint: disable=attribute-defined-outside-init
             self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -71,19 +74,17 @@ class AppUsageClient(object):
 
     def send_request(self, request):
         '''Send a request to appusaged'''
-        self.socket.send(plistlib.writePlistToString(request))
-        with os.fdopen(self.socket.fileno()) as fileref:
-            # use select so we don't hang indefinitely if appusaged dies
-            ready = select.select([fileref], [], [], 2)
-            if ready[0]:
-                reply = fileref.read()
-            else:
-                reply = ''
+        self.socket.send(writePlistToString(request))
+        # use select so we don't hang indefinitely if appusaged dies
+        ready = select.select([self.socket.fileno()], [], [], 2)
+        if ready[0]:
+            reply = self.socket.recv(8192).decode("UTF-8")
+        else:
+            reply = ''
 
         if reply:
             return reply.rstrip()
-        else:
-            return "ERROR:No reply"
+        return "ERROR:No reply"
 
     def disconnect(self):
         '''Disconnect from appusaged'''
@@ -138,7 +139,7 @@ class NotificationHandler(NSObject):
         self.ws_nc.removeObserver_(self)
         self.dnc.removeObserver_(self)
 
-    def get_app_dict(self, app_object):
+    def getInfoDictForApp_(self, app_object):
         """Returns a dict with info about an application.
         Args:
             app_object: NSRunningApplication object
@@ -176,26 +177,31 @@ class NotificationHandler(NSObject):
     def didLaunchApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidLaunchApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
-        app_dict = self.get_app_dict(app_object)
+        app_dict = self.getInfoDictForApp_(app_object)
         self.usage.process({'event': 'launch', 'app_dict': app_dict})
 
     def didActivateApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidActivateApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
-        app_dict = self.get_app_dict(app_object)
+        app_dict = self.getInfoDictForApp_(app_object)
         self.usage.process({'event': 'activate', 'app_dict': app_dict})
 
     def didTerminateApplicationNotification_(self, notification):
         """Handle NSWorkspaceDidTerminateApplicationNotification"""
         app_object = notification.userInfo().get('NSWorkspaceApplicationKey')
-        app_dict = self.get_app_dict(app_object)
+        app_dict = self.getInfoDictForApp_(app_object)
         self.usage.process({'event': 'quit', 'app_dict': app_dict})
 
     def requestedItemForInstall_(self, notification):
         """Handle com.googlecode.munki.managedsoftwareupdate.installrequest"""
         logging.info('got install request notification')
         user_info = notification.userInfo()
-        self.usage.process(user_info)
+        self.usage.process(
+            {'event': user_info.get('event', 'unknown'),
+             'name': user_info.get('name', 'unknown'),
+             'version': user_info.get('version', 'unknown')
+            }
+        )
 
 
 def main():
@@ -205,7 +211,9 @@ def main():
     # PyLint can't tell that NotificationHandler' NSObject superclass
     # has an alloc() method
     # pylint: disable=no-member
+    # pylint: disable=unused-variable
     notification_handler = NotificationHandler.alloc().init()
+    # pylint: enable=unused-variable
     # pylint: enable=no-member
 
     while True:

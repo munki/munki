@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ Created by Greg Neagle on 2016-12-13.
 
 Preferences functions and classes used by the munki tools.
 """
+from __future__ import absolute_import, print_function
+
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
@@ -37,10 +39,13 @@ from Foundation import kCFPreferencesCurrentHost
 # pylint: enable=E0611
 
 from .constants import BUNDLE_ID
+from .wrappers import is_a_string
 
 #####################################################
 # managed installs preferences/metadata
 #####################################################
+
+DEFAULT_INSECURE_REPO_URL = 'http://munki/repo'
 
 DEFAULT_PREFS = {
     'AdditionalHttpHeaders': None,
@@ -72,7 +77,7 @@ DEFAULT_PREFS = {
     'ShowOptionalInstallsForHigherOSVersions': False,
     'SoftwareRepoCACertificate': None,
     'SoftwareRepoCAPath': None,
-    'SoftwareRepoURL': None,
+    'SoftwareRepoURL': DEFAULT_INSECURE_REPO_URL,
     'SoftwareUpdateServerURL': None,
     'SuppressAutoInstall': False,
     'SuppressLoginwindowInstall': False,
@@ -140,8 +145,7 @@ class Preferences(object):
         """Return a preference or the default value"""
         if not pref_name in self:
             return default
-        else:
-            return self.__getitem__(pref_name)
+        return self.__getitem__(pref_name)
 
 
 class ManagedInstallsPreferences(Preferences):
@@ -153,6 +157,7 @@ class ManagedInstallsPreferences(Preferences):
     Preferences are written to
         /Library/Preferences/ManagedInstalls.plist
     Since this code is usually run as root, ~ is root's home dir"""
+    # pylint: disable=too-few-public-methods
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesAnyUser)
 
@@ -166,6 +171,7 @@ class SecureManagedInstallsPreferences(Preferences):
     Preferences are written to
         ~/Library/Preferences/ByHost/ManagedInstalls.XXXX.plist
     Since this code is usually run as root, ~ is root's home dir"""
+    # pylint: disable=too-few-public-methods
     def __init__(self):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
 
@@ -269,34 +275,33 @@ def get_config_level(domain, pref_name, value):
 
 def print_config():
     '''Prints the current Munki configuration'''
-    print 'Current Munki configuration:'
-    max_pref_name_len = max(
-        [len(pref_name) for pref_name in DEFAULT_PREFS.keys()])
-    for pref_name in sorted(DEFAULT_PREFS.keys()):
+    print('Current Munki configuration:')
+    max_pref_name_len = max([len(pref_name) for pref_name in DEFAULT_PREFS])
+    for pref_name in sorted(DEFAULT_PREFS):
         if pref_name == 'LastNotifiedDate':
             # skip it
             continue
         value = pref(pref_name)
         where = get_config_level(BUNDLE_ID, pref_name, value)
         repr_value = value
-        if isinstance(value, basestring):
+        if is_a_string(value):
             repr_value = repr(value)
-        print ('%' + str(max_pref_name_len) + 's: %5s %s ') % (
-            pref_name, repr_value, where)
+        print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
+            pref_name, repr_value, where))
     # also print com.apple.SoftwareUpdate CatalogURL config if
     # Munki is configured to install Apple updates
     if pref('InstallAppleSoftwareUpdates'):
-        print 'Current Apple softwareupdate configuration:'
+        print('Current Apple softwareupdate configuration:')
         domain = 'com.apple.SoftwareUpdate'
         pref_name = 'CatalogURL'
         value = CFPreferencesCopyAppValue(pref_name, domain)
         where = get_config_level(domain, pref_name, value)
         repr_value = value
-        if isinstance(value, basestring):
+        if is_a_string(value):
             repr_value = repr(value)
-        print ('%' + str(max_pref_name_len) + 's: %5s %s ') % (
-            pref_name, repr_value, where)
+        print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
+            pref_name, repr_value, where))
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

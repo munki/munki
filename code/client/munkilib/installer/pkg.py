@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for installing Apple pkgs
 """
+from __future__ import absolute_import, print_function
 
 import os
 import pwd
@@ -87,8 +88,8 @@ def pkg_needs_restart(pkgpath, options):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_err) = proc.communicate()
-    restartaction = str(output).decode('UTF-8').rstrip('\n')
+    output = proc.communicate()[0].decode('UTF-8')
+    restartaction = output.rstrip('\n')
     return (restartaction == 'RequireRestart' or
             restartaction == 'RecommendRestart')
 
@@ -149,7 +150,7 @@ def _run_installer(cmd, env_vars, packagename):
     try:
         job = launchd.Job(cmd, environment_vars=env_vars)
         job.start()
-    except launchd.LaunchdJobException, err:
+    except launchd.LaunchdJobException as err:
         display.display_error(
             'Error with launchd job (%s): %s', cmd, str(err))
         display.display_error('Can\'t run installer.')
@@ -310,4 +311,4 @@ def installall(dirpath, options=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

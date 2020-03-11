@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ installer.core
 munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
+from __future__ import absolute_import, print_function
 
 import datetime
 import os
@@ -257,16 +258,15 @@ def install_with_info(
 
         display_name = item.get('display_name') or item.get('name')
         version_to_install = item.get('version_to_install', '')
+        display.display_status_major(
+            "Installing %s (%s of %s)"
+            % (display_name, itemindex, len(installlist)))
 
         retcode = 0
         if 'preinstall_script' in item:
             retcode = scriptutils.run_embedded_script('preinstall_script', item)
 
         if retcode == 0 and 'installer_item' in item:
-            display.display_status_major(
-                "Installing %s (%s of %s)"
-                % (display_name, itemindex, len(installlist)))
-
             installer_type = item.get("installer_type", "")
 
             itempath = os.path.join(dirpath, item["installer_item"])
@@ -759,4 +759,4 @@ def run(only_unattended=False):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

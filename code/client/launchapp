@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2010-2019 Greg Neagle.
+# Copyright 2010-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ Prevents multiple copies of the app from being launched
 when Fast User Switching is in use
 Intended for use by a launchd LaunchAgent.
 """
+from __future__ import absolute_import, print_function
 
 import sys
 import os
@@ -62,7 +63,7 @@ def main():
         if len(sys.argv) > 1:
             cmd.extend(sys.argv[1:])
         else:
-            print >> sys.stderr, "Must specify an app to launch!"
+            print("Must specify an app to launch!", file=sys.stderr)
             exit(-1)
         retcode = subprocess.call(cmd)
         # sleep 10 secs to make launchd happy

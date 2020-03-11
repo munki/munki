@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Functions to run scripts inside Munki
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -35,10 +36,10 @@ def _writefile(stringdata, path):
     '''Writes string data to path.
     Returns the path on success, empty string on failure.'''
     try:
-        fileobject = open(path, mode='w', buffering=1)
+        fileobject = open(path, mode='wb', buffering=1)
         # write line-by-line to ensure proper UNIX line-endings
         for line in stringdata.splitlines():
-            print >> fileobject, line.encode('UTF-8')
+            fileobject.write(line.encode('UTF-8') + b"\n")
         fileobject.close()
         return path
     except (OSError, IOError):
@@ -96,7 +97,7 @@ def run_script(itemname, path, scriptname, suppress_error=False):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-    except OSError, err:
+    except OSError as err:
         display.display_error(
             'Error executing script %s: %s' % (scriptname, str(err)))
         return -1
@@ -131,4 +132,4 @@ def run_script(itemname, path, scriptname, suppress_error=False):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

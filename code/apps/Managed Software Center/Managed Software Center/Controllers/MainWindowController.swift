@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2019 The Munki Project. All rights reserved.
+//  Copyright © 2018-2020 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -160,6 +160,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         displayUpdateCount()
         cached_self_service = SelfService()
     }
+
+    func toolBarItemIsHighlighted(_ item: NSToolbarItem) -> Bool {
+        if let button = item.view as? NSButton {
+            return (button.state == .on)
+        }
+        return false
+    }
+
+    func setHighlightFor(item: NSToolbarItem, doHighlight: Bool) {
+        if let button = item.view as? NSButton {
+            button.state = (doHighlight ? .on : .off)
+        }
+    }
     
     func highlightToolbarButtons(_ nameToHighlight: String) {
         for (index, item) in items.enumerated() {
@@ -227,7 +240,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                     comment: "Cannot Contact Server detail")
             } else if lastCheckResult == -2 {
                 // preflight failed
-                msc_log("MSU", "cant_update", msg: "failed preflight")
+                msc_log("MSC", "cant_update", msg: "failed preflight")
                 detailText = NSLocalizedString(
                     ("Managed Software Center cannot check for updates now.\n" +
                      "Try again later. If this situation continues, " +
@@ -1330,23 +1343,27 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         _alertedUserToOutstandingUpdates = true
     }
     
-    @IBAction func softwareToolbarButtonClicked(_ sender: Any) {
+    @IBAction func softwareToolbarItemClicked(_ sender: Any) {
         // User clicked Software toolbar button
+        highlightToolbarButtons("Software")
         loadAllSoftwarePage(sender)
     }
     
-    @IBAction func categoriesToolbarButtonClicked(_ sender: Any) {
+    @IBAction func categoriesToolbarItemClicked(_ sender: Any) {
         // User clicked Categories toolbar button'''
+        highlightToolbarButtons("Categories")
         loadCategoriesPage(sender)
     }
     
-    @IBAction func myItemsToolbarButtonClicked(_ sender: Any) {
+    @IBAction func myItemsToolbarItemClicked(_ sender: Any) {
         // User clicked My Items toolbar button'''
+        highlightToolbarButtons("My Items")
         loadMyItemsPage(sender)
     }
     
-    @IBAction func updatesToolbarButtonClicked(_ sender: Any) {
+    @IBAction func updatesToolbarItemClicked(_ sender: Any) {
         // User clicked Updates toolbar button'''
+        highlightToolbarButtons("Updates")
         loadUpdatesPage(sender)
     }
     

@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/7/18.
-//  Copyright © 2018-2019 The Munki Project. All rights reserved.
+//  Copyright © 2018-2020 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -131,7 +131,7 @@ class GenericItem: BaseItem {
             my["developer"] = guess_developer()
         }
         if let description = my["description"] as? String {
-            my["raw_description"] = description
+            my["raw_description"] = filtered_html(description)
             my["description"] = nil
         }
         my["icon"] = getIcon()
@@ -690,7 +690,7 @@ class OptionalItem: GenericItem {
     func _get_status() -> String {
         // Calculates initial status for an item and also sets a boolean
         // if a updatecheck is needed
-        let managed_update_names = getInstallInfo()["managed_updates"] as? [String] ?? [String]()
+        let managed_update_names = cachedInstallInfo()["managed_updates"] as? [String] ?? [String]()
         let self_service = SelfService()
         my["updatecheck_needed"] = false
         my["user_directed_action"] = false
@@ -775,7 +775,7 @@ class OptionalItem: GenericItem {
     func _get_note_from_problem_items() -> String {
         // Checks InstallInfo's problem_items for any notes for self that might
         // give feedback why this item can't be downloaded or installed
-        let problem_items = getInstallInfo()["problem_items"] as? [[String:Any]] ?? [[String:Any]]()
+        let problem_items = cachedInstallInfo()["problem_items"] as? [[String:Any]] ?? [[String:Any]]()
         // filter problem items for any whose name matches the name of
         // the current item
         let name = my["name"] as? String ?? ""
@@ -831,7 +831,7 @@ class OptionalItem: GenericItem {
         my["updatecheck_needed"] = true
         var self_service_change_success = true
         let original_status = my["status"] as? String ?? ""
-        let managed_update_names = getInstallInfo()["managed_updates"] as? [String] ?? [String]()
+        let managed_update_names = cachedInstallInfo()["managed_updates"] as? [String] ?? [String]()
         let status = my["status"] as? String ?? ""
         let name = my["name"] as? String ?? ""
         let needs_update = my["needs_update"] as? Bool ?? false
@@ -975,15 +975,27 @@ class UpdateItem: GenericItem {
     }
 }
 
+func cachedInstallInfo() -> [String : Any] {
+    if !Cache.shared.keys.contains("InstallInfo") {
+        Cache.shared["InstallInfo"] = getInstallInfo()
+    }
+    return Cache.shared["InstallInfo"] as? [String : Any] ?? [String : Any]()
+}
+
+func optionalInstallsExist() -> Bool {
+    let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
+    return optional_items.count > 0
+}
+
 func getOptionalInstallItems() -> [OptionalItem] {
     let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
     if appleSoftwareUpdatesOnly {
         return [OptionalItem]()
     }
     if !Cache.shared.keys.contains("optional_install_items") {
-        let optional_items = getInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
+        let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
         var optional_install_items = optional_items.map({ OptionalItem($0) })
-        let featured_items = getInstallInfo()["featured_items"] as? [String] ?? [String]()
+        let featured_items = cachedInstallInfo()["featured_items"] as? [String] ?? [String]()
         for index in 0..<optional_install_items.count {
             if let name = optional_install_items[index]["name"] as? String {
                 if featured_items.contains(name) {
@@ -998,7 +1010,7 @@ func getOptionalInstallItems() -> [OptionalItem] {
 
 func getProblemItems() -> [UpdateItem] {
     if !Cache.shared.keys.contains("problem_items") {
-        var problem_items = getInstallInfo()["problem_items"] as? [[String:Any]] ?? [[String:Any]]()
+        var problem_items = cachedInstallInfo()["problem_items"] as? [[String:Any]] ?? [[String:Any]]()
         for i in 0..<problem_items.count {
             problem_items[i]["status"] = "problem-item"
         }
@@ -1095,7 +1107,7 @@ func _build_update_list() -> [UpdateItem] {
             }
         }
     }
-    let install_info = getInstallInfo()
+    let install_info = cachedInstallInfo()
     if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
         for var item in managed_installs {
             item["status"] = "will-be-installed"
@@ -1138,7 +1150,7 @@ func updatesContainNonUserSelectedItems() -> Bool {
         // available Apple updates are not user selected
         return true
     }
-    let install_info = getInstallInfo()
+    let install_info = cachedInstallInfo()
     let install_items = install_info["managed_installs"] as? [[String: Any]] ?? [[String: Any]]()
     let removal_items = install_info["removals"] as? [[String: Any]] ?? [[String: Any]]()
     let filtered_installs = install_items.filter(
@@ -1192,7 +1204,7 @@ func dependentItems(_ item_name: String) -> [String] {
     // optional item
     if !Cache.shared.keys.contains("optional_installs_with_dependencies") {
         let self_service_installs = SelfService().installs
-        if let optional_installs = getInstallInfo()["optional_instslls"] as? [PlistDict] {
+        if let optional_installs = cachedInstallInfo()["optional_instslls"] as? [PlistDict] {
             Cache.shared["optional_installs_with_dependencies"] = (
                 optional_installs.filter(
                     {

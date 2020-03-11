@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 '''Python wrapper for updated launchd checkin API'''
+from __future__ import absolute_import
 
 import os
 # pylint: disable=wildcard-import
@@ -24,6 +25,11 @@ from ctypes import *
 libc = CDLL("/usr/lib/libc.dylib")
 # pylint: enable=invalid-name
 
+try:
+    _ = xrange # pylint: disable=xrange-builtin
+except NameError:
+    # no xrange in Python 3
+    xrange = range
 
 # int launch_activate_socket(const char *name, int **fds, size_t *cnt)
 libc.launch_activate_socket.restype = c_int

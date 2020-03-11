@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for copying items from disk images
 """
+from __future__ import absolute_import, print_function
 
 import os
 import shutil
@@ -106,8 +107,9 @@ def remove_quarantine_from_item(some_path):
     '''Removes com.apple.quarantine from some_path'''
     try:
         if "com.apple.quarantine" in xattr.xattr(some_path).list():
-            xattr.xattr(some_path).remove("com.apple.quarantine")
-    except BaseException, err:
+            xattr.xattr(some_path).remove("com.apple.quarantine",
+                                          options=xattr.XATTR_NOFOLLOW)
+    except BaseException as err:
         display.display_warning(
             "Error removing com.apple.quarantine from %s: %s", some_path, err)
 
@@ -207,10 +209,13 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
 
         # mv temp_destination_path to final destination path
         try:
-            if os.path.isdir(destination_path):
+            if (os.path.islink(destination_path) or
+                    os.path.isfile(destination_path)):
+                os.unlink(destination_path)
+            elif os.path.isdir(destination_path):
                 shutil.rmtree(destination_path)
             os.rename(temp_destination_path, destination_path)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             display.display_error("Error moving item to destination: %s" % err)
             return -1
 
@@ -289,4 +294,4 @@ def copy_from_dmg(dmgpath, itemlist):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

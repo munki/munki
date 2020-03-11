@@ -1,28 +1,61 @@
+'''Base bits for repo plugins'''
+from __future__ import absolute_import, print_function
+
 import imp
 import os
 import sys
 
-
-class RepoError(Exception):
-    '''Base exception for repo errors'''
-    pass
+from ._baseclasses import RepoError, Repo
+from .FileRepo import FileRepo
 
 
-class Repo(object):
-    '''Abstract base class for repo'''
-    def __init__(self, url):
-        '''Override in subclasses'''
-        pass
+def import_plugins(dirpath=None):
+    """Imports plugins from dirpath or the directory this file is in"""
+    plugin_names = []
+
+    if not dirpath:
+        # get the directory this __init__.py file is in
+        dirpath = os.path.dirname(os.path.abspath(__file__))
+
+    # find all the .py files (minus __init__.py)
+    plugin_files = [
+        os.path.splitext(name)[0]
+        for name in os.listdir(dirpath)
+        if name.endswith(".py") and not name.startswith("_")
+    ]
+
+    for name in plugin_files:
+        if name in globals():
+            # we already imported it
+            plugin_names.append(name)
+            continue
+        plugin_filename = os.path.join(dirpath, name + ".py")
+        try:
+            # attempt to import the module
+            _tmp = imp.load_source(name, plugin_filename)
+            # look for an attribute with the plugin name
+            plugin = getattr(_tmp, name)
+            # add the processor to munkirepo's namespace
+            globals()[name] = plugin
+            plugin_names.append(name)
+        except (ImportError, AttributeError) as err:
+            # if we aren't successful, print a warning
+            print(
+                "WARNING: %s: %s" % (plugin_filename, err), file=sys.stderr
+            )
+    return plugin_names
+
+__all__ = import_plugins()
 
 
-def plugin_named(name):
+# Helper functions for munkirepo plugins
+
+def plugin_named(some_name):
     '''Returns a plugin object given a name'''
     try:
-        module = globals()[name]
-        return getattr(module, name)
+        return globals()[some_name]
     except (KeyError, AttributeError):
-        print >> sys.stderr, (
-            "ERROR: %s repo plugin not found." % name)
+        print("ERROR: %s repo plugin not found." % some_name, file=sys.stderr)
         return None
 
 
@@ -32,12 +65,4 @@ def connect(repo_url, plugin_name):
     if plugin:
         return plugin(repo_url)
     else:
-        raise RepoError('Could not find repo plugin named %s' % plugin_name)
-
-
-# yes, having this at the end is weird. But it allows us to dynamically import
-# additional modules from our directory
-__all__ = [os.path.splitext(name)[0]
-           for name in os.listdir(os.path.dirname(os.path.abspath(__file__)))
-           if name.endswith('.py') and not name == '__init__.py']
-from . import *
+        raise RepoError('Could not find repo plugin named: %s' % plugin_name)

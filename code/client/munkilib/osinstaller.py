@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-03-29.
 
 Support for using startosinstall to install macOS.
 """
+from __future__ import absolute_import, print_function
 
 # stdlib imports
 import os
@@ -124,7 +125,7 @@ class StartOSInstallRunner(object):
         self.dmg_mountpoint = None
         self.got_sigusr1 = False
 
-    def sigusr1_handler(self, dummy_signum, dummy_frame):
+    def sigusr1_handler(self, _signum, _frame):
         '''Signal handler for SIGUSR1 from startosinstall, which tells us it's
         done setting up the macOS install and is ready and waiting to reboot'''
         display.display_debug1('Got SIGUSR1 from startosinstall')
@@ -139,7 +140,7 @@ class StartOSInstallRunner(object):
         # set Munki to run at boot after the OS upgrade is complete
         try:
             bootstrapping.set_bootstrap_mode()
-        except bootstrapping.SetupError, err:
+        except bootstrapping.SetupError as err:
             display.display_error(
                 'Could not set up Munki to run after OS upgrade is complete: '
                 '%s', err)
@@ -464,11 +465,11 @@ def startosinstall(installer, finishing_tasks=None, installinfo=None):
             installer,
             finishing_tasks=finishing_tasks, installinfo=installinfo).start()
         return True
-    except StartOSInstallError, err:
+    except StartOSInstallError as err:
         display.display_error(
-            u'Error starting macOS install: %s', unicode(err))
+            u'Error starting macOS install: %s', err)
         munkilog.log(
-            'Starting macOS install: FAILED: %s' % unicode(err), 'Install.log')
+            u'Starting macOS install: FAILED: %s' % err, 'Install.log')
         return False
 
 
@@ -519,4 +520,4 @@ def run(finishing_tasks=None):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

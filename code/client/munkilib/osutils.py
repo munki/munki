@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Common functions and classes used by the munki tools.
 """
+from __future__ import absolute_import, print_function
 
 import platform
 import os
@@ -52,8 +53,8 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
         os_version_tuple = os_version_tuple[0:2]
     if as_tuple:
         return tuple(map(int, os_version_tuple))
-    else:
-        return '.'.join(os_version_tuple)
+    # default
+    return '.'.join(os_version_tuple)
 
 
 def tmpdir():
@@ -68,7 +69,7 @@ def cleanUpTmpDir():
     if hasattr(tmpdir, 'cache'):
         try:
             shutil.rmtree(tmpdir.cache)
-        except (OSError, IOError), err:
+        except (OSError, IOError) as err:
             display.display_warning(
                 'Unable to clean up temporary dir %s: %s',
                 tmpdir.cache, str(err))
@@ -95,9 +96,14 @@ def listdir(path):
     # https://developer.apple.com/library/mac/#qa/qa2001/qa1235.html
     # http://lists.zerezo.com/git/msg643117.html
     # http://unicode.org/reports/tr15/    section 1.2
-    if type(path) is str:
-        path = unicode(path, 'utf-8')
-    elif type(path) is not unicode:
+    # pylint: disable=unicode-builtin
+    if isinstance(path, str):
+        try:
+            path = unicode(path, 'utf-8')
+        except NameError:
+            # Python 3
+            pass
+    elif not isinstance(path, unicode):
         path = unicode(path)
     return os.listdir(path)
 
@@ -114,8 +120,8 @@ def currentGUIusers():
     proc = subprocess.Popen('/usr/bin/who', shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, dummy_err) = proc.communicate()
-    lines = str(output).splitlines()
+    output = proc.communicate()[0].decode("UTF-8")
+    lines = output.splitlines()
     for line in lines:
         if 'console' in line:
             parts = line.split()
@@ -134,7 +140,7 @@ def pythonScriptRunning(scriptname):
     proc = subprocess.Popen(cmd, shell=False, bufsize=1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, dummy_err) = proc.communicate()
+    out = proc.communicate()[0].decode("UTF-8")
     mypid = os.getpid()
     lines = str(out).splitlines()
     for line in lines:
@@ -172,10 +178,11 @@ def osascript(osastring):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if proc.returncode != 0:
-        print >> sys.stderr, 'Error: ', err
+        print('Error: ', err.decode('UTF-8'), file=sys.stderr)
     if out:
-        return str(out).decode('UTF-8').rstrip('\n')
+        return out.decode('UTF-8').rstrip('\n')
+    return u''
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

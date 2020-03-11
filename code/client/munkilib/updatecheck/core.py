@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ updatecheck.core
 Created by Greg Neagle on 2008-11-13.
 
 """
+from __future__ import absolute_import, print_function
 
 # standard libs
 import os
@@ -91,9 +92,9 @@ def check(client_id='', localmanifestpath=None):
         download.stop_precaching_agent()
 
         # prevent idle sleep only if we are on AC power
-        caffeinator = None
+        _caffeinator = None
         if powermgr.onACPower():
-            caffeinator = powermgr.Caffeinator(
+            _caffeinator = powermgr.Caffeinator(
                 'Munki is checking for new software')
 
         # initialize our installinfo record
@@ -449,7 +450,7 @@ def check(client_id='', localmanifestpath=None):
                     'Could not read InstallInfo.plist. Deleting...')
                 try:
                     os.unlink(installinfopath)
-                except OSError, err:
+                except OSError as err:
                     display.display_error(
                         'Failed to delete InstallInfo.plist: %s', str(err))
             if oldinstallinfo == installinfo:
@@ -487,8 +488,8 @@ def check(client_id='', localmanifestpath=None):
 
     if installcount or removalcount:
         return 1
-    else:
-        return 0
+    # installcount and removalcount are 0
+    return 0
 
 
 def get_primary_manifest_catalogs(client_id='', force_refresh=False):
@@ -534,4 +535,4 @@ def get_primary_manifest_catalogs(client_id='', force_refresh=False):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

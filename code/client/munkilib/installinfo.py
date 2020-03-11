@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for getting data from the InstallInfo.plist, etc
 """
+from __future__ import absolute_import, print_function
 
 # standard libs
 import os
@@ -37,6 +38,12 @@ from . import info
 from . import prefs
 from . import reports
 from . import FoundationPlist
+
+try:
+    _ = xrange # pylint: disable=xrange-builtin
+except NameError:
+    # no xrange in Python 3
+    xrange = range
 
 
 # This many hours before a force install deadline, start notifying the user.
@@ -288,4 +295,4 @@ def force_install_package_check():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

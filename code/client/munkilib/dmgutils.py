@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ Created by Greg Neagle on 2016-12-13.
 
 Utilities for working with disk images.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
 
 from . import display
 from . import utils
-from . import FoundationPlist
+from .wrappers import readPlistFromString, PlistReadError
 
 
 # we use lots of camelCase-style names. Deal with it.
@@ -47,11 +48,11 @@ def DMGisWritable(dmgpath):
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             dmg_format = plist.get('Format')
             if dmg_format in ['UDSB', 'UDSP', 'UDRW', 'RdWr']:
                 return True
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError:
             pass
     return False
 
@@ -70,11 +71,11 @@ def dmg_has_sla(dmgpath):
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             properties = plist.get('Properties')
             if properties:
                 has_sla = properties.get('Software License Agreement', False)
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError:
             pass
 
     return has_sla
@@ -91,13 +92,13 @@ def hdiutil_info():
         bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     if err:
-        display.display_error(u'hdiutil info error: %s', err)
+        display.display_error(u'hdiutil info error: %s', err.decode("UTF-8"))
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             return plist
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError:
             pass
     return None
 
@@ -194,9 +195,9 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
             return mountpoints
 
     # Attempt to mount the dmg
-    stdin = ''
+    stdin = b''
     if dmg_has_sla(dmgpath):
-        stdin = 'Y\n'
+        stdin = b'Y\n'
         display.display_detail(
             'NOTE: %s has embedded Software License Agreement' % dmgname)
     cmd = ['/usr/bin/hdiutil', 'attach', dmgpath, '-nobrowse', '-plist']
@@ -205,20 +206,22 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
     if use_shadow:
         cmd.append('-shadow')
     proc = subprocess.Popen(cmd,
-                            bufsize=1, stdout=subprocess.PIPE,
+                            bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     (out, err) = proc.communicate(stdin)
     if proc.returncode:
         display.display_error(
-            'Error: "%s" while mounting %s.' % (err.rstrip(), dmgname))
+            u'Error: "%s" while mounting %s.'
+            % (err.decode('UTF-8').rstrip(), dmgname))
     (pliststr, out) = utils.getFirstPlist(out)
     if pliststr:
         try:
-            plist = FoundationPlist.readPlistFromString(pliststr)
+            plist = readPlistFromString(pliststr)
             for entity in plist.get('system-entities', []):
                 if 'mount-point' in entity:
                     mountpoints.append(entity['mount-point'])
-        except FoundationPlist.NSPropertyListSerializationException:
+        except PlistReadError as err:
+            display.display_error("%s" % err)
             display.display_error(
                 'Bad plist string returned when mounting diskimage %s:\n%s'
                 % (dmgname, pliststr))
@@ -242,8 +245,9 @@ def unmountdmg(mountpoint):
                                 stderr=subprocess.PIPE)
         (dummy_output, err) = proc.communicate()
         if proc.returncode:
-            display.display_warning('Failed to unmount %s: %s', mountpoint, err)
+            display.display_warning(
+                'Failed to unmount %s: %s', mountpoint, err.decode("UTF-8"))
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

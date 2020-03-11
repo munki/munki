@@ -7,24 +7,25 @@
 PKGID="com.googlecode.munki"
 MUNKIROOT="."
 # Convert to absolute path.
-MUNKIROOT=`cd "$MUNKIROOT"; pwd`
+MUNKIROOT=$(cd "$MUNKIROOT"; pwd)
 OUTPUTDIR="."
 # Convert to absolute path.
-OUTPUTDIR=`cd "$OUTPUTDIR"; pwd`
+OUTPUTDIR=$(cd "$OUTPUTDIR"; pwd)
 CONFPKG=""
 # add this number to Git revision index to get "build" number
 # consistent with old SVN repo
 MAGICNUMBER=482
+BUILDPYTHON=NO
 
 # try to automagically find munki source root
-TOOLSDIR=`dirname $0`
+TOOLSDIR=$(dirname "$0")
 # Convert to absolute path.
-TOOLSDIR=`cd "$TOOLSDIR"; pwd`
-PARENTDIR=`dirname $TOOLSDIR`
-PARENTDIRNAME=`basename $PARENTDIR`
+TOOLSDIR=$(cd "$TOOLSDIR"; pwd)
+PARENTDIR=$(dirname "$TOOLSDIR")
+PARENTDIRNAME=$(basename "$PARENTDIR")
 if [ "$PARENTDIRNAME" == "code" ]; then
-    GRANDPARENTDIR=`dirname $PARENTDIR`
-    GRANDPARENTDIRNAME=`basename $GRANDPARENTDIR`
+    GRANDPARENTDIR=$(dirname "$PARENTDIR")
+    GRANDPARENTDIRNAME=$(basename "$GRANDPARENTDIR")
     if [ "$GRANDPARENTDIRNAME" == "Munki2" ]; then
         MUNKIROOT="$GRANDPARENTDIR"
     fi
@@ -32,20 +33,23 @@ fi
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-r root] [-o dir] [-c package] [-s cert] [-b]"
+Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert] [-S cert] [-b]
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
     -o dir      Set the output directory
+    -p          Build Python.framework even if one exists
     -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
+    -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
+                the certificate's Common Name. Ex: "Developer ID Application: Munki (U8PN57A5N2)"
     -b          Enable munki bootstrap mode (will fire as soon as DEP release the Mac to the LoginWindow, to use with scenario where the Mac is bound to a domain during DEP)
 EOF
 }
 
 
-while getopts "i:r:o:c:s:hb" option
+while getopts "i:r:o:c:s:S:hbp" option
 do
     case $option in
         "i")
@@ -62,6 +66,12 @@ do
             ;;
         "s")
             SIGNINGCERT="$OPTARG"
+            ;;
+        "S" )
+            APPSIGNINGCERT="$OPTARG"
+            ;;
+        "p")
+            BUILDPYTHON=YES
             ;;
         "b")
             BOOTSTRAPMODE=1
@@ -84,7 +94,7 @@ if [ ! -d "$MUNKIROOT" ]; then
     exit 1
 else
     # Convert to absolute path.
-    MUNKIROOT=`cd "$MUNKIROOT"; pwd`
+    MUNKIROOT=$(cd "$MUNKIROOT"; pwd)
 fi
 
 if [ ! -d "$OUTPUTDIR" ]; then
@@ -93,7 +103,7 @@ if [ ! -d "$OUTPUTDIR" ]; then
 fi
 
 # Sanity checks.
-GIT=`which git`
+GIT=$(which git)
 WHICH_GIT_RESULT="$?"
 if [ "$WHICH_GIT_RESULT" != "0" ]; then
     echo "Could not find git in command path. Maybe it's not installed?" 1>&2
@@ -102,50 +112,69 @@ if [ "$WHICH_GIT_RESULT" != "0" ]; then
     exit 1
 fi
 if [ ! -x "/usr/bin/pkgbuild" ]; then
-    echo "pkgbuild is not installed!"
+    echo "pkgbuild is not installed!" 1>&2
     exit 1
 fi
 if [ ! -x "/usr/bin/productbuild" ]; then
-    echo "productbuild is not installed!"
+    echo "productbuild is not installed!"  1>&2
     exit 1
 fi
 if [ ! -x "/usr/bin/xcodebuild" ]; then
-    echo "xcodebuild is not installed!"
+    echo "xcodebuild is not installed!"  1>&2
+    exit 1
+fi
+if [ ! -d "$MUNKIROOT/Python.framework" -a "$BUILDPYTHON" != "YES" ]; then
+    echo "Python.framework is missing!" 1>&2
+    exit 1
+fi
+ 
+# Get the munki version.
+MUNKIVERS=$(defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString)
+if [ "$?" != "0" ]; then
+    echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
+    echo "Perhaps $MUNKIROOT does not contain the munki source?" 1>&2
     exit 1
 fi
 
-# Get the munki version.
-MUNKIVERS=`defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString`
-if [ "$?" != "0" ]; then
-    echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
-    echo "Perhaps $MUNKIROOT does not contain the munki source?"  1>&2
-    exit 1
-fi
+# Build the Python framework if requested or missing
+if [ "$BUILDPYTHON" == "YES" -o ! -d "$MUNKIROOT/Python.framework" ]; then
+    PYTHONBUILDTOOL="${TOOLSDIR}/build_python_framework.sh"
+    if [ ! -x "${PYTHONBUILDTOOL}" ] ; then
+        echo "${PYTHONBUILDTOOL} is missing!" 1>&2
+        exit 1
+    fi
+    echo "Building Python.framework..."
+    "${PYTHONBUILDTOOL}"
+    if [ $? -ne 0 ]; then
+        echo "Building Python.framework failed!" 1>&2
+        exit 1
+    fi
+ fi
 
 cd "$MUNKIROOT"
 # generate a pseudo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
-GITREV=`git log -n1 --format="%H" -- code/client`
-GITREVINDEX=`git rev-list --count $GITREV`
+GITREV=$(git log -n1 --format="%H" -- code/client)
+GITREVINDEX=$(git rev-list --count $GITREV)
 SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
 # get a pseudo-svn revision number for the apps pkg
-APPSGITREV=`git log -n1 --format="%H" -- code/apps`
-GITREVINDEX=`git rev-list --count $APPSGITREV`
+APPSGITREV=$(git log -n1 --format="%H" -- code/apps)
+GITREVINDEX=$(git rev-list --count $APPSGITREV)
 APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$APPSSVNREV
 fi
 # get base apps version from MSC.app
-APPSVERSION=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Info" CFBundleShortVersionString`
+APPSVERSION=$(defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Info" CFBundleShortVersionString)
 # append the APPSSVNREV
 APPSVERSION=$APPSVERSION.$APPSSVNREV
 
 # get a pseudo-svn revision number for the launchd pkg
-LAUNCHDGITREV=`git log -n1 --format="%H" -- launchd/LaunchDaemons launchd/LaunchAgents`
-GITREVINDEX=`git rev-list --count $LAUNCHDGITREV`
+LAUNCHDGITREV=$(git log -n1 --format="%H" -- launchd/LaunchDaemons launchd/LaunchAgents)
+GITREVINDEX=$(git rev-list --count $LAUNCHDGITREV)
 LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
 if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$LAUNCHDSVNREV
@@ -153,9 +182,15 @@ fi
 # Get launchd version if different
 LAUNCHDVERSION=$MUNKIVERS
 if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
-    LAUNCHDVERSION=`defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString`
+    LAUNCHDVERSION=$(defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString)
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
+# Get Python version
+PYTHONVERSION="NOT FOUND"
+PYTHONINFOPLIST="$MUNKIROOT"/Python.framework/Versions/Current/Resources/Info.plist
+if [ -f "$PYTHONINFOPLIST" ]; then
+    PYTHONVERSION=$(defaults read "$PYTHONINFOPLIST" CFBundleVersion)
+fi
 
 # get a pseudo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
@@ -182,6 +217,7 @@ echo "  Output directory: $OUTPUTDIR"
 echo "  munki core tools version: $VERSION"
 echo "  LaunchAgents/LaunchDaemons version: $LAUNCHDVERSION"
 echo "  Apps package version: $APPSVERSION"
+echo "  Python version: $PYTHONVERSION"
 echo
 echo "  metapackage version: $MPKGVERSION"
 echo
@@ -226,7 +262,7 @@ if [ ! -e  "$MSAPP" ]; then
     echo "Open the Xcode project $MUNKIROOT/code/apps/MunkiStatus/MunkiStatus.xcodeproj and build it."
     exit 2
 else
-    MSVERSION=`defaults read "$MSAPP/Contents/Info" CFBundleShortVersionString`
+    MSVERSION=$(defaults read "$MSAPP/Contents/Info" CFBundleShortVersionString)
     echo "MunkiStatus.app version: $MSVERSION"
 fi
 
@@ -248,7 +284,7 @@ if [ ! -e  "$NOTIFIERAPP" ]; then
     echo "Open the Xcode project $MUNKIROOT/code/apps/notifier/munki-notifier.xcodeproj and build it."
     exit 2
 else
-    NOTIFIERVERSION=`defaults read "$NOTIFIERAPP/Contents/Info" CFBundleShortVersionString`
+    NOTIFIERVERSION=$(defaults read "$NOTIFIERAPP/Contents/Info" CFBundleShortVersionString)
     echo "munki-notifier.app version: $NOTIFIERVERSION"
 fi
 
@@ -261,8 +297,8 @@ makeinfo() {
     size="$5"
     nfiles="$6"
     restart="$7"
-    major=`echo $ver | cut -d. -f1`
-    minor=`echo $ver | cut -d. -f2`
+    major=$(echo $ver | cut -d. -f1)
+    minor=$(echo $ver | cut -d. -f2)
     # Flat packages want a PackageInfo.
     if [ "$restart" == "restart" ]; then
         restart=' postinstall-action="restart"' # Leading space is important.
@@ -270,7 +306,7 @@ makeinfo() {
         restart=""
     fi
     if [ "$pkg" == "app" ]; then
-        MSUID=`defaults read "$MUNKIROOT/code/apps/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleIdentifier`
+        MSUID=$(defaults read "$MUNKIROOT/code/apps/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleIdentifier)
         app="<bundle id=\"$MSUID\"
         CFBundleIdentifier=\"$MSUID\"
         path=\"./Applications/Managed Software Center.app\"
@@ -299,7 +335,7 @@ fi
 
 
 # Create temporary directory
-PKGTMP=`mktemp -d -t munkipkg`
+PKGTMP=$(mktemp -d -t munkipkg)
 
 
 #########################################
@@ -347,7 +383,6 @@ fi
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
-#chmod +x "$COREROOT/usr/local/munki/munkilib/"*.py
 
 # make paths.d file
 mkdir -p "$COREROOT/private/etc/paths.d"
@@ -364,8 +399,8 @@ mkdir -m 755 -p "$COREROOT/Library/Managed Installs/manifests"
 
 
 # Create package info file.
-CORESIZE=`du -sk $COREROOT | cut -f1`
-NFILES=$(echo `find $COREROOT/ | wc -l`)
+CORESIZE=$(du -sk $COREROOT | cut -f1)
+NFILES=$(echo $(find $COREROOT/ | wc -l))
 makeinfo core "$PKGTMP/info" "$PKGID" "$VERSION" $CORESIZE $NFILES norestart
 
 
@@ -398,8 +433,8 @@ chmod -R 755 "$ADMINROOT/private"
 chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # Create package info file.
-ADMINSIZE=`du -sk $ADMINROOT | cut -f1`
-NFILES=$(echo `find $ADMINROOT/ | wc -l`)
+ADMINSIZE=$(du -sk $ADMINROOT | cut -f1)
+NFILES=$(echo $(find $ADMINROOT/ | wc -l))
 makeinfo admin "$PKGTMP/info" "$PKGID" "$VERSION" $ADMINSIZE $NFILES norestart
 
 
@@ -421,9 +456,25 @@ cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resou
 cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
+
+# sign MSC app
+if [ "$APPSIGNINGCERT" != "" ]; then
+    echo "Signing Managed Software Center.app..."
+    /usr/bin/codesign -s "$APPSIGNINGCERT" --options runtime --verbose \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
+        "$APPROOT/Applications/Managed Software Center.app"
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
+        exit 2
+    fi
+fi
+
 # Create package info file.
-APPSIZE=`du -sk $APPROOT | cut -f1`
-NFILES=$(echo `find $APPROOT/ | wc -l`)
+APPSIZE=$(du -sk $APPROOT | cut -f1)
+NFILES=$(echo $(find $APPROOT/ | wc -l))
 makeinfo app "$PKGTMP/info" "$PKGID" "$APPSVERSION" $APPSIZE $NFILES norestart
 
 
@@ -445,8 +496,8 @@ chmod 644 "$LAUNCHDROOT/Library/LaunchAgents/"*
 cp -X "$MUNKIROOT/launchd/LaunchDaemons/"*.plist "$LAUNCHDROOT/Library/LaunchDaemons/"
 chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
 # Create package info file.
-LAUNCHDSIZE=`du -sk $LAUNCHDROOT | cut -f1`
-NFILES=$(echo `find $LAUNCHDROOT/ | wc -l`)
+LAUNCHDSIZE=$(du -sk $LAUNCHDROOT | cut -f1)
+NFILES=$(echo $(find $LAUNCHDROOT/ | wc -l))
 makeinfo launchd "$PKGTMP/info" "$PKGID" "$LAUNCHDVERSION" $LAUNCHDSIZE $NFILES norestart
 
 
@@ -481,9 +532,53 @@ done
 chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
 chmod +x "$APPUSAGEROOT/usr/local/munki"
 # Create package info file.
-APPUSAGESIZE=`du -sk $APPUSAGEROOT | cut -f1`
-NFILES=$(echo `find $APPUSAGEROOT/ | wc -l`)
+APPUSAGESIZE=$(du -sk $APPUSAGEROOT | cut -f1)
+NFILES=$(echo $(find $APPUSAGEROOT/ | wc -l))
 makeinfo app_usage "$PKGTMP/info" "$PKGID" "$VERSION" $APPUSAGEROOT $NFILES norestart
+
+#######################
+## python            ##
+#######################
+
+echo "Creating python package template..."
+
+# Create directory structure.
+PYTHONROOT="$PKGTMP/munki_python"
+mkdir -m 1775 "$PYTHONROOT"
+mkdir -p "$PYTHONROOT/usr/local/munki"
+chmod -R 755 "$PYTHONROOT/usr"
+# Copy framework
+cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
+# Create symlink
+ln -s Python.framework/Versions/3.7/bin/python3 "$PYTHONROOT/usr/local/munki/python"
+# Set permissions.
+chmod -R go-w "$PYTHONROOT/usr/local/munki"
+chmod +x "$PYTHONROOT/usr/local/munki"
+# Create package info file.
+PYTHONSIZE=$(du -sk $PYTHONROOT | cut -f1)
+NFILES=$(echo $(find $PYTHONROOT/ | wc -l))
+makeinfo python "$PKGTMP/info" "$PKGID" "$PYTHONVERSION" $PYTHONROOT $NFILES norestart
+
+#######################
+## no python choice  ##
+#######################
+
+echo "Creating no-python package template..."
+
+# Create directory structure.
+NOPYTHONROOT="$PKGTMP/munki_no_python"
+mkdir -m 1775 "$NOPYTHONROOT"
+mkdir -p "$NOPYTHONROOT/usr/local/munki"
+chmod -R 755 "$NOPYTHONROOT/usr"
+# Create symlink
+ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/python"
+# Set permissions.
+chmod -R go-w "$NOPYTHONROOT/usr/local/munki"
+chmod +x "$NOPYTHONROOT/usr/local/munki"
+# Create package info file.
+NOPYTHONSIZE=$(du -sk $NOPYTHONROOT | cut -f1)
+NFILES=$(echo $(find $NOPYTHONROOT/ | wc -l))
+makeinfo no_python "$PKGTMP/info" "$PKGID" "$VERSION" $NOPYTHONROOT $NFILES norestart
 
 
 #############################
@@ -503,16 +598,20 @@ PKGPREFIX="#"
 PKGDEST="$METAROOT"
 
 # Create Distribution file.
-CORETITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lproj/Description" IFPkgDescriptionTitle`
-ADMINTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionTitle`
-APPTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionTitle`
-LAUNCHDTITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionTitle`
-APPUSAGETITLE=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionTitle`
-COREDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lproj/Description" IFPkgDescriptionDescription`
-ADMINDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionDescription`
-APPDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionDescription`
-LAUNCHDDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionDescription`
-APPUSAGEDESC=`defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionDescription`
+CORETITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lproj/Description" IFPkgDescriptionTitle)
+ADMINTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionTitle)
+APPTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionTitle)
+LAUNCHDTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionTitle)
+APPUSAGETITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionTitle)
+PYTHONTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_python/English.lproj/Description" IFPkgDescriptionTitle)
+NOPYTHONTITLE=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_no_python/English.lproj/Description" IFPkgDescriptionTitle)
+COREDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_core/English.lproj/Description" IFPkgDescriptionDescription)
+ADMINDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_admin/English.lproj/Description" IFPkgDescriptionDescription)
+APPDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app/English.lproj/Description" IFPkgDescriptionDescription)
+LAUNCHDDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_launchd/English.lproj/Description" IFPkgDescriptionDescription)
+APPUSAGEDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_app_usage/English.lproj/Description" IFPkgDescriptionDescription)
+PYTHONDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_python/English.lproj/Description" IFPkgDescriptionDescription)
+NOPYTHONDESC=$(defaults read "$MUNKIROOT/code/pkgtemplate/Resources_no_python/English.lproj/Description" IFPkgDescriptionDescription)
 CONFOUTLINE=""
 CONFCHOICE=""
 CONFREF=""
@@ -523,20 +622,6 @@ if [ ! -z "$CONFPKG" ]; then
     else
         echo "Bundle-style configuration package not supported"
         exit 1
-        #if [ -d "$CONFPKG/Contents/Resources/English.lproj" ]; then
-        #    eng_resources="$CONFPKG/Contents/Resources/English.lproj"
-        #elif [ -d "$CONFPKG/Contents/Resources/en.lproj" ]; then
-        #    eng_resources="$CONFPKG/Contents/Resources/en.lproj"
-        #else
-        #    echo "Can't find English.lproj or en.lproj in $CONFPKG/Contents/Resources"
-        #    exit 1
-        #fi
-        #CONFTITLE=`defaults read "$eng_resources/Description" IFPkgDescriptionTitle`
-        #CONFDESC=`defaults read "$eng_resources/Description" IFPkgDescriptionDescription`
-        #CONFID=`defaults read "$CONFPKG/Contents/Info" CFBundleIdentifier`
-        #CONFSIZE=`defaults read "$CONFPKG/Contents/Info" IFPkgFlagInstalledSize`
-        #CONFVERSION=`defaults read "$CONFPKG/Contents/Info" CFBundleShortVersionString`
-        #CONFBASENAME=`basename "$CONFPKG"`
     fi
     CONFOUTLINE="<line choice=\"config\"/>"
     CONFCHOICE="<choice id=\"config\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
@@ -572,6 +657,8 @@ function requirerestart() {
         <line choice="app"/>
         <line choice="launchd"/>
         <line choice="app_usage"/>
+        <line choice="python"/>
+        <line choice="no_python"/>
         $CONFOUTLINE
     </choices-outline>
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -589,12 +676,20 @@ function requirerestart() {
     <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
         <pkg-ref id="$PKGID.app_usage"/>
     </choice>
+    <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
+        <pkg-ref id="$PKGID.python"/>
+    </choice>
+    <choice id="no_python" title="$NOPYTHONTITLE" description="$NOPYTHONDESC" selected='choices["python"].selected == false' enabled='choices["python"].selected == false'>
+        <pkg-ref id="$PKGID.no_python"/>
+    </choice>
     $CONFCHOICE
     <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSUVERSION" auth="Root">${PKGPREFIX}munkitools_app-$APPSVERSION.pkg</pkg-ref>
     <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$VERSION" auth="Root" onConclusionScript="requirerestart()">${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGEIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.python" installKBytes="$PYTHONSIZE" version="$PYTHONVERSION" auth="Root">${PKGPREFIX}munkitools_python-$PYTHONVERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.no_python" installKBytes="$NOPYTHONSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_no_python-$VERSION.pkg</pkg-ref>
     $CONFREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
@@ -627,11 +722,14 @@ sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchDaemons"
 sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
+sudo chown -hR root:wheel "$PYTHONROOT/usr"
+sudo chown -hR root:wheel "$NOPYTHONROOT/usr"
+
 ######################
 ## Run pkgbuild ##
 ######################
-CURRENTUSER=`whoami`
-for pkg in core admin app launchd app_usage; do
+CURRENTUSER=$(whoami)
+for pkg in core admin app launchd app_usage python no_python; do
     case $pkg in
         "app")
             ver="$APPSVERSION"
@@ -644,6 +742,10 @@ for pkg in core admin app launchd app_usage; do
         "app_usage")
             ver="$VERSION"
             SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_app_usage"
+            ;;
+        "python")
+            ver="$PYTHONVERSION"
+            SCRIPTS=""
             ;;
         *)
             ver="$VERSION"

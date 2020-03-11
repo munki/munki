@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2010-2019 Greg Neagle.
+# Copyright 2010-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Created by Greg Neagle on 2014-05-15.
 
 Functions to work with product images ('icons') for Managed Software Center
 """
+from __future__ import absolute_import, print_function
 
 import glob
 import os
@@ -40,7 +41,7 @@ from Quartz import (CGImageSourceCreateWithURL, CGImageSourceCreateImageAtIndex,
 # pylint: enable=E0611
 
 from . import display
-from . import FoundationPlist
+from .wrappers import readPlist, PlistReadError
 
 
 # we use lots of camelCase-style names. Deal with it.
@@ -93,9 +94,9 @@ def findIconForApp(app_path):
     if not os.path.exists(app_path):
         return None
     try:
-        info = FoundationPlist.readPlist(
+        info = readPlist(
             os.path.join(app_path, u'Contents/Info.plist'))
-    except FoundationPlist.FoundationPlistException:
+    except PlistReadError:
         return None
     app_name = os.path.basename(app_path)
     icon_filename = info.get('CFBundleIconFile', app_name)
@@ -131,7 +132,7 @@ def extractAppIconsFromFlatPkg(pkg_path):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
-    output = proc.communicate()[0]
+    output = proc.communicate()[0].decode('UTF-8')
     if proc.returncode:
         display.display_error(u'Could not get bom files from %s', pkg_path)
         return []
@@ -148,13 +149,13 @@ def extractAppIconsFromFlatPkg(pkg_path):
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        output = proc.communicate()[0]
+        output = proc.communicate()[0].decode('UTF-8')
         if proc.returncode:
             display.display_error(u'Could not lsbom %s', bomfile)
         # record paths to all app Info.plist files
         pkg_dict[pkgname] = [
             os.path.normpath(line)
-            for line in output.decode('utf-8').splitlines()
+            for line in output.splitlines()
             if line.endswith(u'.app/Contents/Info.plist')]
         if not pkg_dict[pkgname]:
             # remove empty lists
@@ -260,11 +261,11 @@ def getAppInfoPathsFromBOM(bomfile):
         proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        output = proc.communicate()[0]
+        output = proc.communicate()[0].decode('UTF-8')
         return [line for line in output.splitlines()
                 if line.endswith('.app/Contents/Info.plist')]
     return []
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

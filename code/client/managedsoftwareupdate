@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 """
 managedsoftwareupdate
 """
+from __future__ import absolute_import, print_function
 
 import optparse
 import os
@@ -43,16 +44,16 @@ try:
 except ImportError:
     # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
-    print >> sys.stderr, 'Python is missing ObjC bindings.'
+    print('Python is missing ObjC bindings.', file=sys.stderr)
     _scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
     _script = os.path.join(_scriptdir, 'report_broken_client')
     try:
         _result, _stdout, _stderr = utils.runExternalScript(_script)
-        print >> sys.stderr, _result, _stdout, _stderr
+        print(_result, _stdout, _stderr, file=sys.stderr)
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, err:
-        print >> sys.stderr, str(err)
+    except utils.RunExternalScriptError as err:
+        print(str(err), file=sys.stderr)
     sys.exit(200)
 else:
     from munkilib import appleupdates
@@ -73,11 +74,12 @@ else:
     from munkilib import updatecheck
     from munkilib import utils
     from munkilib import FoundationPlist
+    from munkilib.wrappers import unicode_or_str
 
     import munkilib.authrestart.client as authrestartd
 
 
-def signal_handler(signum, dummy_frame):
+def signal_handler(signum, _frame):
     """Handle any signals we've been told to.
     Right now just handle SIGTERM so clean up can happen, like
     garbage collection, which will trigger object destructors and
@@ -93,7 +95,7 @@ def getIdleSeconds():
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    ioreglines = str(output).splitlines()
+    ioreglines = output.decode("UTF-8").splitlines()
     idle_time = 0
     regex = re.compile(r'"?HIDIdleTime"?\s+=\s+(\d+)')
     for line in ioreglines:
@@ -101,7 +103,7 @@ def getIdleSeconds():
         if idle_re:
             idle_time = idle_re.group(1)
             break
-    return int(int(idle_time)/1000000000)
+    return int(int(idle_time)/1000000000) # pylint: disable=old-division
 
 
 def networkUp():
@@ -115,7 +117,7 @@ def networkUp():
     proc = subprocess.Popen(cmd, shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, dummy_err) = proc.communicate()
-    lines = str(output).splitlines()
+    lines = output.decode('UTF-8').splitlines()
     for line in lines:
         if 'inet' in line:
             parts = line.split()
@@ -144,7 +146,7 @@ def createDirsIfNeeded(dirlist):
             try:
                 os.mkdir(directory)
             except (OSError, IOError):
-                print >> sys.stderr, 'ERROR: Could not create %s' % directory
+                print('ERROR: Could not create %s' % directory, file=sys.stderr)
                 return False
 
     return True
@@ -168,8 +170,7 @@ def initMunkiDirs():
         display.display_error('Could not create needed directories '
                               'in %s' % ManagedInstallDir)
         return False
-    else:
-        return True
+    return True
 
 
 def runScript(script, display_name, runtype):
@@ -183,12 +184,12 @@ def runScript(script, display_name, runtype):
 
     try:
         utils.verifyFileOnlyWritableByMunkiAndRoot(script)
-    except utils.VerifyFilePermissionsError, err:
+    except utils.VerifyFilePermissionsError as err:
         # preflight/postflight is insecure, but if the currently executing
         # file is insecure too we are no worse off.
         try:
             utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
-        except utils.VerifyFilePermissionsError, err:
+        except utils.VerifyFilePermissionsError as err:
             # OK, managedsoftwareupdate is insecure anyway - warn & execute.
             display.display_warning(
                 'Multiple munki executable scripts have insecure file '
@@ -213,8 +214,8 @@ def runScript(script, display_name, runtype):
             display.display_info('%s stderr: %s' % (display_name, stderr))
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError, err:
-        display.display_warning(unicode(err))
+    except utils.RunExternalScriptError as err:
+        display.display_warning(unicode_or_str(err))
     return result
 
 
@@ -369,7 +370,7 @@ def doRestart(shutdown=False):
             # this restart (perhaps by force-quitting the app),
             # that's their problem...
         else:
-            print 'Please restart immediately.'
+            print('Please restart immediately.')
 
 
 def munkiUpdatesAvailable():
@@ -593,7 +594,7 @@ def main():
         '--show-config', action='store_true',
         help='Print the current configuration and exit.')
     config_options.add_option(
-        '--id', default='',
+        '--id', default=u'',
         help='String to use as ClientIdentifier for this run only.')
     config_options.add_option(
         '--set-bootstrap-mode', action='store_true',
@@ -641,12 +642,12 @@ def main():
     options, dummy_arguments = parser.parse_args()
 
     if options.version:
-        print info.get_version()
+        print(info.get_version())
         exit(0)
 
     # check to see if we're root
     if os.geteuid() != 0:
-        print >> sys.stderr, 'You must run this as root!'
+        print('You must run this as root!', file=sys.stderr)
         exit(constants.EXIT_STATUS_ROOT_REQUIRED)
 
     if options.show_config:
@@ -656,19 +657,19 @@ def main():
     if options.set_bootstrap_mode:
         try:
             bootstrapping.set_bootstrap_mode()
-            print 'Bootstrap mode is set.'
+            print('Bootstrap mode is set.')
             exit(0)
-        except bootstrapping.SetupError, err:
-            print >> sys.stderr, err
+        except bootstrapping.SetupError as err:
+            print(err, file=sys.stderr)
             exit(-1)
 
     if options.clear_bootstrap_mode:
         try:
             bootstrapping.clear_bootstrap_mode()
-            print 'Bootstrap mode cleared.'
+            print('Bootstrap mode cleared.')
             exit(0)
-        except bootstrapping.SetupError, err:
-            print >> sys.stderr, err
+        except bootstrapping.SetupError as err:
+            print(err, file=sys.stderr)
             exit(-1)
 
     # check to see if another instance of this script is running
@@ -682,8 +683,8 @@ def main():
                      % (myname, other_managedsoftwareupdate_pid))
         munkilog.log('pid %s exiting.' % os.getpid())
         munkilog.log('*' * 60)
-        print >> sys.stderr, (
-            'Another instance of %s is running. Exiting.' % myname)
+        print('Another instance of %s is running. Exiting.' % myname,
+              file=sys.stderr)
         osutils.cleanUpTmpDir()
         exit(0)
 
@@ -773,8 +774,8 @@ def main():
         options.verbose = 0
 
     if options.checkonly and options.installonly:
-        print >> sys.stderr, \
-              '--checkonly and --installonly options are mutually exclusive!'
+        print('--checkonly and --installonly options are mutually exclusive!',
+              file=sys.stderr)
         exit(constants.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
@@ -801,9 +802,9 @@ def main():
 
     munkilog.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
-        print 'Managed Software Update Tool'
-        print 'Copyright 2010-2019 The Munki Project'
-        print 'https://github.com/munki/munki\n'
+        print('Managed Software Update Tool')
+        print('Copyright 2010-2020 The Munki Project')
+        print('https://github.com/munki/munki\n')
 
     display.display_status_major('Starting...')
     sendStartNotification()
@@ -858,7 +859,7 @@ def main():
     if not skip_munki_check:
         try:
             updatecheckresult = updatecheck.check(
-                client_id=options.id.decode('UTF-8'))
+                client_id=unicode_or_str(options.id))
         except:
             display.display_error('Unexpected error in updatecheck:')
             munkilog.log(traceback.format_exc())
@@ -1060,13 +1061,13 @@ def main():
     else:
         # no updates available
         if options.installonly and not options.quiet:
-            print 'Nothing to install or remove.'
+            print('Nothing to install or remove.')
         if runtype == 'checkandinstallatstartup':
             # we have nothing to do, clear the bootstrapping mode
             # so we'll stop running at startup/logout
             try:
                 bootstrapping.clear_bootstrap_mode()
-            except bootstrapping.SetupError, err:
+            except bootstrapping.SetupError as err:
                 display.display_error(err)
 
     display.display_status_major('Finishing...')
@@ -1076,7 +1077,7 @@ def main():
 
     munkilog.log("### Ending managedsoftwareupdate run ###")
     if options.verbose:
-        print 'Done.'
+        print('Done.')
 
     if notify_user:
         # it may have been more than a minute since we ran our original
@@ -1132,7 +1133,7 @@ def main():
                         'clearing bootstrap mode to prevent relaunch')
                     try:
                         bootstrapping.clear_bootstrap_mode()
-                    except bootstrapping.SetupError, err:
+                    except bootstrapping.SetupError as err:
                         display.display_error(err)
 
 
