@@ -203,7 +203,7 @@ def _run_installer(cmd, env_vars, packagename):
             "Install of %s failed with return code %s" % (packagename, retcode))
         display.display_error("-"*78)
         for line in installeroutput:
-            display.display_error(line.rstrip("\n"))
+            display.display_error(line.decode("UTF-8").rstrip("\n"))
         display.display_error("-"*78)
     elif retcode == 0:
         munkilog.log("Install of %s was successful." % packagename)
