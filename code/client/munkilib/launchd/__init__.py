@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2011-2018 Greg Neagle.
+# Copyright 2011-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ Returns a file descriptor for a socket defined in a launchd plist.
 A wrapper for using launchd to run a process as root outside of Munki's
 process space. Needed to properly run /usr/sbin/softwareupdate, for example.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -70,18 +71,80 @@ class LaunchdJobException(Exception):
     pass
 
 
+def job_info(job_label):
+    '''Get info about a launchd job. Returns a dictionary.'''
+    info = {'state': 'unknown',
+            'PID': None,
+            'LastExitStatus': None}
+    launchctl_cmd = ['/bin/launchctl', 'list']
+    proc = subprocess.Popen(launchctl_cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    output = proc.communicate()[0].decode('UTF-8')
+    if proc.returncode or not output:
+        return info
+    else:
+        lines = output.splitlines()
+        # search launchctl list output for our job label
+        job_lines = [item for item in lines
+                     if item.endswith('\t' + job_label)]
+        if len(job_lines) != 1:
+            # unexpected number of lines matched our label
+            return info
+        j_info = job_lines[0].split('\t')
+        if len(j_info) != 3:
+            # unexpected number of fields in the line
+            return info
+        if j_info[0] == '-':
+            info['PID'] = None
+            info['state'] = 'stopped'
+        else:
+            info['PID'] = int(j_info[0])
+            info['state'] = 'running'
+        if j_info[1] == '-':
+            info['LastExitStatus'] = None
+        else:
+            info['LastExitStatus'] = int(j_info[1])
+        return info
+
+
+def stop_job(job_label):
+    '''Stop the launchd job'''
+    launchctl_cmd = ['/bin/launchctl', 'stop', job_label]
+    proc = subprocess.Popen(launchctl_cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    err = proc.communicate()[1].decode('UTF-8')
+    if proc.returncode:
+        raise LaunchdJobException(err)
+
+
+def remove_job(job_label):
+    '''Remove a job from launchd by label'''
+    launchctl_cmd = ['/bin/launchctl', 'remove', job_label]
+    proc = subprocess.Popen(launchctl_cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    err = proc.communicate()[1].decode('UTF-8')
+    if proc.returncode:
+        raise LaunchdJobException(err)
+
+
 class Job(object):
     '''launchd job object'''
 
-    def __init__(self, cmd, environment_vars=None, cleanup_at_exit=True):
+    def __init__(self, cmd, environment_vars=None,
+                 job_label=None, cleanup_at_exit=True):
         '''Initialize our launchd job'''
-        self.cleanup_at_exit = cleanup_at_exit
         tmpdir = osutils.tmpdir()
-        labelprefix = 'com.googlecode.munki.'
-        # create a unique id for this job
-        jobid = str(uuid.uuid1())
 
-        self.label = labelprefix + jobid
+        # label this job
+        self.label = job_label or 'com.googlecode.munki.' + str(uuid.uuid1())
+
+        self.cleanup_at_exit = cleanup_at_exit
         self.stdout_path = os.path.join(tmpdir, self.label + '.stdout')
         self.stderr_path = os.path.join(tmpdir, self.label + '.stderr')
         self.plist_path = os.path.join(tmpdir, self.label + '.plist')
@@ -94,6 +157,12 @@ class Job(object):
         self.plist['StandardErrorPath'] = self.stderr_path
         if environment_vars:
             self.plist['EnvironmentVariables'] = environment_vars
+        # create stdout and stderr files
+        try:
+            open(self.stdout_path, 'wb').close()
+            open(self.stderr_path, 'wb').close()
+        except (OSError, IOError) as err:
+            raise LaunchdJobException(err)
         # write out launchd plist
         FoundationPlist.writePlist(self.plist, self.plist_path)
         # set owner, group and mode to those required
@@ -105,7 +174,7 @@ class Job(object):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        err = proc.communicate()[1]
+        err = proc.communicate()[1].decode('UTF-8')
         if proc.returncode:
             raise LaunchdJobException(err)
 
@@ -146,58 +215,18 @@ class Job(object):
             try:
                 # open the stdout and stderr output files and
                 # store their file descriptors for use
-                self.stdout = open(self.stdout_path, 'r')
-                self.stderr = open(self.stderr_path, 'r')
-            except (OSError, IOError), err:
+                self.stdout = open(self.stdout_path, 'rb')
+                self.stderr = open(self.stderr_path, 'rb')
+            except (OSError, IOError) as err:
                 raise LaunchdJobException(err)
 
     def stop(self):
         '''Stop the launchd job'''
-        launchctl_cmd = ['/bin/launchctl', 'stop', self.label]
-        proc = subprocess.Popen(launchctl_cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        err = proc.communicate()[1]
-        if proc.returncode:
-            raise LaunchdJobException(err)
+        stop_job(self.label)
 
     def info(self):
         '''Get info about the launchd job. Returns a dictionary.'''
-        info = {'state': 'unknown',
-                'PID': None,
-                'LastExitStatus': None}
-        launchctl_cmd = ['/bin/launchctl', 'list']
-        proc = subprocess.Popen(launchctl_cmd, shell=False, bufsize=-1,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        output = proc.communicate()[0]
-        if proc.returncode or not output:
-            return info
-        else:
-            lines = str(output).splitlines()
-            # search launchctl list output for our job label
-            job_lines = [item for item in lines
-                         if item.endswith('\t' + self.label)]
-            if len(job_lines) != 1:
-                # unexpected number of lines matched our label
-                return info
-            job_info = job_lines[0].split('\t')
-            if len(job_info) != 3:
-                # unexpected number of fields in the line
-                return info
-            if job_info[0] == '-':
-                info['PID'] = None
-                info['state'] = 'stopped'
-            else:
-                info['PID'] = int(job_info[0])
-                info['state'] = 'running'
-            if job_info[1] == '-':
-                info['LastExitStatus'] = None
-            else:
-                info['LastExitStatus'] = int(job_info[1])
-            return info
+        return job_info(self.label)
 
     def returncode(self):
         '''Returns the process exit code, if the job has exited; otherwise,
@@ -205,9 +234,8 @@ class Job(object):
         info = self.info()
         if info['state'] == 'stopped':
             return info['LastExitStatus']
-        else:
-            return None
+        return None
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -55,7 +55,7 @@ def GetHash(filename, hash_function):
   
   Args:
     filename: The file name to calculate the hash value of.
-    hash_function: The hash function object to use, which was instanciated
+    hash_function: The hash function object to use, which was instantiated
         before calling this function, e.g. hashlib.md5().
   
   Returns:
@@ -102,7 +102,7 @@ def AddHashesToPkginfoPlists(pkgsinfo_path, pkgs_path, update_existing=False):
       # read plist
       try:
         plist = plistlib.readPlist(f_path)
-      except IOError, e:
+      except IOError as e:
         print 'WARNING: pkginfo plist failed to open: %s\n%s' % (f_path,
                                                                  str(e))
         continue

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
 # Copyright 2011-2017 Google Inc. All Rights Reserved.
@@ -25,6 +25,7 @@ This will have the effect of unbuffering output I/O from the subprocess.
 stdin of the subprocess is not connected to the stdin of this parent
 process.
 """
+from __future__ import absolute_import, print_function
 
 import fcntl
 import os
@@ -34,10 +35,14 @@ import signal
 import sys
 
 
+# lots of variable names lifted from the C code this has been mostly
+# translated from
+# pylint: disable=invalid-name
+
 child_exited = {}
 
 
-def SetFileNonBlocking(f, non_blocking=True):
+def set_file_nonblocking(f, non_blocking=True):
     """Set non-blocking flag on a file object.
 
     Args:
@@ -50,7 +55,7 @@ def SetFileNonBlocking(f, non_blocking=True):
     fcntl.fcntl(f.fileno(), fcntl.F_SETFL, flags)
 
 
-def SigHandler(signum, frame):
+def sighandler(signum, _frame):
     """Handle a signal.
 
     Args:
@@ -65,13 +70,13 @@ def SigHandler(signum, frame):
             child_exited[x[0]] = x[1] >> 8    # get exit status from LSB
 
 
-def Usage(arg0):
+def usage(arg0):
     """Print usage."""
-    print >>sys.stderr, 'Usage: %s [command to run] [arguments...]' % arg0
+    print('Usage: %s [command to run] [arguments...]' % arg0, file=sys.stderr)
     return 0
 
 
-def PtyExec(argv):
+def ptyexec(argv):
     """Setup pty and exec argv.
 
     Args:
@@ -81,27 +86,31 @@ def PtyExec(argv):
             error occurs.
         never returns on the child side of the fork.
     """
-    signal.signal(signal.SIGCHLD, SigHandler)
+    signal.signal(signal.SIGCHLD, sighandler)
     pid, fd = pty.fork()
 
     if pid == 0:         # child
         try:
             os.execv(argv[0], argv)
-        except OSError, e:
-            print >>sys.stderr, str(e)
+        except OSError as err:
+            print(str(err), file=sys.stderr)
             sys.exit(1)
     elif pid > 0:        # parent
-        f = os.fdopen(fd, 'r+', 0)
-        SetFileNonBlocking(f)
-        while 1:
+        f = os.fdopen(fd, 'rb+', 0)
+        set_file_nonblocking(f)
+        while True:
             try:
-                (rl, wl, xl) = select.select([f], [], [], 5.0)
-            except select.error, e:
+                (rl, _wl, _xl) = select.select([f], [], [], 5.0)
+            except select.error:
                 rl = []
 
             if f in rl:
                 l = f.read()
-                sys.stdout.write(l)
+                try:
+                    sys.stdout.buffer.write(l)
+                except AttributeError:
+                    # Python 2
+                    sys.stdout.write(l)
                 sys.stdout.flush()
 
             if pid in child_exited:
@@ -109,7 +118,7 @@ def PtyExec(argv):
 
         f.close()
     elif pid == -1:    # error, never forked.
-        print >>sys.stderr, 'fork() error'
+        print('fork() error', file=sys.stderr)
         return 1
 
     return child_exited.get(pid, 1)
@@ -118,10 +127,10 @@ def PtyExec(argv):
 def main(argv):
     """Main."""
     if len(argv) < 2:
-        return Usage(argv[0])
+        return usage(argv[0])
 
     argv.pop(0)
-    return PtyExec(argv)
+    return ptyexec(argv)
 
 
 if __name__ == '__main__':

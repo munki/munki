@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html lang="en" data-theme="${data_theme}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>${display_name_escaped}</title>
+
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/detail.css" />
+    
+    <script type="text/javascript" charset="utf-8" src="static/integration.js"></script>
+</head>
+
+<body class="product software">
+    <div id="page">
+        <div id="wrapper">
+            <div id="content">
+                <div class="background"></div>
+                <div class="columns">
+
+                    <div class="main">
+                        <div class="product-detail">
+                            <div class="lockup product">
+                                <!--<a href="#">-->
+                                    <div class="artwork">
+                                        <img width="175" height="175" alt="${display_name_escaped}" class="artwork" src="${icon}" />
+                                    </div>
+                                <!--</a>-->
+                                <div class="warning">
+                                    <br/>&nbsp;
+                                    <strong>${restart_action_text}</strong>
+                                </div>
+                            </div>
+
+                            <div class="product-info box-flex">
+                                <div class="product-review">
+                                    <div class="title">
+                                        <h1>${display_name_escaped}</h1>
+                                    </div>
+                                    <div class="more-text">
+                                        ${description}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar">
+                        <div class="titled-box app-info">
+                            <h2>${informationLabel}</h2>
+                            <div class="content">
+                                <ul class="list">
+                                    <li><span class="label">${typeLabel} </span>${type}</li>
+                                    <li><span class="label">${versionLabel} </span>${display_version_escaped}</li>
+                                    <li><span class="label">${sizeLabel} </span>${size}</li>
+                                    <li><span class="label">${developerLabel} </span>${developer_escaped}</li>
+                                </ul>
+                                <hr/>
+                                <ul class="list">
+                                    <li class="warning"><span class="label">${dueLabel}</span>${short_due_date}</li>
+                                    <li class="warning">${restart_action_text}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ${footer}
+    </footer>
+</body>
+</html>

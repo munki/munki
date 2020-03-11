@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ updatecheck.core
 Created by Greg Neagle on 2008-11-13.
 
 """
+from __future__ import absolute_import, print_function
 
 # standard libs
 import os
@@ -30,7 +31,6 @@ from . import catalogs
 from . import download
 from . import licensing
 from . import manifestutils
-from . import precaching
 
 from .. import display
 from .. import info
@@ -88,10 +88,13 @@ def check(client_id='', localmanifestpath=None):
         if processes.stop_requested():
             return 0
 
+        # stop precaching_agent if it's running
+        download.stop_precaching_agent()
+
         # prevent idle sleep only if we are on AC power
-        caffeinator = None
+        _caffeinator = None
         if powermgr.onACPower():
-            caffeinator = powermgr.Caffeinator(
+            _caffeinator = powermgr.Caffeinator(
                 'Munki is checking for new software')
 
         # initialize our installinfo record
@@ -423,14 +426,12 @@ def check(client_id='', localmanifestpath=None):
                     # we have a partial and a full download
                     # for the same item. (This shouldn't happen.)
                     # remove the partial download.
+                    display.display_detail(
+                        'Removing partial download %s from cache', item)
                     os.unlink(os.path.join(cachedir, item))
-                elif problem_items == []:
-                    # problem items is our list of items
-                    # that need to be installed but are missing
-                    # the installer_item; these might be partial
-                    # downloads. So if we have no problem items, it's
-                    # OK to get rid of any partial downloads hanging
-                    # around.
+                elif fullitem not in cache_list:
+                    display.display_detail(
+                        'Removing partial download %s from cache', item)
                     os.unlink(os.path.join(cachedir, item))
             elif item not in cache_list:
                 display.display_detail('Removing %s from cache', item)
@@ -449,7 +450,7 @@ def check(client_id='', localmanifestpath=None):
                     'Could not read InstallInfo.plist. Deleting...')
                 try:
                     os.unlink(installinfopath)
-                except OSError, err:
+                except OSError as err:
                     display.display_error(
                         'Failed to delete InstallInfo.plist: %s', str(err))
             if oldinstallinfo == installinfo:
@@ -483,12 +484,12 @@ def check(client_id='', localmanifestpath=None):
 
     # start our precaching agent
     # note -- this must happen _after_ InstallInfo.plist gets written to disk.
-    precaching.run_agent()
+    download.run_precaching_agent()
 
     if installcount or removalcount:
         return 1
-    else:
-        return 0
+    # installcount and removalcount are 0
+    return 0
 
 
 def get_primary_manifest_catalogs(client_id='', force_refresh=False):
@@ -534,4 +535,4 @@ def get_primary_manifest_catalogs(client_id='', force_refresh=False):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

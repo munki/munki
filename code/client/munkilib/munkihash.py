@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Munki's hash functions
 """
+from __future__ import absolute_import, print_function
 
 import hashlib
 import os
@@ -31,7 +32,7 @@ def gethash(filename, hash_function):
 
     Args:
       filename: The file name to calculate the hash value of.
-      hash_function: The hash function object to use, which was instanciated
+      hash_function: The hash function object to use, which was instantiated
           before calling this function, e.g. hashlib.md5().
 
     Returns:
@@ -39,15 +40,17 @@ def gethash(filename, hash_function):
     """
     if not os.path.isfile(filename):
         return 'NOT A FILE'
-
-    fileref = open(filename, 'rb')
-    while 1:
-        chunk = fileref.read(2**16)
-        if not chunk:
-            break
-        hash_function.update(chunk)
-    fileref.close()
-    return hash_function.hexdigest()
+    try:
+        fileref = open(filename, 'rb')
+        while True:
+            chunk = fileref.read(2**16)
+            if not chunk:
+                break
+            hash_function.update(chunk)
+        fileref.close()
+        return hash_function.hexdigest()
+    except (OSError, IOError):
+        return 'HASH_ERROR'
 
 
 def getmd5hash(filename):
@@ -67,4 +70,4 @@ def getsha256hash(filename):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')
