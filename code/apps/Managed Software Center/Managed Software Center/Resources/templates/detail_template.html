@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html lang="en" data-theme="${data_theme}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>${display_name_escaped}</title>
+
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/detail.css" />
+    
+    <script type="text/javascript" charset="utf-8" src="static/integration.js"></script>
+</head>
+
+<body class="product software">
+    <div id="page">
+        <div id="wrapper">
+            <div id="content">
+                <div class="background"></div>
+                <div class="columns">
+
+                    <div class="main">
+                        <div class="product-detail">
+                            <div class="lockup product">
+                                <div class="artwork">
+                                    <img width="175" height="175" alt="${display_name_escaped}" class="artwork" src="${icon}" />
+                                </div>
+                                <div class="msc-button large">
+                                    <button class="button-area uppercase" 
+                                     onClick="window.webkit.messageHandlers.actionButtonClicked.postMessage('${name_quoted}');">
+                                        <div class="msc-button-inner large ${status}"
+                                             id="${name_escaped}_action_button_text">
+                                            ${long_action_text}
+                                        </div>
+                                    </button>
+                                </div>
+                                <div class="warning">
+                                    <br/>&nbsp;
+                                    <strong>${restart_action_text}</strong>
+                                </div>
+                            </div>
+
+                            <div class="product-info box-flex">
+                                <div class="product-review">
+                                    <div class="title">
+                                        <h1>${display_name_escaped}</h1>
+                                    </div>
+                                    <div class="more-text">
+                                        ${description}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar">
+                        <!-- Item information sidebar list-->
+                        <div class="titled-box app-info">
+                            <h2>${informationLabel}</h2>
+                            <div class="content">
+                                <ul class="list">
+                                    <li class="genre">
+                                        <span class="label">${categoryLabel} </span>
+                                        <a href="${category_link}">${category}</a>
+                                    </li>
+                                    <li><span class="label">${versionLabel} </span>${version_to_install}</li>
+                                    <li><span class="label">${sizeLabel} </span>${size}</li>
+                                    <li>
+                                        <span class="label">${developerLabel} </span>
+                                        <a href="${developer_link}">${developer_escaped}</a>
+                                    </li>
+                                </ul>
+                                <hr/>
+                                <ul class="list">
+                                    <li>
+                                        <span class="label">${statusLabel} </span>
+                                        <span class="${status}" id="${name_escaped}_status_text">
+                                            <span id="${name_escaped}_status_text_span">
+                                                ${status_text}
+                                            </span>
+                                            <a class="follow" href="munki://updates.html"></a>
+                                            <span class="progress-spinner"></span>
+                                        </span>
+                                    </li>
+                                    <li class="warning">${restart_action_text}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- More in category sidebar list-->
+                        <div class="titled-box more-by ${hide_more_in_category}">
+                            <h2>
+                                <a href="${category_link}">${moreInCategoryLabel}</a>
+                            </h2>
+                            <div class="content">${more_in_category}</div>
+                        </div>
+                        <!-- More by developer sidebar list-->
+                        <div class="titled-box more-by ${hide_more_by_developer}">
+                            <h2>
+                                <a href="${developer_link}">${moreByDeveloperLabel}</a>
+                            </h2>
+                            <div class="content">${more_by_developer}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ${footer}
+    </footer>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s actualizaciones pendiente";
+"%@ pending updates" = "%@ actualizaciones pendiente";
 
 /* One Update message */
 "1 pending update" = "1 actualización pendiente";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario cerrar la sesión antes de actualizar. Por favor se paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar sesión y actualizar ahora?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Se va a forzar el cierre de sesión en aproximadamente %s.";
+"A logout will be forced at approximately %@." = "Se va a forzar el cierre de sesión en aproximadamente %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Se va a forzar el cierre de sesión en menos de %s minutos.";
+"A logout will be forced in less than %@ minutes." = "Se va a forzar el cierre de sesión en menos de %@ minutos.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Se va a forzar el cierre de sesión en menos de un minuto.\nTodas las actualizaciones pendientes serán instaladas. Se perderá cualquier cambio no guardado.";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Una versión anterior está instalada. No hay espacio suficiente en el disco para descargar e instalar esta actualización.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Una versión anterior está instalada. Tienes que actualizar a macOS %s o superior para poder instalar esta actualización.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Una versión anterior está instalada. Tienes que actualizar a macOS %@ o superior para poder instalar esta actualización.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaciones en uso por otros";
@@ -206,10 +206,10 @@
 "More" = "Más";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Más de %s";
+"More by %@" = "Más de %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Otros en %s";
+"More in %@" = "Otros en %@";
 
 /* My Items label */
 "My Items" = "Mis ítems";
@@ -239,19 +239,19 @@
 "OK" = "Aceptar";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Uno o mas ítems tienen que ser instalados para el %s";
+"One or more items must be installed by %@" = "Uno o mas ítems tienen que ser instalados para el %@";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "El periodo de instalación de una o más actualizaciones requeridas ha expirado. En breve se forzará el cierre de sesión";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Una o más actualizaciones tienen ser instaladas para el %s. Se forzará el cierre de sesión si esperas demasiado en actualizar.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Una o más actualizaciones tienen ser instaladas para el %@. Se forzará el cierre de sesión si esperas demasiado en actualizar.";
 
 /* Other Available Updates label */
 "Other available updates" = "Otras actualizaciones disponibles";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Otros usuarios estan utilizando las siguientes aplicaciones. Prueba de actualizar más tarde cuando no esten en uso:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Otros usuarios estan utilizando las siguientes aplicaciones. Prueba de actualizar más tarde cuando no esten en uso:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Hay otros usuarios con sesiones abiertas";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Preparando desinstalación";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "Actualización problematica";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Requerido por:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Tiene que estar instalado para el %s";
+"This item must be installed by %@" = "Tiene que estar instalado para el %@";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Para permitir esto, introduzca su contraseña de usuario.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "No has seleccionado ninguna aplicación.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "Tienes que actualizar a macOS %s o superior para poder instalar esta actualización.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Tienes que actualizar a macOS %@ o superior para poder instalar esta actualización.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "El equipo no está conectado a una fuente de alimentación.";

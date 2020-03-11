@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Commonly used constants
 """
+from __future__ import absolute_import, print_function
 
 # NOTE: it's very important that defined exit codes are never changed!
 # Preflight exit codes.
@@ -51,6 +52,12 @@ CHECKANDINSTALLATSTARTUPFLAG = (
 INSTALLATSTARTUPFLAG = '/Users/Shared/.com.googlecode.munki.installatstartup'
 INSTALLATLOGOUTFLAG = '/private/tmp/com.googlecode.munki.installatlogout'
 
+# postinstall actions
+POSTACTION_NONE = 0
+POSTACTION_LOGOUT = 1
+POSTACTION_RESTART = 2
+POSTACTION_SHUTDOWN = 4
+
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

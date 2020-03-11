@@ -1,5 +1,5 @@
 /* Multiple Updates message */
-"%s pending updates" = "%s anstehende Updates";
+"%@ pending updates" = "%@ anstehende Updates";
 
 /* One Update message */
 "1 pending update" = "1 anstehendes Update";
@@ -8,10 +8,10 @@
 "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Für die Updates ist ein Abmelden erforderlich. Es kann zu kurzen Verzögerungen am Anmeldebildschirm kommen, bitte gedulden sie sich einen Moment. Jetzt abmelden und aktualisieren?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %s." = "Eine Abmeldung wird in ca. %s erzwungen.";
+"A logout will be forced at approximately %@." = "Eine Abmeldung wird in ca. %@ erzwungen.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %s minutes." = "Eine Abmeldung wird in weniger als %s Minuten erzwungen.";
+"A logout will be forced in less than %@ minutes." = "Eine Abmeldung wird in weniger als %@ Minuten erzwungen.";
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Eine Abmeldung wird in weniger als einer Minute erzwungen.\nAlle anstehenden Updates werden installiert. Alle ungespeicherte Arbeit geht verloren.";
@@ -47,7 +47,7 @@
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Eine ältere Version ist derzeit installiert. Es ist nicht genügend Speicherplatz vorhanden, um dieses Update herunterzuladen und zu installieren.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %s or higher to be able to install this update." = "Eine ältere Version ist derzeit installiert. Sie müssen auf macOS version %s oder höher aktualisieren, um dieses Update installieren zu können.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Eine ältere Version ist derzeit installiert. Sie müssen auf macOS version %@ oder höher aktualisieren, um dieses Update installieren zu können.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applikationen, die von anderen benutzt werden";
@@ -206,10 +206,10 @@
 "More" = "Mehr";
 
 /* Sidebar More By Developer label */
-"More by %s" = "Mehr von %s";
+"More by %@" = "Mehr von %@";
 
 /* Sidebar More In Category label */
-"More in %s" = "Mehr aus %s";
+"More in %@" = "Mehr aus %@";
 
 /* My Items label */
 "My Items" = "Meine Objekte";
@@ -239,19 +239,19 @@
 "OK" = "OK";
 
 /* Forced Install Date summary */
-"One or more items must be installed by %s" = "Eines oder mehrere Objekte müssen bis %s installiert werden.";
+"One or more items must be installed by %@" = "Eines oder mehrere Objekte müssen bis %@ installiert werden.";
 
 /* Mandatory Updates Imminent detail */
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Eines oder mehrere zwingend notwendige Updates sind überfällig. Eine Abmeldung wird in Kürze erzwungen.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %s. A logout may be forced if you wait too long to update." = "Eines oder mehrere Updates müssen unbedingt bis %s installiert werden. Eine Abmeldung wird möglicherweise erzwungen, wenn Sie zu lange mit dem Update warten.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Eines oder mehrere Updates müssen unbedingt bis %@ installiert werden. Eine Abmeldung wird möglicherweise erzwungen, wenn Sie zu lange mit dem Update warten.";
 
 /* Other Available Updates label */
 "Other available updates" = "Andere verfügbare Updates";
 
 /* Other Users Blocking Apps Running detail */
-"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%s" = "Andere angemeldete User verwenden die folgenden Applikationen. Versuchen Sie das Update später noch einmal, wenn diese nicht mehr in Verwendung sind:\n\n%s";
+"Other logged in users are using the following applications. Try updating later when they are no longer in use:\n\n%@" = "Andere angemeldete User verwenden die folgenden Applikationen. Versuchen Sie das Update später noch einmal, wenn diese nicht mehr in Verwendung sind:\n\n%@";
 
 /* Other Users Logged In title */
 "Other users logged in" = "Andere User sind eingeloggt";
@@ -274,7 +274,7 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Bereite das Entfernen vor";
 
-/* Problm Updates label */
+/* Problem Updates label */
 "Problem updates" = "Problematische updates";
 
 /* Quit button title */
@@ -380,7 +380,7 @@
 "This item is required by:" = "Dieses Objekt wird benötigt von:";
 
 /* Forced Date warning */
-"This item must be installed by %s" = "Dieses Objekt muss bis %s installiert sein";
+"This item must be installed by %@" = "Dieses Objekt muss bis %@ installiert sein";
 
 /* Password explanation */
 "To allow this, enter your login password." = "To allow this, enter your login password.";
@@ -458,10 +458,10 @@
 "You have no selected software." = "Sie haben keine Software ausgewählt.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%s" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:\n\n%s";
+"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %s to be able to install this item." = "Sie müssen auf macOS version %s oder höher aktualisieren, um dieses Update installieren zu können.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Sie müssen auf macOS version %@ oder höher aktualisieren, um dieses Update installieren zu können.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Ihr Computer ist nicht an eine Stromquelle angeschlossen.";

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2018 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,16 @@ Created by Greg Neagle on 2016-12-16.
 
 Functions for working with manifest files
 """
+from __future__ import absolute_import, print_function
 
 import os
-import urllib2
+
+try:
+    # Python 2
+    from urllib2 import quote
+except ImportError:
+    # Python 3
+    from urllib.parse import quote
 
 from .. import display
 from .. import fetch
@@ -32,6 +39,7 @@ from .. import keychain
 from .. import prefs
 from .. import reports
 from .. import FoundationPlist
+from ..wrappers import unicode_or_str
 
 
 PRIMARY_MANIFEST_TAG = '_primary_manifest_'
@@ -88,7 +96,7 @@ def get_manifest(manifest_name, suppress_errors=False):
                                 'manifests')
 
     manifesturl = (
-        manifestbaseurl + urllib2.quote(manifest_name.encode('UTF-8')))
+        manifestbaseurl + quote(manifest_name.encode('UTF-8')))
 
     display.display_debug2('Manifest base URL is: %s', manifestbaseurl)
     display.display_detail('Getting manifest %s...', manifest_name)
@@ -98,7 +106,7 @@ def get_manifest(manifest_name, suppress_errors=False):
     destinationdir = os.path.dirname(manifestpath)
     try:
         os.makedirs(destinationdir)
-    except OSError, err:
+    except OSError as err:
         # OSError will be raised if destinationdir exists, ignore this case
         if not os.path.isdir(destinationdir):
             if not suppress_errors:
@@ -112,9 +120,9 @@ def get_manifest(manifest_name, suppress_errors=False):
     try:
         dummy_value = fetch.munki_resource(
             manifesturl, manifestpath, message=message)
-    except fetch.ConnectionError, err:
+    except fetch.ConnectionError as err:
         raise ManifestServerConnectionException(err)
-    except fetch.Error, err:
+    except fetch.Error as err:
         if not suppress_errors:
             display.display_error(
                 'Could not retrieve manifest %s from the server: %s',
@@ -134,6 +142,7 @@ def get_manifest(manifest_name, suppress_errors=False):
         raise ManifestInvalidException(errormsg)
     else:
         # plist is valid
+        display.display_detail('Retrieved manifest %s', manifest_name)
         _MANIFESTS[manifest_name] = manifestpath
         return manifestpath
 
@@ -156,7 +165,7 @@ def get_primary_manifest(alternate_id=''):
         manifest = get_manifest(clientidentifier)
     else:
         # no client identifier specified, so try the hostname
-        hostname = os.uname()[1].decode('UTF-8')
+        hostname = unicode_or_str(os.uname()[1])
         # os.uname()[1] seems to always return UTF-8 for hostnames that
         # contain unicode characters, so we decode to Unicode
         clientidentifier = hostname
@@ -232,7 +241,7 @@ def clean_up_manifests():
 
         # If the directory isn't the main manifest dir and is empty, try to
         # remove it
-        if dirpath != manifest_dir and not len(os.listdir(dirpath)):
+        if dirpath != manifest_dir and not os.listdir(dirpath):
             try:
                 os.rmdir(dirpath)
             except OSError:
@@ -245,13 +254,12 @@ def get_manifest_data(manifestpath):
     try:
         plist = FoundationPlist.readPlist(manifestpath)
     except FoundationPlist.NSPropertyListSerializationException:
-        display.display_error('Could not read plist: %s', manifestpath)
+        display.display_error(u'Could not read plist: %s', manifestpath)
         if os.path.exists(manifestpath):
             try:
                 os.unlink(manifestpath)
-            except OSError, err:
-                display.display_error(
-                    'Failed to delete plist: %s', unicode(err))
+            except OSError as err:
+                display.display_error(u'Failed to delete plist: %s', err)
         else:
             display.display_error('plist does not exist.')
     return plist
@@ -262,12 +270,11 @@ def get_manifest_value_for_key(manifestpath, keyname):
     plist = get_manifest_data(manifestpath)
     try:
         return plist.get(keyname, None)
-    except AttributeError, err:
+    except AttributeError as err:
         display.display_error(
-            'Failed to get manifest value for key: %s (%s)',
+            u'Failed to get manifest value for key: %s (%s)',
             manifestpath, keyname)
-        display.display_error(
-            'Manifest is likely corrupt: %s', unicode(err))
+        display.display_error(u'Manifest is likely corrupt: %s', err)
         return None
 
 
@@ -275,7 +282,7 @@ def remove_from_selfserve_section(itemname, section):
     """Remove the given itemname from the self-serve manifest's
     managed_uninstalls list"""
     display.display_debug1(
-        "Removing %s from SelfSeveManifest's %s...", itemname, section)
+        "Removing %s from SelfServeManifest's %s...", itemname, section)
     selfservemanifest = os.path.join(
         prefs.pref('ManagedInstallDir'), 'manifests', 'SelfServeManifest')
     if not os.path.exists(selfservemanifest):
@@ -284,7 +291,7 @@ def remove_from_selfserve_section(itemname, section):
         return
     try:
         plist = FoundationPlist.readPlist(selfservemanifest)
-    except FoundationPlist.FoundationPlistException, err:
+    except FoundationPlist.FoundationPlistException as err:
         # SelfServeManifest is broken, bail
         display.display_debug1(
             "Error reading %s: %s", selfservemanifest, err)
@@ -297,7 +304,7 @@ def remove_from_selfserve_section(itemname, section):
         ]
         try:
             FoundationPlist.writePlist(plist, selfservemanifest)
-        except FoundationPlist.FoundationPlistException, err:
+        except FoundationPlist.FoundationPlistException as err:
             display.display_debug1(
                 "Error writing %s: %s", selfservemanifest, err)
 
@@ -319,4 +326,4 @@ def remove_from_selfserve_uninstalls(itemname):
 _MANIFESTS = {}
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

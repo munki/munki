@@ -1,4 +1,5 @@
 #!/usr/bin/python env
+from __future__ import absolute_import, print_function
 
 import subprocess
 import sys
@@ -13,7 +14,7 @@ if out:
     print("Time to clean the lint...")
     sys.exit(1)
 elif err:
-    print("An error occured!")
+    print("An error occurred!")
     print(err)
     sys.exit(1)
 else:
