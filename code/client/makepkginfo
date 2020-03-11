@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2008-2019 Greg Neagle.
+# Copyright 2008-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ The generated plist is printed to STDOUT.
 
 Usage: makepkginfo /path/to/package_or_dmg [-f /path/to/item/it/installs ...]
 """
+from __future__ import absolute_import, print_function
 
 # standard libs
 import optparse
@@ -69,14 +70,14 @@ def main():
     # add all our option groups
     pkginfolib.add_option_groups(parser)
 
-    sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
+    #sys.argv = [unicode(item, 'utf-8') for item in sys.argv]
     options, arguments = parser.parse_args()
 
     if options.version:
-        print info.get_version()
+        print(info.get_version())
         exit(0)
 
-    if (len(arguments) == 0 and
+    if (not arguments and
             not options.file and
             not options.nopkg and
             not options.installer_environment and
@@ -93,14 +94,14 @@ def main():
 
     if (options.minimum_os_version and
             not options.minimum_os_version[0].isdigit()):
-        print >> sys.stderr, (
-            'Minimum OS Version must start with a number, e.g. 10.7.2.')
+        print('Minimum OS Version must start with a number, e.g. 10.7.2.',
+              file=sys.stderr)
         exit(-1)
 
     if len(arguments) > 1:
-        print >> sys.stderr, 'Can process only one installer item at a time.'
-        print >> sys.stderr, 'Ignoring additional installer items:'
-        print >> sys.stderr, '\t', '\n\t'.join(arguments[1:])
+        print('Can process only one installer item at a time.', file=sys.stderr)
+        print('Ignoring additional installer items:', file=sys.stderr)
+        print('\t', '\n\t'.join(arguments[1:]), file=sys.stderr)
 
     os_version = osutils.getOsVersion(
         only_major_minor=False, as_tuple=True)
@@ -114,8 +115,8 @@ def main():
         installeritem = None
     try:
         pkginfo = pkginfolib.makepkginfo(installeritem, options)
-    except pkginfolib.PkgInfoGenerationError, err:
-        print >> sys.stderr, err
+    except pkginfolib.PkgInfoGenerationError as err:
+        print(err, file=sys.stderr)
         exit(-1)
 
     if (len(arguments) == 1 and
@@ -132,10 +133,10 @@ def main():
             "    This can result in repeated installation attempts or failure "
             "to attempt\n"
             "    installation at all.")
-        print >> sys.stderr, msg % item
+        print(msg % item, file=sys.stderr)
 
     # and now, what we've all been waiting for...
-    print FoundationPlist.writePlistToString(pkginfo)
+    print(FoundationPlist.writePlistToString(pkginfo).decode('UTF-8'))
 
 
 if __name__ == '__main__':

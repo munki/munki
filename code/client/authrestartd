@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ Root user can trigger an authrestart, possibly using the password stored
 earlier by a non-privileged user.
 
 """
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -34,14 +35,17 @@ import time
 import stat
 import logging
 import logging.handlers
-import SocketServer
+try:
+    import SocketServer
+except ImportError:
+    import socketserver as SocketServer
 import socket
-import plistlib
 import struct
 
 from munkilib import authrestart
 from munkilib import launchd
 from munkilib import prefs
+from munkilib.wrappers import readPlistFromString, PlistError, unicode_or_str
 
 
 APPNAME = 'authrestartd'
@@ -212,7 +216,7 @@ class RunHandler(SocketServer.StreamRequestHandler):
         cr_ngroups = 2
         cr_groups = 3
 
-        xucred_fmt = 'IIh%dI' % NGROUPS
+        xucred_fmt = b'IIh%dI' % NGROUPS
         res = struct.unpack(
             xucred_fmt,
             self.request.getsockopt(
@@ -242,10 +246,10 @@ class RunHandler(SocketServer.StreamRequestHandler):
 
             # Try to parse it.
             try:
-                plist = plistlib.readPlistFromString(plist_string)
-            except BaseException as err:
+                plist = readPlistFromString(plist_string)
+            except PlistError as err:
                 self.log.error('Malformed request')
-                self.request.send('ERROR:Malformed request\n')
+                self.request.send(u'ERROR:Malformed request\n'.encode('UTF-8'))
                 return
             self.log.debug('Parsed request plist')
 
@@ -253,7 +257,9 @@ class RunHandler(SocketServer.StreamRequestHandler):
             syntax_ok, errors = self.verify_request_syntax(plist)
             if not syntax_ok:
                 self.log.error('Plist syntax error')
-                self.request.send(''.join(['ERROR:%s\n' % e for e in errors]))
+                msg = (''.join(
+                    ['ERROR:%s\n' % e for e in errors])).encode('UTF-8')
+                self.request.send(msg)
                 return
 
             self.log.info(
@@ -261,17 +267,22 @@ class RunHandler(SocketServer.StreamRequestHandler):
             try:
                 fdeutil = FDEUtil(self.server, plist, uid)
                 result = fdeutil.handle()
-                self.request.send(u'OK:%s\n' % result)
+                self.request.send(
+                    (u'OK:%s\n' % unicode_or_str(result)).encode('UTF-8'))
             except FDEUtilError as err:
-                self.request.send(u'ERROR:%s\n' % unicode(err))
-            except BaseException as err:
-                self.log.error('Run failed: %s' % unicode(err))
-                self.request.send(u'ERROR:%s\n' % unicode(err))
+                self.request.send(
+                    (u'ERROR:%s\n' % unicode_or_str(err)).encode('UTF-8'))
+            except Exception as err:
+                raise
+                #self.log.error(u'Run failed: %s' % unicode_or_str(err))
+                #self.request.send(
+                #    (u'ERROR:%s\n' % unicode_or_str(err)).encode('UTF-8'))
 
-        except BaseException as err:
+        except Exception as err:
             self.log.error('Caught exception: %s' % repr(err))
-            self.request.send('ERROR:Caught exception: %s' % repr(err))
-            return
+            self.request.send(
+                (u'ERROR:Caught exception: %s' % repr(err)).encode('UTF-8'))
+            raise
 
 
 class RestartHelperDaemonError(Exception):
@@ -290,9 +301,12 @@ class RestartHelperDaemon(SocketServer.UnixStreamServer):
     def __init__(self, socket_fd, RequestHandlerClass):
         # Avoid initialization of UnixStreamServer as we need to open the
         # socket from a file descriptor instead of creating our own.
+        # pylint: disable=super-init-not-called
         self.socket = socket.fromfd(
             socket_fd, socket.AF_UNIX, socket.SOCK_STREAM)
         self.socket.listen(self.request_queue_size)
+        # now do the base class's init
+        # pylint: disable=non-parent-init-called
         SocketServer.BaseServer.__init__(
             self, self.socket.getsockname(), RequestHandlerClass)
         self.timed_out = False
@@ -336,7 +350,7 @@ def main():
     '''Start our daemon, connect to socket and process requests'''
     # Make sure we're launched as root
     if os.geteuid() != 0:
-        print >>sys.stderr, '%s must be run as root.' % APPNAME
+        print('%s must be run as root.' % APPNAME, file=sys.stderr)
         # Sleep to avoid respawn.
         time.sleep(10)
         return 1
@@ -352,13 +366,14 @@ def main():
     while True:
         info = os.stat(exepath)
         if info.st_uid != root_uid:
-            print >> sys.stderr, '%s must be owned by root.' % exepath
+            print('%s must be owned by root.' % exepath, file=sys.stderr)
             path_ok = False
         if info.st_gid not in (wheel_gid, admin_gid):
-            print >> sys.stderr, '%s must have group wheel or admin.' % exepath
+            print('%s must have group wheel or admin.' % exepath,
+                  file=sys.stderr)
             path_ok = False
         if info.st_mode & stat.S_IWOTH:
-            print >> sys.stderr, '%s mustn\'t be world writeable.' % exepath
+            print('%s mustn\'t be world writeable.' % exepath, file=sys.stderr)
             path_ok = False
         exepath = os.path.dirname(exepath)
         if exepath == '/':
@@ -373,9 +388,9 @@ def main():
     start_time = time.time()
 
     # Get socket file descriptors from launchd.
-    socket_fd = launchd.get_socket_fd('authrestartd')
+    socket_fd = launchd.get_socket_fd('authrestartd'.encode("UTF-8"))
     if not socket_fd:
-        print >> sys.stderr, 'No socket provided to us by launchd'
+        print('No socket provided to us by launchd', file=sys.stderr)
         time.sleep(10)
         return 1
 

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,14 +20,27 @@ Created by Greg Neagle on 2017-01-06.
 
 Utilities for replicating and retrieving Apple software update metadata
 """
+from __future__ import absolute_import, print_function
 
 import gzip
 import os
 import subprocess
 import time
-import urllib2
-import urlparse
 import xattr
+
+try:
+    # Python 2
+    from urllib2 import quote, unquote
+except ImportError:
+    # Python 3
+    from urllib.parse import quote, unquote
+try:
+    # Python 2
+    from urlparse import urlsplit
+except ImportError:
+    # Python 3
+    from urllib.parse import urlsplit
+
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -44,6 +57,7 @@ from .. import osutils
 from .. import prefs
 from .. import processes
 from .. import FoundationPlist
+from ..wrappers import unicode_or_str
 
 
 # Apple Software Update Catalog URLs.
@@ -71,7 +85,10 @@ DEFAULT_CATALOG_URLS = {
               '-leopard.merged-1.sucatalog'),
     '10.14': ('https://swscan.apple.com/content/catalogs/others/'
               'index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-'
-              'snowleopard-leopard.merged-1.sucatalog')
+              'snowleopard-leopard.merged-1.sucatalog'),
+    '10.15': ('https://swscan.apple.com/content/catalogs/others/'
+              'index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-'
+              'lion-snowleopard-leopard.merged-1.sucatalog')
 }
 
 # Preference domain for Apple Software Update.
@@ -236,7 +253,7 @@ class AppleUpdateSync(object):
         try:
             catalog_url = self.get_apple_catalogurl()
         except CatalogNotFoundError as err:
-            display.display_error(unicode(err))
+            display.display_error(unicode_or_str(err))
             raise
         if not os.path.exists(self.temp_cache_dir):
             try:
@@ -244,8 +261,8 @@ class AppleUpdateSync(object):
             except OSError as oserr:
                 raise ReplicationError(oserr)
         if os.path.exists(self.apple_download_catalog_path):
-            stored_os_vers = fetch.getxattr(
-                self.apple_download_catalog_path, XATTR_OS_VERS)
+            stored_os_vers = str(fetch.getxattr(
+                self.apple_download_catalog_path, XATTR_OS_VERS))
             if stored_os_vers != os_vers:
                 try:
                     # remove the cached apple catalog
@@ -257,8 +274,8 @@ class AppleUpdateSync(object):
         try:
             dummy_file_changed = self.get_su_resource(
                 catalog_url, self.apple_download_catalog_path, resume=True)
-            xattr.setxattr(
-                self.apple_download_catalog_path, XATTR_OS_VERS, os_vers)
+            xattr.setxattr(self.apple_download_catalog_path,
+                           XATTR_OS_VERS, os_vers.encode("UTF-8"))
             self.copy_downloaded_catalog()
         except fetch.Error:
             raise
@@ -272,7 +289,7 @@ class AppleUpdateSync(object):
           The str path of the URL.
         """
         # pylint: disable=no-self-use
-        return urlparse.urlsplit(full_url)[2]  # (schema, netloc, path, ...)
+        return urlsplit(full_url)[2]  # (schema, netloc, path, ...)
 
     def rewrite_url(self, full_url):
         """Rewrites a single URL to point to our local replica.
@@ -282,8 +299,7 @@ class AppleUpdateSync(object):
         Returns:
           A str URL, rewritten if needed to point to the local cache.
         """
-        local_base_url = 'file://localhost' + urllib2.quote(
-            self.cache_dir)
+        local_base_url = 'file://localhost' + quote(self.cache_dir)
         if full_url.startswith(local_base_url):
             return full_url  # url is already local, so just return it.
         return local_base_url + self._get_url_path(full_url)
@@ -307,7 +323,9 @@ class AppleUpdateSync(object):
                 package['MetadataURL'] = self.rewrite_url(
                     package['MetadataURL'])
         distributions = product['Distributions']
-        for dist_lang in distributions.keys():
+        # coerce distributions.keys() to list so we don't mutate the dictionary
+        # while enumerating it in Python 3
+        for dist_lang in list(distributions.keys()):
             distributions[dist_lang] = self.rewrite_url(
                 distributions[dist_lang])
 
@@ -459,7 +477,7 @@ class AppleUpdateSync(object):
             prefs.pref('AppleSoftwareUpdateLanguages') or ['English'])
         preferred_langs = (
             NSBundle.preferredLocalizationsFromArray_forPreferences_(
-                list_of_localizations, localization_preferences))
+                list(list_of_localizations), localization_preferences))
         if preferred_langs:
             return preferred_langs[0]
 
@@ -495,7 +513,7 @@ class AppleUpdateSync(object):
         if product:
             distributions = product.get('Distributions', {})
             if distributions:
-                available_languages = distributions.keys()
+                available_languages = list(distributions.keys())
                 if language:
                     preferred_language = language
                 else:
@@ -511,14 +529,14 @@ class AppleUpdateSync(object):
                 # look for it in the cache
                 if url.startswith('file://localhost'):
                     fileurl = url[len('file://localhost'):]
-                    dist_path = urllib2.unquote(fileurl)
+                    dist_path = unquote(fileurl)
                     if os.path.exists(dist_path):
                         return dist_path
                 # we haven't downloaded this yet
                 try:
                     return self.retrieve_url_to_cache_dir(
                         url, copy_only_if_missing=True)
-                except ReplicationError, err:
+                except ReplicationError as err:
                     display.display_error(
                         'Could not retrieve %s: %s', url, err)
         return None
@@ -531,4 +549,4 @@ class AppleUpdateSync(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

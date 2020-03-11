@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2014-2019 Greg Neagle.
+# Copyright 2014-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 profiles.py
 Munki module for working with configuration profiles.
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -53,7 +54,7 @@ def config_profile_info(ignore_cache=False):
     # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0]
+    stdout = proc.communicate()[0].decode('UTF-8')
     if proc.returncode != 0:
         display.display_error(
             'Could not obtain configuration profile info: %s' % stdout)
@@ -62,7 +63,7 @@ def config_profile_info(ignore_cache=False):
         try:
             config_profile_info.cache = FoundationPlist.readPlist(
                 output_plist + '.plist')
-        except BaseException, err:
+        except BaseException as err:
             display.display_error(
                 'Could not read configuration profile info: %s' % err)
             config_profile_info.cache = {}
@@ -120,11 +121,11 @@ def store_profile_receipt_data(identifier, hash_value):
             'FileHash': hash_value,
             'ProfileInstallDate': install_date
         }
-    elif identifier in profile_data.keys():
+    elif identifier in list(profile_data.keys()):
         del profile_data[identifier]
     try:
         FoundationPlist.writePlist(profile_data, profile_receipt_data_path())
-    except BaseException, err:
+    except BaseException as err:
         display.display_error(
             'Cannot update hash for %s: %s' % (identifier, err))
 
@@ -136,7 +137,7 @@ def read_profile(profile_path):
     except FoundationPlist.NSPropertyListSerializationException:
         # possibly a signed profile
         return read_signed_profile(profile_path)
-    except BaseException, err:
+    except BaseException as err:
         display.display_error(
             'Error reading profile %s: %s' % (profile_path, err))
         return {}
@@ -161,11 +162,12 @@ def read_signed_profile(profile_path):
     if proc.returncode:
         # security cms -D couldn't decode the file
         display.display_error(
-            'Error reading profile %s: %s' % (profile_path, stderr))
+            'Error reading profile %s: %s'
+            % (profile_path, stderr.decode('UTF-8')))
         return {}
     try:
         return FoundationPlist.readPlistFromString(stdout)
-    except FoundationPlist.NSPropertyListSerializationException, err:
+    except FoundationPlist.NSPropertyListSerializationException as err:
         # not a valid plist
         display.display_error(
             'Error reading profile %s: %s' % (profile_path, err))
@@ -206,11 +208,11 @@ def install_profile(profile_path, profile_identifier):
     # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0]
+    stdout = proc.communicate()[0].decode('UTF-8')
     if proc.returncode != 0:
         display.display_error(
             u'Profile %s installation failed: %s'
-            % (os.path.basename(profile_path), stdout.decode('UTF-8')))
+            % (os.path.basename(profile_path), stdout))
         return False
     if profile_identifier:
         record_profile_receipt(profile_path, profile_identifier)
@@ -231,7 +233,7 @@ def remove_profile(identifier):
     # so let's redirect everything to stdout and just use that
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0]
+    stdout = proc.communicate()[0].decode('UTF-8')
     if proc.returncode != 0:
         display.display_error(
             'Profile %s removal failed: %s' % (identifier, stdout))
@@ -288,4 +290,4 @@ def profile_is_installed(identifier):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ Utilities to enable Munki to install/uninstall Adobe CS3/CS4/CS5 products
 using the CS3/CS4/CS5 Deployment Toolkits.
 
 """
+from __future__ import absolute_import, print_function
 
 
 import os
@@ -67,8 +68,8 @@ def rotate_pdapp_log():
             newlogname = os.path.join(logdir, 'PDApp %s.log' % alternate_string)
         try:
             os.rename(pdapplog_path, newlogname)
-        except OSError, err:
-            munkilog.log('Could not rotate PDApp.log: %s', unicode(err))
+        except OSError as err:
+            munkilog.log(u'Could not rotate PDApp.log: %s' % err)
 
 
 class AdobeInstallProgressMonitor(object):
@@ -96,9 +97,9 @@ class AdobeInstallProgressMonitor(object):
         proc = subprocess.Popen(['/bin/ls', '-t1', logpath],
                                 bufsize=-1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, dummy_err) = proc.communicate()
+        output = proc.communicate()[0].decode('UTF-8')
         if output:
-            firstitem = str(output).splitlines()[0]
+            firstitem = output.splitlines()[0]
             if firstitem.endswith(".log"):
                 # store path of most recently modified log file
                 recent_adobe_log = os.path.join(logpath, firstitem)
@@ -143,9 +144,9 @@ class AdobeInstallProgressMonitor(object):
             proc = subprocess.Popen(cmd, bufsize=-1,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, dummy_err) = proc.communicate()
+            output = proc.communicate()[0].decode('UTF-8')
             if output:
-                lines = str(output).splitlines()
+                lines = output.splitlines()
                 completed_payloads = len(lines)
 
                 if (logfile not in self.payload_count
@@ -304,7 +305,7 @@ def run_adobe_install_tool(
     #check output for errors
     output = proc.stdout.readlines()
     for line in output:
-        line = line.rstrip("\n")
+        line = line.decode("UTF-8").rstrip("\n")
         if line.startswith("Error"):
             display.display_error(line)
         if line.startswith("Exit Code:"):
@@ -386,7 +387,7 @@ def writefile(stringdata, path):
     Returns the path on success, empty string on failure.'''
     try:
         fileobject = open(path, mode='w', buffering=1)
-        print >> fileobject, stringdata.encode('UTF-8')
+        print(stringdata.encode('UTF-8'), file=fileobject)
         fileobject.close()
         return path
     except (OSError, IOError):
@@ -759,7 +760,8 @@ def update_acrobatpro(dmgpath):
                           if item['path'].endswith('/' + appname)]
 
         # hope there's only one!
-        if len(candidates) == 0:
+        if not candidates:
+            # there are no candidates!
             if status == "optional":
                 continue
             else:
@@ -924,4 +926,4 @@ def do_adobe_install(item):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ dictionary).
 To work with plist data in strings, you can use readPlistFromString()
 and writePlistToString().
 """
+from __future__ import absolute_import, print_function
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -87,11 +88,11 @@ def readPlist(filepath):
 
 
 def readPlistFromString(data):
-    '''Read a plist data from a string. Return the root object.'''
-    try:
-        plistData = buffer(data)
-    except TypeError, err:
-        raise NSPropertyListSerializationException(err)
+    '''Read a plist data from a (byte)string. Return the root object.'''
+    plistData = NSData.dataWithBytes_length_(data, len(data))
+    if not plistData:
+        raise NSPropertyListSerializationException(
+            "Could not convert string to NSData")
     dataObject, dummy_plistFormat, error = (
         NSPropertyListSerialization.
         propertyListFromData_mutabilityOption_format_errorDescription_(
@@ -129,7 +130,7 @@ def writePlist(dataObject, filepath):
 
 
 def writePlistToString(rootObject):
-    '''Return 'rootObject' as a plist-formatted string.'''
+    '''Return 'rootObject' as a plist-formatted (byte)string.'''
     plistData, error = (
         NSPropertyListSerialization.
         dataFromPropertyList_format_errorDescription_(
@@ -141,8 +142,8 @@ def writePlistToString(rootObject):
             error = "Unknown error"
         raise NSPropertyListSerializationException(error)
     else:
-        return str(plistData)
+        return bytes(plistData)
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

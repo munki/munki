@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ is made to revert to older versions of a file when uninstalling;
 only file removals are done.
 
 """
+from __future__ import absolute_import, print_function
 
 import optparse
 import os
@@ -66,7 +67,7 @@ def main():
 
     # check to see if we're root
     if os.geteuid() != 0:
-        print >> sys.stderr, "You must run this as root!"
+        print("You must run this as root!", file=sys.stderr)
         exit(-1)
 
     # set the display globals

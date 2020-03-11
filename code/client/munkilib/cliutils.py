@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-03-12.
 
 Functions supporting the admin command-line tools
 """
+from __future__ import absolute_import, print_function
 
 import ctypes
 from ctypes.util import find_library
@@ -28,12 +29,28 @@ import plistlib
 import readline
 import sys
 import tempfile
-import thread
+try:
+    # Python 2
+    import thread
+except ImportError:
+    # Python 3
+    import _thread as thread
 import time
-import urllib
-import urlparse
+try:
+    # Python 2
+    from urllib import pathname2url
+except ImportError:
+    # Python 3
+    from urllib.request import pathname2url
+try:
+    # Python 2
+    from urlparse import urlparse, urljoin
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
+from munkilib.wrappers import unicode_or_str, get_input
 
 FOUNDATION_SUPPORT = True
 try:
@@ -78,8 +95,8 @@ else:
                 pref.cache = {}
         if prefname in pref.cache:
             return pref.cache[prefname]
-        else:
-            return None
+        # no pref found
+        return None
 
 
 def get_version():
@@ -109,18 +126,20 @@ def get_version():
 
 def path2url(path):
     '''Converts a path to a file: url'''
-    return urlparse.urljoin('file:', urllib.pathname2url(
-        os.path.abspath(os.path.expanduser(path))))
+    return urljoin(
+        'file:', 
+        pathname2url(os.path.abspath(os.path.expanduser(path)))
+    )
 
 
 def print_utf8(text):
     '''Print Unicode text as UTF-8'''
-    print text.encode('UTF-8')
+    print(text.encode('UTF-8'))
 
 
 def print_err_utf8(text):
     '''Print Unicode text to stderr as UTF-8'''
-    print >> sys.stderr, text.encode('UTF-8')
+    print(text.encode('UTF-8'), file=sys.stderr)
 
 
 class TempFile(object):
@@ -148,7 +167,7 @@ if 'libedit' in readline.__doc__:
 # pylint: enable=invalid-name
 
 
-def raw_input_with_default(prompt, default_text):
+def get_input_with_default(prompt, default_text):
     '''Get input from user with a prompt and a suggested default value'''
 
     # 10.6's libedit doesn't have the rl_set_prompt function, so we fall back
@@ -157,33 +176,37 @@ def raw_input_with_default(prompt, default_text):
     if darwin_vers == 10:
         if default_text:
             prompt = '%s [%s]: ' % (prompt.rstrip(': '), default_text)
-            return (unicode(raw_input(prompt), encoding=sys.stdin.encoding) or
-                    unicode(default_text))
-        else:
-            # no default value, just call raw_input
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+            return (unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding) or
+                    unicode_or_str(default_text))
+        # no default value, just call raw_input
+        return unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding)
 
     # A nasty, nasty hack to get around Python readline limitations under
-    # OS X. Gives us editable default text for configuration and munkiimport
+    # macOS. Gives us editable default text for configuration and munkiimport
     # choices'''
     def insert_default_text(prompt, text):
         '''Helper function'''
         time.sleep(0.01)
+        if not isinstance(prompt, bytes):
+            prompt = prompt.encode(sys.stdin.encoding)
         libedit.rl_set_prompt(prompt)
+        if isinstance(text, bytes):
+            text = text.decode(sys.stdin.encoding)
         readline.insert_text(text)
         libedit.rl_forced_update_display()
 
     readline.clear_history()
     if not default_text:
-        return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+        return unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding)
     elif libedit:
         # readline module was compiled against libedit
-        thread.start_new_thread(insert_default_text, (prompt, default_text))
-        return unicode(raw_input(), encoding=sys.stdin.encoding)
+        thread.start_new_thread(
+            insert_default_text, (prompt, default_text))
+        return unicode_or_str(get_input(), encoding=sys.stdin.encoding)
     else:
         readline.set_startup_hook(lambda: readline.insert_text(default_text))
         try:
-            return unicode(raw_input(prompt), encoding=sys.stdin.encoding)
+            return unicode_or_str(get_input(prompt), encoding=sys.stdin.encoding)
         finally:
             readline.set_startup_hook()
 
@@ -198,7 +221,7 @@ def configure(prompt_list):
     darwin_vers = int(os.uname()[2].split('.')[0])
     edited_prefs = {}
     for (key, prompt) in prompt_list:
-        newvalue = raw_input_with_default('%15s: ' % prompt, pref(key))
+        newvalue = get_input_with_default('%15s: ' % prompt, pref(key))
         if darwin_vers == 10:
             # old behavior in SL: hitting return gives you an empty string,
             # and means accept the default value.
@@ -212,7 +235,7 @@ def configure(prompt_list):
             try:
                 CFPreferencesSetAppValue(key, value, BUNDLE_ID)
             except BaseException:
-                print >> sys.stderr, 'Could not save configuration!'
+                print('Could not save configuration!', file=sys.stderr)
                 raise ConfigurationSaveError
             # remove repo_path if it exists since we don't use that
             # any longer (except for backwards compatibility) and we don't
@@ -231,10 +254,10 @@ def configure(prompt_list):
                 del existing_prefs['repo_path']
             plistlib.writePlist(existing_prefs, PREFSPATH)
         except (IOError, OSError, ExpatError):
-            print >> sys.stderr, (
-                'Could not save configuration to %s' % PREFSPATH)
+            print('Could not save configuration to %s' % PREFSPATH,
+                  file=sys.stderr)
             raise ConfigurationSaveError
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

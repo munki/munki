@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,16 +19,18 @@ makecatalogslib
 Created by Greg Neagle on 2017-11-19.
 Routines used by makecatalogs
 """
+from __future__ import absolute_import, print_function
 
 # std libs
 import hashlib
 import os
-import plistlib
 
 # our libs
 from .common import list_items_of_kind, AttributeDict
 
 from .. import munkirepo
+
+from ..wrappers import readPlistFromString, writePlistToString
 
 
 class MakeCatalogsError(Exception):
@@ -53,11 +55,11 @@ def hash_icons(repo, output_fn=None):
         try:
             icondata = repo.get('icons/' + icon_ref)
             icons[icon_ref] = hashlib.sha256(icondata).hexdigest()
-        except munkirepo.RepoError, err:
-            errors.append(u'RepoError for %s: %s' % (icon_ref, unicode(err)))
-        except IOError, err:
+        except munkirepo.RepoError as err:
+            errors.append(u'RepoError for %s: %s' % (icon_ref, err))
+        except IOError as err:
             errors.append(u'IO error for %s: %s' % (icon_ref, err))
-        except BaseException, err:
+        except BaseException as err:
             errors.append(u'Unexpected error for %s: %s' % (icon_ref, err))
     return icons, errors
 
@@ -165,18 +167,18 @@ def process_pkgsinfo(repo, options, output_fn=None):
         output_fn("Getting list of pkgsinfo...")
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise MakeCatalogsError(
-            "Error getting list of pkgsinfo items: %s" % unicode(err))
+            u"Error getting list of pkgsinfo items: %s" % err)
 
     # get a list of pkgs items
     if output_fn:
         output_fn("Getting list of pkgs...")
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
-    except munkirepo.RepoError, err:
+    except munkirepo.RepoError as err:
         raise MakeCatalogsError(
-            "Error getting list of pkgs items: %s" % unicode(err))
+            u"Error getting list of pkgs items: %s" % err)
 
     # start with empty catalogs dict
     catalogs = {}
@@ -187,11 +189,11 @@ def process_pkgsinfo(repo, options, output_fn=None):
         # Try to read the pkginfo file
         try:
             data = repo.get(pkginfo_ref)
-            pkginfo = plistlib.readPlistFromString(data)
-        except IOError, err:
+            pkginfo = readPlistFromString(data)
+        except IOError as err:
             errors.append("IO error for %s: %s" % (pkginfo_ref, err))
             continue
-        except BaseException, err:
+        except BaseException as err:
             errors.append("Unexpected error for %s: %s" % (pkginfo_ref, err))
             continue
 
@@ -204,7 +206,7 @@ def process_pkgsinfo(repo, options, output_fn=None):
             del pkginfo['notes']
         # strip out any keys that start with "_"
         # (example: pkginfo _metadata)
-        for key in pkginfo.keys():
+        for key in list(pkginfo.keys()):
             if key.startswith('_'):
                 del pkginfo[key]
 
@@ -263,7 +265,7 @@ def makecatalogs(repo, options, output_fn=None):
     except munkirepo.RepoError:
         catalog_list = []
     for catalog_name in catalog_list:
-        if catalog_name not in catalogs.keys():
+        if catalog_name not in list(catalogs.keys()):
             catalog_ref = os.path.join('catalogs', catalog_name)
             try:
                 repo.delete(catalog_ref)
@@ -273,28 +275,28 @@ def makecatalogs(repo, options, output_fn=None):
     # write the new catalogs
     for key in catalogs:
         catalogpath = os.path.join("catalogs", key)
-        if len(catalogs[key]):
-            catalog_data = plistlib.writePlistToString(catalogs[key])
+        if catalogs[key] != "":
+            catalog_data = writePlistToString(catalogs[key])
             try:
                 repo.put(catalogpath, catalog_data)
                 if output_fn:
                     output_fn("Created %s..." % catalogpath)
-            except munkirepo.RepoError, err:
+            except munkirepo.RepoError as err:
                 errors.append(
-                    u'Failed to create catalog %s: %s' % (key, unicode(err)))
+                    u'Failed to create catalog %s: %s' % (key, err))
         else:
             errors.append(
                 "WARNING: Did not create catalog %s because it is empty" % key)
 
     if icons:
         icon_hashes_plist = os.path.join("icons", "_icon_hashes.plist")
-        icon_hashes = plistlib.writePlistToString(icons)
+        icon_hashes = writePlistToString(icons)
         try:
             repo.put(icon_hashes_plist, icon_hashes)
-            print "Created %s..." % (icon_hashes_plist)
-        except munkirepo.RepoError, err:
+            print("Created %s..." % (icon_hashes_plist))
+        except munkirepo.RepoError as err:
             errors.append(
-                u'Failed to create %s: %s' % (icon_hashes_plist, unicode(err)))
+                u'Failed to create %s: %s' % (icon_hashes_plist, err))
 
-    # Return and errors
+    # Return any errors
     return errors

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2019 Greg Neagle.
+# Copyright 2017-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ admin/common.py
 Created by Greg Neagle on 2017-11-19.
 Common code used by the admin libs
 """
+from __future__ import absolute_import
 
 import os
 

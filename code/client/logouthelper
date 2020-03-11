@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
-# Copyright 2011-2019 Greg Neagle.
+# Copyright 2011-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ A helper tool for forced logouts to allow munki to force install items by
 a certain deadline.
 
 """
+from __future__ import absolute_import
 
 # standard libs
 import os

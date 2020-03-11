@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-06.
 Utilities to get info about Adobe installers/uninstallers
 
 """
+from __future__ import absolute_import, print_function
 
 import os
 import json
@@ -134,7 +135,7 @@ def get_payload_info(dirpath):
                 properties = installer_properties[0].getElementsByTagName(
                     'Property')
                 for prop in properties:
-                    if 'name' in prop.attributes.keys():
+                    if 'name' in list(prop.attributes.keys()):
                         propname = prop.attributes['name'].value.encode('UTF-8')
                         propvalue = ''
                         for node in prop.childNodes:
@@ -155,7 +156,7 @@ def get_payload_info(dirpath):
                     installsize = ''
                     for node in totalsizes[0].childNodes:
                         installsize += node.nodeValue
-                    payloadinfo['installed_size'] = int(installsize)/1024
+                    payloadinfo['installed_size'] = int(int(installsize)/1024)
 
     return payloadinfo
 
@@ -178,7 +179,7 @@ def get_adobe_setup_info(installroot):
                 drivers = dom.getElementsByTagName('Driver')
                 if drivers:
                     driver = drivers[0]
-                    if 'folder' in driver.attributes.keys():
+                    if 'folder' in list(driver.attributes.keys()):
                         driverfolder = driver.attributes[
                             'folder'].value.encode('UTF-8')
                 if driverfolder == '':
@@ -303,9 +304,9 @@ def parse_option_xml(option_xml_file):
     dom = minidom.parse(option_xml_file)
     installinfo = dom.getElementsByTagName('InstallInfo')
     if installinfo:
-        if 'id' in installinfo[0].attributes.keys():
+        if 'id' in list(installinfo[0].attributes.keys()):
             info['packager_id'] = installinfo[0].attributes['id'].value
-        if 'version' in installinfo[0].attributes.keys():
+        if 'version' in list(installinfo[0].attributes.keys()):
             info['packager_version'] = installinfo[
                 0].attributes['version'].value
         info['package_name'] = get_xml_text_element(
@@ -588,18 +589,18 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
                         # Because InDesign CC 2017 is not like any other package
                         # and contains a 'Condition' key but as an empty
                         # string, we explicitly test this case as well.
-                        if ('Condition' not in package.keys() or
+                        if ('Condition' not in list(package.keys()) or
                                 package.get('Condition') == '' or
                                 '[installLanguage]==en_US' in
                                 package.get('Condition', '')):
-                            installed_size += package.get(
-                                'ExtractSize', 0) / 1024
+                            installed_size += int(package.get(
+                                'ExtractSize', 0) / 1024)
                             # We get much closer to Adobe's "HDSetup" calculated
                             # install space requirement if we include both the
                             # DownloadSize and ExtractSize data
                             # (DownloadSize is just the zip file size)
-                            installed_size += package.get(
-                                'DownloadSize', 0) / 1024
+                            installed_size += int(package.get(
+                                'DownloadSize', 0) / 1024)
                 # Add another 300MB for the CC app and plumbing in case they've
                 # never been installed on the system
                 installed_size += 307200
@@ -784,4 +785,4 @@ def getAdobeCatalogInfo(mountpoint, pkgname=""):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

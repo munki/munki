@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Functions for finding, listing, etc processes
 """
+from __future__ import absolute_import, print_function
 
 import os
 import signal
@@ -36,7 +37,7 @@ def get_running_processes():
                             shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    (output, dummy_err) = proc.communicate()
+    output = proc.communicate()[0].decode('UTF-8')
     if proc.returncode == 0:
         proc_list = [item for item in output.splitlines()
                      if item.startswith('/')]
@@ -48,7 +49,7 @@ def get_running_processes():
                                     shell=False, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            (output, dummy_err) = proc.communicate()
+            output = proc.communicate()[0].decode('UTF-8')
             if proc.returncode == 0:
                 carbon_apps = [item[len(launchcfmapp)+1:]
                                for item in output.splitlines()
@@ -105,7 +106,7 @@ def blocking_applications_running(pkginfoitem):
         # from 'installs' list if it exists
         appnames = [os.path.basename(item.get('path'))
                     for item in pkginfoitem.get('installs', [])
-                    if item['type'] == 'application']
+                    if item.get('type') == 'application']
 
     display.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
@@ -137,7 +138,7 @@ def find_processes(user=None, exe=None):
     argv = ['/bin/ps', '-x', '-w', '-w', '-a', '-o', 'pid=,user=,comm=']
     ps_proc = subprocess.Popen(
         argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, dummy_stderr) = ps_proc.communicate()
+    stdout = ps_proc.communicate()[0].decode('UTF-8')
 
     pids = {}
 
@@ -189,7 +190,7 @@ def force_logout_now():
             except OSError:
                 pass
 
-    except BaseException, err:
+    except BaseException as err:
         display.display_error('Exception in force_logout_now(): %s' % str(err))
 
 
@@ -211,7 +212,7 @@ def stop_requested():
         display.display_info('### User stopped session ###')
         try:
             os.unlink(stop_request_flag)
-        except OSError, err:
+        except OSError as err:
             display.display_error(
                 'Could not remove %s: %s', stop_request_flag, err)
         return True
@@ -219,4 +220,4 @@ def stop_requested():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

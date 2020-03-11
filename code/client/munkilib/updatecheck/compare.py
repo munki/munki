@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2016-12-13.
 
 Comparison/checking functions used by updatecheck
 """
+from __future__ import absolute_import, print_function
 
 import os
 from operator import itemgetter
@@ -52,8 +53,7 @@ def compare_versions(thisvers, thatvers):
     elif (pkgutils.MunkiLooseVersion(thisvers) ==
           pkgutils.MunkiLooseVersion(thatvers)):
         return VERSION_IS_THE_SAME
-    else:
-        return VERSION_IS_HIGHER
+    return VERSION_IS_HIGHER
 
 
 def compare_application_version(app):
@@ -261,18 +261,18 @@ def filesystem_item_exists(item):
                 if storedchecksum == ondiskchecksum:
                     display.display_debug2('Checksums match.')
                     return ITEM_MATCHES
-                else:
-                    display.display_debug2(
-                        'Checksums differ: expected %s, got %s',
-                        storedchecksum, ondiskchecksum)
-                    return ITEM_DOES_NOT_MATCH
-            else:
-                return ITEM_MATCHES
-        else:
-            display.display_debug2('\tDoes not exist.')
-            return ITEM_NOT_PRESENT
-    else:
-        raise utils.Error('No path specified for filesystem item.')
+                # storedchecksum != ondiskchecksum
+                display.display_debug2(
+                    'Checksums differ: expected %s, got %s',
+                    storedchecksum, ondiskchecksum)
+                return ITEM_DOES_NOT_MATCH
+            # 'md5checksum' not in item
+            return ITEM_MATCHES
+        # not os.path.lexists(filepath)
+        display.display_debug2('\tDoes not exist.')
+        return ITEM_NOT_PRESENT
+    # not 'path' in item
+    raise utils.Error('No path specified for filesystem item.')
 
 
 def compare_item_version(item):
@@ -305,7 +305,7 @@ def compare_item_version(item):
         return compare_plist_version(item)
     if itemtype == 'file':
         return filesystem_item_exists(item)
-    raise utils.Error('Unknown installs item type: %s', itemtype)
+    raise utils.Error('Unknown installs item type: %s' % itemtype)
 
 
 def compare_receipt_version(item):
@@ -340,10 +340,9 @@ def compare_receipt_version(item):
     installedvers = installedpkgs.get(pkgid)
     if installedvers:
         return compare_versions(installedvers, vers)
-    else:
-        display.display_debug1(
-            '\tThis package is not currently installed.')
-        return ITEM_NOT_PRESENT
+    # not installedvers
+    display.display_debug1('\tThis package is not currently installed.')
+    return ITEM_NOT_PRESENT
 
 
 def get_installed_version(item_plist):
@@ -431,4 +430,4 @@ def get_installed_version(item_plist):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

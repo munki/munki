@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ Created by Greg Neagle on 2016-12-13.
 
 Common output functions
 """
+from __future__ import absolute_import, print_function
 
 import sys
 import warnings
 
 from . import munkilog
-from . import prefs
 from . import reports
 from . import munkistatus
-
+from .wrappers import unicode_or_str
 
 
 def _getsteps(num_of_steps, limit):
@@ -81,16 +81,22 @@ def str_to_ascii(a_string):
       str, ascii form, no >7bit chars
     """
     try:
-        return unicode(a_string).encode('ascii', 'ignore')
+        return unicode_or_str(a_string).encode('ascii', 'ignore')
     except UnicodeDecodeError:
         return a_string.decode('ascii', 'ignore')
 
 
 def _to_unicode(obj, encoding='UTF-8'):
-    """Coerces basestring obj to unicode"""
-    if isinstance(obj, basestring):
-        if not isinstance(obj, unicode):
-            obj = unicode(obj, encoding)
+    """Coerces obj to unicode"""
+    # pylint: disable=basestring-builtin, unicode-builtin
+    try:
+        if isinstance(obj, basestring):
+            if not isinstance(obj, unicode):
+                obj = unicode(obj, encoding)
+    except NameError:
+        # Python 3
+        if isinstance(obj, bytes):
+            obj = obj.decode(encoding)
     return obj
 
 
@@ -104,7 +110,7 @@ def _concat_message(msg, *args):
         args = [_to_unicode(arg) for arg in args]
         try:
             msg = msg % tuple(args)
-        except TypeError, dummy_err:
+        except TypeError as dummy_err:
             warnings.warn(
                 'String format does not match concat args: %s'
                 % (str(sys.exc_info())))
@@ -124,9 +130,9 @@ def display_status_major(msg, *args):
         munkistatus.percent(-1)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print '%s' % msg.encode('UTF-8')
+            print('%s' % msg)
         else:
-            print '%s...' % msg.encode('UTF-8')
+            print('%s...' % msg)
         sys.stdout.flush()
 
 
@@ -141,9 +147,9 @@ def display_status_minor(msg, *args):
         munkistatus.detail(msg)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print '    %s' % msg.encode('UTF-8')
+            print('    %s' % msg)
         else:
-            print '    %s...' % msg.encode('UTF-8')
+            print('    %s...' % msg)
         sys.stdout.flush()
 
 
@@ -155,7 +161,7 @@ def display_info(msg, *args):
     msg = _concat_message(msg, *args)
     munkilog.log(u'    ' + msg)
     if verbose > 0:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg)
         sys.stdout.flush()
 
 
@@ -168,9 +174,9 @@ def display_detail(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 1:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg)
         sys.stdout.flush()
-    if prefs.pref('LoggingLevel') > 0:
+    if munkilog.logging_level() > 0:
         munkilog.log(u'    ' + msg)
 
 
@@ -180,9 +186,9 @@ def display_debug1(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 2:
-        print '    %s' % msg.encode('UTF-8')
+        print('    %s' % msg)
         sys.stdout.flush()
-    if prefs.pref('LoggingLevel') > 1:
+    if munkilog.logging_level() > 1:
         munkilog.log('DEBUG1: %s' % msg)
 
 
@@ -192,8 +198,8 @@ def display_debug2(msg, *args):
     """
     msg = _concat_message(msg, *args)
     if verbose > 3:
-        print '    %s' % msg.encode('UTF-8')
-    if prefs.pref('LoggingLevel') > 2:
+        print('    %s' % msg)
+    if munkilog.logging_level() > 2:
         munkilog.log('DEBUG2: %s' % msg)
 
 
@@ -204,7 +210,7 @@ def display_warning(msg, *args):
     msg = _concat_message(msg, *args)
     warning = 'WARNING: %s' % msg
     if verbose > 0:
-        print >> sys.stderr, warning.encode('UTF-8')
+        print(warning, file=sys.stderr)
     munkilog.log(warning)
     # append this warning to our warnings log
     munkilog.log(warning, 'warnings.log')
@@ -221,7 +227,7 @@ def display_error(msg, *args):
     msg = _concat_message(msg, *args)
     errmsg = 'ERROR: %s' % msg
     if verbose > 0:
-        print >> sys.stderr, errmsg.encode('UTF-8')
+        print(errmsg, file=sys.stderr)
     munkilog.log(errmsg)
     # append this error to our errors log
     munkilog.log(errmsg, 'errors.log')
@@ -239,4 +245,4 @@ munkistatusoutput = True
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

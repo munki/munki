@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Created by Greg Neagle on 2016-12-14.
 
 Reporting functions
 """
+from __future__ import absolute_import, print_function
 
 import os
 import subprocess
@@ -44,29 +45,28 @@ def format_time(timestamp=None):
     If timestamp isn't given the current time is used."""
     if timestamp is None:
         return str(NSDate.new())
-    else:
-        return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
+    return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
 
 
 def printreportitem(label, value, indent=0):
     """Prints a report item in an 'attractive' way"""
     indentspace = '    '
-    if type(value) == type(None):
-        print indentspace*indent, '%s: !NONE!' % label
-    elif type(value) == list or type(value).__name__ == 'NSCFArray':
+    if isinstance(value, type(None)):
+        print(indentspace*indent, '%s: !NONE!' % label)
+    elif isinstance(value, list) or type(value).__name__ == 'NSCFArray':
         if label:
-            print indentspace*indent, '%s:' % label
+            print(indentspace*indent, '%s:' % label)
         index = 0
         for item in value:
             index += 1
             printreportitem(index, item, indent+1)
-    elif type(value) == dict or type(value).__name__ == 'NSCFDictionary':
+    elif isinstance(value, dict) or type(value).__name__ == 'NSCFDictionary':
         if label:
-            print indentspace*indent, '%s:' % label
+            print(indentspace*indent, '%s:' % label)
         for subkey in value.keys():
             printreportitem(subkey, value[subkey], indent+1)
     else:
-        print indentspace*indent, '%s: %s' % (label, value)
+        print(indentspace*indent, '%s: %s' % (label, value))
 
 
 def printreport(reportdict):
@@ -97,7 +97,7 @@ def _warn(msg):
     """We can't use display module functions here because that would require
     circular imports. So a partial reimplementation."""
     warning = 'WARNING: %s' % msg
-    print >> sys.stderr, warning.encode('UTF-8')
+    print(warning.encode('UTF-8'), file=sys.stderr)
     munkilog.log(warning)
     # append this warning to our warnings log
     munkilog.log(warning, 'warnings.log')
@@ -126,7 +126,7 @@ def archive_report():
         proc = subprocess.Popen(['/bin/ls', '-t1', archivepath],
                                 bufsize=1, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        (output, dummy_err) = proc.communicate()
+        output = proc.communicate()[0].decode('UTF-8')
         if output:
             archiveitems = [item
                             for item in str(output).splitlines()
@@ -148,4 +148,4 @@ report = {}
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 powermgr.py
 Munki module to handle Power Manager tasks
 """
-
-from . import display
+from __future__ import absolute_import, print_function
 
 import objc
 
@@ -27,6 +26,8 @@ import objc
 # pylint: disable=no-name-in-module
 from Foundation import NSBundle
 # pylint:enable=no-name-in-module
+
+from . import display
 
 # lots of camelCase names
 # pylint: disable=invalid-name
@@ -120,4 +121,4 @@ class Caffeinator(object):
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')

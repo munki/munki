@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/munki/python
 # encoding: utf-8
 #
 # Copyright 2011-2013 Google Inc. All Rights Reserved.
@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """Tool to supervise launch other binaries."""
-
+from __future__ import absolute_import, print_function
 
 import errno
 import getopt
@@ -53,6 +53,7 @@ KILL_WAIT_SECS = 1
 
 
 class Supervisor(object):
+    """Class to handle our supervisiory functions"""
     def __init__(self, delayrandom_abort=False):
         """Init.
 
@@ -73,14 +74,20 @@ class Supervisor(object):
             'stderr': None,
             'debug': None,
         }
+        self.continue_sleeping = True
+        self.error_exec_codes = []
         self.exit_status = None
         self.delayrandom_abort = delayrandom_abort
+        self.stderr = None
+        self.stdout = None
 
-    def setOptions(self, **kwargs):
+    def set_options(self, **kwargs):
+        """Set keyword options"""
         for k in kwargs:
             self.options[k] = kwargs[k]
 
-    def signalHandler(self, signum, dummy_frame):
+    def signal_handler(self, signum, _frame):
+        """Handle USR1 signal"""
         if signum == signal.SIGUSR1:
             self.continue_sleeping = False
 
@@ -90,27 +97,26 @@ class Supervisor(object):
         Args:
             args: list, arguments to execute, args[0] is binary name
         """
-        logging.debug('execute(%s)' % str(args))
+        logging.debug('execute(%s)', str(args))
 
         if self.delayrandom_abort:
             # A second Supervisor process will not take over the previous
             # Supervisor process who is holding this signal now.
             if signal.getsignal(signal.SIGUSR1) == signal.SIG_DFL:
-                signal.signal(signal.SIGUSR1, self.signalHandler)
+                signal.signal(signal.SIGUSR1, self.signal_handler)
             self.continue_sleeping = True
 
         if 'delayrandom' in self.options and self.options['delayrandom']:
-          max_secs = self.options['delayrandom']
-          random_secs = random.randrange(0, max_secs)
-          logging.debug(
-              'Applying random delay up to %s seconds: %s',
-              max_secs, random_secs)
-          time.sleep(random_secs)
+            max_secs = self.options['delayrandom']
+            random_secs = random.randrange(0, max_secs)
+            logging.debug('Applying random delay up to %s seconds: %s',
+                          max_secs, random_secs)
+            time.sleep(random_secs)
 
         if self.delayrandom_abort:
-          if not self.continue_sleeping:
-            logging.debug('Awoken from random delay by signal')
-          signal.signal(signal.SIGUSR1, signal.SIG_DFL)
+            if not self.continue_sleeping:
+                logging.debug('Awoken from random delay by signal')
+            signal.signal(signal.SIGUSR1, signal.SIG_DFL)
 
         if self.options['error-exec']:
             self.stdout = tempfile.NamedTemporaryFile()
@@ -134,9 +140,9 @@ class Supervisor(object):
                 stdout=stdout_pipe,
                 stderr=stderr_pipe,
             )
-        except OSError, e:
+        except OSError as err:
             self.exit_status = 127
-            raise ExecuteError(str(e))
+            raise ExecuteError(str(err))
 
         self.exit_status = None
         self.continue_sleeping = True
@@ -165,20 +171,21 @@ class Supervisor(object):
 
         except TimeoutError:
             logging.critical('Timeout error executing %s', ' '.join(args))
-            self.killPid(proc.pid)
+            self.kill_pid(proc.pid)
             self.exit_status = EXIT_STATUS_TIMEOUT
             raise
 
 
-    def killPid(self, pid):
+    def kill_pid(self, pid):
         """Kill a pid, aggressively if necessary."""
+        # pylint: disable=no-self-use
 
         exited = {}
 
         class __ChildExit(Exception):
             """Child exited."""
 
-        def __sigchld_handler(signum, frame):
+        def __sigchld_handler(signum, _frame):
             if signum == signal.SIGCHLD:
                 os.waitpid(pid, os.WNOHANG)
                 exited[pid] = True
@@ -193,18 +200,19 @@ class Supervisor(object):
             logging.warning('Sending SIGKILL to %d', pid)
             os.kill(-1 * pid, signal.SIGKILL)
             time.sleep(KILL_WAIT_SECS)
-        except OSError, e:
-            if e.args[0] == errno.ESRCH:
+        except OSError as err:
+            if err.args[0] == errno.ESRCH:
                 logging.warning('pid %d died on its own')
             else:
-                logging.critical('killPid: %s', str(e))
+                logging.critical('killPid: %s', str(err))
 
         if pid in exited:
             return
 
         logging.debug('pid %d will not die', pid)
 
-    def getExitStatus(self):
+    def get_exit_status(self):
+        """Return supervised process exit status"""
         return self.exit_status
 
     def cleanup(self):
@@ -221,7 +229,7 @@ class Supervisor(object):
             arg_str = arg_str.replace('{STDERR}', self.stderr.name)
             args = ('/bin/sh', '-c', arg_str)
             error_supv = Supervisor()
-            error_supv.setOptions(timeout=5 * 3600)
+            error_supv.set_options(timeout=5 * 3600)
             error_supv.execute(args)
 
         self.stdout.close()
@@ -230,7 +238,7 @@ class Supervisor(object):
         self.stderr = None
 
 
-def parseOpts(argv):
+def parse_opts(argv):
     """Parse argv and return options and arguments.
 
     Args:
@@ -245,21 +253,21 @@ def parseOpts(argv):
                 'timeout=', 'delayrandom=', 'debug', 'help',
                 'error-exec=', 'error-exec-exit-codes=',
             ])
-    except getopt.GetoptError, e:
-        raise OptionError(str(e))
+    except getopt.GetoptError as err:
+        raise OptionError(str(err))
 
     options = {}
-    for k, v in argopts:
-        if k in ['--timeout', '--delayrandom']:
-            options[k[2:]] = int(v)
+    for key, val in argopts:
+        if key in ['--timeout', '--delayrandom']:
+            options[key[2:]] = int(val)
         else:
-            options[k[2:]] = v
+            options[key[2:]] = val
     return options, args
 
 
-def Usage():
+def usage():
     """Print usage."""
-    print """supervisor [options] [--] [path to executable] [arguments]
+    print("""supervisor [options] [--] [path to executable] [arguments]
 
     options:
         --timeout n
@@ -297,10 +305,10 @@ def Usage():
         --
             use the -- to separate supervisor options from arguments to the
             executable which will appear as options.
-    """
+    """)
 
 
-def processOpts(options, args):
+def process_opts(options, args):
     """Process options for validity etc.
 
     Args:
@@ -312,14 +320,14 @@ def processOpts(options, args):
         OptionError: if there is an error in options
     """
     if not args or options.get('help', None) is not None:
-        Usage()
+        usage()
         return False
     if options.get('debug', None) is not None:
         logging.getLogger().setLevel(logging.DEBUG)
     return True
 
 
-def setupSyslog():
+def setup_syslog():
     """Setup syslog as a logger."""
     logger = logging.getLogger()
     syslog = logging.handlers.SysLogHandler('/var/run/syslog')
@@ -331,37 +339,38 @@ def setupSyslog():
 
 
 def main(argv):
+    """Main function!"""
     try:
-        options, args = parseOpts(argv[1:])
-        if not processOpts(options, args):
+        options, args = parse_opts(argv[1:])
+        if not process_opts(options, args):
             return 0
-    except OptionError, e:
-        logging.error(str(e))
+    except OptionError as err:
+        logging.error(str(err))
         return 1
 
     if options.get('debug', None) is None:
-        setupSyslog()
+        setup_syslog()
 
     try:
-        sp = Supervisor(delayrandom_abort=True)
-        sp.setOptions(**options)
-    except Error, e:
-        logging.exception('%s %s', e.__class__.__name__, str(e))
+        supervisor = Supervisor(delayrandom_abort=True)
+        supervisor.set_options(**options)
+    except Error as err:
+        logging.exception('%s %s', err.__class__.__name__, str(err))
         return 1
 
-    ex = 0
+    exit_code = 0
 
     try:
-        sp.execute(args)
-        ex = sp.getExitStatus()
-    except TimeoutError, e:
-        ex = 1
-    except Error, e:
-        logging.exception('%s %s', e.__class__.__name__, str(e))
-        ex = 1
+        supervisor.execute(args)
+        exit_code = supervisor.get_exit_status()
+    except TimeoutError:
+        exit_code = 1
+    except Error as err:
+        logging.exception('%s %s', err.__class__.__name__, str(err))
+        exit_code = 1
 
-    sp.cleanup()
-    return ex
+    supervisor.cleanup()
+    return exit_code
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2019 Greg Neagle.
+# Copyright 2009-2020 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for working with Munki catalogs
 """
+from __future__ import absolute_import, print_function
 
 import os
 
@@ -31,6 +32,7 @@ from .. import pkgutils
 from .. import prefs
 from .. import utils
 from .. import FoundationPlist
+from ..wrappers import is_a_string
 
 
 def make_catalog_db(catalogitems):
@@ -77,7 +79,7 @@ def make_catalog_db(catalogitems):
     # now fix possible admin errors where 'update_for' is a string instead
     # of a list of strings
     for update in updaters:
-        if isinstance(update['update_for'], basestring):
+        if is_a_string(update['update_for']):
             # convert to list of strings
             update['update_for'] = [update['update_for']]
 
@@ -115,7 +117,7 @@ def add_package_ids(catalogitems, itemname_to_pkgid, pkgid_to_itemname):
                 itemname_to_pkgid[name] = {}
 
             for receipt in item['receipts']:
-                if 'packageid' in receipt:
+                if 'packageid' in receipt and 'version' in receipt:
                     pkgid = receipt['packageid']
                     vers = receipt['version']
                     if not pkgid in itemname_to_pkgid[name]:
@@ -158,10 +160,10 @@ def get_all_items_with_name(name, cataloglist):
       list of pkginfo items; sorted with newest version first. No precedence
       is given to catalog order.
     """
-    def compare_item_versions(item_a, item_b):
-        """Internal comparison function for use with sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(item_b['version']),
-                   pkgutils.MunkiLooseVersion(item_a['version']))
+
+    def item_version(item):
+        """Returns a MunkiLooseVersion for pkginfo item"""
+        return pkgutils.MunkiLooseVersion(item['version'])
 
     itemlist = []
     # we'll throw away any included version info
@@ -169,7 +171,7 @@ def get_all_items_with_name(name, cataloglist):
 
     display.display_debug1('Looking for all items matching: %s...', name)
     for catalogname in cataloglist:
-        if not catalogname in _CATALOG.keys():
+        if not catalogname in list(_CATALOG.keys()):
             # in case catalogname refers to a non-existent catalog...
             continue
         # is name in the catalog name table?
@@ -189,7 +191,7 @@ def get_all_items_with_name(name, cataloglist):
 
     if itemlist:
         # sort so latest version is first
-        itemlist.sort(compare_item_versions)
+        itemlist.sort(key=item_version, reverse=True)
     return itemlist
 
 
@@ -202,7 +204,7 @@ def get_auto_removal_items(installinfo, cataloglist):
     """
     autoremovalnames = []
     for catalogname in cataloglist or []:
-        if catalogname in _CATALOG.keys():
+        if catalogname in list(_CATALOG.keys()):
             autoremovalnames += _CATALOG[catalogname]['autoremoveitems']
 
     processed_installs_names = [split_name_and_version(item)[0]
@@ -309,25 +311,22 @@ def analyze_installed_pkgs():
     installedpkgsmatchedtoname = {}
     for name in itemname_to_pkgid:
         # name is a Munki install item name
-        somepkgsfound = False
-        allpkgsfound = True
+        foundpkgcount = 0
         for pkgid in itemname_to_pkgid[name]:
             if pkgid in installedpkgs:
-                somepkgsfound = True
+                foundpkgcount += 1
                 if not name in installedpkgsmatchedtoname:
                     installedpkgsmatchedtoname[name] = []
                 # record this pkgid for Munki install item name
                 installedpkgsmatchedtoname[name].append(pkgid)
+        if foundpkgcount > 0:
+            if foundpkgcount == len(itemname_to_pkgid[name]):
+                # we found all receipts by pkgid on disk
+                installed.append(name)
             else:
-                # didn't find pkgid in installedpkgs
-                allpkgsfound = False
-        if allpkgsfound:
-            # we found all receipts by pkgid on disk
-            installed.append(name)
-        elif somepkgsfound:
-            # we found only some receipts for the item
-            # on disk
-            partiallyinstalled.append(name)
+                # we found only some receipts for the item
+                # on disk
+                partiallyinstalled.append(name)
 
     # we pay special attention to the items that seem partially installed.
     # we need to see if there are any packages that are unique to this item
@@ -364,8 +363,7 @@ def analyze_installed_pkgs():
 
     # look through all our installedpkgs, looking for ones that have not been
     # attached to any Munki names yet
-    orphans = [pkgid for pkgid in installedpkgs.keys()
-               if pkgid not in references]
+    orphans = [pkgid for pkgid in installedpkgs if pkgid not in references]
 
     # attempt to match orphans to Munki item names
     matched_orphans = []
@@ -425,10 +423,6 @@ def get_item_detail(name, cataloglist, vers='',
     If no version is given at all, the latest version is assumed.
     Returns a pkginfo item, or None.
     """
-    def compare_versions(item_a, item_b):
-        """Internal comparison function for use in sorting"""
-        return cmp(pkgutils.MunkiLooseVersion(item_b),
-                   pkgutils.MunkiLooseVersion(item_a))
 
     rejected_items = []
     machine = info.getMachineFacts()
@@ -561,7 +555,7 @@ def get_item_detail(name, cataloglist, vers='',
     if skip_min_os_check:
         display.display_debug1(
             'Looking for detail for: %s, version %s, '
-            'ignoring minimum_os_version...', name, vers),
+            'ignoring minimum_os_version...', name, vers)
     else:
         display.display_debug1(
             'Looking for detail for: %s, version %s...', name, vers)
@@ -573,11 +567,11 @@ def get_item_detail(name, cataloglist, vers='',
             indexlist = []
             if vers == 'latest':
                 # order all our items, highest version first
-                versionlist = itemsmatchingname.keys()
-                versionlist.sort(compare_versions)
+                versionlist = list(itemsmatchingname.keys())
+                versionlist.sort(key=pkgutils.MunkiLooseVersion, reverse=True)
                 for versionkey in versionlist:
                     indexlist.extend(itemsmatchingname[versionkey])
-            elif vers in itemsmatchingname.keys():
+            elif vers in list(itemsmatchingname.keys()):
                 # get the specific requested version
                 indexlist = itemsmatchingname[vers]
 
@@ -649,4 +643,4 @@ def catalogs():
 
 
 if __name__ == '__main__':
-    print 'This is a library of support tools for the Munki Suite.'
+    print('This is a library of support tools for the Munki Suite.')
