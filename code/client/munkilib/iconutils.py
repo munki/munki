@@ -70,6 +70,9 @@ def convertIconToPNG(icon_path, destination_path,
         try:
             properties = CGImageSourceCopyPropertiesAtIndex(
                 image_source, index, None)
+            # perform not empty check for properties to prevent crash as CGImageSourceCopyPropertiesAtIndex sometimes fails in 10.15.4 and above
+            if not properties:
+                return False
             dpi = int(properties.get(kCGImagePropertyDPIHeight, 0))
             height = int(properties.get(kCGImagePropertyPixelHeight, 0))
             if (not candidate or
