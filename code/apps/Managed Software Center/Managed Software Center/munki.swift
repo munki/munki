@@ -17,7 +17,7 @@ let UPDATECHECKLAUNCHFILE = "/private/tmp/.com.googlecode.munki.updatecheck.laun
 let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 
 let BUNDLE_ID = "ManagedInstalls" as CFString
-let DEFAULT_GUI_CACHE_AGE_SECS = 600
+let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
 
 func exec(_ command: String, args: [String] = []) -> String {

@@ -13,6 +13,7 @@ class MSCAlertController: NSObject {
     // than to move a giant bunch of ugly code out of the WindowController
     
     var window: NSWindow? // our parent window
+    var timer: Timer? = nil
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -115,6 +116,53 @@ class MSCAlertController: NSObject {
         }
     }
     
+    func alertToAppleUpdates() {
+        // Notify user of pending Apple updates
+        let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
+        msc_log("user", "apple_updates_pending")
+        guard let mainWindow = window else {
+            msc_debug_log("Could not get main window in alertToAppleUpdates")
+            return
+        }
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString(
+            "Important Apple Updates", comment: "Apple Software Updates Pending title")
+        alert.informativeText = NSLocalizedString(
+            "There are pending Apple Software Updates that require a restart.\nYou must install them from the Software Updates pane in System Preferences.",
+            comment: "Apple Software Updates Pending detail")
+        alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
+        alert.addButton(withTitle: NSLocalizedString(
+            "Later", comment: "Later button title/short action text"))
+        if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
+            alert.icon = suIcon
+        }
+        alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+            self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse)
+        })
+    }
+    
+    func appleUpdateAlertEnded(for alert: NSAlert, withResponse modalResponse: NSApplication.ModalResponse) {
+        // Called when Apple update alert ends
+        if modalResponse == .alertFirstButtonReturn {
+            msc_log("user", "agreed_apple_updates")
+            // make sure this alert panel is gone before we proceed
+            alert.window.orderOut(self)
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.preferences.softwareupdate") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+                //NSApp.terminate(self)
+                // wait 2 seconds, then quit
+                timer = Timer.scheduledTimer(timeInterval: 2.0,
+                                             target: NSApp,
+                                             selector: #selector(NSApp.terminate),
+                                             userInfo: self,
+                                             repeats: false)
+            }
+        } else {
+            // cancelled
+            msc_log("user", "deferred_apple_updates")
+        }
+    }
+
     func alertToExtraUpdates() {
         // Notify user of additional pending updates
         msc_log("user", "extra_updates_pending")
