@@ -750,6 +750,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if url_fragment == "updates.html" {
             // clear all earlier update notifications
             NSUserNotificationCenter.default.removeAllDeliveredNotifications()
+            // record that the user has been presented pending updates
+            _alertedUserToOutstandingUpdates = true
         }
     }
     
@@ -968,7 +970,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            updateNow()
+            if appleUpdatesRequireRestartOnMojaveAndUp() {
+                // if there are pending Apple updates, alert the user to
+                // install via System Preferences
+                alert_controller.alertToAppleUpdates()
+            } else {
+                updateNow()
+            }
         }
     }
     
@@ -1342,7 +1350,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBAction func loadUpdatesPage(_ sender: Any) {
         // Called by Navigate menu item'''
         load_page("updates.html")
-        _alertedUserToOutstandingUpdates = true
     }
     
     @IBAction func softwareToolbarItemClicked(_ sender: Any) {

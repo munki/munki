@@ -1144,6 +1144,19 @@ func updatesRequireRestart() -> Bool {
     return requiresRestart
 }
 
+func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
+    // Return true if any item in the apple update list requires a restart
+    if #available(OSX 10.14, *) {
+        if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
+            let requiresRestart = apple_update_items.filter(
+                    { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+                ).count > 0
+            return requiresRestart
+        }
+    }
+    return false
+}
+
 func updatesContainNonUserSelectedItems() -> Bool {
     // Does the list of updates contain items not selected by the user?
     if !munkiUpdatesContainAppleItems() && getAppleUpdates().count > 0 {
