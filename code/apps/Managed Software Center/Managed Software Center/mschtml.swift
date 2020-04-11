@@ -607,13 +607,14 @@ func buildMyItemsRows() -> String {
     return myitems_rows
 }
 
-func buildUpdatesPage() throws {
+func buildUpdatesPage(filterAppleUpdates: Bool = false) throws {
     // available/pending updates
     if (NSApp.delegate! as! AppDelegate).mainWindowController._update_in_progress {
         try buildUpdateStatusPage()
         return
     }
-    let item_list = getEffectiveUpdateList()
+    let filterAppleUpdates = (NSApp.delegate! as! AppDelegate).mainWindowController.should_filter_apple_updates
+    let item_list = getEffectiveUpdateList(filterAppleUpdates)
     let problem_updates = getProblemItems()
     for item in problem_updates {
         item["hide_cancel_button"] = "hidden"

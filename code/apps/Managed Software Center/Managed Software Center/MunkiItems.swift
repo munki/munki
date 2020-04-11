@@ -1067,9 +1067,9 @@ func display_name(_ item_name: String) -> String {
     return item_name
 }
 
-func getUpdateList() -> [UpdateItem] {
+func getUpdateList(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     if !Cache.shared.keys.contains("update_list") {
-        Cache.shared["update_list"] = _build_update_list()
+        Cache.shared["update_list"] = _build_update_list(filterAppleUpdates)
     }
     return Cache.shared["update_list"] as? [UpdateItem] ?? [UpdateItem]()
 }
@@ -1096,14 +1096,17 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
     }
 }
 
-func _build_update_list() -> [UpdateItem] {
+func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     var update_items = [[String: Any]]()
     if !munkiUpdatesContainAppleItems() {
         if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
             for var item in apple_update_items {
-                item["developer"] = "Apple"
-                item["status"] = "will-be-installed"
-                update_items.append(item)
+                if !(filterAppleUpdates &&
+                     ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
+                    item["developer"] = "Apple"
+                    item["status"] = "will-be-installed"
+                    update_items.append(item)
+                }
             }
         }
     }
@@ -1146,7 +1149,11 @@ func updatesRequireRestart() -> Bool {
 
 func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
     // Return true if any item in the apple update list requires a restart
-    if #available(OSX 10.14, *) {
+    var osMinorVers = 9
+    if #available(OSX 10.10, *) {
+        osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
+    }
+    if osMinorVers >= 14 {
         if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
             let requiresRestart = apple_update_items.filter(
                     { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
@@ -1181,7 +1188,7 @@ func updatesContainNonUserSelectedItems() -> Bool {
     return false
 }
 
-func getEffectiveUpdateList() -> [GenericItem] {
+func getEffectiveUpdateList(_ filterAppleUpdates: Bool = false) -> [GenericItem] {
     // Combine the updates Munki has found with any optional choices to
     // make the effective list of updates
     let optional_installs = getOptionalWillBeInstalledItems() as [GenericItem]
@@ -1191,7 +1198,7 @@ func getEffectiveUpdateList() -> [GenericItem] {
     )
     // filter out pending optional items from the list of all pending updates
     // so we can add in the items with additional optional detail
-    let mandatory_updates = getUpdateList().filter(
+    let mandatory_updates = getUpdateList(filterAppleUpdates).filter(
         { !optional_item_names.contains($0["name"] as? String ?? "") }
     ) as [GenericItem]
     return mandatory_updates + optional_installs + optional_removals
