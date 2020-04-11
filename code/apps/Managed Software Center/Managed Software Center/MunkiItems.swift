@@ -243,6 +243,12 @@ class GenericItem: BaseItem {
                 }
             }
         }
+        // if it's an Apple Software Update, use the Software Update icon
+        if let apple_update = my["apple_update"] as? Bool {
+            if apple_update {
+                return "static/SoftwareUpdate.png"
+            }
+        }
         // use the Generic package icon
         return "static/Generic.png"
     }
@@ -1105,6 +1111,7 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
                      ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
                     item["developer"] = "Apple"
                     item["status"] = "will-be-installed"
+                    item["apple_update"] = true
                     update_items.append(item)
                 }
             }
