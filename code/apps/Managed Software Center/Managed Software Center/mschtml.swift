@@ -607,7 +607,7 @@ func buildMyItemsRows() -> String {
     return myitems_rows
 }
 
-func buildUpdatesPage(filterAppleUpdates: Bool = false) throws {
+func buildUpdatesPage() throws {
     // available/pending updates
     if (NSApp.delegate! as! AppDelegate).mainWindowController._update_in_progress {
         try buildUpdateStatusPage()
