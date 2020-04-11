@@ -128,7 +128,7 @@ class MSCAlertController: NSObject {
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
         alert.informativeText = NSLocalizedString(
-            "There are pending Apple Software Updates that require a restart.\nYou must install them from the Software Updates pane in System Preferences.",
+            "There are one or more pending Apple Software Updates that require a restart.\nYou must install them from the Software Updates pane in System Preferences.",
             comment: "Apple Software Updates Pending detail")
         alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
         alert.addButton(withTitle: NSLocalizedString(
@@ -160,6 +160,9 @@ class MSCAlertController: NSObject {
         } else {
             // cancelled
             msc_log("user", "deferred_apple_updates")
+            clearMunkiItemsCache()
+            (NSApp.delegate! as! AppDelegate).mainWindowController.load_page("updates.html")
+            (NSApp.delegate! as! AppDelegate).mainWindowController.displayUpdateCount()
         }
     }
 

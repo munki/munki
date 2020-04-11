@@ -24,6 +24,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var _status_title = ""
     var stop_requested = false
     var user_warned_about_extra_updates = false
+    var should_filter_apple_updates = false
     
     // Cocoa UI binding properties
     @IBOutlet weak var softwareToolbarItem: NSToolbarItem!
@@ -670,7 +671,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if _update_in_progress {
             return 0
         }
-        return getEffectiveUpdateList().count
+        return getEffectiveUpdateList(should_filter_apple_updates).count
     }
     
     func displayUpdateCount() {
@@ -788,10 +789,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func clearCache() {
-        if #available(OSX 10.11, *) {
-            let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+        var osMinorVers = 9
+        if #available(OSX 10.10, *) {
+            osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
+        }
+        if osMinorVers >= 11 {
+            if #available(OSX 10.11, *) {
+                let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+
             let dateFrom = Date.init(timeIntervalSince1970: 0)
             WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+            }
         } else {
             // Fallback on earlier versions
             URLCache.shared.removeAllCachedResponses()
@@ -970,10 +978,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            if appleUpdatesRequireRestartOnMojaveAndUp() {
+            if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
                 // if there are pending Apple updates, alert the user to
                 // install via System Preferences
                 alert_controller.alertToAppleUpdates()
+                should_filter_apple_updates = true
             } else {
                 updateNow()
             }
