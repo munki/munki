@@ -106,8 +106,8 @@ def create_missing_dirs(destpath):
 def remove_quarantine_from_item(some_path):
     '''Removes com.apple.quarantine from some_path'''
     try:
-        if "com.apple.quarantine" in xattr.xattr(some_path).list(
-                                          options=xattr.XATTR_NOFOLLOW):
+        if ("com.apple.quarantine" in
+                xattr.xattr(some_path).list(options=xattr.XATTR_NOFOLLOW)):
             xattr.xattr(some_path).remove("com.apple.quarantine",
                                           options=xattr.XATTR_NOFOLLOW)
     except BaseException as err:
@@ -168,6 +168,50 @@ def validate_source_and_destination(mountpoint, item):
     return (0, source_itempath, full_destpath)
 
 
+def get_size(pathname):
+    '''Recursively gets size of pathname in bytes'''
+    if os.path.isdir(pathname):
+        total_size = 0
+        for dirpath, _, filenames in os.walk(pathname):
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                # skip if it is symbolic link
+                if not os.path.islink(filepath):
+                    total_size += os.path.getsize(filepath)
+        return total_size
+    elif os.path.isfile(pathname):
+        return os.path.getsize(pathname)
+    return 0
+
+
+def ditto_with_progress(source_path, dest_path):
+    '''Uses ditto to copy an item and provides progress output'''
+    source_size = get_size(source_path)
+    total_bytes_copied = 0
+
+    cmd = ["/usr/bin/ditto", "-V", "--noqtn", source_path, dest_path]
+    proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+
+    while True:
+        output = proc.stdout.readline().decode('UTF-8')
+        if not output and (proc.poll() != None):
+            break
+        words = output.rstrip('\n').split()
+        if len(words) > 1 and words[1] == "bytes":
+            try:
+                bytes_copied = int(words[0])
+            except TypeError:
+                pass
+            else:
+                total_bytes_copied += bytes_copied
+                display.display_percent_done(total_bytes_copied, source_size)
+
+    return proc.returncode
+
+
 def copy_items_from_mountpoint(mountpoint, itemlist):
     '''copies items from the mountpoint to the startup disk
     Returns 0 if no issues; some error code otherwise.
@@ -192,8 +236,9 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
             temp_destination_dir, os.path.basename(destination_path))
         # copy the file or directory, removing the quarantine xattr and
         # preserving HFS+ compression
-        retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
-                                   source_path, temp_destination_path])
+        #retcode = subprocess.call(["/usr/bin/ditto", "--noqtn",
+        #                           source_path, temp_destination_path])
+        retcode = ditto_with_progress(source_path, temp_destination_path)
         if retcode:
             display.display_error(
                 "Error copying %s to %s", source_path, temp_destination_path)
