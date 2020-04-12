@@ -147,16 +147,14 @@ class MSCAlertController: NSObject {
             msc_log("user", "agreed_apple_updates")
             // make sure this alert panel is gone before we proceed
             alert.window.orderOut(self)
-            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.preferences.softwareupdate") {
-                NSWorkspace.shared.open(softwareUpdatePrefsPane)
-                //NSApp.terminate(self)
-                // wait 2 seconds, then quit
-                timer = Timer.scheduledTimer(timeInterval: 2.0,
-                                             target: NSApp,
-                                             selector: #selector(NSApp.terminate),
-                                             userInfo: self,
-                                             repeats: false)
-            }
+            openSoftwareUpdatePrefsPane()
+            //NSApp.terminate(self)
+            // wait 2 seconds, then quit
+            timer = Timer.scheduledTimer(timeInterval: 2.0,
+                                         target: NSApp,
+                                         selector: #selector(NSApp.terminate),
+                                         userInfo: self,
+                                         repeats: false)
         } else {
             // cancelled
             msc_log("user", "deferred_apple_updates")

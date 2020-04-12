@@ -6,6 +6,7 @@
 //  Copyright © 2018-2020 The Munki Project. All rights reserved.
 //
 
+import AppKit
 import Foundation
 import SystemConfiguration
 import IOKit
@@ -375,8 +376,9 @@ func startUpdateCheck(_ suppress_apple_update_check: Bool = false) throws {
         do {
             try writePlist(plist, toFile: UPDATECHECKLAUNCHFILE)
         } catch {
-            throw ProcessStartError.error(
-                description: "Could not create file \(UPDATECHECKLAUNCHFILE) -- \(error)")
+            let message = "Could not create file \(UPDATECHECKLAUNCHFILE) -- \(error)"
+            msc_log("MSC", "cant_write_file", msg: message)
+            throw ProcessStartError.error(description: message)
         }
     }
 }
