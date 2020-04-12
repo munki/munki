@@ -63,7 +63,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return .terminateNow
         }
         if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
-            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() >= 14 {
+            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() > 2 {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
