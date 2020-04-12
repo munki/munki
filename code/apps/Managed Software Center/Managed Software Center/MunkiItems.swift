@@ -976,7 +976,7 @@ class UpdateItem: GenericItem {
             } else if let days_available = my["days_available"] as? Int {
                 if days_available > 2 {
                     let format_str = NSLocalizedString(
-                        "This item has been pending for %@ days.",
+                        "This update has been pending for %@ days.",
                         comment: "Pending days message")
                     let formatted_str = NSString(format: format_str as NSString,
                                                  String(days_available) as NSString)
