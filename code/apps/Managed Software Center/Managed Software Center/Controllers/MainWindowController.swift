@@ -62,6 +62,16 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // no pending updates
             return .terminateNow
         }
+        if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
+            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() >= 14 {
+                if !currentPageIsUpdatesPage() {
+                    loadUpdatesPage(self)
+                }
+                alert_controller.alertToAppleUpdates()
+                should_filter_apple_updates = true
+                return .terminateCancel
+            }
+        }
         if (currentPageIsUpdatesPage() && !thereAreUpdatesToBeForcedSoon()) {
             // We're already at the updates view, so user is aware of the
             // pending updates, so OK to just terminate
