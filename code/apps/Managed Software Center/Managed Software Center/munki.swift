@@ -222,6 +222,14 @@ func getAppleUpdates() -> PlistDict {
     }
 }
 
+func getUpdateNotificationTracking() -> PlistDict {
+    // Returns a dictionary describing when items were first made available
+    let managedinstallbase = pref("ManagedInstallDir") as! String
+    let updatetracking_path = NSString.path(
+            withComponents: [managedinstallbase, "UpdateNotificationTracking.plist"])
+    return readPlistAsNSDictionary(updatetracking_path)
+}
+
 func munkiUpdatesContainAppleItems() -> Bool {
     // Return true if there are any Apple items in the list of updates
     let installinfo = getInstallInfo()

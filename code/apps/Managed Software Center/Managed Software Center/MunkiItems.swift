@@ -927,7 +927,8 @@ class UpdateItem: GenericItem {
                                            comment: "Managed Update type")
         }
         my["hide_cancel_button"]  = "hidden"
-        my ["dependent_items"] = dependentItems(name)
+        my["dependent_items"] = dependentItems(name)
+        my["days_available"] = getDaysPending(name)
     }
     
     override func description() -> String {
@@ -972,6 +973,15 @@ class UpdateItem: GenericItem {
                     }
                     start_text += "<span class=\"warning\">\(filtered_html(warning_text))</span><br/><br/>"
                 }
+            } else if let days_available = my["days_available"] as? Int {
+                if days_available > 2 {
+                    let format_str = NSLocalizedString(
+                        "This item has been pending for %@ days.",
+                        comment: "Pending days message")
+                    let formatted_str = NSString(format: format_str as NSString,
+                                                 String(days_available) as NSString)
+                    start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
+                }
             }
             if !((my["dependent_items"] as? [String] ?? []).isEmpty) {
                 start_text += dependency_description()
@@ -986,6 +996,60 @@ func cachedInstallInfo() -> [String : Any] {
         Cache.shared["InstallInfo"] = getInstallInfo()
     }
     return Cache.shared["InstallInfo"] as? [String : Any] ?? [String : Any]()
+}
+
+func updateTrackingInfo() -> [String : Any] {
+    if !Cache.shared.keys.contains("UpdateNotificationTrackingInfo") {
+        Cache.shared["UpdateNotificationTrackingInfo"] = getUpdateNotificationTracking()
+    }
+    return Cache.shared["UpdateNotificationTrackingInfo"] as? [String : Any] ?? [String : Any]()
+}
+
+func getDateFirstAvailable(_ itemname: String) -> Date? {
+    // Uses UpdateNotificationTracking.plist data to determine when an item was first
+    // "discovered"/presented as available
+   let trackingInfo = updateTrackingInfo()
+    for category in trackingInfo.keys {
+        if let items = (trackingInfo[category] as? [String : Any]) {
+            for name in items.keys {
+                if name == itemname {
+                    return (items[name] as? Date)
+                }
+            }
+        }
+    }
+    return nil
+}
+
+func getDaysPending(_ itemname: String) -> Int {
+    // Returns the numnber of days an item has been pending
+    if let dateAvailable = getDateFirstAvailable(itemname) {
+        let secondsInDay = 60 * 60 * 24
+        let timeAvailable = dateAvailable.timeIntervalSinceNow
+        let daysAvailable = -(Int(timeAvailable as Double)/secondsInDay)
+        return daysAvailable
+    }
+    return 0
+}
+
+func getMaxPendingDaysForAppleUpdatesThatRequireRestart() -> Int {
+    // Of Apple software updates that require a restart, return the longest
+    // number of days pending
+    var maxPendingDays = 0
+    if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
+        let requiresRestartItems = apple_update_items.filter(
+                { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+            )
+        for item in requiresRestartItems {
+            if let itemname = item["name"] as? String {
+                let thisItemDaysPending = getDaysPending(itemname)
+                if thisItemDaysPending > maxPendingDays {
+                    maxPendingDays = thisItemDaysPending
+                }
+            }
+        }
+    }
+    return maxPendingDays
 }
 
 func optionalInstallsExist() -> Bool {

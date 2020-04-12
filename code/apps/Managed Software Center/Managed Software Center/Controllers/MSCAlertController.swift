@@ -128,11 +128,15 @@ class MSCAlertController: NSObject {
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
         alert.informativeText = NSLocalizedString(
-            "There are one or more pending Apple Software Updates that require a restart.\nYou must install them from the Software Updates pane in System Preferences.",
+            "There are one or more pending Apple Software Updates that require a restart.\nYou must install these updates using the Software Updates pane in System Preferences.",
             comment: "Apple Software Updates Pending detail")
         alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
         alert.addButton(withTitle: NSLocalizedString(
-            "Later", comment: "Later button title/short action text"))
+            "Later", comment: "Later button title"))
+        if getMaxPendingDaysForAppleUpdatesThatRequireRestart() >= 14 {
+            // disable the later button
+            alert.buttons[1].isEnabled = false
+        }
         if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
             alert.icon = suIcon
         }
