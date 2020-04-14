@@ -13,7 +13,7 @@ class MSCAlertController: NSObject {
     // than to move a giant bunch of ugly code out of the WindowController
     
     var window: NSWindow? // our parent window
-    var timer: Timer? = nil
+    var timers: [Timer] = []
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -151,14 +151,36 @@ class MSCAlertController: NSObject {
             msc_log("user", "agreed_apple_updates")
             // make sure this alert panel is gone before we proceed
             alert.window.orderOut(self)
-            openSoftwareUpdatePrefsPane()
-            //NSApp.terminate(self)
-            // wait 2 seconds, then quit
-            timer = Timer.scheduledTimer(timeInterval: 2.0,
-                                         target: NSApp,
-                                         selector: #selector(NSApp.terminate),
-                                         userInfo: self,
-                                         repeats: false)
+            (NSApp.delegate! as! AppDelegate).mainWindowController.forceFrontmost = false
+            (NSApp.delegate! as! AppDelegate).backdropOnlyMode = true
+            if let mainWindow = window {
+                mainWindow.level = .normal
+            }
+            let timer1 = Timer.scheduledTimer(timeInterval: 0.1,
+                                              target: self,
+                                              selector: #selector(self.openSoftwareUpdate),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer1)
+            let timer2 = Timer.scheduledTimer(timeInterval: 1.5,
+                                              target: self,
+                                              selector: #selector(self.closeMainWindow),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer2)
+            let timer3 = Timer.scheduledTimer(timeInterval: 9.5,
+                                              target: self,
+                                              selector: #selector(self.fadeOutBackdropWindows),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer3)
+            // wait 10 seconds, then quit
+            let timer4 = Timer.scheduledTimer(timeInterval: 10.0,
+                                              target: NSApp,
+                                              selector: #selector(NSApp.terminate),
+                                              userInfo: self,
+                                              repeats: false)
+            timers.append(timer4)
         } else {
             // cancelled
             msc_log("user", "deferred_apple_updates")
@@ -167,6 +189,27 @@ class MSCAlertController: NSObject {
             (NSApp.delegate! as! AppDelegate).mainWindowController.displayUpdateCount()
         }
     }
+    
+    @objc func openSoftwareUpdate() {
+        // object method to call openSoftwareUpdatePrefsPane function
+        openSoftwareUpdatePrefsPane()
+    }
+    
+    @objc func closeMainWindow() {
+        // closes the main window, duh
+        if let mainWindow = window {
+            mainWindow.orderOut(self)
+        }
+    }
+    
+    @objc func fadeOutBackdropWindows() {
+        // fades out the windows that block access to other apps
+        let backdropWindows = (NSApp.delegate! as! AppDelegate).mainWindowController.backdropWindows
+        for window in backdropWindows {
+            window.animator().alphaValue = 0.0
+        }
+    }
+
 
     func alertToExtraUpdates() {
         // Notify user of additional pending updates

@@ -25,6 +25,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var stop_requested = false
     var user_warned_about_extra_updates = false
     var should_filter_apple_updates = false
+    var forceFrontmost = false
+    
+    var backdropWindows: [NSWindow] = []
     
     // Cocoa UI binding properties
     @IBOutlet weak var softwareToolbarItem: NSToolbarItem!
@@ -146,12 +149,77 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         })
     }
     
+    func newTranslucentWindow(screen: NSScreen) -> NSWindow {
+        // makes a translucent masking window we use to prevent interaction with
+        // other apps
+        var windowRect = screen.frame
+        windowRect.origin = NSMakePoint(0.0, 0.0)
+        let thisWindow = NSWindow(
+            contentRect: windowRect,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false,
+            screen: screen
+        )
+        thisWindow.level = .normal
+        thisWindow.backgroundColor = NSColor.black.withAlphaComponent(0.50)
+        thisWindow.isOpaque = false
+        thisWindow.ignoresMouseEvents = false
+        thisWindow.alphaValue = 0.0
+        thisWindow.orderFrontRegardless()
+        thisWindow.animator().alphaValue = 1.0
+        return thisWindow
+    }
+    
+    func displayBackdropWindows() {
+        for screen in NSScreen.screens {
+            let newWindow = newTranslucentWindow(screen: screen)
+            // add to our backdropWindows array so a reference stays around
+            backdropWindows.append(newWindow)
+        }
+    }
+    
+    func makeUsObnoxious() {
+        // makes this app and window impossible(?)/difficult to ignore
+        
+        // make it very difficult to switch away from this app
+        let options = NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit])
+        NSApp.presentationOptions = options
+        
+        // alter some window properties to make the window harder to ignore
+        if let window = self.window {
+            window.center()
+            window.collectionBehavior = .fullScreenNone
+            window.styleMask = [.titled, .closable]
+            window.level = .floating
+        }
+        
+        // disable all of the other controls
+        softwareToolbarItem.isEnabled = false
+        categoriesToolbarItem.isEnabled = false
+        myItemsToolbarItem.isEnabled = false
+        searchField.isEnabled = false
+        findMenuItem.isEnabled = false
+        softwareMenuItem.isEnabled = false
+        categoriesMenuItem.isEnabled = false
+        myItemsMenuItem.isEnabled = false
+        
+        // set flag to cause us to always be brought to front
+        self.forceFrontmost = true
+        
+        // create translucent windows to mask all other apps
+        displayBackdropWindows()
+    }
+    
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
         enableOrDisableSoftwareViewControls()
         let optional_items = getOptionalInstallItems()
         if optional_items.isEmpty || getUpdateCount() > 0 || !getProblemItems().isEmpty {
             loadUpdatesPage(self)
+            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() > 14 {
+                makeUsObnoxious()
+            }
         } else {
             loadAllSoftwarePage(self)
         }
@@ -201,7 +269,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         enableOrDisableToolbarItems(enabled_state)
         searchField.isEnabled = enabled_state
         findMenuItem.isEnabled = enabled_state
-        softwareMenuItem.isEnabled = enabled_state
         softwareMenuItem.isEnabled = enabled_state
         categoriesMenuItem.isEnabled = enabled_state
         myItemsMenuItem.isEnabled = enabled_state
@@ -509,6 +576,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return
         }
         _update_in_progress = true
+        should_filter_apple_updates = false
         displayUpdateCount()
         managedsoftwareupdate_task = "manualcheck"
         if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {

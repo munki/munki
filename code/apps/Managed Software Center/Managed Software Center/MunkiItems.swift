@@ -1025,8 +1025,8 @@ func getDaysPending(_ itemname: String) -> Int {
     // Returns the numnber of days an item has been pending
     if let dateAvailable = getDateFirstAvailable(itemname) {
         let secondsInDay = 60 * 60 * 24
-        let timeAvailable = dateAvailable.timeIntervalSinceNow
-        let daysAvailable = -(Int(timeAvailable as Double)/secondsInDay)
+        let timeAvailable = dateAvailable.timeIntervalSinceNow * -1
+        let daysAvailable = Int(timeAvailable as Double)/secondsInDay
         return daysAvailable
     }
     return 0
