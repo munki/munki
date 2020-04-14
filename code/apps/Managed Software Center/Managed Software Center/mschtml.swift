@@ -817,6 +817,19 @@ func getWarningText() -> String {
             warning_text += " &bull; " + restart_text
         }
     }
+    if getMaxPendingDaysForAppleUpdatesThatRequireRestart() > 14 {
+        let apple_updates_str = NSLocalizedString(
+            "One or more important Apple updates must be installed",
+            comment: "Pending Apple Updates warning"
+        )
+        if !restart_text.isEmpty {
+            if warning_text.isEmpty {
+                warning_text = apple_updates_str
+            } else {
+                warning_text = apple_updates_str + " &bull; " + warning_text
+            }
+        }
+    }
     return warning_text
 }
 

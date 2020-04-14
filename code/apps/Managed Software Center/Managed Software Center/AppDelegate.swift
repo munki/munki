@@ -16,6 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var passwordAlertController: MSCPasswordAlertController!
     
     var launchedViaURL = false
+    var backdropOnlyMode = false
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // NSApplication delegate method called at launch
@@ -61,6 +62,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 // by pretending the lastcheck is now
                 lastcheck = Date()
             }
+            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() > 14 {
+                // skip the check and just display the updates
+                // by pretending the lastcheck is now
+                lastcheck = Date()
+            }
             let max_cache_age = pref("CheckResultsCacheSeconds") as? Int ?? 0
             if lastcheck.timeIntervalSinceNow * -1 > TimeInterval(max_cache_age) {
                 // check for updates if the last check is over the
@@ -100,6 +106,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 msc_debug_log("\(urlString) is not a valid URL")
                 return
             }
+        }
+    }
+    
+    func applicationDidResignActive(_ notification: Notification) {
+        if self.mainWindowController.forceFrontmost == true {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+        if self.backdropOnlyMode == true {
+            // (re)launch Software Update prefs pane
+            openSoftwareUpdatePrefsPane()
         }
     }
 

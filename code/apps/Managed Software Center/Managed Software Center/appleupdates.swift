@@ -22,9 +22,18 @@ func writeInstallAtStartupFlagFile() {
     }
 }
 
+func killSystemPreferencesApp() {
+    let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.systempreferences")
+    for app in runningApps {
+        _ = app.forceTerminate()
+    }
+}
+
 func openSoftwareUpdatePrefsPane() {
+    // kill it first in case it is open with a dialog/sheet
+    //killSystemPreferencesApp() // nope, it reopens to previous pane
+    writeInstallAtStartupFlagFile()
     if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.preferences.softwareupdate") {
-        writeInstallAtStartupFlagFile()
         NSWorkspace.shared.open(softwareUpdatePrefsPane)
     }
 }
