@@ -43,7 +43,7 @@ try:
     _ = xrange # pylint: disable=xrange-builtin
 except NameError:
     # no xrange in Python 3
-    xrange = range
+    xrange = range # pylint: disable=redefined-builtin,invalid-name
 
 
 # This many hours before a force install deadline, start notifying the user.
@@ -239,10 +239,11 @@ def force_install_package_check():
 
     managed_install_dir = prefs.pref('ManagedInstallDir')
 
-    installinfo_types = {
-        'InstallInfo.plist' : 'managed_installs',
-        'AppleUpdates.plist': 'AppleUpdates'
-    }
+    installinfo_types = {'InstallInfo.plist': 'managed_installs'}
+    if (prefs.pref('InstallAppleSoftwareUpdates') or
+            prefs.pref('AppleSoftwareUpdatesOnly')):
+        # only consider Apple updates if the prefs say it's OK
+        installinfo_types['AppleUpdates.plist'] = 'AppleUpdates'
 
     now = NSDate.date()
     now_xhours = NSDate.dateWithTimeIntervalSinceNow_(
