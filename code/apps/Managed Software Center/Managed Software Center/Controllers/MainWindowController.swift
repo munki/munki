@@ -218,7 +218,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if optional_items.isEmpty || getUpdateCount() > 0 || !getProblemItems().isEmpty {
             loadUpdatesPage(self)
             if getMaxPendingDaysForAppleUpdatesThatRequireRestart() > 14 {
-                makeUsObnoxious()
+                if userIsAdmin() || !userMustBeAdminToInstallAppleUpdates() {
+                    makeUsObnoxious()
+                }
             }
         } else {
             loadAllSoftwarePage(self)
