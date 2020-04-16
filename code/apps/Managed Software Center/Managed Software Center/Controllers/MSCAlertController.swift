@@ -118,8 +118,6 @@ class MSCAlertController: NSObject {
     
     func alertToAppleUpdates() {
         // Notify user of pending Apple updates
-        let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
-        msc_log("user", "apple_updates_pending")
         guard let mainWindow = window else {
             msc_debug_log("Could not get main window in alertToAppleUpdates")
             return
@@ -127,18 +125,33 @@ class MSCAlertController: NSObject {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
-        alert.informativeText = NSLocalizedString(
-            "There are one or more pending Apple Software Updates that require a restart.\nYou must install these updates using the Software Updates pane in System Preferences.",
-            comment: "Apple Software Updates Pending detail")
-        alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
-        alert.addButton(withTitle: NSLocalizedString(
-            "Later", comment: "Later button title"))
-        if getMaxPendingDaysForAppleUpdatesThatRequireRestart() >= 14 {
-            // disable the later button
-            alert.buttons[1].isEnabled = false
-        }
-        if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
-            alert.icon = suIcon
+        if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
+            // tell user they cannot install the updates
+            msc_log("user", "apple_updates_user_cannot_install")
+            alert.informativeText = NSLocalizedString(
+                "There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted the install of these updates. Contact your administrator for assistance.",
+                comment: "Apple Software Updates Unable detail")
+            alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
+            alert.buttons[0].isEnabled = false
+            alert.addButton(withTitle: NSLocalizedString(
+                "Skip Apple updates", comment: "Skip Apple updates button title"))
+        } else {
+            // prompt user to install using System Preferences
+            msc_log("user", "apple_updates_pending")
+            alert.informativeText = NSLocalizedString(
+                "There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using the Software Updates pane in System Preferences.",
+                comment: "Apple Software Updates Pending detail")
+            alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Later", comment: "Later button title"))
+            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() >= 14 {
+                // disable the later button
+                alert.buttons[1].isEnabled = false
+            }
+            let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
+            if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
+                alert.icon = suIcon
+            }
         }
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
             self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse)
@@ -151,8 +164,9 @@ class MSCAlertController: NSObject {
             msc_log("user", "agreed_apple_updates")
             // make sure this alert panel is gone before we proceed
             alert.window.orderOut(self)
-            (NSApp.delegate! as! AppDelegate).mainWindowController.forceFrontmost = false
-            (NSApp.delegate! as! AppDelegate).backdropOnlyMode = true
+            let appDelegate = NSApp.delegate! as! AppDelegate
+            appDelegate.mainWindowController.forceFrontmost = false
+            appDelegate.backdropOnlyMode = true
             if let mainWindow = window {
                 mainWindow.level = .normal
             }
@@ -184,9 +198,12 @@ class MSCAlertController: NSObject {
         } else {
             // cancelled
             msc_log("user", "deferred_apple_updates")
+            alert.window.orderOut(self)
             clearMunkiItemsCache()
-            (NSApp.delegate! as! AppDelegate).mainWindowController.load_page("updates.html")
-            (NSApp.delegate! as! AppDelegate).mainWindowController.displayUpdateCount()
+            if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
+                mainWindowController.load_page("updates.html")
+                mainWindowController.displayUpdateCount()
+            }
         }
     }
     
