@@ -210,6 +210,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // The managedsoftwareupdate run will have changed state preferences
         // in ManagedInstalls.plist. Load the new values.
         reloadPrefs()
+        if tasktype ==  "" {
+            // probably a background session, but not one initiated by the user here
+            resetAndReload()
+            return
+        }
         let lastCheckResult = pref("LastCheckResult") as? Int ?? 0
         if sessionResult != 0 || lastCheckResult < 0 {
             var alertMessageText = NSLocalizedString(
