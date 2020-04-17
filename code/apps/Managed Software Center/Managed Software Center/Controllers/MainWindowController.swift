@@ -258,7 +258,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 detailText = "\(detailText)\n\n\(errorMessage)"
             }
             // show the alert sheet
-            self.window!.makeKeyAndOrderFront(self)
+            if let thisWindow = self.window {
+                thisWindow.makeKeyAndOrderFront(self)
+                if let attachedSheet = thisWindow.attachedSheet {
+                    // there's an existing sheet open; close it first
+                    thisWindow.endSheet(attachedSheet)
+                }
+            }
             let alert = NSAlert()
             alert.messageText = alertMessageText
             alert.informativeText = detailText
