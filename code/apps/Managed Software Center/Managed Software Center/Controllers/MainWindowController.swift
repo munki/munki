@@ -290,6 +290,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // The managedsoftwareupdate run will have changed state preferences
         // in ManagedInstalls.plist. Load the new values.
         reloadPrefs()
+        if tasktype ==  "" {
+            // probably a background session, but not one initiated by the user here
+            resetAndReload()
+            return
+        }
         let lastCheckResult = pref("LastCheckResult") as? Int ?? 0
         if sessionResult != 0 || lastCheckResult < 0 {
             var alertMessageText = NSLocalizedString(
@@ -338,7 +343,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 detailText = "\(detailText)\n\n\(errorMessage)"
             }
             // show the alert sheet
-            self.window!.makeKeyAndOrderFront(self)
+            if let thisWindow = self.window {
+                thisWindow.makeKeyAndOrderFront(self)
+                if let attachedSheet = thisWindow.attachedSheet {
+                    // there's an existing sheet open; close it first
+                    thisWindow.endSheet(attachedSheet)
+                }
+            }
             let alert = NSAlert()
             alert.messageText = alertMessageText
             alert.informativeText = detailText
