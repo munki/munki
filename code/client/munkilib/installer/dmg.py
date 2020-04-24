@@ -323,7 +323,7 @@ def copy_from_dmg(dmgpath, itemlist):
 
     display.display_status_minor(
         'Mounting disk image %s', os.path.basename(dmgpath))
-    mountpoints = dmgutils.mountdmg(dmgpath)
+    mountpoints = dmgutils.mountdmg(dmgpath, skip_verification=True)
     if mountpoints:
         mountpoint = mountpoints[0]
         retcode = copy_items_from_mountpoint(mountpoint, itemlist)

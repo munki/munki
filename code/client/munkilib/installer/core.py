@@ -167,7 +167,8 @@ def handle_apple_package_install(item, itempath):
         mount_with_shadow = suppress_bundle_relocation
         # we need to mount the diskimage as read/write to be able to
         # modify the package to suppress bundle relocation
-        mountpoints = dmgutils.mountdmg(itempath, use_shadow=mount_with_shadow)
+        mountpoints = dmgutils.mountdmg(
+            itempath, use_shadow=mount_with_shadow, skip_verification=True)
         if mountpoints == []:
             display.display_error(
                 "No filesystems mounted from %s", item["installer_item"])

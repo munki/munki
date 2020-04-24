@@ -177,7 +177,7 @@ def mount_points_for_disk_image(dmgpath):
 
 
 def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
-             random_mountpoint=True):
+             random_mountpoint=True, skip_verification=False):
     """
     Attempts to mount the dmg at dmgpath
     and returns a list of mountpoints
@@ -205,6 +205,8 @@ def mountdmg(dmgpath, use_shadow=False, use_existing_mounts=False,
         cmd.extend(['-mountRandom', '/tmp'])
     if use_shadow:
         cmd.append('-shadow')
+    if skip_verification:
+        cmd.append('-noverify')
     proc = subprocess.Popen(cmd,
                             bufsize=-1, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, stdin=subprocess.PIPE)
