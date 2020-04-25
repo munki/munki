@@ -24,11 +24,17 @@ func is_safe_to_use(_ pathname: String) -> Bool {
             return false
         }
     }
-    let fref = open(UnsafePointer(pathname), O_RDWR | O_CREAT | O_NOFOLLOW, 0x0600)
-    if fref != -1 {
-        var st = stat()
-        if fstat(fref, UnsafeMutablePointer<stat>(&st)) == 0 {
-            safe = ((st.st_mode & S_IFREG) != 0) && (st.st_uid == getuid())
+    pathname.withCString(){
+        let fref = open($0, O_RDWR | O_CREAT | O_NOFOLLOW, 0x0600)
+        if fref != 1 {
+            var st = stat()
+            var fstat_result : Int32 = 0
+            withUnsafeMutablePointer(to: &st){
+                fstat_result = fstat(fref, $0)
+            }
+            if fstat_result == 0 {
+                safe = ((st.st_mode & S_IFREG) != 0) && (st.st_uid == getuid())
+            }
         }
         close(fref)
     }
