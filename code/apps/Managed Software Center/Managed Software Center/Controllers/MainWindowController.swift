@@ -1198,9 +1198,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             "Please contact your administrator for more details",
             comment: "Pre Install Uninstall Upgrade Alert Detail")
         let defaultOKLabel = NSLocalizedString(
-            "OK", comment: "Pre Install Uninstall Upgrade OK Label")
+            "OK", comment: "OK button title")
         let defaultCancelLabel = NSLocalizedString(
-            "Cancel", comment: "Pre Install Uninstall Upgrade Cancel Label")
+            "Cancel", comment: "Cancel button title/short action text")
         
         let alertTitle = alert["alert_title"] as? String ?? defaultAlertTitle
         let alertDetail = alert["alert_detail"] as? String ?? defaultAlertDetail
