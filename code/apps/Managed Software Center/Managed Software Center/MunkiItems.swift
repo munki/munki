@@ -332,7 +332,7 @@ class GenericItem: BaseItem {
                                   comment: "Update Will Be Installed status text"),
             "update-available":
                 NSLocalizedString("Update available",
-                                  comment: "Update Available status text"),
+                                  comment: "Update available text"),
             "unavailable":
                 NSLocalizedString("Unavailable",
                                   comment: "Unavailable status text")
@@ -570,7 +570,7 @@ class GenericItem: BaseItem {
         let note = my["note"] as? String ?? ""
         if is_update {
             return NSLocalizedString("Update available",
-                                     comment: "Update available display text")
+                                     comment: "Update available text")
         } else if note.hasPrefix("Insufficient disk space to download and install") {
             return NSLocalizedString("Not enough disk space",
                                      comment: "Not Enough Disk Space display text")
