@@ -45,13 +45,8 @@ class UNIXDomainSocketClient {
         } else {
             return nil
         }
-        // make a CFData reference to the sockaddr struct
-        let sockaddr_un_ptr = UnsafeMutableRawPointer(
-            &socketAdr).bindMemory(to: UInt8.self,
-                                   capacity: MemoryLayout<sockaddr_un>.size)
-        return CFDataCreate(kCFAllocatorDefault,
-                            sockaddr_un_ptr,
-                            MemoryLayout<sockaddr_un>.size)
+        return NSData(bytes: &socketAdr,
+                      length: MemoryLayout.size(ofValue: socketAdr)) as CFData
     }
 
     func connect(to path: String) {
@@ -108,7 +103,7 @@ class UNIXDomainSocketClient {
     }
     
     private func fdSet(_ fd: Int32, set: inout fd_set) {
-        /// Replacement for FD_SET macro
+        // Replacement for FD_SET macro
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = Int32(1 << bitOffset)
@@ -182,18 +177,16 @@ class UNIXDomainSocketClient {
             return ""
         }
         // allocate some space for the return message.
-        let buffer = Array<CChar>(repeating: CChar(0), count: maxsize)
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: maxsize)
+        defer { buffer.deallocate() }
         // read from socket
-        let msg_len = recv(CFSocketGetNative(socket),
-                           UnsafeMutableRawPointer(mutating: buffer),
-                           maxsize,
-                           0)
-        if msg_len > 0 {
-            if let text = String(utf8String: buffer) {
-                return text
-            }
+        let msg_len = recv(CFSocketGetNative(socket), buffer, maxsize, 0)
+        if let msg = NSString(bytes: buffer,
+                              length: msg_len,
+                              encoding: String.Encoding.utf8.rawValue) as String? {
+            return msg
         }
-        errCode = .writeError
+        errCode = .readError
         return ""
     }
 }
