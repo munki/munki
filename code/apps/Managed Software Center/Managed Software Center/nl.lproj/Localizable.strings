@@ -151,11 +151,17 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Help is niet beschikbaar voor Managed Software Center.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Belangrijke Apple Updates";
+
 /* Sidebar Information label */
 "Information" = "Informatie";
 
 /* Install action text */
 "Install" = "Installeer";
+
+/* Install now button title */
+"Install now" = "Installeer nu";
 
 /* Install Required action text */
 "Install Required" = "Installatie Benodigd";
@@ -177,6 +183,9 @@
 
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Beschikbare Apple Software-updates installeren...";
+
+/* Later button title */
+"Later" = "Later";
 
 /* Log out and Update button text */
 "Log out and update" = "Uitloggen en bijwerken";
@@ -237,6 +246,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Een of meerdere belangrijke Apple updates dienen geïnstalleerd worden";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Eén of meer items moeten voor %@ worden geïnstalleerd";
@@ -322,6 +334,9 @@
 /* Sidebar Size label */
 "Size:" = "Grootte:";
 
+/* Skip Apple updates button title */
+"Skip Apple updates" = "Sla Apple updates over";
+
 /* Software label */
 "Software" = "Software";
 
@@ -358,6 +373,12 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Er zijn geen items in deze categorie.";
 
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using the Software Updates pane in System Preferences." = "Er zijn een of meerdere Apple Software Updates die een herstart nodig hebben.\n\nInstalleer deze updates door gebruik te maken van het Software-update venster in Systeemvoorkeuren.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted the install of these updates. Contact your administrator for assistance." = "Er zijn een of meerdere Apple Software Updates die een herstart nodig hebben.\n\nDe beheerder van deze machine staat de installatie van deze updates niet toe. Neem contact op met de beheerder voor assistentie.";
+
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls U nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer opnieuw nadat de andere gebruikers zijn uitgelogd.";
 
@@ -381,6 +402,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Dit item moet geïnstalleerd zijn voor %@";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "Deze update wacht al %@ dagen.";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Om dit toe te staan, vul je loginwachtwoord in.";
