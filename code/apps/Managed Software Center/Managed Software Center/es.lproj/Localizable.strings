@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaciones en uso por otros";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Atención";
+
 /* Cancel button title/short action text */
 "Cancel" = "Cancelar";
 
@@ -151,11 +154,17 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "No hay ayuda disponible para el Centro de aplicaciones.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Actualizaciones importantes de Apple";
+
 /* Sidebar Information label */
 "Information" = "Información";
 
 /* Install action text */
 "Install" = "Instalar";
+
+/* Install now button title */
+"Install now" = "Install ahora";
 
 /* Install Required action text */
 "Install Required" = "Instalación requerida";
@@ -178,6 +187,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Instalando actualizaciones de Apple disponibles...";
 
+/* Later button title */
+"Later" = "Más tarde";
+
 /* Log out and Update button text */
 "Log out and update" = "Cerrar sesión y actualizar";
 
@@ -186,6 +198,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Es necesario cerrar sesión";
+
+/* macOS update required text */
+"macOS update required" = "Actualización de macOS requerida";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Centro de aplicaciones no puede comprobar las actualizaciones.\nPrueba más tarde. Si esta situación continua, contacta con el administrador de sistemas.";
@@ -238,6 +253,9 @@
 /* OK button title */
 "OK" = "Aceptar";
 
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Una o más actualizaciones importates de Apple deben ser instaladas";
+
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Uno o mas ítems tienen que ser instalados para el %@";
 
@@ -273,6 +291,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Preparando desinstalación";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Preparando para ejecutar el instalador de macOS";
 
 /* Problem Updates label */
 "Problem updates" = "Actualización problematica";
@@ -322,6 +343,9 @@
 /* Sidebar Size label */
 "Size:" = "Tamaño:";
 
+/* Skip Apple updates button title */
+"Skip Apple updates" = "Saltar actualizaciones de Apple";
+
 /* Software label */
 "Software" = "Aplicaciones";
 
@@ -331,8 +355,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "El software instalado necesita reiniciar el equipo. Tendrás oportunidad de guardar tus documentos";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Este software esta sujeto a algunas condiciones. Por favor contacta con tu administrador de sistemas para obtener más información";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Empezando el instalador de Adobe...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Empezando actualización completa de macOS";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Empezando...";
@@ -342,6 +372,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problema en la configuración del sistema";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "El sistema se reiniciará y comenzará la intalación completa de macOS";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "El software se instaló correctamente.";
@@ -357,6 +390,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "No hay ítems en esta categoria.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using the Software Updates pane in System Preferences." = "Hay una o mas actualizaciones de software de Apple que requieren un reinicio.\n\nDebes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted the install of these updates. Contact your administrator for assistance." = "Hay una o mas actualizaciones de software de Apple que requieren un reinicio.\n\nTu administrador de sistemas ha restringido la instalación de estas actualizaciones. Contacta con tu administrador para recibir asistencia.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Hay otros usuarios con sesiones abiertas en este equipo.\nActualizar ahora puede causar perdidas en su trabajo.\n\nPor favor prueba más tarde cuando los otros usuarios hayan cerrado sus sesiones.";
@@ -381,6 +420,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Tiene que estar instalado para el %@";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "Esta actualización ha estado pendiente durante %@ days.";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Para permitir esto, introduzca su contraseña de usuario.";
@@ -471,6 +513,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Tus aplicaciones están actualizadas.";
-
-/* macOS update required text */
-"macOS update required" = "Actualización de macOS requerida";
