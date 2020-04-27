@@ -151,11 +151,17 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Det finns ingen hjälp för Managed Software Center.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Viktiga Apple-uppdateringar";
+
 /* Sidebar Information label */
 "Information" = "Information";
 
 /* Install action text */
 "Install" = "Installera";
+
+/* Install now button title */
+"Install now" = "Installera nu";
 
 /* Install Required action text */
 "Install Required" = "Installation krävs";
@@ -177,6 +183,9 @@
 
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installerar tillgängliga Apple-uppdateringar...";
+
+/* Later button title */
+"Later" = "Senare";
 
 /* Log out and Update button text */
 "Log out and update" = "Logga ut och uppdatera";
@@ -237,6 +246,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "En eller flera viktiga Apple-uppdateringar måste installeras";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Ett eller flera objekt måste installeras senast %@";
@@ -322,6 +334,9 @@
 /* Sidebar Size label */
 "Size:" = "Storlek:";
 
+/* Skip Apple updates button title */
+"Skip Apple updates" = "Hoppa över Apple-uppdateringar";
+
 /* Software label */
 "Software" = "Programvara";
 
@@ -358,6 +373,12 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Det finns inget i den här kategorin.";
 
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using the Software Updates pane in System Preferences." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nDu måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted the install of these updates. Contact your administrator for assistance." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nAdminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din adminstratör för hjälp.";
+
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det finns andra användare inloggade på datorn.\nOm du uppdaterar nu riskerar dom att förlora ej sparat arbete.\n\nProva igen när de andra användarna har loggat ut.";
 
@@ -381,6 +402,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Måste installeras senast %@";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "Den här uppdateringen har väntat i %@ dagar.";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Ange ditt inloggningslösenord för att tillåta detta.";
