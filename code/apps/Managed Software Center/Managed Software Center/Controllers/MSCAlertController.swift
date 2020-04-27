@@ -129,7 +129,7 @@ class MSCAlertController: NSObject {
             // tell user they cannot install the updates
             msc_log("user", "apple_updates_user_cannot_install")
             alert.informativeText = NSLocalizedString(
-                "There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted the install of these updates. Contact your administrator for assistance.",
+                "There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance.",
                 comment: "Apple Software Updates Unable detail")
             alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
             alert.buttons[0].isEnabled = false
@@ -139,7 +139,7 @@ class MSCAlertController: NSObject {
             // prompt user to install using System Preferences
             msc_log("user", "apple_updates_pending")
             alert.informativeText = NSLocalizedString(
-                "There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using the Software Updates pane in System Preferences.",
+                "There are one or more pending Apple Software Updates that require a restart.\n\n You must install these updates using Software Update in System Preferences.",
                 comment: "Apple Software Updates Pending detail")
             alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
             alert.addButton(withTitle: NSLocalizedString(
