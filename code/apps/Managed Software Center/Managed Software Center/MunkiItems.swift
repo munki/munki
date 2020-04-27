@@ -1064,7 +1064,7 @@ func getOptionalInstallItems() -> [OptionalItem] {
     }
     if !Cache.shared.keys.contains("optional_install_items") {
         let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
-        var optional_install_items = optional_items.map({ OptionalItem($0) })
+        let optional_install_items = optional_items.map({ OptionalItem($0) })
         let featured_items = cachedInstallInfo()["featured_items"] as? [String] ?? [String]()
         for index in 0..<optional_install_items.count {
             if let name = optional_install_items[index]["name"] as? String {
