@@ -151,11 +151,17 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Managed Software Centerにヘルプは付属していません";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "重要な Apple ソフトウェアアップデート";
+
 /* Sidebar Information label */
 "Information" = "情報";
 
 /* Install action text */
 "Install" = "インストール";
+
+/* Install now button title */
+"Install now" = "今すぐインストール";
 
 /* Install Required action text */
 "Install Required" = "要請されたインストール";
@@ -177,6 +183,9 @@
 
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをインストール中…";
+
+/* Later button title */
+"Later" = "後で通知";
 
 /* Log out and Update button text */
 "Log out and update" = "ログアウトし、アップデートする";
@@ -237,6 +246,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "重要な Apple ソフトウェアアップデートをインストールする必要があります";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "%@までに、1つまたそれ以上のアイテムのインストールが必要です";
@@ -322,6 +334,9 @@
 /* Sidebar Size label */
 "Size:" = "サイズ:";
 
+/* Skip Apple updates button title */
+"Skip Apple updates" = "Apple ソフトウェアアップデートをスキップ";
+
 /* Software label */
 "Software" = "ソフトウェア";
 
@@ -358,6 +373,12 @@
 /* No Category Results primary text */
 "There are no items in this category." = "このカテゴリにアイテムはありません";
 
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "再起動が必要となる Apple ソフトウェアアップデートが保留中となっています。\n\nこのアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "再起動が必要となる Apple ソフトウェアアップデートが保留中となっています。\n\nこのアップデートのインストールは制限されています。システム管理者にお問い合わせください。";
+
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "他のユーザーがこのコンピューターにログインしています。\n今アップデートを実行すると、他のユーザーのワークが失われる原因になります。\n\n他のユーザーがログアウトしたのち、もう一度アップデートを実行してください。";
 
@@ -381,6 +402,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "このアイテムは%@までにインストールしなければいけません";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "この更新は、%@ 日間保留となっています。";
 
 /* Password explanation */
 "To allow this, enter your login password." = "これを許可する為、ログインパスワードを入力して下さい。";
