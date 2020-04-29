@@ -151,11 +151,17 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Managed Software Center -ohjelmalle ei ole ohjetta.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Tärkeitä Applen päivityksiä";
+
 /* Sidebar Information label */
 "Information" = "Tietoja";
 
 /* Install action text */
 "Install" = "Asenna";
+
+/* Install now button title */
+"Install now" = "Asenna nyt";
 
 /* Install Required action text */
 "Install Required" = "Pakollinen asennus";
@@ -177,6 +183,9 @@
 
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Asennetaan Applen ohjelmistopäivityksiä...";
+
+/* Later button title */
+"Later" = "Myöhemmin";
 
 /* Log out and Update button text */
 "Log out and update" = "Kirjaudu ulos ja päivitä";
@@ -237,6 +246,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Yksi tai useampi tärkeä Applen päivitys täytyy asentaa";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Yksi tai useampi kohde täytyy asentaa ennen %@";
@@ -322,6 +334,9 @@
 /* Sidebar Size label */
 "Size:" = "Koko:";
 
+/* Skip Apple updates button title */
+"Skip Apple updates" = "Ohita Applen päivitykset";
+
 /* Software label */
 "Software" = "Ohjelmistot";
 
@@ -358,6 +373,12 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Ei kohteita tässä kategoriassa.";
 
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Yksi tai useampi saatavilla oleva Applen päivitys vaatii uudelleenkäynnistyksen.\n\nPäivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Yksi tai useampi saatavilla oleva Applen päivitys vaatii uudelleenkäynnistyksen.\n\nYlläpitäjä on rajoittanut näiden päivitysten asentamista. Ota yhteyttä ylläpitäjään.";
+
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Tietokoneelle on kirjautuneena muita käyttäjiä.\nMuut käyttäjät saattavat menettää tallentamattomia muutoksia jos päivitys tehdään nyt.\n\nYritä uudelleen kun muut käyttäjät ovat kirjautuneet ulos.";
 
@@ -381,6 +402,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Asennettava ennen %@";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "Päivitys on ollut saatavilla %@ päivää.";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Salli lukituksen avaaminen syöttämällä salasana.";
