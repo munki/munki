@@ -152,11 +152,17 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "L'aide n'est pas disponible pour le Centre de gestion des logiciels.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Mises à jour Apple importantes";
+
 /* Sidebar Information label */
 "Information" = "Information";
 
 /* Install action text */
 "Install" = "Installer";
+
+/* Install now button title */
+"Install now" = "Installer maintenant";
 
 /* Install Required action text */
 "Install Required" = "Installation obligatoire";
@@ -178,6 +184,9 @@
 
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installation des mises à jour Apple disponibles...";
+
+/* Later button title */
+"Later" = "Plus tard";
 
 /* Log out and Update button text */
 "Log out and update" = "Déconnecter et mettre à jour";
@@ -238,6 +247,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Une ou plusieurs mises à jour Apple importantes doivent être installées";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Un article doit être installé avant le %@";
@@ -323,6 +335,9 @@
 /* Sidebar Size label */
 "Size:" = "Taille:";
 
+/* Skip Apple updates button title */
+"Skip Apple updates" = "Ignorer les mises à jour Apple";
+
 /* Software label */
 "Software" = "Logiciel";
 
@@ -349,6 +364,12 @@
 
 /* Additional Pending Updates detail */
 "There are additional pending updates to install or remove." = "Il y a des mises à jour additionnelles à installer ou supprimer.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Une ou plusieurs mises à jour logicielles Apple importantes nécessitent un redémarrage.\n\nVous devez les installer en utilisant Mise à jour de logiciels dans les Préférences Système.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Une ou plusieurs mises à jour logicielles Apple importantes nécessitent un redémarrage.\n\nVotre administrateur a restreint l'installation de ces mises à jour. Contactez votre administrateur pour de l'assistance.";
 
 /* No Items primary text */
 "There are no available software items." = "Il n'y a pas de logiciel disponible.";
@@ -382,6 +403,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Cet article doit être installé avant le %@";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "Cette mise à jour est en attente depuis %@ jours.";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Pour autoriser cette opération, veuillez entrer votre mot de passe.";
