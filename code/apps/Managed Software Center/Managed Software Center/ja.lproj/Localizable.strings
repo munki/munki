@@ -185,7 +185,7 @@
 "Installing available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをインストール中…";
 
 /* Later button title */
-"Later" = "後で通知";
+"Later" = "あとで"
 
 /* Log out and Update button text */
 "Log out and update" = "ログアウトし、アップデートする";
