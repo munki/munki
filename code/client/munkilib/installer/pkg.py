@@ -198,12 +198,12 @@ def _run_installer(cmd, env_vars, packagename):
     retcode = job.returncode()
     if retcode != 0:
         # append stdout to our installer output
-        installeroutput.extend(job.stderr.read().splitlines())
+        installeroutput.extend(job.stderr.read().decode("UTF-8").splitlines())
         display.display_status_minor(
             "Install of %s failed with return code %s" % (packagename, retcode))
         display.display_error("-"*78)
         for line in installeroutput:
-            display.display_error(line.decode("UTF-8").rstrip("\n"))
+            display.display_error(line.rstrip("\n"))
         display.display_error("-"*78)
     elif retcode == 0:
         munkilog.log("Install of %s was successful." % packagename)
