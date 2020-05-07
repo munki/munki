@@ -599,8 +599,10 @@ class AppleUpdates(object):
         su_start_date = NSDate.new()
         installresults = su_tool.run(su_options, catalog_url=catalog_url)
         retcode = installresults.get('exit_code', 0)
-        self.shutdown_instead_of_restart = installresults.get(
-            'post_action') == POSTACTION_SHUTDOWN
+        self.shutdown_instead_of_restart = (
+            installresults.get('post_action') == POSTACTION_SHUTDOWN or
+            osutils.bridgeos_update_staged()
+        )
         su_end_date = NSDate.new()
 
         # get the items that were just installed from InstallHistory.plist

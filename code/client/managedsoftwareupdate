@@ -273,7 +273,9 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
                     'Restart not initiated by startosinstall; will initiate '
                     'restart ourselves')
                 if not authrestartd.restart():
-                    authrestart.do_authorized_or_normal_restart()
+                    authrestart.do_authorized_or_normal_restart(
+                        shutdown=osutils.bridgeos_update_staged()
+                    )
 
     if do_apple_updates:
         # install Apple updates
@@ -351,8 +353,7 @@ def doRestart(shutdown=False):
         # try to use authrestartd to do an auth restart; if that fails
         # do it directly
         if shutdown:
-            authrestart.do_authorized_or_normal_restart(
-                shutdown=shutdown or osinstaller.bridgeos_update_started())
+            authrestart.do_authorized_or_normal_restart(shutdown=shutdown)
         elif not authrestartd.restart():
             authrestart.do_authorized_or_normal_restart()
     else:
