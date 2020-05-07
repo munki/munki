@@ -753,6 +753,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         } else {
             msc_debug_log("updateCheck not needed")
             _alertedUserToOutstandingUpdates = false
+            _status_title = NSLocalizedString(
+                "Update in progress.",
+                comment: "Update In Progress primary text") + ".."
             kickOffInstallSession()
         }
     }
