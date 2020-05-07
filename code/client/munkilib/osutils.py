@@ -204,7 +204,7 @@ def bridgeos_update_staged():
         lines = output.splitlines()
         parts = lines[0].split()
         try:
-            timestamp = int(parts[1].split()[0])
+            timestamp = int(parts[1].split(',')[0])
             now = int(time.time())
             seconds_ago = now - timestamp
             if seconds_ago < 60 * 60:
