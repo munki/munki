@@ -437,13 +437,34 @@ class StartOSInstallRunner(object):
             CFPreferencesSetValue(
                 'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
-            # attempt to do an auth restart, or regular restart
+            # attempt to do an auth restart, or regular restart, or shutdown
             if not authrestartd.restart():
-                authrestart.do_authorized_or_normal_restart()
+                authrestart.do_authorized_or_normal_restart(
+                    shutdown=bridgeos_update_started())
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
                 'See /var/log/install.log for details.')
+
+
+def bridgeos_update_started():
+    '''Checks an undocumented nvram variable to see if a bridgeOS update
+    has been staged. If so, we should shut down instead of restart.
+    Returns a boolean.'''
+    cmd = ["/usr/sbin/nvram", "BOSUpdateStarted"]
+    proc = subprocess.Popen(cmd,
+                            shell=False,
+                            bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    output = proc.communicate()[0].decode('UTF-8')
+    if proc.returncode == 0:
+        munkilog.log('nvram output: %s' % output)
+        munkilog.log('bridgeOS update staged; shutdown required')
+        return True
+    munkilog.log('No bridgeOS update staged')
+    return False
 
 
 def get_catalog_info(mounted_dmgpath):
