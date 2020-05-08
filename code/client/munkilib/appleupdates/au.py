@@ -498,7 +498,8 @@ class AppleUpdates(object):
         """Uses softwareupdate to install previously downloaded updates.
 
         Returns:
-          Boolean. True if a restart is needed after install, False otherwise.
+          restart_action -- an integer indicating the action to take later:
+                            none, logout, restart, shutdown
         """
         # disable Stop button if we are presenting GUI status
         if display.munkistatusoutput:
@@ -557,7 +558,7 @@ class AppleUpdates(object):
             restart_action = self.restart_action_for_updates()
 
         if not installlist:
-            return False  # our list of items to install is empty
+            return POSTACTION_NONE  # our list of items to install is empty
 
         display.display_status_major(msg)
 
