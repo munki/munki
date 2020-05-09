@@ -1008,7 +1008,7 @@ func updateTrackingInfo() -> [String : Any] {
 func getDateFirstAvailable(_ itemname: String) -> Date? {
     // Uses UpdateNotificationTracking.plist data to determine when an item was first
     // "discovered"/presented as available
-   let trackingInfo = updateTrackingInfo()
+    let trackingInfo = updateTrackingInfo()
     for category in trackingInfo.keys {
         if let items = (trackingInfo[category] as? [String : Any]) {
             for name in items.keys {
@@ -1022,7 +1022,7 @@ func getDateFirstAvailable(_ itemname: String) -> Date? {
 }
 
 func getDaysPending(_ itemname: String) -> Int {
-    // Returns the numnber of days an item has been pending
+    // Returns the number of days an item has been pending
     if let dateAvailable = getDateFirstAvailable(itemname) {
         let secondsInDay = 60 * 60 * 24
         let timeAvailable = dateAvailable.timeIntervalSinceNow * -1
@@ -1032,9 +1032,36 @@ func getDaysPending(_ itemname: String) -> Int {
     return 0
 }
 
-func getMaxPendingDaysForAppleUpdatesThatRequireRestart() -> Int {
-    // Of Apple software updates that require a restart, return the longest
-    // number of days pending
+func shouldAggressivelyNotifyAboutMunkiUpdates(days: Int = -1) -> Bool {
+    // Do we have any Munki updates that have been pending a long time?
+    var maxPendingDays = 0
+    if let trackingInfo = updateTrackingInfo()["managed_installs"] as? [String: Any?] {
+        for name in trackingInfo.keys {
+            if let dateAvailable = trackingInfo[name] as? Date {
+                let secondsInDay = 60 * 60 * 24
+                let timeAvailable = dateAvailable.timeIntervalSinceNow * -1
+                let daysAvailable = Int(timeAvailable as Double)/secondsInDay
+                if daysAvailable > maxPendingDays {
+                    maxPendingDays = daysAvailable
+                }
+            }
+        }
+    }
+    if days == -1 {
+        let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+        if aggressiveNotificationDays == 0 {
+            // never get aggressive
+            return false
+        }
+        return maxPendingDays > aggressiveNotificationDays
+    } else {
+        return maxPendingDays > days
+    }
+}
+
+func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
+    // Do we have any Apple updates that require a restart that have been pending
+    // a long time?
     var maxPendingDays = 0
     if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
         let requiresRestartItems = apple_update_items.filter(
@@ -1049,7 +1076,16 @@ func getMaxPendingDaysForAppleUpdatesThatRequireRestart() -> Int {
             }
         }
     }
-    return maxPendingDays
+    if days == -1 {
+        let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+        if aggressiveNotificationDays == 0 {
+            // never get aggressive
+            return false
+        }
+        return maxPendingDays > aggressiveNotificationDays
+    } else {
+        return maxPendingDays > days
+    }
 }
 
 func optionalInstallsExist() -> Bool {
