@@ -62,7 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 // by pretending the lastcheck is now
                 lastcheck = Date()
             }
-            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() > 14 {
+            if shouldAggressivelyNotifyAboutAppleUpdates() || shouldAggressivelyNotifyAboutMunkiUpdates() {
                 // skip the check and just display the updates
                 // by pretending the lastcheck is now
                 lastcheck = Date()

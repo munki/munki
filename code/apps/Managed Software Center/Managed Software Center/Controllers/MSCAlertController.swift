@@ -14,6 +14,7 @@ class MSCAlertController: NSObject {
     
     var window: NSWindow? // our parent window
     var timers: [Timer] = []
+    var quitButton: NSButton?
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -144,7 +145,7 @@ class MSCAlertController: NSObject {
             alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
             alert.addButton(withTitle: NSLocalizedString(
                 "Later", comment: "Later button title"))
-            if getMaxPendingDaysForAppleUpdatesThatRequireRestart() >= 14 {
+            if shouldAggressivelyNotifyAboutAppleUpdates() {
                 // disable the later button
                 alert.buttons[1].isEnabled = false
             }
@@ -203,6 +204,9 @@ class MSCAlertController: NSObject {
             if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
                 mainWindowController.load_page("updates.html")
                 mainWindowController.displayUpdateCount()
+                if shouldAggressivelyNotifyAboutMunkiUpdates() {
+                    mainWindowController._alertedUserToOutstandingUpdates = false
+                }
             }
         }
     }
@@ -529,4 +533,99 @@ class MSCAlertController: NSObject {
         }
         return false
     }
+    
+    func alertToPendingUpdates(_ mwc: MainWindowController) {
+        // Alert user to pending updates before quitting the application
+        mwc._alertedUserToOutstandingUpdates = true
+        // show the updates
+        mwc.loadUpdatesPage(self)
+        var alertTitle = ""
+        var alertDetail = ""
+        if thereAreUpdatesToBeForcedSoon() {
+            alertTitle = NSLocalizedString("Mandatory Updates Pending",
+                                           comment: "Mandatory Updates Pending text")
+            if let deadline = earliestForceInstallDate() {
+                let time_til_logout = deadline.timeIntervalSinceNow
+                if time_til_logout > 0 {
+                    let deadline_str = stringFromDate(deadline)
+                    let formatString = NSLocalizedString(
+                        ("One or more updates must be installed by %@. A logout " +
+                          "may be forced if you wait too long to update."),
+                        comment: "Mandatory Updates Pending detail")
+                    alertDetail = String(format: formatString, deadline_str)
+                } else {
+                    alertDetail = NSLocalizedString(
+                        ("One or more mandatory updates are overdue for " +
+                         "installation. A logout will be forced soon."),
+                        comment: "Mandatory Updates Imminent detail")
+                }
+            }
+        } else {
+            alertTitle = NSLocalizedString(
+                "Pending updates", comment: "Pending Updates alert title")
+            alertDetail = NSLocalizedString(
+                "There are pending updates for this computer.",
+                comment: "Pending Updates alert detail text")
+        }
+        let alert = NSAlert()
+        alert.messageText = alertTitle
+        alert.informativeText = alertDetail
+        var quitButton = NSApplication.ModalResponse.alertFirstButtonReturn
+        var updateButton = NSApplication.ModalResponse.alertSecondButtonReturn
+        if !shouldAggressivelyNotifyAboutMunkiUpdates() {
+            alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
+            alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
+        } else {
+            // add the buttons in the opposite order so "Update now" is the default/primary
+            alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
+            alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
+            // initially disable the Quit button
+            self.quitButton = alert.buttons[1]
+            alert.buttons[1].isEnabled = false
+            let timer1 = Timer.scheduledTimer(timeInterval: 5.0,
+                                              target: self,
+                                              selector: #selector(self.activateQuitButton),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer1)
+            /*if #available(OSX 10.12, *) {
+                let timer1 = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { timer in
+                    alert.buttons[1].isEnabled = true
+                }
+                timers.append(timer1)
+            } else {
+                // Fallback on earlier versions
+            }*/
+            
+            updateButton = NSApplication.ModalResponse.alertFirstButtonReturn
+            quitButton = NSApplication.ModalResponse.alertSecondButtonReturn
+        }
+        alert.beginSheetModal(for: self.window!, completionHandler: { (modalResponse) -> Void in
+            if modalResponse == quitButton {
+                msc_log("user", "quit")
+                NSApp.terminate(self)
+            } else if modalResponse == updateButton {
+                msc_log("user", "install_now_clicked")
+                // make sure this alert panel is gone before we proceed
+                // which might involve opening another alert sheet
+                alert.window.orderOut(self)
+                // invalidate any timers
+                for timer in self.timers {
+                    timer.invalidate()
+                }
+                // initiate the updates
+                mwc.updateNow()
+                mwc.loadUpdatesPage(self)
+            }
+        })
+    }
+    
+    @objc func activateQuitButton() {
+        if let button = self.quitButton {
+            button.isEnabled = true
+        } else {
+            NSLog("%@", "could not get the alert button reference")
+        }
+    }
+
 }
