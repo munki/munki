@@ -1,13 +1,17 @@
 #!/bin/sh
 
-# remove any Managed Software Update.app bundle since the installer
-# won't replace a bundle with a symlink, leading to yucky stuff like
-# "/Applications/Utilities/Managed Software Update.app 1"
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-if [ -d "$3/Applications/Utilities/Managed Software Update.app" ] ; then
-    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app"
-fi
-
-if [ -d "$3/Applications/Utilities/Managed Software Update.app 1" ] ; then
-    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app 1"
+# installing on the current boot volume? kill MSC.app if it's running
+if [ "$3" == "/" ]; then
+    CONSOLEUSER=$(who | grep console | cut -d" " -f1)
+    if [ "$CONSOLEUSER" != "" ] ; then
+        # is the console user running MSC.app?
+        killall -s -u "$CONSOLEUSER" "Managed Software Center" &>/dev/null
+        if [ $? -eq 0 ] ; then
+            # leave a flag so the postinstall knows to relaunch MSC.app
+            touch /tmp/com.googlecode.munki.relaunch_msc_app
+        fi
+    fi
+    killall "Managed Software Center" &>/dev/null
 fi
