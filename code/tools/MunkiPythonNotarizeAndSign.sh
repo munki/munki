@@ -1,5 +1,8 @@
-#!/bin/bash
+#!/bin/zsh
 # encoding: utf-8
+
+# Made by Lux
+# https://github.com/lifeunexpected
 
 # Scripts are based on code by:
 # https://groups.google.com/forum/#!topic/munki-dev/FADUXPWJeds - Michal Moravec
@@ -27,21 +30,26 @@ DevApp="Developer ID Application: Name/Company (ID)"
 DevInst="Developer ID Installer: Name/Company (ID)"
 # Change Bundle_ID if you are using a custom one, default is "com.googlecode.munki"
 BUNDLE_ID="com.googlecode.munki"
-# Change the version number because this will change on each version of Munki
-BUNDLE_PKG=$MUNKIROOT/munkitools-4.1.2.3939.pkg
-# Username
-AppleAcc="DeveloperAppleAcc@Apple.com"
 # Apple Developer app-specific password
+AppleAcc="DeveloperAppleAcc@Apple.com"
 # https://support.apple.com/en-us/HT204397
 AppleAccPwd="Apple Developer Account app-specific password"
-# Change to your username
-LocalUser=AccountUsername
 
 # Stop changing!
-#______________________
- 
-# Building, signing and notarizing Python framework
- 
+
+# Update munki too latest version
+# Disable with # before the command if you dont want it to update
+git pull
+
+# Rename existing munkitools files
+Old_PKG=$( ls munkitools-[0-9]* )
+if [[ -f $Old_PKG ]]; then
+    mv $Old_PKG Unkown-$Old_PKG
+    echo "Renamed $Old_PKG to Unkown-$Old_PKG to let the script run properly later on"
+fi
+
+# Python notarization part of the sript
+
 $MUNKIROOT/code/tools/build_python_framework.sh
 
 find $MUNKIROOT/Python.framework/Versions/3.7/lib/ -type f -perm -u=x -exec codesign --deep --verbose -s "$DevApp" {} \;
@@ -61,6 +69,11 @@ codesign --deep --verbose -s  "$DevApp" $MUNKIROOT/Python.framework
 
 sudo $MUNKIROOT/code/tools/make_munki_mpkg.sh -i "$BUNDLE_ID" -S "$DevApp" -s "$DevInst"
 
+# Get filename for munkitools file that was created above
+BUNDLE_PKG=$( ls munkitools-[0-9]* )
+
+# prepair munkitools for notarization and signing
+LocalUser=$(whoami)
 sudo chown $LocalUser $BUNDLE_PKG 
 
 # Notarizing and signing munkitools.pkg
@@ -82,16 +95,19 @@ if xcrun altool --notarize-app --primary-bundle-id "$BUNDLE_ID" --username "$App
 
 	# check status periodically
 	while sleep 60 && date; do
-  echo
   echo "Waiting on Apple too approve the notarization so it can be stapled. This can take a few minutes or more. Script auto checks every 60 sec"
-	echo	
-    # check notarization status
+
+		# check notarization status
 		if xcrun altool --notarization-info "$RequestUUID" --username "$AppleAcc" --password "$AppleAccPwd" > "$NOTARIZE_INFO_LOG" 2>&1; then
 			cat "$NOTARIZE_INFO_LOG"
 
 			# once notarization is complete, run stapler and exit
 			if ! grep -q "Status: in progress" "$NOTARIZE_INFO_LOG"; then
 				xcrun stapler staple "$BUNDLE_PKG"
+				mv $BUNDLE_PKG Notarized-$BUNDLE_PKG
+				# Renames the $BUNDLE_PKG file too Notarized-$BUNDLE_PKG so the script can run again without any problems
+				echo "Renamed $BUNDLE_PKG to Notarized-$BUNDLE_PKG to let you know it was notarized"
+				echo "You can check if its notarized properly with Taccy - https://eclecticlight.co/taccy-signet-precize-alifix-utiutility-alisma/"
 				exit $?
 			fi
 		else
