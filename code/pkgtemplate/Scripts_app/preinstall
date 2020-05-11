@@ -24,4 +24,5 @@ if [ "$3" == "/" ]; then
     fi
     # kill all instances of Managed Software Center.app
     killall "$MSC_APP_NAME" &>/dev/null
+    exit 0
 fi
