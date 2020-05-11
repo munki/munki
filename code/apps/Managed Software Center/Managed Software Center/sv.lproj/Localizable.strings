@@ -374,7 +374,7 @@
 "There are no items in this category." = "Det finns inget i den här kategorin.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\n You must install these updates using Software Update in System Preferences." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nDu måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nDu måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
 
 /* Apple Software Updates Unable detail */
 "There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nAdminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din adminstratör för hjälp.";
