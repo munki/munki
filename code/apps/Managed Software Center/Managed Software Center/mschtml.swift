@@ -808,6 +808,11 @@ func getWarningText() -> String {
             "One or more items must be installed by %@",
             comment: "Forced Install Date summary")
         warning_text = NSString(format: forced_date_text as NSString, date_str) as String
+    } else if shouldAggressivelyNotifyAboutAppleUpdates() {
+        warning_text = NSLocalizedString(
+            "One or more important Apple updates must be installed",
+            comment: "Pending Apple Updates warning"
+        )
     }
     let restart_text = getRestartActionForUpdateList(item_list)
     if !restart_text.isEmpty {
@@ -815,19 +820,6 @@ func getWarningText() -> String {
             warning_text = restart_text
         } else {
             warning_text += " &bull; " + restart_text
-        }
-    }
-    if shouldAggressivelyNotifyAboutAppleUpdates() {
-        let apple_updates_str = NSLocalizedString(
-            "One or more important Apple updates must be installed",
-            comment: "Pending Apple Updates warning"
-        )
-        if !restart_text.isEmpty {
-            if warning_text.isEmpty {
-                warning_text = apple_updates_str
-            } else {
-                warning_text = apple_updates_str + " &bull; " + warning_text
-            }
         }
     }
     return warning_text

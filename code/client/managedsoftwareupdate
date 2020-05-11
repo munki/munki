@@ -740,8 +740,8 @@ def main():
                     # restart
                     try:
                         launch_options = FoundationPlist.readPlist(filename)
-                        if launch_options.get("AppleUpdateAttemptMade"):
-                            munkilog.log("AppleUpdateAttemptMade is True")
+                        if launch_options.get("SkipAppleUpdates"):
+                            munkilog.log("SkipAppleUpdates is True")
                             appleupdates.clearAppleUpdateInfo()
                             options.munkipkgsonly = True
                     except FoundationPlist.FoundationPlistException as err:

@@ -174,6 +174,7 @@ class MSCStatusController: NSObject {
         // Initialize the main window for update status
         statusWindowController._update_in_progress = true
         if statusWindowController.currentPageIsUpdatesPage() {
+            statusWindowController.makeUsUnobnoxious()
             statusWindowController.load_page("updates.html")
             statusWindowController.displayUpdateCount()
         }

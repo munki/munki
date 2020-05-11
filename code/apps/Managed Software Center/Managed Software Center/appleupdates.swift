@@ -13,9 +13,9 @@ import OpenDirectory
 
 let INSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.installatstartup"
 
-func writeInstallAtStartupFlagFile() {
+func writeInstallAtStartupFlagFile(skipAppleUpdates: Bool = true) {
     // writes out a file to trigger Munki to install Munki updates at next restart
-    let plist = ["AppleUpdateAttemptMade": true]
+    let plist = ["SkipAppleUpdates": skipAppleUpdates]
     do {
         try writePlist(plist, toFile: INSTALLATSTARTUPFILE)
     } catch {
@@ -93,3 +93,23 @@ func userIsAdmin() -> Bool {
     return false
 }
 
+func su_pref(_ prefName: String) -> Any? {
+    // Return a com.apple.SoftwareUpdate preference.
+    return CFPreferencesCopyValue(prefName as CFString,
+                                  "com.apple.SoftwareUpdate" as CFString,
+                                  kCFPreferencesAnyUser,
+                                  kCFPreferencesCurrentHost)
+}
+
+func suRecommendedUpdateIDs() -> [String] {
+    // returns a list of productids for the SoftwareUpdate recommended ids
+    var ids = [String]()
+    if let recommendedUpdates = su_pref("RecommendedUpdates") as? [[String: Any]] {
+        for update in recommendedUpdates {
+            if let productKey = update["Product Key"] as? String {
+                ids.append(productKey)
+            }
+        }
+    }
+    return ids
+}

@@ -1063,16 +1063,14 @@ func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
     // Do we have any Apple updates that require a restart that have been pending
     // a long time?
     var maxPendingDays = 0
-    if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
-        let requiresRestartItems = apple_update_items.filter(
-                { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
-            )
-        for item in requiresRestartItems {
-            if let itemname = item["name"] as? String {
-                let thisItemDaysPending = getDaysPending(itemname)
-                if thisItemDaysPending > maxPendingDays {
-                    maxPendingDays = thisItemDaysPending
-                }
+    let requiresRestartItems = getAppleUpdates().filter(
+            { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+        )
+    for item in requiresRestartItems {
+        if let itemname = item["name"] as? String {
+            let thisItemDaysPending = getDaysPending(itemname)
+            if thisItemDaysPending > maxPendingDays {
+                maxPendingDays = thisItemDaysPending
             }
         }
     }
@@ -1205,16 +1203,17 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
 func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     var update_items = [[String: Any]]()
     if !munkiUpdatesContainAppleItems() {
-        if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
-            for var item in apple_update_items {
-                if !(filterAppleUpdates &&
-                     ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
-                    item["developer"] = "Apple"
-                    item["status"] = "will-be-installed"
-                    item["apple_update"] = true
-                    update_items.append(item)
-                }
+        for var item in getAppleUpdates() {
+            if (filterAppleUpdates &&
+                ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
+                // skip this update because it requires a restart and we've been
+                // directed to filter these out
+                continue
             }
+            item["developer"] = "Apple"
+            item["status"] = "will-be-installed"
+            item["apple_update"] = true
+            update_items.append(item)
         }
     }
     let install_info = cachedInstallInfo()
@@ -1261,12 +1260,10 @@ func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
         osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
     }
     if osMinorVers >= 14 {
-        if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
-            let requiresRestart = apple_update_items.filter(
-                    { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
-                ).count > 0
-            return requiresRestart
-        }
+        let requiresRestart = getAppleUpdates().filter(
+                { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+            ).count > 0
+        return requiresRestart
     }
     return false
 }
