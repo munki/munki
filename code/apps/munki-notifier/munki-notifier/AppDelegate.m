@@ -12,7 +12,7 @@
 
 NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
-NSString * const MunkiUpdatesURL = @"munki://updates";
+NSString * const MunkiNotificationURL = @"munki://notify";
 long const DefaultUseNotificationCenterDays = 3;
 
 
@@ -132,7 +132,7 @@ InstallFakeBundleIdentifierHook()
             // to launch MSC.app
             [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         }
-        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
         [NSApp terminate: self];
         return;
     }
@@ -169,7 +169,7 @@ InstallFakeBundleIdentifierHook()
     // Create options (userInfo) dictionary
     NSMutableDictionary *options = [NSMutableDictionary dictionary];
     options[@"action"]   = @"open_url";
-    options[@"value"]    = MunkiUpdatesURL;
+    options[@"value"]    = MunkiNotificationURL;
     
     // deliver the notification
     [self deliverNotificationWithTitle:title
@@ -239,7 +239,7 @@ InstallFakeBundleIdentifierHook()
     if ([action isEqualToString:@"open_url"]){
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:value]];
     } else {
-        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiUpdatesURL]];
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
     }
     
     [NSApp terminate: self];

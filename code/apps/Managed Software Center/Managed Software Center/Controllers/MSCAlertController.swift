@@ -126,32 +126,30 @@ class MSCAlertController: NSObject {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
+        alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
+        alert.addButton(withTitle: NSLocalizedString(
+            "Skip these updates", comment: "Skip Apple updates button title"))
+        let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
+        if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
+            alert.icon = suIcon
+        }
         if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
             // tell user they cannot install the updates
             msc_log("user", "apple_updates_user_cannot_install")
             alert.informativeText = NSLocalizedString(
                 "There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance.",
                 comment: "Apple Software Updates Unable detail")
-            alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
+            // disable insstall now button
             alert.buttons[0].isEnabled = false
-            alert.addButton(withTitle: NSLocalizedString(
-                "Skip Apple updates", comment: "Skip Apple updates button title"))
         } else {
             // prompt user to install using System Preferences
             msc_log("user", "apple_updates_pending")
             alert.informativeText = NSLocalizedString(
                 "There are one or more pending Apple Software Updates that require a restart.\n\n You must install these updates using Software Update in System Preferences.",
                 comment: "Apple Software Updates Pending detail")
-            alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
-            alert.addButton(withTitle: NSLocalizedString(
-                "Later", comment: "Later button title"))
             if shouldAggressivelyNotifyAboutAppleUpdates() {
-                // disable the later button
+                // disable the skip button
                 alert.buttons[1].isEnabled = false
-            }
-            let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
-            if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
-                alert.icon = suIcon
             }
         }
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
@@ -572,7 +570,7 @@ class MSCAlertController: NSObject {
         alert.informativeText = alertDetail
         var quitButton = NSApplication.ModalResponse.alertFirstButtonReturn
         var updateButton = NSApplication.ModalResponse.alertSecondButtonReturn
-        if !shouldAggressivelyNotifyAboutMunkiUpdates() {
+        if !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
             alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
             alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
         } else {
@@ -588,15 +586,6 @@ class MSCAlertController: NSObject {
                                               userInfo: nil,
                                               repeats: false)
             timers.append(timer1)
-            /*if #available(OSX 10.12, *) {
-                let timer1 = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { timer in
-                    alert.buttons[1].isEnabled = true
-                }
-                timers.append(timer1)
-            } else {
-                // Fallback on earlier versions
-            }*/
-            
             updateButton = NSApplication.ModalResponse.alertFirstButtonReturn
             quitButton = NSApplication.ModalResponse.alertSecondButtonReturn
         }

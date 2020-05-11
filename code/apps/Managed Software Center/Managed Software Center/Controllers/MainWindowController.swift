@@ -66,7 +66,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return .terminateNow
         }
         if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
-            if shouldAggressivelyNotifyAboutAppleUpdates(days: 2){
+            if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
@@ -83,6 +83,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 return .terminateNow
             }
             if _alertedUserToOutstandingUpdates {
+                if (thereAreUpdatesToBeForcedSoon() || shouldAggressivelyNotifyAboutMunkiUpdates()) {
+                    // user keeps avoiding; let's try at next logout or restart
+                    writeInstallAtStartupFlagFile(skipAppleUpdates: false)
+                }
                 return .terminateNow
             }
         }
@@ -182,6 +186,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func weShouldBeObnoxious() -> Bool {
         // returns a Bool to let us know if we should enter obnoxiousMode
+        if thereAreUpdatesToBeForcedSoon() {
+            return true
+        }
         if shouldAggressivelyNotifyAboutMunkiUpdates() {
             return true
         }
@@ -200,15 +207,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         let optional_items = getOptionalInstallItems()
         if optional_items.isEmpty || getUpdateCount() > 0 || !getProblemItems().isEmpty {
             loadUpdatesPage(self)
-            if let window = self.window {
-                // don't let people move the window mostly off-screen so
-                // they can ignore it
-                window.center()
-            }
-            if weShouldBeObnoxious() {
-                NSLog("%@", "Entering obnoxious mode")
-                makeUsObnoxious()
-            }
         } else {
             loadAllSoftwarePage(self)
         }
@@ -836,7 +834,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // clear all earlier update notifications
             NSUserNotificationCenter.default.removeAllDeliveredNotifications()
             // record that the user has been presented pending updates
-            if !shouldAggressivelyNotifyAboutMunkiUpdates() {
+            if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
                 _alertedUserToOutstandingUpdates = true
             }
         }
@@ -857,8 +855,31 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if !(filename.hasSuffix(".html")) {
             filename += ".html"
         }
+        // if the user has minimized the main window, deminiaturize it
+        if let window = self.window {
+            if window.isMiniaturized {
+                window.deminiaturize(self)
+            }
+        }
         // try to build and load the page
-        load_page(filename)
+        if filename == "notify.html" {
+            //resetAndReload()
+            load_page("updates.html")
+            if !_update_in_progress && getUpdateCount() > 0 {
+                // we're notifying about pending updates. We might need to be obnoxious about it
+                if let window = self.window {
+                    // don't let people move the window mostly off-screen so
+                    // they can ignore it
+                    window.center()
+                }
+                if weShouldBeObnoxious() {
+                    NSLog("%@", "Entering obnoxious mode")
+                    makeUsObnoxious()
+                }
+            }
+        } else {
+            load_page(filename)
+        }
     }
 
     func setNoPageCache() {

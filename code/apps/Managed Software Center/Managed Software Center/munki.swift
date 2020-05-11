@@ -208,7 +208,7 @@ func getInstallInfo() -> PlistDict {
     return readPlistAsNSDictionary(installinfo_path)
 }
 
-func getAppleUpdates() -> PlistDict {
+func getAppleUpdates() -> [PlistDict] {
     // Returns any available Apple update info
     let installAppleSoftwareUpdates = pythonishBool(pref("InstallAppleSoftwareUpdates"))
     let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
@@ -216,9 +216,25 @@ func getAppleUpdates() -> PlistDict {
         let managedinstallbase = pref("ManagedInstallDir") as! String
         let appleupdates_path = NSString.path(
             withComponents: [managedinstallbase, "AppleUpdates.plist"])
-        return readPlistAsNSDictionary(appleupdates_path)
+        let plistData = readPlistAsNSDictionary(appleupdates_path)
+        let rawAppleUpdates = plistData["AppleUpdates"] as? [PlistDict] ?? []
+        if pythonishBool(plistData["AppleUpdatesTesting"]) {
+            // this lets us test MSC behavior with fake data
+            return rawAppleUpdates
+        }
+        // since it's possible SoftwareUpdate has run since managedsoftwareupdate last
+        // ran, we should filter these against the RecommendedUpdates in com.apple.SoftwareUpdate
+        var filteredAppleUpdates = [PlistDict]()
+        for item in rawAppleUpdates {
+            if let productKey = item["productKey"] as? String {
+                if suRecommendedUpdateIDs().contains(productKey) {
+                    filteredAppleUpdates.append(item)
+                }
+            }
+        }
+        return filteredAppleUpdates
     } else {
-        return PlistDict()
+        return [PlistDict]()
     }
 }
 
@@ -260,9 +276,7 @@ func thereAreUpdatesToBeForcedSoon(hours: Int = 72) -> Bool {
     // Return True if any updates need to be installed within the next
     // X hours, false otherwise
     var installinfo = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
-    let appleupdates = getAppleUpdates()["AppleUpdates"] as? [PlistDict] ?? [PlistDict]()
-    installinfo = installinfo + appleupdates
-    
+    installinfo = installinfo + getAppleUpdates()
     let now_xhours = Date(timeIntervalSinceNow: TimeInterval(hours * 3600))
     for item in installinfo {
         if var force_install_after_date = item["force_install_after_date"] as? Date {
@@ -282,8 +296,7 @@ func earliestForceInstallDate(_ installinfo: [PlistDict]? = nil) -> Date? {
     var earliest_date: Date? = nil
     if installinfo == nil {
         let managed_installs = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
-        let appleupdates = getAppleUpdates()["AppleUpdates"] as? [PlistDict] ?? [PlistDict]()
-        installinfo = managed_installs + appleupdates
+        installinfo = managed_installs + getAppleUpdates()
     }
     for install in installinfo! {
         if var this_force_install_date = install["force_install_after_date"] as? Date {
