@@ -1353,7 +1353,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // update the updates-to-install header to reflect the new list of
         // updates to install
         setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
-        setInnerText(getWarningText(), elementID: "update-warning-text")
+        setInnerText(getWarningText(should_filter_apple_updates), elementID: "update-warning-text")
     
         // update text of Install All button
         setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
