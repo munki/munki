@@ -145,7 +145,7 @@ class MSCAlertController: NSObject {
             // prompt user to install using System Preferences
             msc_log("user", "apple_updates_pending")
             alert.informativeText = NSLocalizedString(
-                "There are one or more pending Apple Software Updates that require a restart.\n\n You must install these updates using Software Update in System Preferences.",
+                "There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences.",
                 comment: "Apple Software Updates Pending detail")
             if shouldAggressivelyNotifyAboutAppleUpdates() {
                 // disable the skip button
