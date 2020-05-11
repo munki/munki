@@ -3,10 +3,17 @@
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 # relaunch MSC.app if it was running before we upgraded it
+MSC_APP="/Applications/Managed Software Center.app"
 
 if [ "$3" == "/" ]; then
     if [ -e /tmp/com.googlecode.munki.relaunch_msc_app ] ; then
+        FRONTMOST=$(cat /tmp/com.googlecode.munki.relaunch_msc_app)
         rm /tmp/com.googlecode.munki.relaunch_msc_app
+        if [ "$FRONTMOST" == "frontmost" ] ; then
+            OPENCMD="open -a"
+        else
+            OPENCMD="open -g -a"
+        fi
         CONSOLEUSER=$(who | grep console | cut -d" " -f1)
         if [ "$CONSOLEUSER" == "" ] ; then
             exit 0
@@ -18,10 +25,10 @@ if [ "$3" == "/" ]; then
             uid=$(echo $pid_uid | cut -d, -f2)
             if [ "$uid" == "$CONSOLE_UID" ] ; then
                 if [[ $os_major_version -lt 10 ]] ; then
-                    launchctl bsexec "$pid" chroot -u "$uid" / open -a "/Applications/Managed Software Center.app"
+                    launchctl bsexec "$pid" chroot -u "$uid" / $OPENCMD "$MSC_APP"
                     exit 0
                 else
-                    launchctl asuser "$uid" open -a "/Applications/Managed Software Center.app"
+                    launchctl asuser "$uid" $OPENCMD "$MSC_APP"
                     exit 0
                 fi
             fi

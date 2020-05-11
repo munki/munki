@@ -2,16 +2,26 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
+MSC_APP_NAME="Managed Software Center"
+
 # installing on the current boot volume? kill MSC.app if it's running
 if [ "$3" == "/" ]; then
     CONSOLEUSER=$(who | grep console | cut -d" " -f1)
     if [ "$CONSOLEUSER" != "" ] ; then
-        # is the console user running MSC.app?
-        killall -s -u "$CONSOLEUSER" "Managed Software Center" &>/dev/null
-        if [ $? -eq 0 ] ; then
-            # leave a flag so the postinstall knows to relaunch MSC.app
-            touch /tmp/com.googlecode.munki.relaunch_msc_app
+        # is the console user running MSC.app and is it in front?
+        FRONT_APPID=$(lsappinfo info -only bundleid $(lsappinfo front) | cut -d= -f2 | cut -d\" -f2)
+        if [ "$FRONT_APPID" == "com.googlecode.munki.ManagedSoftwareCenter" ] ; then
+            # leave a flag that tells us to relaunch and bring to front
+            echo "frontmost" >> /tmp/com.googlecode.munki.relaunch_msc_app
+        else
+            # is the console user running MSC.app at all?
+            killall -s -u "$CONSOLEUSER" "$MSC_APP_NAME" &>/dev/null
+            if [ $? -eq 0 ] ; then
+                # leave a flag that tells us to relaunch and not bring to front
+                echo "not frontmost" >> /tmp/com.googlecode.munki.relaunch_msc_app
+            fi
         fi
     fi
-    killall "Managed Software Center" &>/dev/null
+    # kill all instances of Managed Software Center.app
+    killall "$MSC_APP_NAME" &>/dev/null
 fi
