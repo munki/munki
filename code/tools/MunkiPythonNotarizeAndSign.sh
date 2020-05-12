@@ -30,9 +30,9 @@ DevApp="Developer ID Application: Name/Company (ID)"
 DevInst="Developer ID Installer: Name/Company (ID)"
 # Change Bundle_ID if you are using a custom one, default is "com.googlecode.munki"
 BUNDLE_ID="com.googlecode.munki"
-# Apple Developer app-specific password
+# Apple Developer account e-mail
 AppleAcc="DeveloperAppleAcc@Apple.com"
-# https://support.apple.com/en-us/HT204397
+# Apple Developer app-specific password https://support.apple.com/en-us/HT204397
 AppleAccPwd="Apple Developer Account app-specific password"
 
 # Stop changing!
