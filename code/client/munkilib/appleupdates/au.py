@@ -765,9 +765,12 @@ class AppleUpdates(object):
         metadata_to_copy = ['blocking_applications',
                             'description',
                             'display_name',
-                            'force_install_after_date',
                             'unattended_install',
                             'RestartAction']
+        # we support force_install_after_date only on macOS earlier than Mojave
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple < (10, 14):
+            metadata_to_copy.append('force_install_after_date')
 
         # Mapping of supported restart_actions to
         # equal or greater auxiliary actions
