@@ -335,7 +335,7 @@
 "Size:" = "Dimensione:";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Non installare aggiornamenti Apple";
+"Skip these updates" = "Ignora questi aggiornamenti";
 
 /* Software label */
 "Software" = "Applicazione";
