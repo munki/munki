@@ -184,9 +184,6 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installiere verfügbare Apple Software Updates...";
 
-/* Later button title */
-"Later" = "Später";
-
 /* Log out and Update button text */
 "Log out and update" = "Abmelden und aktualisieren";
 
@@ -335,7 +332,7 @@
 "Size:" = "Größe:";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Apple-Updates überspringen";
+"Skip these updates" = "Apple-Updates überspringen";
 
 /* Software label */
 "Software" = "Software";

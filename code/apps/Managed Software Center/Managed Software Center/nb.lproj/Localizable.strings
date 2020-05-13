@@ -184,9 +184,6 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installerer tilgjengelige Apple-programvareopdateringer...";
 
-/* Later button title */
-"Later" = "Senere";
-
 /* Log out and Update button text */
 "Log out and update" = "Logg ut og oppdater";
 
@@ -335,7 +332,7 @@
 "Size:" = "Størrelse:";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Hopp over Apple oppdateringer";
+"Skip these updates" = "Hopp over Apple oppdateringer";
 
 /* Software label */
 "Software" = "Programvare";
