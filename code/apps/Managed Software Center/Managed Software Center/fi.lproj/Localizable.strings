@@ -184,9 +184,6 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Asennetaan Applen ohjelmistopäivityksiä...";
 
-/* Later button title */
-"Later" = "Myöhemmin";
-
 /* Log out and Update button text */
 "Log out and update" = "Kirjaudu ulos ja päivitä";
 
@@ -335,7 +332,7 @@
 "Size:" = "Koko:";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Ohita Applen päivitykset";
+"Skip these updates" = "Ohita Applen päivitykset";
 
 /* Software label */
 "Software" = "Ohjelmistot";

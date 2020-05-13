@@ -184,9 +184,6 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installazione Aggiornamenti Software Apple in corso...";
 
-/* Later button title */
-"Later" = "Più tardi";
-
 /* Log out and Update button text */
 "Log out and update" = "Log out e aggiornamento";
 

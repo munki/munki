@@ -187,9 +187,6 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installing available Apple Software Updates...";
 
-/* Later button title */
-"Later" = "Later";
-
 /* Log out and Update button text */
 "Log out and update" = "Log out and update";
 
@@ -344,7 +341,7 @@
 "Size:" = "Size:";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Skip Apple updates";
+"Skip these updates" = "Skip these updates";
 
 /* Software label */
 "Software" = "Software";
@@ -513,3 +510,4 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Your software is up to date.";
+

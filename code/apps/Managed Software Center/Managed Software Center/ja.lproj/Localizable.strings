@@ -184,9 +184,6 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをインストール中…";
 
-/* Later button title */
-"Later" = "あとで";
-
 /* Log out and Update button text */
 "Log out and update" = "ログアウトし、アップデートする";
 
@@ -335,7 +332,7 @@
 "Size:" = "サイズ:";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Apple ソフトウェアアップデートをスキップ";
+"Skip these updates" = "Apple ソフトウェアアップデートをスキップ";
 
 /* Software label */
 "Software" = "ソフトウェア";
