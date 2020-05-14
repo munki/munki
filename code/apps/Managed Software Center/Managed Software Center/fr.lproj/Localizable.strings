@@ -46,8 +46,14 @@
 /* Long Not Enough Disk Space For Update display text */
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Une ancienne version est actuellement installée. Il n'y a pas assez d'espace disque pour télécharger et installer cette mise à jour.";
 
+/* Long update requires a higher OS version text */
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Une version antérieure est actuellement installée. Vous devez mettre à jour macOS à la version %@ ou plus récente pour pouvoir installer cette mise à jour.";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Application utilisée par d'autres";
+
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Attention";
 
 /* Cancel button title/short action text */
 "Cancel" = "Annuler";
@@ -283,6 +289,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Préparation de la suppression";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Préparation du lancement de l'installeur macOS";
+
 /* Problem Updates label */
 "Problem updates" = "Mises à jour problématiques";
 
@@ -343,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Les logiciels installés ou supprimés nécessitent un redémarrage. Vous aurez la possibilité de sauvegarder les documents ouverts.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Des conditions d'utilisation sont applicables à ce logiciel. Merci de contacter votre administrateur pour plus d'informations";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Démarrage du programme d'installation d'Adobe...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Démarrage de la mise à jour de macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Démarrage...";
@@ -354,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problème de configuration du système";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Le système va redémarrer et lancer la mise à jour de macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Le logiciel a été installé avec succès.";
