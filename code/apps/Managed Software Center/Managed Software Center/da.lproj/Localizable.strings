@@ -398,7 +398,7 @@
 "Try selecting another developer." = "Prøv at vælge en anden udvikler.";
 
 /* Sidebar Type label */
-"Type:" = "Type:";
+"Type" = "Type";
 
 /* Unavailable status text */
 "Unavailable" = "Ikke tilgængelig";
