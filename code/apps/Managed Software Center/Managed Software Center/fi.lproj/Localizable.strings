@@ -419,7 +419,7 @@
 "Try selecting another developer." = "Valitse toinen kehittäjä.";
 
 /* Sidebar Type label */
-"Type:" = "Tyyppi:";
+"Type" = "Tyyppi";
 
 /* Unavailable status text */
 "Unavailable" = "Ei saatavilla";

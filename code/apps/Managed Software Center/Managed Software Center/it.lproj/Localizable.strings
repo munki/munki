@@ -419,7 +419,7 @@
 "Try selecting another developer." = "Prova selezionando un altro developer.";
 
 /* Sidebar Type label */
-"Type:" = "Tipo:";
+"Type" = "Tipo";
 
 /* Unavailable status text */
 "Unavailable" = "Non disponibile";

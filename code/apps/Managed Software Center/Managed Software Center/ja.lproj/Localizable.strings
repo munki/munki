@@ -419,7 +419,7 @@
 "Try selecting another developer." = "ほかのディベロッパを選択してしてください";
 
 /* Sidebar Type label */
-"Type:" = "種類:";
+"Type" = "種類";
 
 /* Unavailable status text */
 "Unavailable" = "入手できません";
