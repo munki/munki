@@ -495,3 +495,18 @@
 
 /* macOS update required text */
 "macOS update required" = "macOS update vereist";
+
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Attentie";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "macOS installatie voorbereiden...";
+
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met uw beheerder voor meer informatie";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starten met de macOS upgrade...";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "De Mac zal opnieuw opstarten en de upgrade van macOS starten.";
