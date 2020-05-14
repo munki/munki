@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Andra användare på datorn har programmet öppet";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Observera";
+
 /* Cancel button title/short action text */
 "Cancel" = "Avbryt";
 
@@ -163,11 +166,11 @@
 /* Install now button title */
 "Install now" = "Installera nu";
 
-/* Install Required action text */
-"Install Required" = "Installation krävs";
-
 /* Install Requested status text */
 "Install requested" = "Installation begärd";
+
+/* Install Required action text */
+"Install Required" = "Installation krävs";
 
 /* Install Session Failed title */
 "Install session failed" = "Installationen misslyckades";
@@ -192,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Utloggning krävs";
+
+/* macOS update required text */
+"macOS update required" = "macOS-uppdatering krävs";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte leta efter uppdateringar nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
@@ -226,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Inga uppdateringar väntar.";
 
-/* Item Not Found title */
-"Not Found" = "Kunde inte hittas";
-
 /* Not Currently Available display text */
 "Not currently available" = "Inte tillgänglig just nu";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Inte tillräckligt med utrymme på skivan";
+
+/* Item Not Found title */
+"Not Found" = "Kunde inte hittas";
 
 /* Not Installed status text */
 "Not installed" = "Ej installerat";
@@ -282,6 +288,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Förbereder borttagning";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Förbereder installation av macOS...";
 
 /* Problem Updates label */
 "Problem updates" = "Problemuppdateringar";
@@ -343,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Program som lades till eller togs bort kräver en omstart. Du kommer att få möjlighet att spara ditt arbete.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Vissa villkor gäller för den här mjukvaran. Kontakta din administratör för mer information.";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Startar Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Startar uppgradering av macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Startar...";
@@ -354,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problem med systemkonfiguration";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Systemet kommer att starta om och påbörja uppgraderingen av macOS";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Programvaran installerades.";
@@ -433,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Uppdatera alla";
 
-/* Update Required long action text */
-"Update Required" = "Uppdatering krävs";
-
 /* No comment provided by engineer. */
 "Update available" = "Uppdatering tillgänglig";
 
@@ -447,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Uppdatera nu";
+
+/* Update Required long action text */
+"Update Required" = "Uppdatering krävs";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Uppdateringen kommer att installeras";
@@ -492,21 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
-
-/* macOS update required text */
-"macOS update required" = "macOS-uppdatering krävs";
-
-/* Pre Install Uninstall Upgrade Alert Title */
-"Attention" = "Observera";
-
-/* managedsoftwareupdate message */
-"Preparing to run macOS Installer..." = "Förbereder installation av macOS...";
-
-/* Pre Install Uninstall Upgrade Alert Detail */
-"Some conditions apply to this software. Please contact your administrator for more details" = "Vissa villkor gäller för den här mjukvaran. Kontakta din administratör för mer information.";
-
-/* managedsoftwareupdate message */
-"Starting macOS upgrade..." = "Startar uppgradering av macOS...";
-
-/* managedsoftwareupdate message */
-"System will restart and begin upgrade of macOS." = "Systemet kommer att starta om och påbörja uppgraderingen av macOS";

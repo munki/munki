@@ -163,11 +163,11 @@
 /* Install now button title */
 "Install now" = "今すぐインストール";
 
-/* Install Required action text */
-"Install Required" = "要請されたインストール";
-
 /* Install Requested status text */
 "Install requested" = "要請されたインストール";
+
+/* Install Required action text */
+"Install Required" = "要請されたインストール";
 
 /* Install Session Failed title */
 "Install session failed" = "インストールセッションに失敗しました";
@@ -192,6 +192,9 @@
 
 /* Logout Required title */
 "Logout Required" = "ログアウトが必要です";
+
+/* macOS update required text */
+"macOS update required" = "macOSアップデートが必要";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centerは現在アップーデートのチェックができません。\n後でもう一度実行してください。もしこの状況が改善されない場合は、システム管理者に連絡してください。";
@@ -226,14 +229,14 @@
 /* No Updates message */
 "No pending updates" = "保留中のアップデートはありません";
 
-/* Item Not Found title */
-"Not Found" = "見つかりません";
-
 /* Not Currently Available display text */
 "Not currently available" = "現在使用ができません";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "ディスクの空きが足りません";
+
+/* Item Not Found title */
+"Not Found" = "見つかりません";
 
 /* Not Installed status text */
 "Not installed" = "インストールされていません";
@@ -433,9 +436,6 @@
 /* Update All button title */
 "Update All" = "すべてをアップデート";
 
-/* Update Required long action text */
-"Update Required" = "アップデートが必要です";
-
 /* No comment provided by engineer. */
 "Update available" = "アップデートがあります";
 
@@ -447,6 +447,9 @@
 
 /* Update Now button title */
 "Update now" = "今すぐアップデート";
+
+/* Update Required long action text */
+"Update Required" = "アップデートが必要です";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "アップデートをインストールします";
@@ -492,6 +495,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "ソフトウェアは最新です";
-
-/* macOS update required text */
-"macOS update required" = "macOSアップデートが必要";

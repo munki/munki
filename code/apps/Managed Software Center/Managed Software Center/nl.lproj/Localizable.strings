@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaties in gebruik door anderen";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Attentie";
+
 /* Cancel button title/short action text */
 "Cancel" = "Annuleren";
 
@@ -163,11 +166,11 @@
 /* Install now button title */
 "Install now" = "Installeer nu";
 
-/* Install Required action text */
-"Install Required" = "Installatie Benodigd";
-
 /* Install Requested status text */
 "Install requested" = "Installatie Verzocht";
+
+/* Install Required action text */
+"Install Required" = "Installatie Benodigd";
 
 /* Install Session Failed title */
 "Install session failed" = "Installatie-sessie niet succesvol";
@@ -192,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Uitloggen Benodigd";
+
+/* macOS update required text */
+"macOS update required" = "macOS update vereist";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan geen updates checken.\nProbeer later nog eens. Als deze situatie niet verandert, neem contact op met uw systeembeheerder.";
@@ -226,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Geen updates";
 
-/* Item Not Found title */
-"Not Found" = "Niet Gevonden";
-
 /* Not Currently Available display text */
 "Not currently available" = "Op dit moment niet beschikbaar";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Onvoldoende ruimte op de harde schijf";
+
+/* Item Not Found title */
+"Not Found" = "Niet Gevonden";
 
 /* Not Installed status text */
 "Not installed" = "Niet geïnstalleerd";
@@ -282,6 +288,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Verwijderen voorbereiden";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "macOS installatie voorbereiden...";
 
 /* Problem Updates label */
 "Problem updates" = "Problematische updates";
@@ -343,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software maakt een herstart nodig. U krijgt de kans om geopende documenten op te slaan.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met uw beheerder voor meer informatie";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Adobe installer opstarten...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starten met de macOS upgrade...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Beginnen...";
@@ -354,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Probleem met de systeemconfiguratie";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "De Mac zal opnieuw opstarten en de upgrade van macOS starten.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "De software is succesvol geïnstalleerd.";
@@ -433,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Update Alles";
 
-/* Update Required long action text */
-"Update Required" = "Update benodigd";
-
 /* No comment provided by engineer. */
 "Update available" = "Update beschikbaar";
 
@@ -447,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Update nu";
+
+/* Update Required long action text */
+"Update Required" = "Update benodigd";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Update wordt geïnstalleerd";
@@ -492,21 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is up to date.";
-
-/* macOS update required text */
-"macOS update required" = "macOS update vereist";
-
-/* Pre Install Uninstall Upgrade Alert Title */
-"Attention" = "Attentie";
-
-/* managedsoftwareupdate message */
-"Preparing to run macOS Installer..." = "macOS installatie voorbereiden...";
-
-/* Pre Install Uninstall Upgrade Alert Detail */
-"Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met uw beheerder voor meer informatie";
-
-/* managedsoftwareupdate message */
-"Starting macOS upgrade..." = "Starten met de macOS upgrade...";
-
-/* managedsoftwareupdate message */
-"System will restart and begin upgrade of macOS." = "De Mac zal opnieuw opstarten en de upgrade van macOS starten.";

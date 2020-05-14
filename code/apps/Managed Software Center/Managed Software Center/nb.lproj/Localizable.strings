@@ -163,11 +163,11 @@
 /* Install now button title */
 "Install now" = "Installer nå";
 
-/* Install Required action text */
-"Install Required" = "Installasjon påkrevd";
-
 /* Install Requested status text */
 "Install requested" = "Installasjon forespurt";
+
+/* Install Required action text */
+"Install Required" = "Installasjon påkrevd";
 
 /* Install Session Failed title */
 "Install session failed" = "Installasjonen feilet";
@@ -192,6 +192,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Utlogging påkrevd";
+
+/* macOS update required text */
+"macOS update required" = "macOS-oppdatering nødvendig";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan ikke søke etter oppdateringer.\nPrøv igjen senere. Hvis problemet fortsetter, kontakt din systemadministrator.";
@@ -226,14 +229,14 @@
 /* No Updates message */
 "No pending updates" = "Ingen ventende oppdateringer";
 
-/* Item Not Found title */
-"Not Found" = "Ikke funnet";
-
 /* Not Currently Available display text */
 "Not currently available" = "Ikke tilgjengelig for øyeblikket";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Ikke nok plass på disken";
+
+/* Item Not Found title */
+"Not Found" = "Ikke funnet";
 
 /* Not Installed status text */
 "Not installed" = "Ikke installert";
@@ -433,9 +436,6 @@
 /* Update All button title */
 "Update All" = "Oppdater alle";
 
-/* Update Required long action text */
-"Update Required" = "Oppdatering påkrevd";
-
 /* No comment provided by engineer. */
 "Update available" = "Kan oppdateres";
 
@@ -447,6 +447,9 @@
 
 /* Update Now button title */
 "Update now" = "Oppdater nu";
+
+/* Update Required long action text */
+"Update Required" = "Oppdatering påkrevd";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Oppdatering vil bli installert";
@@ -492,6 +495,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Din programvare er oppdateret.";
-
-/* macOS update required text */
-"macOS update required" = "macOS-oppdatering nødvendig";
