@@ -332,7 +332,7 @@
 "Size:" = "Größe:";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Apple-Updates überspringen";
+"Skip these updates" = "Updates überspringen";
 
 /* Software label */
 "Software" = "Software";
@@ -404,7 +404,7 @@
 "This update has been pending for %@ days." = "Dieses Update ist seit %@ Tagen ausstehend.";
 
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Um dies zu erlauben, gib dein Anmeldepasswort ein.";
 
 /* No Items secondary text */
 "Try again later." = "Später noch einmal versuchen.";
@@ -495,3 +495,18 @@
 
 /* macOS update required text */
 "macOS update required" = "macOS update erforderlich";
+
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Achtung";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Bereite das Ausführen des macOS Installers vor...";
+
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Für diese Software gelten bestimmte Bedingungen. Für nähere Informationen wenden Sie sich bitte an Ihren Administrator.";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starte das macOS-Upgrade...";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "System wird neu gestartet und das macOS-Upgrade beginnt.";
