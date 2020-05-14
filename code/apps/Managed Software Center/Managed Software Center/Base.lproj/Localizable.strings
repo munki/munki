@@ -5,7 +5,7 @@
 "1 pending update" = "1 pending update";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient  as there may be a short delay at the login window. Log out and update now?" = "A logout is required before updating. Please be patient  as there may be a short delay at the login window. Log out and update now?";
+"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "A logout will be forced at approximately %@.";
