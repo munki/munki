@@ -166,11 +166,11 @@
 /* Install now button title */
 "Install now" = "Install ahora";
 
-/* Install Required action text */
-"Install Required" = "Instalación requerida";
-
 /* Install Requested status text */
 "Install requested" = "Instalación solicitada";
+
+/* Install Required action text */
+"Install Required" = "Instalación requerida";
 
 /* Install Session Failed title */
 "Install session failed" = "Error en la sesión de instalación";
@@ -232,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "No hay actualizaciones pendientes";
 
-/* Item Not Found title */
-"Not Found" = "No encontrado";
-
 /* Not Currently Available display text */
 "Not currently available" = "Actualmente no disponible";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "No hay suficiente espacion en el disco";
+
+/* Item Not Found title */
+"Not Found" = "No encontrado";
 
 /* Not Installed status text */
 "Not installed" = "No instalado";
@@ -451,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Actualizar todo";
 
-/* Update Required long action text */
-"Update Required" = "Requiere una actualización";
-
 /* No comment provided by engineer. */
 "Update available" = "Actualización disponible";
 
@@ -465,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Actualizar ahora";
+
+/* Update Required long action text */
+"Update Required" = "Requiere una actualización";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Se instalará la actualización";

@@ -163,11 +163,11 @@
 /* Install now button title */
 "Install now" = "Установить сейчас";
 
-/* Install Required action text */
-"Install Required" = "Установить Обязательные";
-
 /* Install Requested status text */
 "Install requested" = "Установить Требуемые";
+
+/* Install Required action text */
+"Install Required" = "Установить Обязательные";
 
 /* Install Session Failed title */
 "Install session failed" = "Сбой процесса установки";
@@ -192,6 +192,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Необходимо выйти из системы";
+
+/* macOS update required text */
+"macOS update required" = "требуется обновление macOS";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Центр Управления ПО не может проверить наличие обновлений в данный момент.\nПопробуйте еще раз позже. Если эта ситуация продолжится, обратитесь к системному администратору.";
@@ -226,14 +229,14 @@
 /* No Updates message */
 "No pending updates" = "Нет отложенных обновлений";
 
-/* Item Not Found title */
-"Not Found" = "Не найдено";
-
 /* Not Currently Available display text */
 "Not currently available" = "В настоящее время не доступно";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Недостаточно места на диске";
+
+/* Item Not Found title */
+"Not Found" = "Не найдено";
 
 /* Not Installed status text */
 "Not installed" = "Не установлено";
@@ -433,9 +436,6 @@
 /* Update All button title */
 "Update All" = "Обновить Все";
 
-/* Update Required long action text */
-"Update Required" = "Обновить Обязательное";
-
 /* No comment provided by engineer. */
 "Update available" = "Доступно обновление";
 
@@ -447,6 +447,9 @@
 
 /* Update Now button title */
 "Update now" = "Обновить сейчас";
+
+/* Update Required long action text */
+"Update Required" = "Обновить Обязательное";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Обновление будет установлено";
@@ -492,6 +495,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "У Вас самое новое ПО.";
-
-/* macOS update required text */
-"macOS update required" = "требуется обновление macOS";

@@ -163,11 +163,11 @@
 /* Install now button title */
 "Install now" = "Asenna nyt";
 
-/* Install Required action text */
-"Install Required" = "Pakollinen asennus";
-
 /* Install Requested status text */
 "Install requested" = "Asennusta pyydetty";
+
+/* Install Required action text */
+"Install Required" = "Pakollinen asennus";
 
 /* Install Session Failed title */
 "Install session failed" = "Asennus epäonnistui";
@@ -192,6 +192,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Vaatii uloskirjautumisen";
+
+/* macOS update required text */
+"macOS update required" = "macOS-päivitys vaaditaan";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei voi tarkistaa päivityksiä juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
@@ -226,14 +229,14 @@
 /* No Updates message */
 "No pending updates" = "Ei päivityksiä";
 
-/* Item Not Found title */
-"Not Found" = "Ei tuloksia";
-
 /* Not Currently Available display text */
 "Not currently available" = "Ei saatavilla tällä hetkellä";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Kovalevyllä ei ole tarpeeksi tilaa";
+
+/* Item Not Found title */
+"Not Found" = "Ei tuloksia";
 
 /* Not Installed status text */
 "Not installed" = "Ei asennettu";
@@ -433,9 +436,6 @@
 /* Update All button title */
 "Update All" = "Päivitä kaikki";
 
-/* Update Required long action text */
-"Update Required" = "Pakollinen päivitys";
-
 /* No comment provided by engineer. */
 "Update available" = "Päivitys saatavilla";
 
@@ -447,6 +447,9 @@
 
 /* Update Now button title */
 "Update now" = "Päivitä nyt";
+
+/* Update Required long action text */
+"Update Required" = "Pakollinen päivitys";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Päivitys asennetaan";
@@ -492,6 +495,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ohjelmisto on ajan tasalla.";
-
-/* macOS update required text */
-"macOS update required" = "macOS-päivitys vaaditaan";

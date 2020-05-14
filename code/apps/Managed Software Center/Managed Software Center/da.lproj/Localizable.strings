@@ -157,11 +157,11 @@
 /* Install action text */
 "Install" = "Installer";
 
-/* Install Required action text */
-"Install Required" = "Installering krævet";
-
 /* Install Requested status text */
 "Install requested" = "Installering ønsket";
+
+/* Install Required action text */
+"Install Required" = "Installering krævet";
 
 /* Install Session Failed title */
 "Install session failed" = "Installeringen mislykkedes";
@@ -186,6 +186,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Log ud krævet";
+
+/* macOS update required text */
+"macOS update required" = "Kræver macOS-opdatering";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan ikke søge efter opdateringer.\nPrøv igen senere. Hvis problemet består, skal du kontakte systemadministratoren.";
@@ -220,14 +223,14 @@
 /* No Updates message */
 "No pending updates" = "Ingen ventende opdateringer";
 
-/* Item Not Found title */
-"Not Found" = "Findes ikke";
-
 /* Not Currently Available display text */
 "Not currently available" = "Ikke tilgængeligt i øjeblikket";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Ikke nok plads på disken";
+
+/* Item Not Found title */
+"Not Found" = "Findes ikke";
 
 /* Not Installed status text */
 "Not installed" = "Ikke installeret";
@@ -412,9 +415,6 @@
 /* Update All button title */
 "Update All" = "Opdater alle";
 
-/* Update Required long action text */
-"Update Required" = "Opdatering kræves";
-
 /* No comment provided by engineer. */
 "Update available" = "Kan opdateres";
 
@@ -426,6 +426,9 @@
 
 /* Update Now button title */
 "Update now" = "Opdater nu";
+
+/* Update Required long action text */
+"Update Required" = "Opdatering kræves";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Opdatering bliver installeret";
@@ -471,6 +474,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
-
-/* macOS update required text */
-"macOS update required" = "Kræver macOS-opdatering";

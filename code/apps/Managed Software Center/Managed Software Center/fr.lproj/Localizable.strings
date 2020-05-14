@@ -46,10 +46,6 @@
 /* Long Not Enough Disk Space For Update display text */
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Une ancienne version est actuellement installée. Il n'y a pas assez d'espace disque pour télécharger et installer cette mise à jour.";
 
-/* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Une ancienne version est actuellement installée. Vous devez mettre à jour vers une version macOS
-%@ ou plus pour pouvoir installer cette mise à jour.";
-
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Application utilisée par d'autres";
 
@@ -164,11 +160,11 @@
 /* Install now button title */
 "Install now" = "Installer maintenant";
 
-/* Install Required action text */
-"Install Required" = "Installation obligatoire";
-
 /* Install Requested status text */
 "Install requested" = "Installation demandée";
+
+/* Install Required action text */
+"Install Required" = "Installation obligatoire";
 
 /* Install Session Failed title */
 "Install session failed" = "Échec de l'installation";
@@ -193,6 +189,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Fermeture de session obligatoire";
+
+/* macOS update required text */
+"macOS update required" = "Mise à jour MacOS requise";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Le Centre de gestion des logiciels ne peut vérifier les mises à jour maintenant.\nEssayez plus tard. Si cette situation perdure, contactez votre administrateur système.";
@@ -227,14 +226,14 @@
 /* No Updates message */
 "No pending updates" = "Aucune mise à jour en attente";
 
-/* Item Not Found title */
-"Not Found" = "Aucune correspondance";
-
 /* Not Currently Available display text */
 "Not currently available" = "Non disponible actuellement";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Pas assez d'espace disque";
+
+/* Item Not Found title */
+"Not Found" = "Aucune correspondance";
 
 /* Not Installed status text */
 "Not installed" = "Non installé";
@@ -362,12 +361,6 @@
 /* Additional Pending Updates detail */
 "There are additional pending updates to install or remove." = "Il y a des mises à jour additionnelles à installer ou supprimer.";
 
-/* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Une ou plusieurs mises à jour logicielles Apple importantes nécessitent un redémarrage.\n\nVous devez les installer en utilisant Mise à jour de logiciels dans les Préférences Système.";
-
-/* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Une ou plusieurs mises à jour logicielles Apple importantes nécessitent un redémarrage.\n\nVotre administrateur a restreint l'installation de ces mises à jour. Contactez votre administrateur pour de l'assistance.";
-
 /* No Items primary text */
 "There are no available software items." = "Il n'y a pas de logiciel disponible.";
 
@@ -376,6 +369,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "Il n'y a pas d'articles dans cette catégorie.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Une ou plusieurs mises à jour logicielles Apple importantes nécessitent un redémarrage.\n\nVous devez les installer en utilisant Mise à jour de logiciels dans les Préférences Système.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Une ou plusieurs mises à jour logicielles Apple importantes nécessitent un redémarrage.\n\nVotre administrateur a restreint l'installation de ces mises à jour. Contactez votre administrateur pour de l'assistance.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Il y a d'autres utilisateurs connectés sur l'ordinateur.\nMettre à jour peut entrainer la perte du travail des autres utilisateurs.\n\nMerci d'essayer plus tard après que les autres utilisateurs aient quitté leur session.";
@@ -434,9 +433,6 @@
 /* Update All button title */
 "Update All" = "Tout mettre à jour";
 
-/* Update Required long action text */
-"Update Required" = "Mise à jour obligatoire";
-
 /* No comment provided by engineer. */
 "Update available" = "Mise à jour disponible";
 
@@ -448,6 +444,9 @@
 
 /* Update Now button title */
 "Update now" = "Mettre à jour maintenant";
+
+/* Update Required long action text */
+"Update Required" = "Mise à jour obligatoire";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "La mise à jour sera installée";
@@ -493,6 +492,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Votre logiciel est à jour.";
-
-/* macOS update required text */
-"macOS update required" = "Mise à jour MacOS requise";
