@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "注意";
+
 /* Cancel button title/short action text */
 "Cancel" = "キャンセル";
 
@@ -286,6 +289,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "削除準備中です";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "macOS インストーラを実行する準備をしています...";
+
 /* Problem Updates label */
 "Problem updates" = "問題のアップデート";
 
@@ -346,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "インストールまた削除したソフトウェアがあるため再起動が必要です。現在使用中のドキュメントの保存ができます。";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "このソフトウェアには、いくつかの条件が適用されます。詳しくは管理者にお問い合わせください";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Adobeインストーラーを開始…";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "macOS のアップグレードを開始しています...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "開始…";
@@ -357,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "システムコンフィギュレーションに問題があります";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "システムが再起動し、macOS のアップグレードが始まります。";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "ソフトウェアのインストールが完了しました";
