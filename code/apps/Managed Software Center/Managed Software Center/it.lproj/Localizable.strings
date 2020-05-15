@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicazioni in uso da altri";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Attenzione";
+
 /* Cancel button title/short action text */
 "Cancel" = "Cancella";
 
@@ -110,7 +113,7 @@
 "Determining which filesystem items to remove" = "Determino elementi del filesystem da rimuovere";
 
 /* Sidebar Developer label */
-"Developer:" = "Developer:";
+"Developer:" = "Sviluppatore:";
 
 /* managedsoftwareupdate message */
 "Done." = "Fatto.";
@@ -286,6 +289,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Rimozione in preparazione";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Preparo l'installazione di macOS...";
+
 /* Problem Updates label */
 "Problem updates" = "Aggiornamenti che richiedono attenzione";
 
@@ -346,17 +352,26 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "L'applicazione installata o rimossa richiede il riavvio. Avrai la possibilità di salvare i documenti aperti.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Delle condizioni specifiche si applicano a questo software. Contatta il tuo amministratore di sistema per maggiori informazioni";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Avvio Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Inizio dell'aggiornamento di macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Avvio...";
 
 /* Sidebar Status label */
-"Status:" = "Status:";
+"Status:" = "Stato:";
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problema di configurazione di sistema";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Il sistema si riavvierà e inizierà l'aggiornamento di macOS";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "L'applicazione è stata installata con successo.";
