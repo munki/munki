@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Приложения, которые используются другими";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Внимание";
+
 /* Cancel button title/short action text */
 "Cancel" = "Отменить";
 
@@ -286,6 +289,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Подготовка удаления";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Подготовка к запуску Установщика macOS...";
+
 /* Problem Updates label */
 "Problem updates" = "проблемные обновления";
 
@@ -346,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Установленное или удаленное ПО требует перезагрузки. У Вас будет возможность сохранить открытые документы.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "К этому ПО применяются некоторые условия. Обратитесь к администратору системы за подробной информацией";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Запуск Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Начало обновления macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Запуск...";
@@ -357,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Проблема с конфигурацией системы";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Система перезагрузится, и начнётся обновление macOS";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Программное обеспечение было успешно установлено.";
