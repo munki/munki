@@ -43,13 +43,19 @@ func openSoftwareUpdatePrefsPane() {
 
 func userMustBeAdminToInstallAppleUpdates() -> Bool {
     // returns a boolean telling if the user must be an admin to install Apple Updates
-    let suMustBeAdmin = (CFPreferencesCopyAppValue(
-            "restrict-software-update-require-admin-to-install" as CFString,
-            "com.apple.SoftwareUpdate" as CFString) as? Bool ?? false)
-    let appStoreMustBeAdmin = (CFPreferencesCopyAppValue(
-            "restrict-store-require-admin-to-install" as CFString,
-            "com.apple.appstore" as CFString ) as? Bool ?? false)
-    return (suMustBeAdmin || appStoreMustBeAdmin)
+    let suMustBeAdmin = CFPreferencesCopyAppValue(
+        "restrict-software-update-require-admin-to-install" as CFString,
+        "com.apple.SoftwareUpdate" as CFString) as? Bool ?? false
+    let suMustBeAdminIsForced = CFPreferencesAppValueIsForced(
+        "restrict-software-update-require-admin-to-install" as CFString,
+        "com.apple.SoftwareUpdate" as CFString)
+    let appStoreMustBeAdmin = CFPreferencesCopyAppValue(
+        "restrict-store-require-admin-to-install" as CFString,
+        "com.apple.appstore" as CFString ) as? Bool ?? false
+    let appStoreMustBeAdminIsForced = CFPreferencesAppValueIsForced(
+        "restrict-store-require-admin-to-install" as CFString,
+        "com.apple.appstore" as CFString)
+    return (suMustBeAdmin && suMustBeAdminIsForced) || (appStoreMustBeAdmin && appStoreMustBeAdminIsForced)
 }
 
 func findODgroupRecords(groupname: String, nodename: String = "/Search") throws -> [ODRecord] {
