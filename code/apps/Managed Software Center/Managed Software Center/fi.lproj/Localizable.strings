@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Huomio";
+
 /* Cancel button title/short action text */
 "Cancel" = "Kumoa";
 
@@ -286,6 +289,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Valmistellaan poistoa";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Valmistellaan macOS-asentajan käynnistämistä...";
+
 /* Problem Updates label */
 "Problem updates" = "Epäonnistuneet päivitykset";
 
@@ -335,7 +341,7 @@
 "Size:" = "Koko:";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Ohita Applen päivitykset";
+"Skip these updates" = "Ohita nämä päivitykset";
 
 /* Software label */
 "Software" = "Ohjelmistot";
@@ -346,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Asennettu ohjelmisto tai poisto vaatii tietokoneen uudelleenkäynnistyksen. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Tähän päivitykseen liittyy ehtoja. Ota yhteys ylläpitäjään";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Käynnistetään Adobe-asentajaa...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Aloitetaan macOS-päivitys...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Aloitetaan...";
@@ -357,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Järjestelmän määritysvirhe";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Järjestelmä käynnistyy uudelleen ja aloittaa macOS-päivityksen.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Ohjelmiston asennus onnistui.";
