@@ -290,7 +290,7 @@
 "Preparing removal" = "Forbereder fjernelse";
 
 /* managedsoftwareupdate message */
-"Preparing to run macOS Installer..." = "Forbereder kørsel af macOS installation...";
+"Preparing to run macOS Installer..." = "Forbereder start af macOS-installation...";
 
 /* Problem Updates label */
 "Problem updates" = "Problematiske opdateringer";
@@ -341,7 +341,7 @@
 "Size:" = "Str.:";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Spring over disse opdateringer";
+"Skip these updates" = "Spring over";
 
 /* Software label */
 "Software" = "Software";
@@ -353,13 +353,13 @@
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Den software, der blev installeret eller fjernet, kræver en genstart. Du får mulighed for at gemme alle åbne dokumenter.";
 
 /* Pre Install Uninstall Upgrade Alert Detail */
-"Some conditions apply to this software. Please contact your administrator for more details" = "Dette software kræver opmærksomhed. Kontakt administrator for mere information";
+"Some conditions apply to this software. Please contact your administrator for more details" = "Denne software kræver opmærksomhed. Kontakt administratoren for mere information";
 
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Starter Adobe installer...";
 
 /* managedsoftwareupdate message */
-"Starting macOS upgrade..." = "Starter macOS opgradering...";
+"Starting macOS upgrade..." = "Starter macOS-opgradering...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Starter...";
@@ -389,10 +389,10 @@
 "There are no items in this category." = "Der er ingen emner i kategorien.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Der er én eller flere Apple software opdateringer, der kræver en genstart.\n\nDu skal bruge Apple Software Opdatering i System Indstillinger til disse installationer";
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Der er én eller flere Apple-softwareopdateringer, der kræver en genstart.\n\nDu skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
 
 /* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Der er én eller flere Apple Software Opdateringer, der kræver en genstart.\n\nAdministrator har begrænset installationen af disse opdateringer. Kontakt din administrator for mere information.";
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Der er én eller flere Apple-softwareopdateringer, der kræver en genstart.\n\nAdministratoren har begrænset installationen af disse opdateringer. Kontakt din administrator for mere information.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Der er andre brugere logget ind på computeren.\nHvis du opdaterer nu, risikerer du, at de mister deres åbne dokumenter.\n\nPrøv igen senere når de andre brugere er logget ud.";
