@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer som er i bruk av andre";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Merk følgende";
+
 /* Cancel button title/short action text */
 "Cancel" = "Avbryt";
 
@@ -286,6 +289,9 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Forbereder avinstallasjon";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Forbereder å kjøre macOS Installer...";
+
 /* Problem Updates label */
 "Problem updates" = "Problematiske oppdateringer";
 
@@ -335,7 +341,7 @@
 "Size:" = "Størrelse:";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Hopp over Apple oppdateringer";
+"Skip these updates" = "Hopp over";
 
 /* Software label */
 "Software" = "Programvare";
@@ -346,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Programvaren som er blitt installert eller fjernet krever en omstart. Du får muligheten til å lagre åpne dokumenter.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Noen betingelser gjelder for denne programvaren. Kontakt administratoren din for mer informasjon";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Starter Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starter oppgradering av macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Starter...";
@@ -357,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problem med systemkonfigurasjon";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Systemet vil starte på nytt og begynne å oppgradere macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installasjon av programvaren er fullført.";
@@ -422,7 +437,7 @@
 "Try selecting another developer." = "Prøv å velge en annen utvikler.";
 
 /* Sidebar Type label */
-"Type:" = "Type:";
+"Type" = "Type";
 
 /* Unavailable status text */
 "Unavailable" = "Ikke tilgjengelig";
