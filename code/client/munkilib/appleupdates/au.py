@@ -494,6 +494,29 @@ class AppleUpdates(object):
                 display.display_info('       *Logout required')
                 reports.report['LogoutRequired'] = True
 
+    def installable_updates(self):
+        """Returns a list of installable Apple updates.
+        This may filter out updates that require a restart."""
+        try:
+            pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
+        except FoundationPlist.FoundationPlistException:
+            # can't read it or it doesn't exist, therefore no installable
+            # updates
+            return []
+        apple_updates = pl_dict.get('AppleUpdates', [])
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple >= (10, 14):
+            # in Mojave and Catalina (and perhaps beyond), it's too risky to
+            # install OS or Security updates because softwareupdate is just
+            # not reliable at this any longer. So filter out updates that
+            # require a restart
+            filtered_apple_updates = [
+                item for item in apple_updates
+                if item.get('RestartAction', 'None') == 'None'
+            ]
+            return filtered_apple_updates
+        return apple_updates
+
     def install_apple_updates(self, only_unattended=False):
         """Uses softwareupdate to install previously downloaded updates.
 
