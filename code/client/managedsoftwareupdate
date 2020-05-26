@@ -991,6 +991,20 @@ def main():
         options.installonly = False
         options.auto = True
 
+    if runtype == 'checkandinstallatstartup':
+        # we're in bootstrap mode
+        if not updatesavailable and appleupdatesavailable:
+            # there are only Apple updates, but we might not be able to install
+            # some
+            if not appleupdates.installableUpdates():
+                # there are no Apple updates we can actually install without
+                # user assistance, so clear bootstrapping mode so we don't loop
+                # endlessly
+                try:
+                    bootstrapping.clear_bootstrap_mode()
+                except bootstrapping.SetupError as err:
+                    display.display_error(err)
+
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
