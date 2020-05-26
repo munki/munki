@@ -13,6 +13,8 @@ class MSCAlertController: NSObject {
     // than to move a giant bunch of ugly code out of the WindowController
     
     var window: NSWindow? // our parent window
+    var timers: [Timer] = []
+    var quitButton: NSButton?
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -115,6 +117,119 @@ class MSCAlertController: NSObject {
         }
     }
     
+    func alertToAppleUpdates() {
+        // Notify user of pending Apple updates
+        guard let mainWindow = window else {
+            msc_debug_log("Could not get main window in alertToAppleUpdates")
+            return
+        }
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString(
+            "Important Apple Updates", comment: "Apple Software Updates Pending title")
+        alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
+        alert.addButton(withTitle: NSLocalizedString(
+            "Skip these updates", comment: "Skip Apple updates button title"))
+        let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
+        if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
+            alert.icon = suIcon
+        }
+        if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
+            // tell user they cannot install the updates
+            msc_log("user", "apple_updates_user_cannot_install")
+            alert.informativeText = NSLocalizedString(
+                "There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance.",
+                comment: "Apple Software Updates Unable detail")
+            // disable insstall now button
+            alert.buttons[0].isEnabled = false
+        } else {
+            // prompt user to install using System Preferences
+            msc_log("user", "apple_updates_pending")
+            alert.informativeText = NSLocalizedString(
+                "There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences.",
+                comment: "Apple Software Updates Pending detail")
+            if shouldAggressivelyNotifyAboutAppleUpdates() {
+                // disable the skip button
+                alert.buttons[1].isEnabled = false
+            }
+        }
+        alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+            self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse)
+        })
+    }
+    
+    func appleUpdateAlertEnded(for alert: NSAlert, withResponse modalResponse: NSApplication.ModalResponse) {
+        // Called when Apple update alert ends
+        if modalResponse == .alertFirstButtonReturn {
+            msc_log("user", "agreed_apple_updates")
+            // make sure this alert panel is gone before we proceed
+            alert.window.orderOut(self)
+            let appDelegate = NSApp.delegate! as! AppDelegate
+            appDelegate.mainWindowController.forceFrontmost = false
+            appDelegate.backdropOnlyMode = true
+            if let mainWindow = window {
+                mainWindow.level = .normal
+            }
+            let timer1 = Timer.scheduledTimer(timeInterval: 0.1,
+                                              target: self,
+                                              selector: #selector(self.openSoftwareUpdate),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer1)
+            let timer2 = Timer.scheduledTimer(timeInterval: 1.5,
+                                              target: self,
+                                              selector: #selector(self.closeMainWindow),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer2)
+            let timer3 = Timer.scheduledTimer(timeInterval: 9.5,
+                                              target: self,
+                                              selector: #selector(self.fadeOutBackdropWindows),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer3)
+            // wait 10 seconds, then quit
+            let timer4 = Timer.scheduledTimer(timeInterval: 10.0,
+                                              target: NSApp,
+                                              selector: #selector(NSApp.terminate),
+                                              userInfo: self,
+                                              repeats: false)
+            timers.append(timer4)
+        } else {
+            // cancelled
+            msc_log("user", "deferred_apple_updates")
+            alert.window.orderOut(self)
+            clearMunkiItemsCache()
+            if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
+                mainWindowController.load_page("updates.html")
+                mainWindowController.displayUpdateCount()
+                if shouldAggressivelyNotifyAboutMunkiUpdates() {
+                    mainWindowController._alertedUserToOutstandingUpdates = false
+                }
+            }
+        }
+    }
+    
+    @objc func openSoftwareUpdate() {
+        // object method to call openSoftwareUpdatePrefsPane function
+        openSoftwareUpdatePrefsPane()
+    }
+    
+    @objc func closeMainWindow() {
+        // closes the main window, duh
+        if let mainWindow = window {
+            mainWindow.orderOut(self)
+        }
+    }
+    
+    @objc func fadeOutBackdropWindows() {
+        // fades out the windows that block access to other apps
+        let backdropWindows = (NSApp.delegate! as! AppDelegate).mainWindowController.backdropWindows
+        for window in backdropWindows {
+            window.animator().alphaValue = 0.0
+        }
+    }
+
+
     func alertToExtraUpdates() {
         // Notify user of additional pending updates
         msc_log("user", "extra_updates_pending")
@@ -416,4 +531,90 @@ class MSCAlertController: NSObject {
         }
         return false
     }
+    
+    func alertToPendingUpdates(_ mwc: MainWindowController) {
+        // Alert user to pending updates before quitting the application
+        mwc._alertedUserToOutstandingUpdates = true
+        // show the updates
+        mwc.loadUpdatesPage(self)
+        var alertTitle = ""
+        var alertDetail = ""
+        if thereAreUpdatesToBeForcedSoon() {
+            alertTitle = NSLocalizedString("Mandatory Updates Pending",
+                                           comment: "Mandatory Updates Pending text")
+            if let deadline = earliestForceInstallDate() {
+                let time_til_logout = deadline.timeIntervalSinceNow
+                if time_til_logout > 0 {
+                    let deadline_str = stringFromDate(deadline)
+                    let formatString = NSLocalizedString(
+                        ("One or more updates must be installed by %@. A logout " +
+                          "may be forced if you wait too long to update."),
+                        comment: "Mandatory Updates Pending detail")
+                    alertDetail = String(format: formatString, deadline_str)
+                } else {
+                    alertDetail = NSLocalizedString(
+                        ("One or more mandatory updates are overdue for " +
+                         "installation. A logout will be forced soon."),
+                        comment: "Mandatory Updates Imminent detail")
+                }
+            }
+        } else {
+            alertTitle = NSLocalizedString(
+                "Pending updates", comment: "Pending Updates alert title")
+            alertDetail = NSLocalizedString(
+                "There are pending updates for this computer.",
+                comment: "Pending Updates alert detail text")
+        }
+        let alert = NSAlert()
+        alert.messageText = alertTitle
+        alert.informativeText = alertDetail
+        var quitButton = NSApplication.ModalResponse.alertFirstButtonReturn
+        var updateButton = NSApplication.ModalResponse.alertSecondButtonReturn
+        if !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
+            alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
+            alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
+        } else {
+            // add the buttons in the opposite order so "Update now" is the default/primary
+            alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
+            alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
+            // initially disable the Quit button
+            self.quitButton = alert.buttons[1]
+            alert.buttons[1].isEnabled = false
+            let timer1 = Timer.scheduledTimer(timeInterval: 5.0,
+                                              target: self,
+                                              selector: #selector(self.activateQuitButton),
+                                              userInfo: nil,
+                                              repeats: false)
+            timers.append(timer1)
+            updateButton = NSApplication.ModalResponse.alertFirstButtonReturn
+            quitButton = NSApplication.ModalResponse.alertSecondButtonReturn
+        }
+        alert.beginSheetModal(for: self.window!, completionHandler: { (modalResponse) -> Void in
+            if modalResponse == quitButton {
+                msc_log("user", "quit")
+                NSApp.terminate(self)
+            } else if modalResponse == updateButton {
+                msc_log("user", "install_now_clicked")
+                // make sure this alert panel is gone before we proceed
+                // which might involve opening another alert sheet
+                alert.window.orderOut(self)
+                // invalidate any timers
+                for timer in self.timers {
+                    timer.invalidate()
+                }
+                // initiate the updates
+                mwc.updateNow()
+                mwc.loadUpdatesPage(self)
+            }
+        })
+    }
+    
+    @objc func activateQuitButton() {
+        if let button = self.quitButton {
+            button.isEnabled = true
+        } else {
+            NSLog("%@", "could not get the alert button reference")
+        }
+    }
+
 }

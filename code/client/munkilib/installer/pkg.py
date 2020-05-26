@@ -277,7 +277,8 @@ def installall(dirpath, options=None):
         itempath = os.path.join(dirpath, item)
         if pkgutils.hasValidDiskImageExt(item):
             display.display_info("Mounting disk image %s" % item)
-            mountpoints = dmgutils.mountdmg(itempath, use_shadow=True)
+            mountpoints = dmgutils.mountdmg(
+                itempath, use_shadow=True, skip_verification=True)
             if mountpoints == []:
                 display.display_error("No filesystems mounted from %s", item)
                 return (retcode, restartflag)

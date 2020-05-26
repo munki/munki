@@ -1,13 +1,28 @@
 #!/bin/sh
 
-# remove any Managed Software Update.app bundle since the installer
-# won't replace a bundle with a symlink, leading to yucky stuff like
-# "/Applications/Utilities/Managed Software Update.app 1"
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-if [ -d "$3/Applications/Utilities/Managed Software Update.app" ] ; then
-    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app"
-fi
+MSC_APP_NAME="Managed Software Center"
 
-if [ -d "$3/Applications/Utilities/Managed Software Update.app 1" ] ; then
-    /bin/rm -r "$3/Applications/Utilities/Managed Software Update.app 1"
+# installing on the current boot volume? kill MSC.app if it's running
+if [ "$3" == "/" ]; then
+    CONSOLEUSER=$(who | grep console | cut -d" " -f1)
+    if [ "$CONSOLEUSER" != "" ] ; then
+        # is the console user running MSC.app and is it in front?
+        FRONT_APPID=$(lsappinfo info -only bundleid $(lsappinfo front) | cut -d= -f2 | cut -d\" -f2)
+        if [ "$FRONT_APPID" == "com.googlecode.munki.ManagedSoftwareCenter" ] ; then
+            # leave a flag that tells us to relaunch and bring to front
+            echo "frontmost" >> /tmp/com.googlecode.munki.relaunch_msc_app
+        else
+            # is the console user running MSC.app at all?
+            killall -s -u "$CONSOLEUSER" "$MSC_APP_NAME" &>/dev/null
+            if [ $? -eq 0 ] ; then
+                # leave a flag that tells us to relaunch and not bring to front
+                echo "not frontmost" >> /tmp/com.googlecode.munki.relaunch_msc_app
+            fi
+        fi
+    fi
+    # kill all instances of Managed Software Center.app
+    killall "$MSC_APP_NAME" &>/dev/null
+    exit 0
 fi

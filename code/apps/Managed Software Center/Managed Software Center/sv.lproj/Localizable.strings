@@ -44,13 +44,16 @@
 "An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Installationen misslyckades. Ytterligare installationsförsök kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
 
 /* Long Not Enough Disk Space For Update display text */
-"An older version is currently installed. There is not enough disk space to download and install this update." = "An older version is currently installed. There is not enough disk space to download and install this update.";
+"An older version is currently installed. There is not enough disk space to download and install this update." = "En äldre version är installerad. Det finns inte tillräckligt med utrymme för att ladda ner och installera uppdateringen.";
 
 /* Long update requires a higher OS version text */
-"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update.";
+"An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En äldre version är installerad. Du behöver uppgradera till macOS version %@ eller nyare för att kunna installera uppdateringen.";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Andra användare på datorn har programmet öppet";
+
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Observera";
 
 /* Cancel button title/short action text */
 "Cancel" = "Avbryt";
@@ -151,17 +154,23 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Det finns ingen hjälp för Managed Software Center.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Viktiga Apple-uppdateringar";
+
 /* Sidebar Information label */
 "Information" = "Information";
 
 /* Install action text */
 "Install" = "Installera";
 
-/* Install Required action text */
-"Install Required" = "Installation krävs";
+/* Install now button title */
+"Install now" = "Installera nu";
 
 /* Install Requested status text */
 "Install requested" = "Installation begärd";
+
+/* Install Required action text */
+"Install Required" = "Installation krävs";
 
 /* Install Session Failed title */
 "Install session failed" = "Installationen misslyckades";
@@ -186,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Utloggning krävs";
+
+/* macOS update required text */
+"macOS update required" = "macOS-uppdatering krävs";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan inte leta efter uppdateringar nu.\nFörsök igen senare. Kontakta din datoradministratör om problemet återkommer.";
@@ -220,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Inga uppdateringar väntar.";
 
-/* Item Not Found title */
-"Not Found" = "Kunde inte hittas";
-
 /* Not Currently Available display text */
 "Not currently available" = "Inte tillgänglig just nu";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Inte tillräckligt med utrymme på skivan";
+
+/* Item Not Found title */
+"Not Found" = "Kunde inte hittas";
 
 /* Not Installed status text */
 "Not installed" = "Ej installerat";
@@ -237,6 +249,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "En eller flera viktiga Apple-uppdateringar måste installeras";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Ett eller flera objekt måste installeras senast %@";
@@ -274,8 +289,11 @@
 /* Preparing Removal status text */
 "Preparing removal" = "Förbereder borttagning";
 
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Förbereder installation av macOS...";
+
 /* Problem Updates label */
-"Problem updates" = "Problem updates";
+"Problem updates" = "Problemuppdateringar";
 
 /* Quit button title */
 "Quit" = "Avsluta";
@@ -296,7 +314,7 @@
 "Removing receipt info" = "Tar bort kvittot";
 
 /* Install Required action text */
-"Required" = "Required";
+"Required" = "Krävs";
 
 /* Restart button title */
 "Restart" = "Omstart";
@@ -322,6 +340,9 @@
 /* Sidebar Size label */
 "Size:" = "Storlek:";
 
+/* Skip Apple updates button title */
+"Skip these updates" = "Hoppa över";
+
 /* Software label */
 "Software" = "Programvara";
 
@@ -331,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Program som lades till eller togs bort kräver en omstart. Du kommer att få möjlighet att spara ditt arbete.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Vissa villkor gäller för den här mjukvaran. Kontakta din administratör för mer information.";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Startar Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Startar uppgradering av macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Startar...";
@@ -342,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problem med systemkonfiguration";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Systemet kommer att starta om och påbörja uppgraderingen av macOS";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Programvaran installerades.";
@@ -357,6 +387,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "Det finns inget i den här kategorin.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nDu måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Det finns en eller flera väntande Apple-uppdateringar som kräver att datorn startas om.\n\nAdminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din adminstratör för hjälp.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det finns andra användare inloggade på datorn.\nOm du uppdaterar nu riskerar dom att förlora ej sparat arbete.\n\nProva igen när de andra användarna har loggat ut.";
@@ -374,13 +410,16 @@
 "There is no new software for your computer at this time." = "Det finns inga uppdateringar för närvarande.";
 
 /* Long Not Enough Disk Space display text */
-"There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
+"There is not enough disk space to download and install this item." = "Det finns inte tillräckligt med utrymme för att ladda ner och installera.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Krävs av:";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Måste installeras senast %@";
+
+/* Pending days message */
+"This update has been pending for %@ days." = "Den här uppdateringen har väntat i %@ dagar.";
 
 /* Password explanation */
 "To allow this, enter your login password." = "Ange ditt inloggningslösenord för att tillåta detta.";
@@ -398,7 +437,7 @@
 "Try selecting another developer." = "Försök med en annan utvecklare.";
 
 /* Sidebar Type label */
-"Type:" = "Typ:";
+"Type" = "Typ";
 
 /* Unavailable status text */
 "Unavailable" = "Ej tillgänglig";
@@ -412,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Uppdatera alla";
 
-/* Update Required long action text */
-"Update Required" = "Uppdatering krävs";
-
 /* No comment provided by engineer. */
 "Update available" = "Uppdatering tillgänglig";
 
@@ -426,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Uppdatera nu";
+
+/* Update Required long action text */
+"Update Required" = "Uppdatering krävs";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Uppdateringen kommer att installeras";
@@ -461,7 +500,7 @@
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %@ to be able to install this item." = "You must upgrade to macOS version %@ to be able to install this item.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Du behöver uppgradera till macOS version %@ för att kunna installera.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Datorn är inte ansluten till en strömkälla.";
@@ -471,6 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
-
-/* macOS update required text */
-"macOS update required" = "macOS update required";

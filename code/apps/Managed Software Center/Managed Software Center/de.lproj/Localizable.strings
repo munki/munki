@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applikationen, die von anderen benutzt werden";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Achtung";
+
 /* Cancel button title/short action text */
 "Cancel" = "Abbrechen";
 
@@ -151,17 +154,23 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Hilfe ist für Geführte Softwareaktualisierung nicht verfügbar.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Wichtige Apple-Updates";
+
 /* Sidebar Information label */
 "Information" = "Informationen";
 
 /* Install action text */
 "Install" = "Installieren";
 
-/* Install Required action text */
-"Install Required" = "Installation notwendig ";
+/* Install now button title */
+"Install now" = "Jetzt installieren";
 
 /* Install Requested status text */
 "Install requested" = "Installation angefordert";
+
+/* Install Required action text */
+"Install Required" = "Installation notwendig ";
 
 /* Install Session Failed title */
 "Install session failed" = "Installation fehlgeschlagen";
@@ -186,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Abmelden erforderlich";
+
+/* macOS update required text */
+"macOS update required" = "macOS update erforderlich";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kann gerade nicht auf anstehende Update prüfen.\nVersuchen Sie es später noch einmal. Falls dieses Problem weiter besteht, kontaktieren Sie Ihren Systemadministrator.";
@@ -220,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Keine anstehenden Updates";
 
-/* Item Not Found title */
-"Not Found" = "Nicht gefunden";
-
 /* Not Currently Available display text */
 "Not currently available" = "Derzeit nicht verfügbar";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Nicht genügend Festplattenplatz";
+
+/* Item Not Found title */
+"Not Found" = "Nicht gefunden";
 
 /* Not Installed status text */
 "Not installed" = "Nicht installiert";
@@ -237,6 +249,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Ein oder mehrere wichtige Apple-Updates müssen installiert werden";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Eines oder mehrere Objekte müssen bis %@ installiert werden.";
@@ -273,6 +288,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Bereite das Entfernen vor";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Bereite das Ausführen des macOS Installers vor...";
 
 /* Problem Updates label */
 "Problem updates" = "Problematische updates";
@@ -322,6 +340,9 @@
 /* Sidebar Size label */
 "Size:" = "Größe:";
 
+/* Skip Apple updates button title */
+"Skip these updates" = "Updates überspringen";
+
 /* Software label */
 "Software" = "Software";
 
@@ -331,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Softwareaktualisierung oder -entfernung benötigt einen Neustart. Sie können offene Dokumente noch sichern.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Für diese Software gelten bestimmte Bedingungen. Für nähere Informationen wenden Sie sich bitte an Ihren Administrator.";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Starte Adobe Installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starte das macOS-Upgrade...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Starte...";
@@ -342,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problem mit der Systemkonfiguration";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "System wird neu gestartet und das macOS-Upgrade beginnt.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Die Software wurde erfolgreich installiert.";
@@ -357,6 +387,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "Es gibt keine Objekte in dieser Kategorie.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Es gibt ein oder mehrere ausstehende Apple Software-Updates, die einen Neustart erfordern.\n\nInstallieren Sie diese Updates mithilfe der Softwareupdate-Funktion in den Systemeinstellungen .";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Es gibt ein oder mehrere ausstehende Apple Software-Updates, die einen Neustart erfordern.\n\nIhr Administrator hat die Installation dieser Updates eingeschränkt. Wenden Sie sich an Ihren Administrator, um Unterstützung zu erhalten.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Es sind andere Benutzer angemeldet\nEin Update könnte zu Datenverlust führen.\n\nBitte probieren Sie es noch einmal, sobald die anderen abgemeldet sind.";
@@ -382,8 +418,11 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Dieses Objekt muss bis %@ installiert sein";
 
+/* Pending days message */
+"This update has been pending for %@ days." = "Dieses Update ist seit %@ Tagen ausstehend.";
+
 /* Password explanation */
-"To allow this, enter your login password." = "To allow this, enter your login password.";
+"To allow this, enter your login password." = "Um dies zu erlauben, gib dein Anmeldepasswort ein.";
 
 /* No Items secondary text */
 "Try again later." = "Später noch einmal versuchen.";
@@ -398,7 +437,7 @@
 "Try selecting another developer." = "Versuchen Sie einen anderen Entwickler auszuwählen.";
 
 /* Sidebar Type label */
-"Type:" = "Typ:";
+"Type" = "Typ";
 
 /* Unavailable status text */
 "Unavailable" = "Nicht verfügbar";
@@ -412,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Alle aktualisieren";
 
-/* Update Required long action text */
-"Update Required" = "Update erforderlich";
-
 /* No comment provided by engineer. */
 "Update available" = "Updates verfügbar";
 
@@ -426,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Jetzt aktualisieren";
+
+/* Update Required long action text */
+"Update Required" = "Update erforderlich";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Update wird installiert";
@@ -471,6 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ihre Software ist auf dem neuesten Stand.";
-
-/* macOS update required text */
-"macOS update required" = "macOS update erforderlich";

@@ -273,7 +273,9 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
                     'Restart not initiated by startosinstall; will initiate '
                     'restart ourselves')
                 if not authrestartd.restart():
-                    authrestart.do_authorized_or_normal_restart()
+                    authrestart.do_authorized_or_normal_restart(
+                        shutdown=osutils.bridgeos_update_staged()
+                    )
 
     if do_apple_updates:
         # install Apple updates
@@ -406,7 +408,6 @@ def munkiUpdatesContainStartOSInstallItem():
                 if item.get('installer_type') == 'startosinstall':
                     return True
     return False
-
 
 
 def munkiUpdatesContainAppleItems():
@@ -711,11 +712,13 @@ def main():
         # triggered the update before logging out, or we triggered it before
         # restarting.
         user_triggered = False
-        flagfiles = [constants.CHECKANDINSTALLATSTARTUPFLAG,
+        flagfiles = (constants.CHECKANDINSTALLATSTARTUPFLAG,
                      constants.INSTALLATSTARTUPFLAG,
-                     constants.INSTALLATLOGOUTFLAG]
+                     constants.INSTALLATLOGOUTFLAG)
         for filename in flagfiles:
             if os.path.exists(filename):
+                munkilog.log(
+                    "managedsoftwareupdate run triggered by %s" % filename)
                 user_triggered = True
                 if filename == constants.CHECKANDINSTALLATSTARTUPFLAG:
                     runtype = 'checkandinstallatstartup'
@@ -729,9 +732,32 @@ def main():
                         if networkUp():
                             break
                         time.sleep(1)
-                else:
-                    # delete triggerfile if _not_ checkandinstallatstartup
-                    os.unlink(filename)
+                    break
+                elif filename == constants.INSTALLATSTARTUPFLAG:
+                    runtype = 'installatstartup'
+                    # check to see if we should do some special handling;
+                    # we might have installed Apple updates right before a
+                    # restart
+                    try:
+                        launch_options = FoundationPlist.readPlist(filename)
+                        if launch_options.get("SkipAppleUpdates"):
+                            munkilog.log("SkipAppleUpdates is True")
+                            appleupdates.clearAppleUpdateInfo()
+                            options.munkipkgsonly = True
+                    except FoundationPlist.FoundationPlistException as err:
+                        pass
+                    break
+
+        # delete any triggerfile that isn't checkandinstallatstartup
+        # so it's not hanging around at the next logout or restart
+        for triggerfile in (constants.INSTALLATSTARTUPFLAG,
+                            constants.INSTALLATLOGOUTFLAG):
+            if os.path.exists(triggerfile):
+                try:
+                    os.unlink(triggerfile)
+                except (OSError, IOError):
+                    pass
+
         if not user_triggered:
             # no trigger file was found -- how'd we get launched?
             osutils.cleanUpTmpDir()
@@ -743,6 +769,10 @@ def main():
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.managedinstall.launchd'
         if os.path.exists(launchdtriggerfile):
+            munkilog.log(
+                "managedsoftwareupdate run triggered by %s"
+                % launchdtriggerfile
+            )
             # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
         runtype = 'installwithnologout'
@@ -756,6 +786,10 @@ def main():
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.updatecheck.launchd'
         if os.path.exists(launchdtriggerfile):
+            munkilog.log(
+                "managedsoftwareupdate run triggered by %s"
+                % launchdtriggerfile
+            )
             try:
                 launch_options = FoundationPlist.readPlist(launchdtriggerfile)
                 options.munkipkgsonly = launch_options.get(
@@ -890,12 +924,7 @@ def main():
         # we need to delete AppleUpdates.plist so that other code doesn't
         # mistakenly alert for forced installs it isn't actually going to
         # install.
-        appleupdates_plist = os.path.join(
-            prefs.pref('ManagedInstallDir'), 'AppleUpdates.plist')
-        try:
-            os.unlink(appleupdates_plist)
-        except OSError:
-            pass
+        appleupdates.clearAppleUpdateInfo()
     else:
         # check the normal preferences
         should_do_apple_updates = prefs.pref('InstallAppleSoftwareUpdates')
@@ -954,6 +983,28 @@ def main():
     mustlogout = False
     notify_user = False
     force_action = None
+
+    if runtype == 'installatstartup':
+        # turn off options.installonly; we need options.auto behavior from here
+        # on out because if FileVault is active we may actually be logged in
+        # at this point!
+        options.installonly = False
+        options.auto = True
+
+    if runtype == 'checkandinstallatstartup':
+        # we're in bootstrap mode
+        if not updatesavailable and appleupdatesavailable:
+            # there are only Apple updates, but we might not be able to install
+            # some
+            if not appleupdates.installableUpdates():
+                # there are no Apple updates we can actually install without
+                # user assistance, so clear bootstrapping mode so we don't loop
+                # endlessly
+                try:
+                    bootstrapping.clear_bootstrap_mode()
+                except bootstrapping.SetupError as err:
+                    display.display_error(err)
+
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
             # just install
