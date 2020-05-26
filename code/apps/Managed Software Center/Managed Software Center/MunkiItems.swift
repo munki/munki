@@ -243,6 +243,12 @@ class GenericItem: BaseItem {
                 }
             }
         }
+        // if it's an Apple Software Update, use the Software Update icon
+        if let apple_update = my["apple_update"] as? Bool {
+            if apple_update {
+                return "static/SoftwareUpdate.png"
+            }
+        }
         // use the Generic package icon
         return "static/Generic.png"
     }
@@ -326,7 +332,7 @@ class GenericItem: BaseItem {
                                   comment: "Update Will Be Installed status text"),
             "update-available":
                 NSLocalizedString("Update available",
-                                  comment: "Update Available status text"),
+                                  comment: "Update available text"),
             "unavailable":
                 NSLocalizedString("Unavailable",
                                   comment: "Unavailable status text")
@@ -564,7 +570,7 @@ class GenericItem: BaseItem {
         let note = my["note"] as? String ?? ""
         if is_update {
             return NSLocalizedString("Update available",
-                                     comment: "Update available display text")
+                                     comment: "Update available text")
         } else if note.hasPrefix("Insufficient disk space to download and install") {
             return NSLocalizedString("Not enough disk space",
                                      comment: "Not Enough Disk Space display text")
@@ -921,7 +927,8 @@ class UpdateItem: GenericItem {
                                            comment: "Managed Update type")
         }
         my["hide_cancel_button"]  = "hidden"
-        my ["dependent_items"] = dependentItems(name)
+        my["dependent_items"] = dependentItems(name)
+        my["days_available"] = getDaysPending(name)
     }
     
     override func description() -> String {
@@ -966,6 +973,15 @@ class UpdateItem: GenericItem {
                     }
                     start_text += "<span class=\"warning\">\(filtered_html(warning_text))</span><br/><br/>"
                 }
+            } else if let days_available = my["days_available"] as? Int {
+                if days_available > 2 {
+                    let format_str = NSLocalizedString(
+                        "This update has been pending for %@ days.",
+                        comment: "Pending days message")
+                    let formatted_str = NSString(format: format_str as NSString,
+                                                 String(days_available) as NSString)
+                    start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
+                }
             }
             if !((my["dependent_items"] as? [String] ?? []).isEmpty) {
                 start_text += dependency_description()
@@ -982,6 +998,94 @@ func cachedInstallInfo() -> [String : Any] {
     return Cache.shared["InstallInfo"] as? [String : Any] ?? [String : Any]()
 }
 
+func updateTrackingInfo() -> [String : Any] {
+    if !Cache.shared.keys.contains("UpdateNotificationTrackingInfo") {
+        Cache.shared["UpdateNotificationTrackingInfo"] = getUpdateNotificationTracking()
+    }
+    return Cache.shared["UpdateNotificationTrackingInfo"] as? [String : Any] ?? [String : Any]()
+}
+
+func getDateFirstAvailable(_ itemname: String) -> Date? {
+    // Uses UpdateNotificationTracking.plist data to determine when an item was first
+    // "discovered"/presented as available
+    let trackingInfo = updateTrackingInfo()
+    for category in trackingInfo.keys {
+        if let items = (trackingInfo[category] as? [String : Any]) {
+            for name in items.keys {
+                if name == itemname {
+                    return (items[name] as? Date)
+                }
+            }
+        }
+    }
+    return nil
+}
+
+func getDaysPending(_ itemname: String) -> Int {
+    // Returns the number of days an item has been pending
+    if let dateAvailable = getDateFirstAvailable(itemname) {
+        let secondsInDay = 60 * 60 * 24
+        let timeAvailable = dateAvailable.timeIntervalSinceNow * -1
+        let daysAvailable = Int(timeAvailable as Double)/secondsInDay
+        return daysAvailable
+    }
+    return 0
+}
+
+func shouldAggressivelyNotifyAboutMunkiUpdates(days: Int = -1) -> Bool {
+    // Do we have any Munki updates that have been pending a long time?
+    var maxPendingDays = 0
+    if let trackingInfo = updateTrackingInfo()["managed_installs"] as? [String: Any?] {
+        for name in trackingInfo.keys {
+            if let dateAvailable = trackingInfo[name] as? Date {
+                let secondsInDay = 60 * 60 * 24
+                let timeAvailable = dateAvailable.timeIntervalSinceNow * -1
+                let daysAvailable = Int(timeAvailable as Double)/secondsInDay
+                if daysAvailable > maxPendingDays {
+                    maxPendingDays = daysAvailable
+                }
+            }
+        }
+    }
+    if days == -1 {
+        let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+        if aggressiveNotificationDays == 0 {
+            // never get aggressive
+            return false
+        }
+        return maxPendingDays > aggressiveNotificationDays
+    } else {
+        return maxPendingDays > days
+    }
+}
+
+func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
+    // Do we have any Apple updates that require a restart that have been pending
+    // a long time?
+    var maxPendingDays = 0
+    let requiresRestartItems = getAppleUpdates().filter(
+            { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+        )
+    for item in requiresRestartItems {
+        if let itemname = item["name"] as? String {
+            let thisItemDaysPending = getDaysPending(itemname)
+            if thisItemDaysPending > maxPendingDays {
+                maxPendingDays = thisItemDaysPending
+            }
+        }
+    }
+    if days == -1 {
+        let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+        if aggressiveNotificationDays == 0 {
+            // never get aggressive
+            return false
+        }
+        return maxPendingDays > aggressiveNotificationDays
+    } else {
+        return maxPendingDays > days
+    }
+}
+
 func optionalInstallsExist() -> Bool {
     let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
     return optional_items.count > 0
@@ -994,7 +1098,7 @@ func getOptionalInstallItems() -> [OptionalItem] {
     }
     if !Cache.shared.keys.contains("optional_install_items") {
         let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
-        var optional_install_items = optional_items.map({ OptionalItem($0) })
+        let optional_install_items = optional_items.map({ OptionalItem($0) })
         let featured_items = cachedInstallInfo()["featured_items"] as? [String] ?? [String]()
         for index in 0..<optional_install_items.count {
             if let name = optional_install_items[index]["name"] as? String {
@@ -1067,9 +1171,9 @@ func display_name(_ item_name: String) -> String {
     return item_name
 }
 
-func getUpdateList() -> [UpdateItem] {
+func getUpdateList(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     if !Cache.shared.keys.contains("update_list") {
-        Cache.shared["update_list"] = _build_update_list()
+        Cache.shared["update_list"] = _build_update_list(filterAppleUpdates)
     }
     return Cache.shared["update_list"] as? [UpdateItem] ?? [UpdateItem]()
 }
@@ -1096,15 +1200,20 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
     }
 }
 
-func _build_update_list() -> [UpdateItem] {
+func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     var update_items = [[String: Any]]()
     if !munkiUpdatesContainAppleItems() {
-        if let apple_update_items = getAppleUpdates()["AppleUpdates"] as? [[String: Any]] {
-            for var item in apple_update_items {
-                item["developer"] = "Apple"
-                item["status"] = "will-be-installed"
-                update_items.append(item)
+        for var item in getAppleUpdates() {
+            if (filterAppleUpdates &&
+                ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
+                // skip this update because it requires a restart and we've been
+                // directed to filter these out
+                continue
             }
+            item["developer"] = "Apple"
+            item["status"] = "will-be-installed"
+            item["apple_update"] = true
+            update_items.append(item)
         }
     }
     let install_info = cachedInstallInfo()
@@ -1144,6 +1253,21 @@ func updatesRequireRestart() -> Bool {
     return requiresRestart
 }
 
+func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
+    // Return true if any item in the apple update list requires a restart
+    var osMinorVers = 9
+    if #available(OSX 10.10, *) {
+        osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
+    }
+    if osMinorVers >= 14 {
+        let requiresRestart = getAppleUpdates().filter(
+                { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+            ).count > 0
+        return requiresRestart
+    }
+    return false
+}
+
 func updatesContainNonUserSelectedItems() -> Bool {
     // Does the list of updates contain items not selected by the user?
     if !munkiUpdatesContainAppleItems() && getAppleUpdates().count > 0 {
@@ -1168,7 +1292,7 @@ func updatesContainNonUserSelectedItems() -> Bool {
     return false
 }
 
-func getEffectiveUpdateList() -> [GenericItem] {
+func getEffectiveUpdateList(_ filterAppleUpdates: Bool = false) -> [GenericItem] {
     // Combine the updates Munki has found with any optional choices to
     // make the effective list of updates
     let optional_installs = getOptionalWillBeInstalledItems() as [GenericItem]
@@ -1178,7 +1302,7 @@ func getEffectiveUpdateList() -> [GenericItem] {
     )
     // filter out pending optional items from the list of all pending updates
     // so we can add in the items with additional optional detail
-    let mandatory_updates = getUpdateList().filter(
+    let mandatory_updates = getUpdateList(filterAppleUpdates).filter(
         { !optional_item_names.contains($0["name"] as? String ?? "") }
     ) as [GenericItem]
     return mandatory_updates + optional_installs + optional_removals

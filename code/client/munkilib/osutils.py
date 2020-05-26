@@ -28,6 +28,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
+
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -36,6 +38,7 @@ from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 # pylint: enable=E0611
 
 from . import display
+from . import munkilog
 
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
@@ -182,6 +185,45 @@ def osascript(osastring):
     if out:
         return out.decode('UTF-8').rstrip('\n')
     return u''
+
+
+def bridgeos_update_staged():
+    '''Checks an undocumented nvram variable to see if a bridgeOS update
+    has been staged. If so, we should shut down instead of restart.
+    Returns a boolean.'''
+    cmd = ["/usr/sbin/nvram", "BOSUpdateStarted"]
+    proc = subprocess.Popen(cmd,
+                            shell=False,
+                            bufsize=-1,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    output = proc.communicate()[0].decode('UTF-8')
+    if proc.returncode == 0:
+        munkilog.log("nvram output: %s" % output)
+        lines = output.splitlines()
+        parts = lines[0].split()
+        try:
+            timestamp = int(parts[1].split(',')[0])
+            now = int(time.time())
+            seconds_ago = now - timestamp
+            if seconds_ago < 60 * 60:
+                munkilog.log(
+                    "bridgeOS update staged %s seconds ago; shutdown required"
+                    % seconds_ago)
+                return True
+            #else
+            munkilog.log(
+                "bridgeOS update %s seconds ago; too long ago to trust"
+                % seconds_ago)
+            return False
+        except (IndexError, ValueError):
+            munkilog.log(
+                "unexpected nvram output, can't detect bridgeos update")
+            return False
+    #else
+    munkilog.log("No bridgeOS update staged")
+    return False
 
 
 if __name__ == '__main__':

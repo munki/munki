@@ -437,9 +437,10 @@ class StartOSInstallRunner(object):
             CFPreferencesSetValue(
                 'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
-            # attempt to do an auth restart, or regular restart
+            # attempt to do an auth restart, or regular restart, or shutdown
             if not authrestartd.restart():
-                authrestart.do_authorized_or_normal_restart()
+                authrestart.do_authorized_or_normal_restart(
+                    shutdown=osutils.bridgeos_update_staged())
         else:
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
