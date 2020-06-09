@@ -181,14 +181,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         
         // disable all of the other controls
-//        softwareToolbarItem.isEnabled = false
-//        categoriesToolbarItem.isEnabled = false
-//        myItemsToolbarItem.isEnabled = false
         searchField.isEnabled = false
 //        findMenuItem.isEnabled = false
 //        softwareMenuItem.isEnabled = false
 //        categoriesMenuItem.isEnabled = false
 //        myItemsMenuItem.isEnabled = false
+        self.sidebar.isEnabled = false
         
         // set flag to cause us to always be brought to front
         self.forceFrontmost = true
