@@ -156,7 +156,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
-            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+            window.styleMask = [.titled, .fullSizeContentView, .closable, .miniaturizable, .resizable]
             window.level = .normal
         }
         self.forceFrontmost = false
@@ -176,7 +176,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if let window = self.window {
             window.center()
             window.collectionBehavior = .fullScreenNone
-            window.styleMask = [.titled, .closable]
+            window.styleMask = [.titled, .fullSizeContentView, .closable]
             window.level = .floating
         }
         
