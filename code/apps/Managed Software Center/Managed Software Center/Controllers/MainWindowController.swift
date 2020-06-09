@@ -29,6 +29,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var _status_title = ""
     var stop_requested = false
     var user_warned_about_extra_updates = false
+    var should_filter_apple_updates = false
+    var forceFrontmost = false
+    
+    var backdropWindows: [NSWindow] = []
     
     // Cocoa UI binding properties
     
@@ -74,18 +78,34 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // no pending updates
             return .terminateNow
         }
-        if (currentPageIsUpdatesPage() && !thereAreUpdatesToBeForcedSoon()) {
-            // We're already at the updates view, so user is aware of the
-            // pending updates, so OK to just terminate
-            // (unless there are some updates to be forced soon)
-            return .terminateNow
+        if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
+            if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
+                if !currentPageIsUpdatesPage() {
+                    loadUpdatesPage(self)
+                }
+                alert_controller.alertToAppleUpdates()
+                should_filter_apple_updates = true
+                return .terminateCancel
+            }
         }
-        if (currentPageIsUpdatesPage() && _alertedUserToOutstandingUpdates) {
-            return .terminateNow
+        if currentPageIsUpdatesPage() {
+            if (!thereAreUpdatesToBeForcedSoon() && !shouldAggressivelyNotifyAboutMunkiUpdates()) {
+                // We're already at the updates view, so user is aware of the
+                // pending updates, so OK to just terminate
+                // (unless there are some updates to be forced soon)
+                return .terminateNow
+            }
+            if _alertedUserToOutstandingUpdates {
+                if (thereAreUpdatesToBeForcedSoon() || shouldAggressivelyNotifyAboutMunkiUpdates()) {
+                    // user keeps avoiding; let's try at next logout or restart
+                    writeInstallAtStartupFlagFile(skipAppleUpdates: false)
+                }
+                return .terminateNow
+            }
         }
         // we have pending updates and we have not yet warned the user
         // about them
-        alertToPendingUpdates()
+        alert_controller.alertToPendingUpdates(self)
         return .terminateCancel
     }
     
@@ -93,59 +113,105 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // return true if current tab selected is Updates
         return sidebar.selectedRow == 3
     }
+
+    func newTranslucentWindow(screen: NSScreen) -> NSWindow {
+        // makes a translucent masking window we use to prevent interaction with
+        // other apps
+        var windowRect = screen.frame
+        windowRect.origin = NSMakePoint(0.0, 0.0)
+        let thisWindow = NSWindow(
+            contentRect: windowRect,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false,
+            screen: screen
+        )
+        thisWindow.level = .normal
+        thisWindow.backgroundColor = NSColor.black.withAlphaComponent(0.50)
+        thisWindow.isOpaque = false
+        thisWindow.ignoresMouseEvents = false
+        thisWindow.alphaValue = 0.0
+        thisWindow.orderFrontRegardless()
+        thisWindow.animator().alphaValue = 1.0
+        return thisWindow
+    }
     
-    func alertToPendingUpdates() {
-        // Alert user to pending updates before quitting the application
-        _alertedUserToOutstandingUpdates = true
-        // show the updates
-        loadUpdatesPage(self)
-        var alertTitle = ""
-        var alertDetail = ""
-        if thereAreUpdatesToBeForcedSoon() {
-            alertTitle = NSLocalizedString("Mandatory Updates Pending",
-                                           comment: "Mandatory Updates Pending text")
-            if let deadline = earliestForceInstallDate() {
-                let time_til_logout = deadline.timeIntervalSinceNow
-                if time_til_logout > 0 {
-                    let deadline_str = stringFromDate(deadline)
-                    let formatString = NSLocalizedString(
-                        ("One or more updates must be installed by %@. A logout " +
-                          "may be forced if you wait too long to update."),
-                        comment: "Mandatory Updates Pending detail")
-                    alertDetail = String(format: formatString, deadline_str)
-                } else {
-                    alertDetail = NSLocalizedString(
-                        ("One or more mandatory updates are overdue for " +
-                         "installation. A logout will be forced soon."),
-                        comment: "Mandatory Updates Imminent detail")
-                }
-            }
-        } else {
-            alertTitle = NSLocalizedString(
-                "Pending updates", comment: "Pending Updates alert title")
-            alertDetail = NSLocalizedString(
-                "There are pending updates for this computer.",
-                comment: "Pending Updates alert detail text")
+    func displayBackdropWindows() {
+        for screen in NSScreen.screens {
+            let newWindow = newTranslucentWindow(screen: screen)
+            // add to our backdropWindows array so a reference stays around
+            backdropWindows.append(newWindow)
         }
-        let alert = NSAlert()
-        alert.messageText = alertTitle
-        alert.informativeText = alertDetail
-        alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
-        alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
-        alert.beginSheetModal(for: self.window!, completionHandler: { (modalResponse) -> Void in
-            if modalResponse == .alertFirstButtonReturn {
-                msc_log("user", "quit")
-                NSApp.terminate(self)
-            } else if modalResponse == .alertSecondButtonReturn {
-                msc_log("user", "install_now_clicked")
-                // make sure this alert panel is gone before we proceed
-                // which might involve opening another alert sheet
-                alert.window.orderOut(self)
-                // initiate the updates
-                self.updateNow()
-                self.loadUpdatesPage(self)
+    }
+    
+    func makeUsUnobnoxious() {
+        // reverse all the obnoxious changes
+        msc_log("msc", "end_obnoxious_mode")
+        
+        let options = NSApplication.PresentationOptions([])
+        NSApp.presentationOptions = options
+        
+        for window in self.backdropWindows {
+            window.orderOut(self)
+        }
+        if let window = self.window {
+            window.collectionBehavior = .fullScreenPrimary
+            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+            window.level = .normal
+        }
+        self.forceFrontmost = false
+        // enable/disable controls as needed
+        enableOrDisableSoftwareViewControls()
+    }
+    
+    func makeUsObnoxious() {
+        // makes this app and window impossible(?)/difficult to ignore
+        msc_log("msc", "start_obnoxious_mode")
+        
+        // make it very difficult to switch away from this app
+        let options = NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit])
+        NSApp.presentationOptions = options
+        
+        // alter some window properties to make the window harder to ignore
+        if let window = self.window {
+            window.center()
+            window.collectionBehavior = .fullScreenNone
+            window.styleMask = [.titled, .closable]
+            window.level = .floating
+        }
+        
+        // disable all of the other controls
+        softwareToolbarItem.isEnabled = false
+        categoriesToolbarItem.isEnabled = false
+        myItemsToolbarItem.isEnabled = false
+        searchField.isEnabled = false
+        findMenuItem.isEnabled = false
+        softwareMenuItem.isEnabled = false
+        categoriesMenuItem.isEnabled = false
+        myItemsMenuItem.isEnabled = false
+        
+        // set flag to cause us to always be brought to front
+        self.forceFrontmost = true
+        
+        // create translucent windows to mask all other apps
+        displayBackdropWindows()
+    }
+    
+    func weShouldBeObnoxious() -> Bool {
+        // returns a Bool to let us know if we should enter obnoxiousMode
+        if thereAreUpdatesToBeForcedSoon() {
+            return true
+        }
+        if shouldAggressivelyNotifyAboutMunkiUpdates() {
+            return true
+        }
+        if shouldAggressivelyNotifyAboutAppleUpdates() {
+            if userIsAdmin() || !userMustBeAdminToInstallAppleUpdates() {
+                // only be obnoxious if the user can actually _do_ something
+                return true
             }
-        })
+        }
+        return false
     }
     
     func loadInitialView() {
@@ -203,6 +269,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // The managedsoftwareupdate run will have changed state preferences
         // in ManagedInstalls.plist. Load the new values.
         reloadPrefs()
+        if tasktype ==  "" {
+            // probably a background session, but not one initiated by the user here
+            resetAndReload()
+            return
+        }
         let lastCheckResult = pref("LastCheckResult") as? Int ?? 0
         if sessionResult != 0 || lastCheckResult < 0 {
             var alertMessageText = NSLocalizedString(
@@ -251,7 +322,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 detailText = "\(detailText)\n\n\(errorMessage)"
             }
             // show the alert sheet
-            self.window!.makeKeyAndOrderFront(self)
+            if let thisWindow = self.window {
+                thisWindow.makeKeyAndOrderFront(self)
+                if let attachedSheet = thisWindow.attachedSheet {
+                    // there's an existing sheet open; close it first
+                    thisWindow.endSheet(attachedSheet)
+                }
+            }
             let alert = NSAlert()
             alert.messageText = alertMessageText
             alert.informativeText = detailText
@@ -312,7 +389,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         case "updates":
             // updates page; just rebuild and reload it
             load_page("updates.html")
-            _alertedUserToOutstandingUpdates = true
+            if !shouldAggressivelyNotifyAboutMunkiUpdates() {
+                _alertedUserToOutstandingUpdates = true
+            }
         default:
             // should never get here
             msc_debug_log("Unexpected value for page name: \(filename)")
@@ -490,6 +569,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return
         }
         _update_in_progress = true
+        should_filter_apple_updates = false
         displayUpdateCount()
         managedsoftwareupdate_task = "manualcheck"
         if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
@@ -653,7 +733,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         } else {
             msc_debug_log("updateCheck not needed")
             _alertedUserToOutstandingUpdates = false
+            _status_title = NSLocalizedString(
+                "Update in progress.",
+                comment: "Update In Progress primary text") + ".."
             kickOffInstallSession()
+            makeUsUnobnoxious()
         }
     }
     
@@ -662,7 +746,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if _update_in_progress {
             return 0
         }
-        return getEffectiveUpdateList().count
+        return getEffectiveUpdateList(should_filter_apple_updates).count
     }
     
     func displayUpdateCount() {
@@ -748,6 +832,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if url_fragment == "updates.html" {
             // clear all earlier update notifications
             NSUserNotificationCenter.default.removeAllDeliveredNotifications()
+            // record that the user has been presented pending updates
+            if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
+                _alertedUserToOutstandingUpdates = true
+            }
         }
     }
     
@@ -766,8 +854,31 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if !(filename.hasSuffix(".html")) {
             filename += ".html"
         }
+        // if the user has minimized the main window, deminiaturize it
+        if let window = self.window {
+            if window.isMiniaturized {
+                window.deminiaturize(self)
+            }
+        }
         // try to build and load the page
-        load_page(filename)
+        if filename == "notify.html" {
+            //resetAndReload()
+            load_page("updates.html")
+            if !_update_in_progress && getUpdateCount() > 0 {
+                // we're notifying about pending updates. We might need to be obnoxious about it
+                if let window = self.window {
+                    // don't let people move the window mostly off-screen so
+                    // they can ignore it
+                    window.center()
+                }
+                if weShouldBeObnoxious() {
+                    NSLog("%@", "Entering obnoxious mode")
+                    makeUsObnoxious()
+                }
+            }
+        } else {
+            load_page(filename)
+        }
     }
 
     func setNoPageCache() {
@@ -784,10 +895,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func clearCache() {
-        if #available(OSX 10.11, *) {
-            let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+        var osMinorVers = 9
+        if #available(OSX 10.10, *) {
+            osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
+        }
+        if osMinorVers >= 11 {
+            if #available(OSX 10.11, *) {
+                let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
+
             let dateFrom = Date.init(timeIntervalSince1970: 0)
             WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+            }
         } else {
             // Fallback on earlier versions
             URLCache.shared.removeAllCachedResponses()
@@ -966,7 +1084,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            updateNow()
+            if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
+                // if there are pending Apple updates, alert the user to
+                // install via System Preferences
+                alert_controller.alertToAppleUpdates()
+                should_filter_apple_updates = true
+            } else {
+                updateNow()
+            }
         }
     }
     
@@ -1088,9 +1213,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             "Please contact your administrator for more details",
             comment: "Pre Install Uninstall Upgrade Alert Detail")
         let defaultOKLabel = NSLocalizedString(
-            "OK", comment: "Pre Install Uninstall Upgrade OK Label")
+            "OK", comment: "OK button title")
         let defaultCancelLabel = NSLocalizedString(
-            "Cancel", comment: "Pre Install Uninstall Upgrade Cancel Label")
+            "Cancel", comment: "Cancel button title/short action text")
         
         let alertTitle = alert["alert_title"] as? String ?? defaultAlertTitle
         let alertDetail = alert["alert_detail"] as? String ?? defaultAlertDetail
@@ -1227,7 +1352,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // update the updates-to-install header to reflect the new list of
         // updates to install
         setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
-        setInnerText(getWarningText(), elementID: "update-warning-text")
+        setInnerText(getWarningText(should_filter_apple_updates), elementID: "update-warning-text")
     
         // update text of Install All button
         setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
@@ -1340,7 +1465,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBAction func loadUpdatesPage(_ sender: Any) {
         // Called by Navigate menu item'''
         load_page("updates.html")
-        _alertedUserToOutstandingUpdates = true
     }
     
     @IBAction func softwareToolbarItemClicked(_ sender: Any) {

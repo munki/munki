@@ -95,6 +95,8 @@ class AppUsageClient(object):
         try:
             self.connect()
             result = self.send_request(request)
+        except AppUsageClientError as err:
+            return "ERROR:%s" % err
         finally:
             self.disconnect()
         return result

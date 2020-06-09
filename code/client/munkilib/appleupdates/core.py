@@ -74,6 +74,12 @@ def appleSoftwareUpdatesAvailable(forcecheck=False, suppresscheck=False,
         force_check=forcecheck, suppress_check=suppresscheck)
 
 
+def installableUpdates():
+    """Returns the list of installable updates, which might not include updates
+    that require a restart"""
+    return getAppleUpdatesInstance().installable_updates()
+
+
 def displayAppleUpdateInfo():
     """Method for drop-in appleupdates replacement; see primary method docs."""
     getAppleUpdatesInstance().display_apple_update_info()

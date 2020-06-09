@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer som er i bruk av andre";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Merk følgende";
+
 /* Cancel button title/short action text */
 "Cancel" = "Avbryt";
 
@@ -151,17 +154,23 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Hjelp er ikke tilgjengelig for Managed Software Center.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Viktige Apple oppdateringer";
+
 /* Sidebar Information label */
 "Information" = "Informasjon";
 
 /* Install action text */
 "Install" = "Installer";
 
-/* Install Required action text */
-"Install Required" = "Installasjon påkrevd";
+/* Install now button title */
+"Install now" = "Installer nå";
 
 /* Install Requested status text */
 "Install requested" = "Installasjon forespurt";
+
+/* Install Required action text */
+"Install Required" = "Installasjon påkrevd";
 
 /* Install Session Failed title */
 "Install session failed" = "Installasjonen feilet";
@@ -186,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Utlogging påkrevd";
+
+/* macOS update required text */
+"macOS update required" = "macOS-oppdatering nødvendig";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan ikke søke etter oppdateringer.\nPrøv igjen senere. Hvis problemet fortsetter, kontakt din systemadministrator.";
@@ -220,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Ingen ventende oppdateringer";
 
-/* Item Not Found title */
-"Not Found" = "Ikke funnet";
-
 /* Not Currently Available display text */
 "Not currently available" = "Ikke tilgjengelig for øyeblikket";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Ikke nok plass på disken";
+
+/* Item Not Found title */
+"Not Found" = "Ikke funnet";
 
 /* Not Installed status text */
 "Not installed" = "Ikke installert";
@@ -237,6 +249,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "En eller flere viktige Apple oppdateringer må installeres";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Et eller flere objekter må installeres senest %@";
@@ -273,6 +288,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Forbereder avinstallasjon";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Forbereder å kjøre macOS Installer...";
 
 /* Problem Updates label */
 "Problem updates" = "Problematiske oppdateringer";
@@ -322,6 +340,9 @@
 /* Sidebar Size label */
 "Size:" = "Størrelse:";
 
+/* Skip Apple updates button title */
+"Skip these updates" = "Hopp over";
+
 /* Software label */
 "Software" = "Programvare";
 
@@ -331,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Programvaren som er blitt installert eller fjernet krever en omstart. Du får muligheten til å lagre åpne dokumenter.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Noen betingelser gjelder for denne programvaren. Kontakt administratoren din for mer informasjon";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Starter Adobe installer...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starter oppgradering av macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Starter...";
@@ -342,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problem med systemkonfigurasjon";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Systemet vil starte på nytt og begynne å oppgradere macOS.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Installasjon av programvaren er fullført.";
@@ -357,6 +387,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "Det finnes ingen objekter i kategorien.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "En eller flere ventende Apple-programvareoppdateringer krever en omstart.\n\nDu må installere disse fra Programvareoppdatering-valgpanelet i Systemvalg.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "En eller flere ventende Apple-programvareoppdateringer krever en omstart.\n\nAdministratoren har blokkert installasjon av disse oppdateringene. Kontakt administratoren for å få hjelp.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det er andre påloggede brukere på datamaskinen.\nHvis du oppdaterer nå, risikerer du at de mister deres ulagrede arbeid.\n\nPrøv igjen senere når de andre brukerne har logget ut.";
@@ -382,6 +418,9 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Dette objektet må installeres senest %@";
 
+/* Pending days message */
+"This update has been pending for %@ days." = "Denne oppdateringen har ventet i %@ dager.";
+
 /* Password explanation */
 "To allow this, enter your login password." = "For å tillate dette, må du skrive inn ditt påloggingspassord.";
 
@@ -398,7 +437,7 @@
 "Try selecting another developer." = "Prøv å velge en annen utvikler.";
 
 /* Sidebar Type label */
-"Type:" = "Type:";
+"Type" = "Type";
 
 /* Unavailable status text */
 "Unavailable" = "Ikke tilgjengelig";
@@ -412,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Oppdater alle";
 
-/* Update Required long action text */
-"Update Required" = "Oppdatering påkrevd";
-
 /* No comment provided by engineer. */
 "Update available" = "Kan oppdateres";
 
@@ -426,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Oppdater nu";
+
+/* Update Required long action text */
+"Update Required" = "Oppdatering påkrevd";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Oppdatering vil bli installert";
@@ -471,6 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Din programvare er oppdateret.";
-
-/* macOS update required text */
-"macOS update required" = "macOS-oppdatering nødvendig";

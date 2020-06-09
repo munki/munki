@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaties in gebruik door anderen";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Attentie";
+
 /* Cancel button title/short action text */
 "Cancel" = "Annuleren";
 
@@ -151,17 +154,23 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Help is niet beschikbaar voor Managed Software Center.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Belangrijke Apple Updates";
+
 /* Sidebar Information label */
 "Information" = "Informatie";
 
 /* Install action text */
 "Install" = "Installeer";
 
-/* Install Required action text */
-"Install Required" = "Installatie Benodigd";
+/* Install now button title */
+"Install now" = "Installeer nu";
 
 /* Install Requested status text */
 "Install requested" = "Installatie Verzocht";
+
+/* Install Required action text */
+"Install Required" = "Installatie Benodigd";
 
 /* Install Session Failed title */
 "Install session failed" = "Installatie-sessie niet succesvol";
@@ -186,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Uitloggen Benodigd";
+
+/* macOS update required text */
+"macOS update required" = "macOS update vereist";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan geen updates checken.\nProbeer later nog eens. Als deze situatie niet verandert, neem contact op met uw systeembeheerder.";
@@ -220,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Geen updates";
 
-/* Item Not Found title */
-"Not Found" = "Niet Gevonden";
-
 /* Not Currently Available display text */
 "Not currently available" = "Op dit moment niet beschikbaar";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Onvoldoende ruimte op de harde schijf";
+
+/* Item Not Found title */
+"Not Found" = "Niet Gevonden";
 
 /* Not Installed status text */
 "Not installed" = "Niet geïnstalleerd";
@@ -237,6 +249,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Een of meerdere belangrijke Apple updates dienen geïnstalleerd worden";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Eén of meer items moeten voor %@ worden geïnstalleerd";
@@ -273,6 +288,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Verwijderen voorbereiden";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "macOS installatie voorbereiden...";
 
 /* Problem Updates label */
 "Problem updates" = "Problematische updates";
@@ -322,6 +340,9 @@
 /* Sidebar Size label */
 "Size:" = "Grootte:";
 
+/* Skip Apple updates button title */
+"Skip these updates" = "Sla Apple updates over";
+
 /* Software label */
 "Software" = "Software";
 
@@ -331,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software maakt een herstart nodig. U krijgt de kans om geopende documenten op te slaan.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met uw beheerder voor meer informatie";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Adobe installer opstarten...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Starten met de macOS upgrade...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Beginnen...";
@@ -342,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Probleem met de systeemconfiguratie";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "De Mac zal opnieuw opstarten en de upgrade van macOS starten.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "De software is succesvol geïnstalleerd.";
@@ -357,6 +387,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "Er zijn geen items in deze categorie.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Er zijn een of meerdere Apple Software Updates die een herstart nodig hebben.\n\nInstalleer deze updates door gebruik te maken Software-update in Systeemvoorkeuren.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Er zijn een of meerdere Apple Software Updates die een herstart nodig hebben.\n\nDe beheerder van deze machine staat de installatie van deze updates niet toe. Neem contact op met de beheerder voor assistentie.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls U nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer opnieuw nadat de andere gebruikers zijn uitgelogd.";
@@ -382,6 +418,9 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Dit item moet geïnstalleerd zijn voor %@";
 
+/* Pending days message */
+"This update has been pending for %@ days." = "Deze update wacht al %@ dagen.";
+
 /* Password explanation */
 "To allow this, enter your login password." = "Om dit toe te staan, vul je loginwachtwoord in.";
 
@@ -398,7 +437,7 @@
 "Try selecting another developer." = "Selecteer een andere ontwikkelaar.";
 
 /* Sidebar Type label */
-"Type:" = "Type:";
+"Type" = "Type";
 
 /* Unavailable status text */
 "Unavailable" = "Niet beschikbaar";
@@ -412,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Update Alles";
 
-/* Update Required long action text */
-"Update Required" = "Update benodigd";
-
 /* No comment provided by engineer. */
 "Update available" = "Update beschikbaar";
 
@@ -426,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Update nu";
+
+/* Update Required long action text */
+"Update Required" = "Update benodigd";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Update wordt geïnstalleerd";
@@ -471,6 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is up to date.";
-
-/* macOS update required text */
-"macOS update required" = "macOS update vereist";
