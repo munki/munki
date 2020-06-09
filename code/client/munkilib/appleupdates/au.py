@@ -494,41 +494,52 @@ class AppleUpdates(object):
                 display.display_info('       *Logout required')
                 reports.report['LogoutRequired'] = True
 
+    def installable_updates(self):
+        """Returns a list of installable Apple updates.
+        This may filter out updates that require a restart."""
+        try:
+            pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
+        except FoundationPlist.FoundationPlistException:
+            # can't read it or it doesn't exist, therefore no installable
+            # updates
+            return []
+        apple_updates = pl_dict.get('AppleUpdates', [])
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple >= (10, 14):
+            # in Mojave and Catalina (and perhaps beyond), it's too risky to
+            # install OS or Security updates because softwareupdate is just
+            # not reliable at this any longer. So filter out updates that
+            # require a restart
+            filtered_apple_updates = [
+                item for item in apple_updates
+                if item.get('RestartAction', 'None') == 'None'
+            ]
+            return filtered_apple_updates
+        return apple_updates
+
     def install_apple_updates(self, only_unattended=False):
         """Uses softwareupdate to install previously downloaded updates.
 
         Returns:
-          Boolean. True if a restart is needed after install, False otherwise.
+          restart_action -- an integer indicating the action to take later:
+                            none, logout, restart, shutdown
         """
         # disable Stop button if we are presenting GUI status
         if display.munkistatusoutput:
             munkistatus.hideStopButton()
 
         self.shutdown_instead_of_restart = False
-        # Get list of unattended_installs
-        if only_unattended:
-            msg = 'Installing unattended Apple Software Updates...'
-            unattended_install_items, unattended_install_product_ids = \
-                self.get_unattended_installs()
-            # ensure that we don't restart for unattended installations
-            restart_action = POSTACTION_NONE
-            if not unattended_install_items:
-                return False  # didn't find any unattended installs
-        else:
-            msg = 'Installing available Apple Software Updates...'
-            restart_action = self.restart_action_for_updates()
-
-        display.display_status_major(msg)
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
 
         installlist = self.software_update_info()
         remaining_apple_updates = []
         installresults = {'installed': [], 'download': []}
-
         su_options = ['-i']
 
         if only_unattended:
-            # Append list of unattended_install items
-            su_options.extend(unattended_install_items)
+            msg = 'Installing unattended Apple Software Updates...'
+            restart_action = POSTACTION_NONE
+            unattended_install_product_ids = self.get_unattended_installs()
             # Filter installlist to only include items
             # which we're attempting to install
             filtered_installlist = [item for item in installlist
@@ -537,17 +548,51 @@ class AppleUpdates(object):
             # record items we aren't planning to attempt to install
             remaining_apple_updates = [item for item in installlist
                                        if item not in filtered_installlist]
+            # set the list of items to install to our newly-filted list
+            installlist = filtered_installlist
+
+        elif os_version_tuple >= (10, 14):
+            msg = ('Installing Apple Software Updates that do not require '
+                   'restart...')
+            restart_action = POSTACTION_NONE
+            # in Mojave and Catalina (and perhaps beyond), it's too risky to
+            # install OS or Security updates because softwareupdate is just
+            # not reliable at this any longer. So skip any updates that require
+            # a restart -- users will need to install these using Apple's GUI
+            # tools. We can still install other updates that don't require a
+            # restart (for now)
+            filtered_installlist = [
+                item for item in installlist
+                if item.get('RestartAction', 'None') == 'None'
+            ]
+            # record items we aren't planning to attempt to install
+            remaining_apple_updates = [item for item in installlist
+                                       if item not in filtered_installlist]
+            for item in remaining_apple_updates:
+                display.display_debug1(
+                    "Skipping install of %s-%s because it requires a restart.",
+                    item['name'], item['version_to_install']
+                )
+            # set the list of items to install to our newly-filtered list
             installlist = filtered_installlist
 
         else:
-            # We're installing all available updates; add all their names
-            for item in installlist:
-                su_options.append(
-                    item['name'] + '-' + item['version_to_install'])
+            msg = 'Installing available Apple Software Updates...'
+            restart_action = self.restart_action_for_updates()
+
+        if not installlist:
+            return POSTACTION_NONE  # our list of items to install is empty
+
+        display.display_status_major(msg)
+
+        # Add the current (possibly filtered) installlist items to the
+        # softwareupdate install options
+        for item in installlist:
+            su_options.append(
+                item['name'] + '-' + item['version_to_install'])
 
         # new in 10.11: '--no-scan' flag to tell softwareupdate to just install
         # and not rescan for available updates.
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 11):
             try:
                 # attempt to fetch the apple catalog to confirm connectivity
@@ -578,8 +623,10 @@ class AppleUpdates(object):
         su_start_date = NSDate.new()
         installresults = su_tool.run(su_options, catalog_url=catalog_url)
         retcode = installresults.get('exit_code', 0)
-        self.shutdown_instead_of_restart = installresults.get(
-            'post_action') == POSTACTION_SHUTDOWN
+        self.shutdown_instead_of_restart = (
+            installresults.get('post_action') == POSTACTION_SHUTDOWN or
+            osutils.bridgeos_update_staged()
+        )
         su_end_date = NSDate.new()
 
         # get the items that were just installed from InstallHistory.plist
@@ -741,9 +788,12 @@ class AppleUpdates(object):
         metadata_to_copy = ['blocking_applications',
                             'description',
                             'display_name',
-                            'force_install_after_date',
                             'unattended_install',
                             'RestartAction']
+        # we support force_install_after_date only on macOS earlier than Mojave
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        if os_version_tuple < (10, 14):
+            metadata_to_copy.append('force_install_after_date')
 
         # Mapping of supported restart_actions to
         # equal or greater auxiliary actions
@@ -797,17 +847,15 @@ class AppleUpdates(object):
 
     def get_unattended_installs(self):
         """Processes AppleUpdates.plist to return a list
-        of NAME-VERSION formatted items and a list of product_ids
-        which are eligible for unattended installation.
+        of product_ids which are eligible for unattended installation.
         """
-        item_list = []
         product_ids = []
         try:
             pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.FoundationPlistException:
             display.display_error(
                 'Error reading: %s', self.apple_updates_plist)
-            return item_list, product_ids
+            return product_ids
         apple_updates = pl_dict.get('AppleUpdates', [])
         for item in apple_updates:
             if (item.get('unattended_install') or
@@ -819,14 +867,12 @@ class AppleUpdates(object):
                         'blocking application(s) running.'
                         % item['display_name'])
                     continue
-                install_item = item['name'] + '-' + item['version_to_install']
-                item_list.append(install_item)
                 product_ids.append(item['productKey'])
             else:
                 display.display_detail(
                     'Skipping install of %s because it\'s not unattended.'
                     % item['display_name'])
-        return item_list, product_ids
+        return product_ids
 
 
 if __name__ == '__main__':

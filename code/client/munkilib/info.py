@@ -56,7 +56,7 @@ try:
     _ = xrange # pylint: disable=xrange-builtin
 except NameError:
     # no xrange in Python 3
-    xrange = range
+    xrange = range # pylint: disable=redefined-builtin,invalid-name
 
 # Always ignore these directories when discovering applications.
 APP_DISCOVERY_EXCLUSION_DIRS = set([
@@ -548,9 +548,9 @@ def get_version():
     return vers
 
 
-def get_hardware_info():
-    '''Uses system profiler to get hardware info for this machine'''
-    cmd = ['/usr/sbin/system_profiler', 'SPHardwareDataType', '-xml']
+def get_sp_data(data_type):
+    '''Uses system profiler to get info of data_type for this machine'''
+    cmd = ['/usr/sbin/system_profiler', data_type, '-xml']
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -560,10 +560,20 @@ def get_hardware_info():
         # system_profiler xml is an array
         sp_dict = plist[0]
         items = sp_dict['_items']
-        sp_hardware_dict = items[0]
-        return sp_hardware_dict
+        sp_items_dict = items[0]
+        return sp_items_dict
     except BaseException:
         return {}
+
+
+def get_hardware_info():
+    '''Uses system profiler to get hardware info for this machine'''
+    return get_sp_data('SPHardwareDataType')
+
+
+def get_ibridge_info():
+    '''Uses system profiler to get iBridge info for this machine'''
+    return get_sp_data('SPiBridgeDataType')
 
 
 def get_ip_addresses(kind):
@@ -655,7 +665,9 @@ def getMachineFacts():
     machine['ipv4_address'] = get_ip_addresses('IPv4')
     machine['ipv6_address'] = get_ip_addresses('IPv6')
     machine['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
-
+    ibridge_info = get_ibridge_info()
+    machine['ibridge_model_name'] = ibridge_info.get(
+        'ibridge_model_name', 'NO IBRIDGE CHIP')
     if machine['arch'] == 'x86_64':
         machine['x86_64_capable'] = True
     elif machine['arch'] == 'i386':

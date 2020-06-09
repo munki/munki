@@ -6,6 +6,7 @@
 //  Copyright © 2018-2020 The Munki Project. All rights reserved.
 //
 
+import AppKit
 import Foundation
 import SystemConfiguration
 import IOKit
@@ -17,7 +18,7 @@ let UPDATECHECKLAUNCHFILE = "/private/tmp/.com.googlecode.munki.updatecheck.laun
 let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 
 let BUNDLE_ID = "ManagedInstalls" as CFString
-let DEFAULT_GUI_CACHE_AGE_SECS = 600
+let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
 
 func exec(_ command: String, args: [String] = []) -> String {
@@ -207,7 +208,7 @@ func getInstallInfo() -> PlistDict {
     return readPlistAsNSDictionary(installinfo_path)
 }
 
-func getAppleUpdates() -> PlistDict {
+func getAppleUpdates() -> [PlistDict] {
     // Returns any available Apple update info
     let installAppleSoftwareUpdates = pythonishBool(pref("InstallAppleSoftwareUpdates"))
     let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
@@ -215,10 +216,34 @@ func getAppleUpdates() -> PlistDict {
         let managedinstallbase = pref("ManagedInstallDir") as! String
         let appleupdates_path = NSString.path(
             withComponents: [managedinstallbase, "AppleUpdates.plist"])
-        return readPlistAsNSDictionary(appleupdates_path)
+        let plistData = readPlistAsNSDictionary(appleupdates_path)
+        let rawAppleUpdates = plistData["AppleUpdates"] as? [PlistDict] ?? []
+        if pythonishBool(plistData["AppleUpdatesTesting"]) {
+            // this lets us test MSC behavior with fake data
+            return rawAppleUpdates
+        }
+        // since it's possible SoftwareUpdate has run since managedsoftwareupdate last
+        // ran, we should filter these against the RecommendedUpdates in com.apple.SoftwareUpdate
+        var filteredAppleUpdates = [PlistDict]()
+        for item in rawAppleUpdates {
+            if let productKey = item["productKey"] as? String {
+                if suRecommendedUpdateIDs().contains(productKey) {
+                    filteredAppleUpdates.append(item)
+                }
+            }
+        }
+        return filteredAppleUpdates
     } else {
-        return PlistDict()
+        return [PlistDict]()
     }
+}
+
+func getUpdateNotificationTracking() -> PlistDict {
+    // Returns a dictionary describing when items were first made available
+    let managedinstallbase = pref("ManagedInstallDir") as! String
+    let updatetracking_path = NSString.path(
+            withComponents: [managedinstallbase, "UpdateNotificationTracking.plist"])
+    return readPlistAsNSDictionary(updatetracking_path)
 }
 
 func munkiUpdatesContainAppleItems() -> Bool {
@@ -251,9 +276,7 @@ func thereAreUpdatesToBeForcedSoon(hours: Int = 72) -> Bool {
     // Return True if any updates need to be installed within the next
     // X hours, false otherwise
     var installinfo = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
-    let appleupdates = getAppleUpdates()["AppleUpdates"] as? [PlistDict] ?? [PlistDict]()
-    installinfo = installinfo + appleupdates
-    
+    installinfo = installinfo + getAppleUpdates()
     let now_xhours = Date(timeIntervalSinceNow: TimeInterval(hours * 3600))
     for item in installinfo {
         if var force_install_after_date = item["force_install_after_date"] as? Date {
@@ -273,8 +296,7 @@ func earliestForceInstallDate(_ installinfo: [PlistDict]? = nil) -> Date? {
     var earliest_date: Date? = nil
     if installinfo == nil {
         let managed_installs = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
-        let appleupdates = getAppleUpdates()["AppleUpdates"] as? [PlistDict] ?? [PlistDict]()
-        installinfo = managed_installs + appleupdates
+        installinfo = managed_installs + getAppleUpdates()
     }
     for install in installinfo! {
         if var this_force_install_date = install["force_install_after_date"] as? Date {
@@ -375,8 +397,9 @@ func startUpdateCheck(_ suppress_apple_update_check: Bool = false) throws {
         do {
             try writePlist(plist, toFile: UPDATECHECKLAUNCHFILE)
         } catch {
-            throw ProcessStartError.error(
-                description: "Could not create file \(UPDATECHECKLAUNCHFILE) -- \(error)")
+            let message = "Could not create file \(UPDATECHECKLAUNCHFILE) -- \(error)"
+            msc_log("MSC", "cant_write_file", msg: message)
+            throw ProcessStartError.error(description: message)
         }
     }
 }

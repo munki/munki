@@ -1,5 +1,14 @@
-﻿/* Failed Preflight Check detail */
+/* System configuration problem alert detail */
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Centre from operating correctly. The reported issue is: ";
+
+/* No help alert detail */
+"Help isn't available for Managed Software Center." = "Help isn't available for Managed Software Centre.";
+
+/* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centre cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator.";
 
 /* Cannot Contact Server detail */
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Centre cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator.";
+
+/* Password prompt title */
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Centre wants to unlock the startup disk after restarting to complete all pending updates.";

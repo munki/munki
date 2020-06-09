@@ -148,7 +148,7 @@ def can_attempt_auth_restart(have_password=False):
             (get_auth_restart_key(quiet=True) != '' or have_password))
 
 
-def perform_auth_restart(username=None, password=None):
+def perform_auth_restart(username=None, password=None, delayminutes=0):
     """When called this will perform an authorized restart. Before trying
     to perform an authorized restart it checks to see if the machine supports
     the feature. If supported it will look for the defined plist containing
@@ -169,14 +169,23 @@ def perform_auth_restart(username=None, password=None):
     if username:
         keys['Username'] = username
     inputplist = FoundationPlist.writePlistToString(keys)
-    display.display_info('Attempting an Authorized Restart now...')
+    if delayminutes == 0:
+        display.display_info('Attempting an Authorized Restart now...')
+    else:
+        display.display_info('Configuring a delayed Authorized Restart...')
+    os_version_tuple = osutils.getOsVersion(as_tuple=True)
+    if os_version_tuple >= (10, 12):
+        cmd = ['/usr/bin/fdesetup', 'authrestart',
+               '-delayminutes', str(delayminutes), '-inputplist']
+    else:
+        cmd = ['/usr/bin/fdesetup', 'authrestart', '-inputplist']
     proc = subprocess.Popen(
-        ['/usr/bin/fdesetup', 'authrestart', '-inputplist'],
+        cmd,
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE
+    )
     err = proc.communicate(input=inputplist)[1].decode('UTF-8')
-    os_version_tuple = osutils.getOsVersion(as_tuple=True)
     if os_version_tuple >= (10, 12) and 'System is being restarted' in err:
         return True
     if err:

@@ -52,6 +52,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
 
+/* Pre Install Uninstall Upgrade Alert Title */
+"Attention" = "Huomio";
+
 /* Cancel button title/short action text */
 "Cancel" = "Kumoa";
 
@@ -151,17 +154,23 @@
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Managed Software Center -ohjelmalle ei ole ohjetta.";
 
+/* Apple Software Updates Pending title */
+"Important Apple Updates" = "Tärkeitä Applen päivityksiä";
+
 /* Sidebar Information label */
 "Information" = "Tietoja";
 
 /* Install action text */
 "Install" = "Asenna";
 
-/* Install Required action text */
-"Install Required" = "Pakollinen asennus";
+/* Install now button title */
+"Install now" = "Asenna nyt";
 
 /* Install Requested status text */
 "Install requested" = "Asennusta pyydetty";
+
+/* Install Required action text */
+"Install Required" = "Pakollinen asennus";
 
 /* Install Session Failed title */
 "Install session failed" = "Asennus epäonnistui";
@@ -186,6 +195,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Vaatii uloskirjautumisen";
+
+/* macOS update required text */
+"macOS update required" = "macOS-päivitys vaaditaan";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center ei voi tarkistaa päivityksiä juuri nyt. Yritä myöhemmin uudelleen. Jos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
@@ -220,14 +232,14 @@
 /* No Updates message */
 "No pending updates" = "Ei päivityksiä";
 
-/* Item Not Found title */
-"Not Found" = "Ei tuloksia";
-
 /* Not Currently Available display text */
 "Not currently available" = "Ei saatavilla tällä hetkellä";
 
 /* Not Enough Disk Space display text */
 "Not enough disk space" = "Kovalevyllä ei ole tarpeeksi tilaa";
+
+/* Item Not Found title */
+"Not Found" = "Ei tuloksia";
 
 /* Not Installed status text */
 "Not installed" = "Ei asennettu";
@@ -237,6 +249,9 @@
 
 /* OK button title */
 "OK" = "OK";
+
+/* Pending Apple Updates warning */
+"One or more important Apple updates must be installed" = "Yksi tai useampi tärkeä Applen päivitys täytyy asentaa";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Yksi tai useampi kohde täytyy asentaa ennen %@";
@@ -273,6 +288,9 @@
 
 /* Preparing Removal status text */
 "Preparing removal" = "Valmistellaan poistoa";
+
+/* managedsoftwareupdate message */
+"Preparing to run macOS Installer..." = "Valmistellaan macOS-asentajan käynnistämistä...";
 
 /* Problem Updates label */
 "Problem updates" = "Epäonnistuneet päivitykset";
@@ -322,6 +340,9 @@
 /* Sidebar Size label */
 "Size:" = "Koko:";
 
+/* Skip Apple updates button title */
+"Skip these updates" = "Ohita nämä päivitykset";
+
 /* Software label */
 "Software" = "Ohjelmistot";
 
@@ -331,8 +352,14 @@
 /* Restart Required alert detail */
 "Software installed or removed requires a restart. You will have a chance to save open documents." = "Asennettu ohjelmisto tai poisto vaatii tietokoneen uudelleenkäynnistyksen. Avoinna olevien dokumenttien tallentaminen on mahdollista.";
 
+/* Pre Install Uninstall Upgrade Alert Detail */
+"Some conditions apply to this software. Please contact your administrator for more details" = "Tähän päivitykseen liittyy ehtoja. Ota yhteys ylläpitäjään";
+
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Käynnistetään Adobe-asentajaa...";
+
+/* managedsoftwareupdate message */
+"Starting macOS upgrade..." = "Aloitetaan macOS-päivitys...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Aloitetaan...";
@@ -342,6 +369,9 @@
 
 /* System configuration problem alert title */
 "System configuration problem" = "Järjestelmän määritysvirhe";
+
+/* managedsoftwareupdate message */
+"System will restart and begin upgrade of macOS." = "Järjestelmä käynnistyy uudelleen ja aloittaa macOS-päivityksen.";
 
 /* managedsoftwareupdate message */
 "The software was successfully installed." = "Ohjelmiston asennus onnistui.";
@@ -357,6 +387,12 @@
 
 /* No Category Results primary text */
 "There are no items in this category." = "Ei kohteita tässä kategoriassa.";
+
+/* Apple Software Updates Pending detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Yksi tai useampi saatavilla oleva Applen päivitys vaatii uudelleenkäynnistyksen.\n\nPäivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
+
+/* Apple Software Updates Unable detail */
+"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Yksi tai useampi saatavilla oleva Applen päivitys vaatii uudelleenkäynnistyksen.\n\nYlläpitäjä on rajoittanut näiden päivitysten asentamista. Ota yhteyttä ylläpitäjään.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Tietokoneelle on kirjautuneena muita käyttäjiä.\nMuut käyttäjät saattavat menettää tallentamattomia muutoksia jos päivitys tehdään nyt.\n\nYritä uudelleen kun muut käyttäjät ovat kirjautuneet ulos.";
@@ -382,6 +418,9 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Asennettava ennen %@";
 
+/* Pending days message */
+"This update has been pending for %@ days." = "Päivitys on ollut saatavilla %@ päivää.";
+
 /* Password explanation */
 "To allow this, enter your login password." = "Salli lukituksen avaaminen syöttämällä salasana.";
 
@@ -398,7 +437,7 @@
 "Try selecting another developer." = "Valitse toinen kehittäjä.";
 
 /* Sidebar Type label */
-"Type:" = "Tyyppi:";
+"Type" = "Tyyppi";
 
 /* Unavailable status text */
 "Unavailable" = "Ei saatavilla";
@@ -412,9 +451,6 @@
 /* Update All button title */
 "Update All" = "Päivitä kaikki";
 
-/* Update Required long action text */
-"Update Required" = "Pakollinen päivitys";
-
 /* No comment provided by engineer. */
 "Update available" = "Päivitys saatavilla";
 
@@ -426,6 +462,9 @@
 
 /* Update Now button title */
 "Update now" = "Päivitä nyt";
+
+/* Update Required long action text */
+"Update Required" = "Pakollinen päivitys";
 
 /* Update Will Be Installed status text */
 "Update will be installed" = "Päivitys asennetaan";
@@ -471,6 +510,3 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ohjelmisto on ajan tasalla.";
-
-/* macOS update required text */
-"macOS update required" = "macOS-päivitys vaaditaan";

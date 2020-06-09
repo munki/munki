@@ -198,7 +198,7 @@ def _run_installer(cmd, env_vars, packagename):
     retcode = job.returncode()
     if retcode != 0:
         # append stdout to our installer output
-        installeroutput.extend(job.stderr.read().splitlines())
+        installeroutput.extend(job.stderr.read().decode("UTF-8").splitlines())
         display.display_status_minor(
             "Install of %s failed with return code %s" % (packagename, retcode))
         display.display_error("-"*78)
@@ -277,7 +277,8 @@ def installall(dirpath, options=None):
         itempath = os.path.join(dirpath, item)
         if pkgutils.hasValidDiskImageExt(item):
             display.display_info("Mounting disk image %s" % item)
-            mountpoints = dmgutils.mountdmg(itempath, use_shadow=True)
+            mountpoints = dmgutils.mountdmg(
+                itempath, use_shadow=True, skip_verification=True)
             if mountpoints == []:
                 display.display_error("No filesystems mounted from %s", item)
                 return (retcode, restartflag)

@@ -613,7 +613,8 @@ func buildUpdatesPage() throws {
         try buildUpdateStatusPage()
         return
     }
-    let item_list = getEffectiveUpdateList()
+    let filterAppleUpdates = (NSApp.delegate! as! AppDelegate).mainWindowController.should_filter_apple_updates
+    let item_list = getEffectiveUpdateList(filterAppleUpdates)
     let problem_updates = getProblemItems()
     for item in problem_updates {
         item["hide_cancel_button"] = "hidden"
@@ -672,7 +673,7 @@ func buildUpdatesPage() throws {
     // in Python was count = len([item for item in item_list if item['status'] != 'problem-item'])
     page["update_count"] = updateCountMessage(count)
     page["install_btn_label"] = getInstallAllButtonTextForCount(count)
-    page["warning_text"] = getWarningText()
+    page["warning_text"] = getWarningText(filterAppleUpdates)
     
     // build problem updates table
     page["problem_updates_header_message"] = NSLocalizedString(
@@ -795,7 +796,7 @@ func getRestartActionForUpdateList(_ update_list: [GenericItem]) -> String {
     return ""
 }
 
-func getWarningText() -> String {
+func getWarningText(_ filterAppleUpdates: Bool) -> String {
     // Return localized text warning about forced installs and/or
     // logouts and/or restarts
     let item_list = getEffectiveUpdateList()
@@ -807,6 +808,11 @@ func getWarningText() -> String {
             "One or more items must be installed by %@",
             comment: "Forced Install Date summary")
         warning_text = NSString(format: forced_date_text as NSString, date_str) as String
+    } else if !filterAppleUpdates && shouldAggressivelyNotifyAboutAppleUpdates() {
+        warning_text = NSLocalizedString(
+            "One or more important Apple updates must be installed",
+            comment: "Pending Apple Updates warning"
+        )
     }
     let restart_text = getRestartActionForUpdateList(item_list)
     if !restart_text.isEmpty {

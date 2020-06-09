@@ -68,6 +68,8 @@ class RepoCleaner(object):
         self.manifest_items = set()
         self.manifest_items_with_versions = set()
         self.pkginfodb = {}
+        self.referenced_pkgs = set()
+        self.orphaned_pkgs = []
         self.required_items = set()
         self.pkginfo_count = 0
         self.items_to_delete = []
@@ -103,7 +105,7 @@ class RepoCleaner(object):
                 return str(size_in_bytes) + " bytes"
             return str(round(size_in_bytes/float(limit/2**10), 1)) + suffix
 
-        count = 0
+        count = len(self.orphaned_pkgs)
         pkginfo_total_size = 0
         pkg_total_size = 0
         for item in self.items_to_delete:
@@ -196,6 +198,11 @@ class RepoCleaner(object):
             uninstallpkgpath = pkginfo.get('uninstaller_item_location', '')
             uninstallpkgsize = pkginfo.get('uninstaller_item_size', 0) * 1024
 
+            if pkgpath:
+                self.referenced_pkgs.add(pkgpath)
+            if uninstallpkgpath:
+                self.referenced_pkgs.add(uninstallpkgpath)
+
             # track required items; if these are in "Foo-1.0" format, we need
             # to note these so we don't delete the specific referenced version
             if 'requires' in pkginfo:
@@ -261,6 +268,20 @@ class RepoCleaner(object):
             })
             self.pkginfo_count += 1
 
+    def find_orphaned_pkgs(self):
+        '''Finds installer items that are not referred to by any pkginfo file'''
+        print('Analyzing installer items...')
+        try:
+            pkgs_list = self.repo.itemlist('pkgs')
+        except munkirepo.RepoError as err:
+            self.errors.append(
+                "Repo error getting list of pkgs: %s"
+                % unicode_or_str(err))
+            pkgs_list = []
+        for pkg in pkgs_list:
+            if pkg not in self.referenced_pkgs:
+                self.orphaned_pkgs.append(pkg)
+
     def find_cleanup_items(self):
         '''Using the info on manifests and pkgsinfo, find items to clean up.
         Populates self.items_to_delete: a list of pkginfo items to remove,
@@ -325,6 +346,14 @@ class RepoCleaner(object):
                             print("(%s)" % item['resource_identifier'])
             if print_this:
                 print()
+        if self.orphaned_pkgs:
+            print('The following pkgs are not referred to by any pkginfo '
+                  'item:')
+            for pkg in self.orphaned_pkgs:
+                print("\t%s" % pkg)
+        if print_this:
+            print()
+            
 
         print("Total pkginfo items:     %s" % self.pkginfo_count)
         print("Item variants:           %s" % len(list(self.pkginfodb.keys())))
@@ -333,6 +362,10 @@ class RepoCleaner(object):
         print("pkgs to delete:          %s" % pkg_count)
         print("pkginfo space savings:   %s" % pkginfo_size)
         print("pkg space savings:       %s" % pkg_size)
+        if len(self.orphaned_pkgs):
+            print("                         "
+                  "(Unknown additional pkg space savings from %s orphaned pkgs)"
+                  % len(self.orphaned_pkgs))
 
         if self.errors:
             print("\nErrors encountered when processing repo:\n",
@@ -342,6 +375,7 @@ class RepoCleaner(object):
 
     def delete_items(self):
         '''Deletes items from the repo'''
+        # remove old pkginfo and referenced pkgs
         for item in self.items_to_delete:
             if 'resource_identifier' in item:
                 print('Removing %s' % item['resource_identifier'],
@@ -366,6 +400,15 @@ class RepoCleaner(object):
                     self.repo.delete(pkg_to_remove)
                 except munkirepo.RepoError as err:
                     print(unicode_or_str(err), file=sys.stderr)
+        # remove orphaned pkgs
+        for pkg in self.orphaned_pkgs:
+            pkg_to_remove = os.path.join('pkgs', pkg)
+            print('Removing %s' % pkg_to_remove)
+            try:
+                self.repo.delete(pkg_to_remove)
+            except munkirepo.RepoError as err:
+                print(unicode_or_str(err), file=sys.stderr)
+            
 
     def make_catalogs(self):
         """Calls makecatalogs to rebuild our catalogs"""
@@ -405,8 +448,9 @@ class RepoCleaner(object):
         '''Clean our repo!'''
         self.analyze_manifests()
         self.analyze_pkgsinfo()
+        self.find_orphaned_pkgs()
         self.find_cleanup_items()
-        if self.items_to_delete:
+        if self.items_to_delete or self.orphaned_pkgs:
             print()
             if not self.options.auto:
                 answer = get_input(

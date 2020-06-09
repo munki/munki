@@ -29,6 +29,7 @@ from __future__ import absolute_import, print_function
 
 import os
 import subprocess
+import tempfile
 import time
 import uuid
 
@@ -139,7 +140,13 @@ class Job(object):
     def __init__(self, cmd, environment_vars=None,
                  job_label=None, cleanup_at_exit=True):
         '''Initialize our launchd job'''
-        tmpdir = osutils.tmpdir()
+        if cleanup_at_exit:
+            # safe to use the same tmpdir as the calling tool
+            # (usually managedsoftwareupdate) so it will get cleaned up
+            tmpdir = osutils.tmpdir()
+        else:
+            # need to create our own tmpdir; may not be cleaned up
+            tmpdir = tempfile.mkdtemp(prefix='munki.launchd-', dir='/tmp')
 
         # label this job
         self.label = job_label or 'com.googlecode.munki.' + str(uuid.uuid1())
@@ -174,6 +181,7 @@ class Job(object):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
+
         err = proc.communicate()[1].decode('UTF-8')
         if proc.returncode:
             raise LaunchdJobException(err)

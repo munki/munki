@@ -101,6 +101,24 @@ class FDEUtil(object):
                 self.log.info('Restart request denied')
                 raise FDEUtilError('Restart may only be triggered by root')
 
+        if self.request['task'] == 'delayed_authrestart':
+            # set up a delayed authrestart. Defaults to waiting indefinitely,
+            # so the next "normal" restart becomes an authrestart.
+            self.log.info('Delayed restart request from uid %s', self.uid)
+            if self.uid == 0:
+                self.log.info('Stored username for authrestart: %s',
+                              self.server.stored_username)
+                delayminutes = self.request.get('delayminutes', -1)
+                authrestart.perform_auth_restart(
+                    password=self.server.stored_password,
+                    username=self.server.stored_username,
+                    delayminutes=delayminutes)
+                return 'DONE'
+            else:
+                self.log.info('Delayed restart request denied')
+                raise FDEUtilError(
+                    'Delayed restart may only be triggered by root')
+
         if self.request['task'] == 'store_password':
             # store a password for later fdesetup authrestart
             self.log.info('Store password request')

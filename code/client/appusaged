@@ -50,6 +50,13 @@ APPNAME = 'appusaged'
 VERSION = '0.1'
 
 
+def print_error_and_exit(errmsg):
+    '''Prints an error message to stderr, sleeps, and exits'''
+    print(errmsg, file=sys.stderr)
+    time.sleep(10)
+    return 1
+
+
 class AppUsageHandlerError(Exception):
     '''Exception to raise if there is any error in AppUsageHandler'''
     pass
@@ -161,7 +168,14 @@ class RunHandler(SocketServer.StreamRequestHandler):
             self.log.debug('Handling request')
 
             # Get uid and primary gid of connecting peer.
-            uid, gids = self.getpeerid()
+            try:
+                uid, gids = self.getpeerid()
+            except OSError as err:
+                self.log.error(u'Peerid failure: %s' % unicode_or_str(err))
+                self.request.send(
+                    (u'ERROR:Internal peerid error\n').encode('UTF-8'))
+                return
+
             gid = gids[0]
             self.log.debug(
                 'Got request from uid %d gid %d' % (uid, gid))
@@ -206,7 +220,6 @@ class RunHandler(SocketServer.StreamRequestHandler):
             self.log.error(u'Caught exception: %s' % repr(err))
             self.request.send(
                 (u'ERROR:Caught exception: %s' % repr(err)).encode('UTF-8'))
-            return
 
 class AppUsageDaemonError(Exception):
     '''Exception to raise for AppUsageDaemon errors'''
@@ -274,10 +287,7 @@ def main():
     '''Start our daemon, connect to socket and process events'''
     # Make sure we're launched as root
     if os.geteuid() != 0:
-        print('%s must be run as root.' % APPNAME, file=sys.stderr)
-        # Sleep to avoid respawn.
-        time.sleep(10)
-        return 1
+        print_error_and_exit('%s must be run as root.' % APPNAME)
 
     # Make sure that the executable and all containing directories are owned
     # by root:wheel or root:admin, and not writeable by other users.
@@ -314,13 +324,14 @@ def main():
     # Get socket file descriptors from launchd.
     socket_fd = launchd.get_socket_fd(APPNAME.encode('UTF-8'))
     if not socket_fd:
-        print('No socket provided to us by launchd', file=sys.stderr)
-        time.sleep(10)
-        return 1
+        print_error_and_exit('No socket provided to us by launchd')
 
     # Create the daemon object.
     daemon = AppUsageDaemon(socket_fd, RunHandler)
-    daemon.setup_logging()
+    try:
+        daemon.setup_logging()
+    except AppUsageDaemonError as err:
+        print_error_and_exit('%s' % err)
 
     daemon.log.debug('%s v%s starting', APPNAME, VERSION)
 
