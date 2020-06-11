@@ -97,7 +97,7 @@ class MSCPasswordAlertController: NSObject {
         shakeAnimation.path = shakePath
         shakeAnimation.duration = durationOfShake
         
-        let frameOriginKey = NSAnimatablePropertyKey(rawValue: "frameOrigin")
+        let frameOriginKey = "frameOrigin"
         the_window.animations = [frameOriginKey: shakeAnimation]
         the_window.animator().setFrameOrigin(frame.origin)
     }
