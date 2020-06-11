@@ -760,7 +760,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Display the update count as a badge in the window toolbar
         // and as an icon badge in the Dock
         let updateCount = getUpdateCount()
-        let btn_image = MSCBadgedTemplateImage.image(named: NSImage.Name(rawValue: "updatesTemplate.pdf"),
+        let btn_image = MSCBadgedTemplateImage.image(named: "updatesTemplate.pdf",
                                                      withCount: updateCount)
         updateButtonCell.image = btn_image
         if updateCount > 0 {
