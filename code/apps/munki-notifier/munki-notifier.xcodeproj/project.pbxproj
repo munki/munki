@@ -167,10 +167,9 @@
 			};
 			buildConfigurationList = C081D8AF1E5F4F5E00323D9C /* Build configuration list for PBXProject "munki-notifier" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 				es,
