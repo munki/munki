@@ -108,6 +108,9 @@ class AppleUpdates(object):
         self._update_list_cache = None
         self.shutdown_instead_of_restart = False
 
+        # list of available_updates
+        self.apple_updates = None
+
         # apple_update_metadata support
         self.client_id = ''
         self.force_catalog_refresh = False
@@ -133,6 +136,7 @@ class AppleUpdates(object):
         This is called after performing munki updates because the Apple updates
         may no longer be relevant.
         """
+        self.apple_updates = None
         try:
             os.unlink(self.apple_updates_plist)
         except (OSError, IOError):
@@ -185,6 +189,10 @@ class AppleUpdates(object):
             # RecommendedUpdates without filtering. We never saw the issues
             # that this filtering is meant to address in 10.10 anyway!
             return recommended_updates
+        if not recommended_updates:
+            # if the list is empty no need to run softwareupdate -l to filter
+            # the list
+            return []
         su_results = su_tool.run(['-l', '--no-scan'])
         filtered_updates = []
         for item in su_results.get('updates', []):
@@ -358,13 +366,12 @@ class AppleUpdates(object):
                 return False
         return True
 
-    def software_update_info(self):
-        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist to generate
-        the AppleUpdates.plist, which records available updates in the format
-        that Managed Software Center.app expects.
+    def get_apple_updates(self):
+        """Uses info from /Library/Preferences/com.apple.SoftwareUpdate.plist
+        and softwareupdate -l to determine the list of available Apple updates.
 
         Returns:
-          List of dictionary update data.
+          List of dictionaries describing available Apple updates.
         """
         update_display_names = {}
         update_versions = {}
@@ -373,6 +380,7 @@ class AppleUpdates(object):
         apple_updates = []
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
+        # and softwareupdate -l
         recommended_updates = self.get_filtered_recommendedupdates()
         for item in recommended_updates:
             try:
@@ -430,6 +438,14 @@ class AppleUpdates(object):
             apple_updates.append(su_info)
 
         return apple_updates
+
+    def software_update_info(self):
+        """Returns:
+          List of dictionaries describing available Apple updates.
+        """
+        if self.apple_updates is not None:
+            self.apple_updates = self.get_apple_updates()
+        return self.apple_updates
 
     def write_appleupdates_file(self):
         """Writes a file used by the MSU GUI to display available updates.
@@ -700,6 +716,7 @@ class AppleUpdates(object):
         else:
             # we installed some of the updates, but some are still uninstalled.
             # re-write the apple_update_info to match
+            self.apple_updates = remaining_apple_updates
             plist = {'AppleUpdates': remaining_apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
 
