@@ -9,7 +9,7 @@ PKGID="com.googlecode.munki"
 OUTPUTDIR=`pwd`
 CONFPKG=""
 CHECKOUTREV="HEAD"
-BRANCH="master"
+BRANCH="main"
 
 
 usage() {
