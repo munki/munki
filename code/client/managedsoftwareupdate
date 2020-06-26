@@ -64,6 +64,7 @@ else:
     from munkilib import info
     from munkilib import installer
     from munkilib import installinfo
+    from munkilib import loginwindow
     from munkilib import munkilog
     from munkilib import munkistatus
     from munkilib import osinstaller
@@ -721,6 +722,12 @@ def main():
                     "managedsoftwareupdate run triggered by %s" % filename)
                 user_triggered = True
                 if filename == constants.CHECKANDINSTALLATSTARTUPFLAG:
+                    if not loginwindow.just_started_up():
+                        munkilog.log("Skipping run at loginwindow because we "
+                                     "did not just start up.")
+                        # sleep to make launchd happy
+                        time.sleep(10)
+                        exit(0)
                     runtype = 'checkandinstallatstartup'
                     options.installonly = False
                     options.auto = True
@@ -734,6 +741,12 @@ def main():
                         time.sleep(1)
                     break
                 elif filename == constants.INSTALLATSTARTUPFLAG:
+                    if not loginwindow.just_started_up():
+                        munkilog.log("Skipping run at loginwindow because we "
+                                     "did not just start up.")
+                        # sleep to make launchd happy
+                        time.sleep(10)
+                        exit(0)
                     runtype = 'installatstartup'
                     # check to see if we should do some special handling;
                     # we might have installed Apple updates right before a
