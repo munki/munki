@@ -759,7 +759,6 @@ class AppleUpdates(object):
         Returns:
           Integer. Count of available Apple updates.
         """
-        success = True
         if suppress_check:
             # don't check at all --
             # typically because we are doing a logout install
@@ -790,11 +789,11 @@ class AppleUpdates(object):
                 except (ValueError, TypeError):
                     pass
             if now.timeIntervalSinceDate_(next_su_check) >= 0:
-                success = self.check_for_software_updates(force_check=True)
+                updatecount = self.check_for_software_updates(force_check=True)
             else:
-                success = self.check_for_software_updates(force_check=False)
+                updatecount = self.check_for_software_updates(force_check=False)
         display.display_debug1(
-            'CheckForSoftwareUpdates result: %s' % success)
+            'CheckForSoftwareUpdates result: %s' % updatecount)
         if updatecount == -1:
             # some (transient?) communications error with the su server; return
             # cached AppleInfo
