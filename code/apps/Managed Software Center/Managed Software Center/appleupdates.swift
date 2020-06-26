@@ -22,6 +22,17 @@ func writeInstallAtStartupFlagFile(skipAppleUpdates: Bool = true) {
         // unfortunate, but not fatal.
         msc_log("MSC", "cant_write_file", msg: "Couldn't write \(INSTALLATSTARTUPFILE) -- \(error)")
     }
+    // also remove the installatlogout file if it exists so we don't try to install at logout
+    // while Apple Software Update is doing it's thing
+    if FileManager.default.isDeletableFile(atPath: INSTALLATLOGOUTFILE) {
+        do {
+            try FileManager.default.removeItem(atPath: INSTALLATLOGOUTFILE)
+        } catch {
+            // unfortunate, but not fatal.
+            msc_log("MSC", "cant_delete_file", msg: "Couldn't delete \(INSTALLATLOGOUTFILE) -- \(error)")
+        }
+    }
+
 }
 
 func killSystemPreferencesApp() {
