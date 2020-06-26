@@ -36,7 +36,7 @@ from .. import pkgutils
 def find_install_app(dirpath):
     '''Searches dirpath and enclosed directories for Install.app.
     Returns the path to the actual executable.'''
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(dirpath):
         if path.endswith("Install.app"):
             setup_path = os.path.join(path, "Contents", "MacOS", "Install")
             if os.path.exists(setup_path):
@@ -47,7 +47,7 @@ def find_install_app(dirpath):
 def find_setup_app(dirpath):
     '''Search dirpath and enclosed directories for Setup.app.
     Returns the path to the actual executable.'''
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(dirpath):
         if path.endswith("Setup.app"):
             setup_path = os.path.join(path, "Contents", "MacOS", "Setup")
             if os.path.exists(setup_path):
@@ -58,7 +58,7 @@ def find_setup_app(dirpath):
 def find_adobepatchinstaller_app(dirpath):
     '''Searches dirpath and enclosed directories for AdobePatchInstaller.app.
     Returns the path to the actual executable.'''
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(dirpath):
         if path.endswith("AdobePatchInstaller.app"):
             setup_path = os.path.join(
                 path, "Contents", "MacOS", "AdobePatchInstaller")
@@ -70,7 +70,7 @@ def find_adobepatchinstaller_app(dirpath):
 def find_adobe_deployment_manager(dirpath):
     '''Searches dirpath and enclosed directories for AdobeDeploymentManager.
     Returns path to the executable.'''
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(dirpath):
         if path.endswith("pkg/Contents/Resources"):
             dm_path = os.path.join(path, "AdobeDeploymentManager")
             if os.path.exists(dm_path):
@@ -83,7 +83,7 @@ def find_acrobat_patch_app(dirpath):
     in dirpath. If found, returns the path to the bundled
     patching script.'''
 
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(dirpath):
         if path.endswith(".app"):
             # look for Adobe's patching script
             patch_script_path = os.path.join(
@@ -169,7 +169,7 @@ def get_adobe_setup_info(installroot):
     payloads = []
 
     # look for all the payloads folders
-    for (path, dummy_dirs, dummy_files) in os.walk(installroot):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(installroot):
         if path.endswith('/payloads'):
             driverfolder = ''
             media_signature = ''
@@ -207,7 +207,7 @@ def get_adobe_setup_info(installroot):
 
     if not payloads:
         # look for an extensions folder; almost certainly this is an Updater
-        for (path, dummy_dirs, dummy_files) in os.walk(installroot):
+        for (path, _dummy_dirs, _dummy_files) in os.walk(installroot):
             if path.endswith("/extensions"):
                 for item in osutils.listdir(path):
                     #skip LanguagePacks
@@ -400,7 +400,7 @@ def get_cs5_media_signature(dirpath):
 
     payloads_dir = ""
     # look for a payloads folder
-    for (path, dummy_dirs, dummy_files) in os.walk(dirpath):
+    for (path, _dummy_dirs, _dummy_files) in os.walk(dirpath):
         if path.endswith('/payloads'):
             payloads_dir = path
 
@@ -449,7 +449,7 @@ def count_payloads(dirpath):
     '''Attempts to count the payloads in the Adobe installation item.
        Used for rough percent-done progress feedback.'''
     count = 0
-    for (path, dummy_dirs, files) in os.walk(dirpath):
+    for (path, _dummy_dirs, files) in os.walk(dirpath):
         if path.endswith("/payloads"):
             # RIBS-style installers
             for subitem in osutils.listdir(path):

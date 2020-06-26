@@ -447,7 +447,7 @@ def makepkginfo(installeritem, options):
                       "To use it with Munki, you should encapsulate it "
                       "in a disk image.\n" % installeritem, file=sys.stderr)
                 # need to walk the dir and add it all up
-                for (path, dummy_dirs, files) in os.walk(installeritem):
+                for (path, _dummy_dirs, files) in os.walk(installeritem):
                     for name in files:
                         filename = os.path.join(path, name)
                         # use os.lstat so we don't follow symlinks
