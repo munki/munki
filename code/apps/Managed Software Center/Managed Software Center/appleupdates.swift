@@ -12,27 +12,21 @@ import OpenDirectory
 
 
 let INSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.installatstartup"
+let CHECKANDINSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
 
-func writeInstallAtStartupFlagFile(skipAppleUpdates: Bool = true) {
-    // writes out a file to trigger Munki to install Munki updates at next restart
-    let plist = ["SkipAppleUpdates": skipAppleUpdates]
-    do {
-        try writePlist(plist, toFile: INSTALLATSTARTUPFILE)
-    } catch {
-        // unfortunate, but not fatal.
-        msc_log("MSC", "cant_write_file", msg: "Couldn't write \(INSTALLATSTARTUPFILE) -- \(error)")
-    }
-    // also remove the installatlogout file if it exists so we don't try to install at logout
+func clearLogoutAndStartupFlagFiles() {
+    // Remove the all loguout/startup flag files if they exist so we don't try to install at logout
     // while Apple Software Update is doing it's thing
-    if FileManager.default.isDeletableFile(atPath: INSTALLATLOGOUTFILE) {
-        do {
-            try FileManager.default.removeItem(atPath: INSTALLATLOGOUTFILE)
-        } catch {
-            // unfortunate, but not fatal.
-            msc_log("MSC", "cant_delete_file", msg: "Couldn't delete \(INSTALLATLOGOUTFILE) -- \(error)")
+    for fileName in [INSTALLATLOGOUTFILE, INSTALLATSTARTUPFILE, CHECKANDINSTALLATSTARTUPFILE] {
+        if FileManager.default.isDeletableFile(atPath: fileName) {
+            do {
+                try FileManager.default.removeItem(atPath: fileName)
+            } catch {
+                // unfortunate, but not much we can do about it!
+                msc_log("MSC", "cant_delete_file", msg: "Couldn't delete \(fileName) -- \(error)")
+            }
         }
     }
-
 }
 
 func killSystemPreferencesApp() {
@@ -46,7 +40,7 @@ func killSystemPreferencesApp() {
 func openSoftwareUpdatePrefsPane() {
     // kill it first in case it is open with a dialog/sheet
     //killSystemPreferencesApp() // nope, it reopens to previous pane
-    writeInstallAtStartupFlagFile()
+    clearLogoutAndStartupFlagFiles()
     if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.preferences.softwareupdate") {
         NSWorkspace.shared.open(softwareUpdatePrefsPane)
     }

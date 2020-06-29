@@ -554,6 +554,22 @@ def warn_if_server_is_default(server):
             'Consider using a non-default URL, and preferably an https:// URL.')
 
 
+def remove_launchd_logout_jobs_and_exit():
+    """Removes the jobs that launch MunkiStatus and  managedsoftwareupdate at
+    the loginwindow. We do this if we decide it's not applicable to run right
+    now so we don't get relaunched repeatedly, but don't want to remove the
+    trigger file because we do want to run again at the next logout/reboot.
+    These jobs will be reloaded the next time we're in the loginwindow context.
+    """
+    munkistatus.quit_app()
+    cmd = ["/bin/launchctl", "remove", "com.googlecode.munki.MunkiStatus"]
+    subprocess.call(cmd)
+    cmd = ["/bin/launchctl", "remove",
+           "com.googlecode.munki.managedsoftwareupdate-loginwindow"]
+    subprocess.call(cmd)
+    sys.exit(0)
+
+
 def main():
     """Main"""
     # install handler for SIGTERM
@@ -722,12 +738,6 @@ def main():
                     "managedsoftwareupdate run triggered by %s" % filename)
                 user_triggered = True
                 if filename == constants.CHECKANDINSTALLATSTARTUPFLAG:
-                    if not loginwindow.just_started_up():
-                        munkilog.log("Skipping run at loginwindow because we "
-                                     "did not just start up.")
-                        # sleep to make launchd happy
-                        time.sleep(10)
-                        exit(0)
                     runtype = 'checkandinstallatstartup'
                     options.installonly = False
                     options.auto = True
@@ -741,24 +751,7 @@ def main():
                         time.sleep(1)
                     break
                 elif filename == constants.INSTALLATSTARTUPFLAG:
-                    if not loginwindow.just_started_up():
-                        munkilog.log("Skipping run at loginwindow because we "
-                                     "did not just start up.")
-                        # sleep to make launchd happy
-                        time.sleep(10)
-                        exit(0)
                     runtype = 'installatstartup'
-                    # check to see if we should do some special handling;
-                    # we might have installed Apple updates right before a
-                    # restart
-                    try:
-                        launch_options = FoundationPlist.readPlist(filename)
-                        if launch_options.get("SkipAppleUpdates"):
-                            munkilog.log("SkipAppleUpdates is True")
-                            appleupdates.clearAppleUpdateInfo()
-                            options.munkipkgsonly = True
-                    except FoundationPlist.FoundationPlistException as err:
-                        pass
                     break
 
         # delete any triggerfile that isn't checkandinstallatstartup
