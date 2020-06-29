@@ -14,6 +14,17 @@ import OpenDirectory
 let INSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.installatstartup"
 let CHECKANDINSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
 
+func writeInstallAtStartupFlagFile(skipAppleUpdates: Bool = true) {
+    // writes out a file to trigger Munki to install Munki updates at next restart or logout
+    let plist = ["SkipAppleUpdates": skipAppleUpdates]
+    do {
+        try writePlist(plist, toFile: INSTALLATSTARTUPFILE)
+    } catch {
+        // unfortunate, but not fatal.
+        msc_log("MSC", "cant_write_file", msg: "Couldn't write \(INSTALLATSTARTUPFILE) -- \(error)")
+    }
+}
+
 func clearLogoutAndStartupFlagFiles() {
     // Remove the all loguout/startup flag files if they exist so we don't try to install at logout
     // while Apple Software Update is doing it's thing
