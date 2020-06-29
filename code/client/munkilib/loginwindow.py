@@ -48,4 +48,4 @@ def just_started_up():
     """Returns a boolean. True if we're at the loginwindow because we
     just started up, and False if because a user logged out or used Fast
     User Switching to switch out to the loginwindow"""
-    return get_pref('lastUser') not in ("loggedIn", "loogedOut")
+    return get_pref('lastUser') not in ("loggedIn", "loggedOut")
