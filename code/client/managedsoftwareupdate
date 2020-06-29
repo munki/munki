@@ -64,7 +64,6 @@ else:
     from munkilib import info
     from munkilib import installer
     from munkilib import installinfo
-    from munkilib import loginwindow
     from munkilib import munkilog
     from munkilib import munkistatus
     from munkilib import osinstaller
