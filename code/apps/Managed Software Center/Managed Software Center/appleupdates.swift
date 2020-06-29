@@ -26,8 +26,8 @@ func writeInstallAtStartupFlagFile(skipAppleUpdates: Bool = true) {
 }
 
 func clearLogoutAndStartupFlagFiles() {
-    // Remove the all loguout/startup flag files if they exist so we don't try to install at logout
-    // while Apple Software Update is doing it's thing
+    // Remove the all logout/startup flag files if they exist so we don't try to install at logout
+    // while Apple Software Update is doing its thing
     for fileName in [INSTALLATLOGOUTFILE, INSTALLATSTARTUPFILE, CHECKANDINSTALLATSTARTUPFILE] {
         if FileManager.default.isDeletableFile(atPath: fileName) {
             do {
