@@ -1135,25 +1135,6 @@ def main():
     if options.verbose:
         print('Done.')
 
-    if notify_user:
-        # it may have been more than a minute since we ran our original
-        # updatecheck so tickle the updatecheck time so MSC.app knows to
-        # display results immediately
-        recordUpdateCheckResult(1)
-        if force_action:
-            notifyUserOfUpdates(force=True)
-            time.sleep(2)
-            startLogoutHelper()
-        elif osutils.getconsoleuser() == u'loginwindow':
-            # someone is logged in, but we're sitting at the loginwindow due to
-            # to fast user switching so do nothing
-            pass
-        elif not prefs.pref('SuppressUserNotification'):
-            notifyUserOfUpdates()
-        else:
-            munkilog.log('Skipping user notification because '
-                         'SuppressUserNotification is true.')
-
     osutils.cleanUpTmpDir()
     if mustlogout:
         # not handling this currently
@@ -1165,6 +1146,25 @@ def main():
     else:
         # tell status app we're done sending status
         munkistatus.quit_app()
+        if notify_user:
+            # it may have been more than a minute since we ran our original
+            # updatecheck so tickle the updatecheck time so MSC.app knows to
+            # display results immediately
+            recordUpdateCheckResult(1)
+            if force_action:
+                notifyUserOfUpdates(force=True)
+                time.sleep(2)
+                startLogoutHelper()
+            elif osutils.getconsoleuser() == u'loginwindow':
+                # someone is logged in, but we're sitting at the loginwindow 
+                # due to to fast user switching so do nothing
+                munkilog.log('Skipping user notification because we are at the'
+                             'loginwindow.')
+            elif prefs.pref('SuppressUserNotification'):
+                munkilog.log('Skipping user notification because '
+                             'SuppressUserNotification is true.')
+            else:
+                notifyUserOfUpdates()
 
     if (runtype == 'checkandinstallatstartup' and
             restart_action == constants.POSTACTION_NONE):
