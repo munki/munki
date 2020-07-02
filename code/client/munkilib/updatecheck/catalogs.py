@@ -147,7 +147,7 @@ def split_name_and_version(some_string):
             chunks = some_string.split(delim)
             vers = chunks.pop()
             name = delim.join(chunks)
-            if vers[0] in '0123456789':
+            if vers and vers[0] in '0123456789':
                 return (name, vers)
 
     return (some_string, '')
