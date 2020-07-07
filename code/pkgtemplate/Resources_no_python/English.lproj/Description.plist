@@ -5,6 +5,6 @@
 	<key>IFPkgDescriptionTitle</key>
 	<string>System Python link</string>
 	<key>IFPkgDescriptionDescription</key>
-	<string>Creates symlink to system Python at /usr/local/munki/python. Available for install if you choose not to install Munki's embedded Python.</string>
+	<string>Creates symlink to system Python at /usr/local/munki/munki-python. Available for install if you choose not to install Munki's embedded Python.</string>
 </dict>
 </plist>
