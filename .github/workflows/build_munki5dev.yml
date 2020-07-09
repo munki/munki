@@ -1,10 +1,9 @@
 name: Build and upload recommended package
 
 on:
-  pull_request:
   push:
     branches:
-    - munki5devactions
+    - Munki5dev
 
 jobs:
   build:
