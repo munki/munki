@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - name: Checkout python repo
+    - name: Checkout munki repo
       uses: actions/checkout@v2
 
     - name: Set environment variables
@@ -21,7 +21,9 @@ jobs:
          echo ::set-env name=BUILD_DATE_RELEASE::$(/bin/date -u "+%B %d %Y %H:%M:%S")
 
     - name: Run build package script
-      run: /usr/bin/sudo ./code/tools/make_munki_mpkg.sh -o ./outputs -p
+      run: |
+          /bin/mkdir -p ./outputs
+          /usr/bin/sudo ./code/tools/make_munki_mpkg.sh -o ./outputs -p
 
     - name: Create Release
       id: create_release
