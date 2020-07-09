@@ -1,0 +1,54 @@
+name: Build and upload recommended package
+
+on:
+  pull_request:
+  push:
+    branches:
+    - munki5devactions
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout python repo
+      uses: actions/checkout@v2
+
+    - name: Set environment variables
+      id: set_env_var
+      run: |
+         MUNKIVERS=$(./code/tools/get_munki_build_version.sh)
+         echo ::set-env name=BUILD_DATE_RELEASE::$(/bin/date -u "+%B %d %Y %H:%M:%S")
+
+    - name: Run build package script
+      run: /usr/bin/sudo ./code/tools/make_munki_mpkg.sh -o ./outputs -p
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v.${{env.MUNKIVERS}}
+        release_name: Munki v.${{env.MUNKIVERS}} (${{env.BUILD_DATE_RELEASE}})
+        body: |
+            # Notes
+            This is a prelease version of munki 5 created via Github Actions
+        draft: false
+        prerelease: true
+
+    - name: Upload Unsigned Package Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./outputs/munkitools-${{env.MUNKIVERS}}.pkg
+        asset_name: munkitools-${{env.MUNKIVERS}}.pkg
+        asset_content_type: application/x-newton-compatible-pkg
+
+    - name: Upload packages
+      uses: actions/upload-artifact@v1
+      with:
+        name: packages
+        path: outputs/
