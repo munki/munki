@@ -17,7 +17,7 @@ jobs:
     - name: Set environment variables
       id: set_env_var
       run: |
-         MUNKIVERS=$(./code/tools/get_munki_build_version.sh)
+         echo ::set-env name=MUNKIVERS::$(./code/tools/get_munki_build_version.sh)
          echo ::set-env name=BUILD_DATE_RELEASE::$(/bin/date -u "+%B %d %Y %H:%M:%S")
 
     - name: Run build package script

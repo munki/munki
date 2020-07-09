@@ -33,8 +33,6 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
-
-cd "$MUNKIROOT"
 # generate a pseudo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
 GITREV=$(git log -n1 --format="%H" -- code/client)
