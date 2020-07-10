@@ -12,7 +12,9 @@ jobs:
     steps:
     - name: Checkout munki repo
       uses: actions/checkout@v2
-      fetch-depth: '0'
+      with:
+        # pulls all commits (needed for munki build tools to correctly create pkgversion)
+        fetch-depth: "0"
 
     - name: Set environment variables
       id: set_env_var
