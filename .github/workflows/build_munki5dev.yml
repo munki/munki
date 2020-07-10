@@ -12,6 +12,7 @@ jobs:
     steps:
     - name: Checkout munki repo
       uses: actions/checkout@v2
+      fetch-depth: '0'
 
     - name: Set environment variables
       id: set_env_var
