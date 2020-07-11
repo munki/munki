@@ -23,11 +23,12 @@ import os
 import subprocess
 import tempfile
 
-from . import display
-from . import munkihash
-from . import osutils
-from . import prefs
-from . import FoundationPlist
+from . import localmcx
+from .. import display
+from .. import munkihash
+from .. import osutils
+from .. import prefs
+from .. import FoundationPlist
 
 
 def profiles_supported():
@@ -208,7 +209,11 @@ def get_profile_receipt(profile_identifier):
 def install_profile(profile_path, profile_identifier):
     '''Installs a profile. Returns True on success, False otherwise'''
     if not profile_install_supported():
-        display.display_info("Cannot install profiles in this macOS version.")
+        # create some localmcx instead
+        profile_data = read_profile(profile_path)
+        if localmcx.install_profile(profile_data):
+            record_profile_receipt(profile_path, profile_identifier)
+            return True
         return False
     cmd = ['/usr/bin/profiles', '-IF', profile_path]
     # /usr/bin/profiles likes to output errors to stdout instead of stderr
@@ -236,18 +241,28 @@ def remove_profile(identifier):
     if not profiles_supported():
         display.display_info("No support for profiles in this macOS version.")
         return False
-    cmd = ['/usr/bin/profiles', '-Rp', identifier]
-    # /usr/bin/profiles likes to output errors to stdout instead of stderr
-    # so let's redirect everything to stdout and just use that
-    proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout = proc.communicate()[0].decode('UTF-8')
-    if proc.returncode != 0:
-        display.display_error(
-            'Profile %s removal failed: %s' % (identifier, stdout))
+    if in_config_profile_info(identifier):
+        cmd = ['/usr/bin/profiles', '-Rp', identifier]
+        # /usr/bin/profiles likes to output errors to stdout instead of stderr
+        # so let's redirect everything to stdout and just use that
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout = proc.communicate()[0].decode('UTF-8')
+        if proc.returncode != 0:
+            display.display_error(
+                'Profile %s removal failed: %s' % (identifier, stdout))
+            return False
+        remove_profile_receipt(identifier)
+        return True
+    elif localmcx.profile_is_installed(identifier):
+        if localmcx.remove_profile(identifier):
+            remove_profile_receipt(identifier)
+            return True
         return False
-    remove_profile_receipt(identifier)
-    return True
+    else:
+        # no evidence it's installed at all!
+        remove_profile_receipt(identifier)
+        return True
 
 
 def profile_needs_to_be_installed(identifier, hash_value):
@@ -256,10 +271,8 @@ def profile_needs_to_be_installed(identifier, hash_value):
     2) We don't have a receipt for this profile identifier
     3) receipt's hash_value for identifier does not match ours
     4) ProfileInstallDate doesn't match the receipt'''
-    if not profile_install_supported():
-        display.display_info("Cannot install profiles in this macOS version.")
-        return False
-    if not in_config_profile_info(identifier):
+    if (not in_config_profile_info(identifier) and
+            not localmcx.profile_is_installed(identifier)):
         display.display_debug2(
             'Profile identifier %s is not installed.' % identifier)
         return True
@@ -275,7 +288,8 @@ def profile_needs_to_be_installed(identifier, hash_value):
             % identifier)
         return True
     installed_dict = info_for_installed_identifier(identifier)
-    if (installed_dict.get('ProfileInstallDate')
+    if (installed_dict and
+            installed_dict.get('ProfileInstallDate')
             != receipt.get('ProfileInstallDate')):
         display.display_debug2(
             'Receipt ProfileInstallDate for profile identifier %s does not '
@@ -293,6 +307,10 @@ def profile_is_installed(identifier):
     if in_config_profile_info(identifier):
         display.display_debug2(
             'Profile identifier %s is installed.' % identifier)
+        return True
+    if localmcx.profile_is_installed(identifier):
+        display.display_debug2(
+            'Profile identifier %s is installed as localmcx.' % identifier)
         return True
     display.display_debug2(
         'Profile identifier %s is not installed.' % identifier)
