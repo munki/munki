@@ -212,6 +212,9 @@ def install_profile(profile_path, profile_identifier):
         # create some localmcx instead
         profile_data = read_profile(profile_path)
         if localmcx.install_profile(profile_data):
+            # remove any existing profile with the same identifier
+            if in_config_profile_info(profile_identifier):
+                _remove_profile_basic(profile_identifier)
             record_profile_receipt(profile_path, profile_identifier)
             return True
         return False
@@ -235,6 +238,22 @@ def install_profile(profile_path, profile_identifier):
     return True
 
 
+def _remove_profile_basic(identifier):
+    '''Lower-level profile removal code called a couple of places.
+    Returns a boolean to indicate success.'''
+    cmd = ['/usr/bin/profiles', '-Rp', identifier]
+    # /usr/bin/profiles likes to output errors to stdout instead of stderr
+    # so let's redirect everything to stdout and just use that
+    proc = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = proc.communicate()[0].decode('UTF-8')
+    if proc.returncode != 0:
+        display.display_error(
+            'Profile %s removal failed: %s' % (identifier, stdout))
+        return False
+    return True
+
+
 def remove_profile(identifier):
     '''Removes a profile with the given identifier. Returns True on success,
     False otherwise'''
@@ -242,18 +261,10 @@ def remove_profile(identifier):
         display.display_info("No support for profiles in this macOS version.")
         return False
     if in_config_profile_info(identifier):
-        cmd = ['/usr/bin/profiles', '-Rp', identifier]
-        # /usr/bin/profiles likes to output errors to stdout instead of stderr
-        # so let's redirect everything to stdout and just use that
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout = proc.communicate()[0].decode('UTF-8')
-        if proc.returncode != 0:
-            display.display_error(
-                'Profile %s removal failed: %s' % (identifier, stdout))
-            return False
-        remove_profile_receipt(identifier)
-        return True
+        if _remove_profile_basic(identifier):
+            remove_profile_receipt(identifier)
+            return True
+        return False
     elif localmcx.profile_is_installed(identifier):
         if localmcx.remove_profile(identifier):
             remove_profile_receipt(identifier)
