@@ -1536,7 +1536,7 @@ extension MainWindowController: NSOutlineViewDelegate {
                 textField.stringValue = title.localized(withComment: "\(title) label")
             }
             if let imageView = view?.imgView {
-                imageView.image = NSImage(named: NSImage.Name(rawValue: icon))?.tint(color: .secondaryLabelColor)
+                imageView.image = NSImage(named: NSImage.Name(icon))?.tint(color: .secondaryLabelColor)
             }
         }
         return view
