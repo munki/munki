@@ -32,7 +32,7 @@ class MSCBadgedTemplateImage: NSImage {
                                                   traits: .boldFontMask,
                                                   weight: 0,
                                                   size: badgeFontSize)
-        let stringAttributes = [ NSAttributedStringKey.font: badgeFont as Any ]
+        let stringAttributes = [ NSAttributedString.Key.font: badgeFont as Any ]
         let textSize = badgeString.size(withAttributes: stringAttributes)
         
         // use textSize as the basis for the badge outline rect

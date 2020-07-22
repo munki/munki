@@ -839,6 +839,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func handleMunkiURL(_ url: URL) {
         // Display page associated with munki:// url
+        NSLog("Handling URL: %@", url.absoluteString)
         guard url.scheme == "munki" else {
             msc_debug_log("URL \(url) has unsupported scheme")
             return

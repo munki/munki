@@ -189,7 +189,7 @@ class MSCAlertController: NSObject {
             timers.append(timer3)
             // wait 10 seconds, then quit
             let timer4 = Timer.scheduledTimer(timeInterval: 10.0,
-                                              target: NSApp,
+                                              target: NSApp as Any,
                                               selector: #selector(NSApp.terminate),
                                               userInfo: self,
                                               repeats: false)
