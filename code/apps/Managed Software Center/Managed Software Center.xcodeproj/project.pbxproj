@@ -288,7 +288,7 @@
 			attributes = {
 				CLASSPREFIX = MSC;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1150;
 				ORGANIZATIONNAME = "The Munki Project";
 				TargetAttributes = {
 					C0196316210507DB0009F51A = {
@@ -297,6 +297,7 @@
 					};
 					C04F827A20BB319B00F9C57D = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1150;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
@@ -632,7 +633,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -650,7 +651,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

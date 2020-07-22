@@ -36,6 +36,12 @@ def profiles_supported():
     return darwin_vers > 10
 
 
+def profile_install_supported():
+    '''Returns True if we can install profiles on this OS'''
+    darwin_vers = int(os.uname()[2].split('.')[0])
+    return darwin_vers > 10 and darwin_vers < 20
+
+
 def config_profile_info(ignore_cache=False):
     '''Returns a dictionary representing the output of `profiles -C -o`'''
     if not hasattr(config_profile_info, 'cache'):
@@ -201,7 +207,8 @@ def get_profile_receipt(profile_identifier):
 
 def install_profile(profile_path, profile_identifier):
     '''Installs a profile. Returns True on success, False otherwise'''
-    if not profiles_supported():
+    if not profile_install_supported():
+        display.display_info("Cannot install profiles in this macOS version.")
         return False
     cmd = ['/usr/bin/profiles', '-IF', profile_path]
     # /usr/bin/profiles likes to output errors to stdout instead of stderr
@@ -227,6 +234,7 @@ def remove_profile(identifier):
     '''Removes a profile with the given identifier. Returns True on success,
     False otherwise'''
     if not profiles_supported():
+        display.display_info("No support for profiles in this macOS version.")
         return False
     cmd = ['/usr/bin/profiles', '-Rp', identifier]
     # /usr/bin/profiles likes to output errors to stdout instead of stderr
@@ -248,7 +256,8 @@ def profile_needs_to_be_installed(identifier, hash_value):
     2) We don't have a receipt for this profile identifier
     3) receipt's hash_value for identifier does not match ours
     4) ProfileInstallDate doesn't match the receipt'''
-    if not profiles_supported():
+    if not profile_install_supported():
+        display.display_info("Cannot install profiles in this macOS version.")
         return False
     if not in_config_profile_info(identifier):
         display.display_debug2(
@@ -279,6 +288,7 @@ def profile_is_installed(identifier):
     '''If identifier is in the output of `profiles -C`
     return True, else return False'''
     if not profiles_supported():
+        display.display_info("Cannot install profiles in this macOS version.")
         return False
     if in_config_profile_info(identifier):
         display.display_debug2(

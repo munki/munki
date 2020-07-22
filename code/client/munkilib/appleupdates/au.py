@@ -108,6 +108,9 @@ class AppleUpdates(object):
         self._update_list_cache = None
         self.shutdown_instead_of_restart = False
 
+        # list of available_updates
+        self.apple_updates = None
+
         # apple_update_metadata support
         self.client_id = ''
         self.force_catalog_refresh = False
@@ -133,6 +136,7 @@ class AppleUpdates(object):
         This is called after performing munki updates because the Apple updates
         may no longer be relevant.
         """
+        self.apple_updates = None
         try:
             os.unlink(self.apple_updates_plist)
         except (OSError, IOError):
@@ -162,7 +166,7 @@ class AppleUpdates(object):
         if retcode:  # there was an error
             display.display_error('softwareupdate error: %s', retcode)
             return False
-        # not sure all older OS X versions set LastSessionSuccessful, so
+        # not sure all older macOS versions set LastSessionSuccessful, so
         # react only if it's explicitly set to False
         last_session_successful = su_prefs.pref('LastSessionSuccessful')
         if last_session_successful is False:
@@ -185,6 +189,10 @@ class AppleUpdates(object):
             # RecommendedUpdates without filtering. We never saw the issues
             # that this filtering is meant to address in 10.10 anyway!
             return recommended_updates
+        if not recommended_updates:
+            # if the list is empty no need to run softwareupdate -l to filter
+            # the list
+            return []
         su_results = su_tool.run(['-l', '--no-scan'])
         filtered_updates = []
         for item in su_results.get('updates', []):
@@ -275,7 +283,8 @@ class AppleUpdates(object):
           force_check: Boolean. If True, forces a check, otherwise only checks
               if the last check is deemed outdated.
         Returns:
-          Boolean. True if there are updates, False otherwise.
+          Integer. -1 if there was an error, otherwise the number of available
+            updates.
         """
         before_hash = munkihash.getsha256hash(
             self.applesync.apple_download_catalog_path)
@@ -285,20 +294,20 @@ class AppleUpdates(object):
         try:
             self.applesync.cache_apple_catalog()
         except sync.CatalogNotFoundError:
-            return False
+            return -1
         except (sync.ReplicationError, fetch.Error) as err:
             display.display_warning(
                 'Could not download Apple SUS catalog:')
             display.display_warning(u'\t%s', err)
-            return False
+            return -1
 
         if not force_check and not self._force_check_necessary(before_hash):
             display.display_info(
                 'Skipping Apple Software Update check '
                 'because sucatalog is unchanged, installed Apple packages are '
                 'unchanged and we recently did a full check.')
-            # return True if we have cached updates; False otherwise
-            return bool(self.software_update_info())
+            # return count of cached updates
+            return len(self.software_update_info())
 
         if self.download_available_updates():  # Success; ready to install.
             prefs.set_pref('LastAppleSoftwareUpdateCheck', NSDate.date())
@@ -306,21 +315,21 @@ class AppleUpdates(object):
             if not product_ids:
                 # No updates found
                 self.applesync.clean_up_cache()
-                return False
+                return 0
             try:
                 self.applesync.cache_update_metadata(product_ids)
             except sync.ReplicationError as err:
                 display.display_warning(
                     'Could not replicate software update metadata:')
                 display.display_warning(u'\t%s', err)
-                return False
-            return True
+                return -1
+            return len(product_ids)
         else:
             # Download error, allow check again soon.
             display.display_error(
                 'Could not download all available Apple updates.')
             prefs.set_pref('LastAppleSoftwareUpdateCheck', None)
-            return False
+            return 0
 
     def update_downloaded(self, product_key):
         """Verifies that a given update appears to be downloaded.
@@ -358,13 +367,12 @@ class AppleUpdates(object):
                 return False
         return True
 
-    def software_update_info(self):
-        """Uses /Library/Preferences/com.apple.SoftwareUpdate.plist to generate
-        the AppleUpdates.plist, which records available updates in the format
-        that Managed Software Center.app expects.
+    def get_apple_updates(self):
+        """Uses info from /Library/Preferences/com.apple.SoftwareUpdate.plist
+        and softwareupdate -l to determine the list of available Apple updates.
 
         Returns:
-          List of dictionary update data.
+          List of dictionaries describing available Apple updates.
         """
         update_display_names = {}
         update_versions = {}
@@ -373,6 +381,7 @@ class AppleUpdates(object):
         apple_updates = []
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
+        # and softwareupdate -l
         recommended_updates = self.get_filtered_recommendedupdates()
         for item in recommended_updates:
             try:
@@ -430,6 +439,14 @@ class AppleUpdates(object):
             apple_updates.append(su_info)
 
         return apple_updates
+
+    def software_update_info(self):
+        """Returns:
+          List of dictionaries describing available Apple updates.
+        """
+        if self.apple_updates is None:
+            self.apple_updates = self.get_apple_updates()
+        return self.apple_updates
 
     def write_appleupdates_file(self):
         """Writes a file used by the MSU GUI to display available updates.
@@ -700,6 +717,7 @@ class AppleUpdates(object):
         else:
             # we installed some of the updates, but some are still uninstalled.
             # re-write the apple_update_info to match
+            self.apple_updates = remaining_apple_updates
             plist = {'AppleUpdates': remaining_apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
 
@@ -720,6 +738,16 @@ class AppleUpdates(object):
 
         return restart_action
 
+    def cached_update_count(self):
+        """Returns the count of updates in the cached AppleUpdates.plist"""
+        if not os.path.exists(self.apple_updates_plist):
+            return 0
+        try:
+            plist = FoundationPlist.readPlist(self.apple_updates_plist)
+        except FoundationPlist.FoundationPlistException:
+            plist = {}
+        return len(plist.get('AppleUpdates', []))
+
     def software_updates_available(
             self, force_check=False, suppress_check=False):
         """Checks for available Apple Software Updates, trying not to hit the
@@ -731,22 +759,15 @@ class AppleUpdates(object):
         Returns:
           Integer. Count of available Apple updates.
         """
-        success = True
         if suppress_check:
             # don't check at all --
             # typically because we are doing a logout install
             # just return any AppleUpdates info we already have
-            if not os.path.exists(self.apple_updates_plist):
-                return 0
-            try:
-                plist = FoundationPlist.readPlist(self.apple_updates_plist)
-            except FoundationPlist.FoundationPlistException:
-                plist = {}
-            return len(plist.get('AppleUpdates', []))
+            return self.cached_update_count()
         if force_check:
             # typically because user initiated the check from
             # Managed Software Update.app
-            success = self.check_for_software_updates(force_check=True)
+            updatecount = self.check_for_software_updates(force_check=True)
         else:
             # have we checked recently?  Don't want to check with
             # Apple Software Update server too frequently
@@ -768,17 +789,20 @@ class AppleUpdates(object):
                 except (ValueError, TypeError):
                     pass
             if now.timeIntervalSinceDate_(next_su_check) >= 0:
-                success = self.check_for_software_updates(force_check=True)
+                updatecount = self.check_for_software_updates(force_check=True)
             else:
-                success = self.check_for_software_updates(force_check=False)
+                updatecount = self.check_for_software_updates(force_check=False)
         display.display_debug1(
-            'CheckForSoftwareUpdates result: %s' % success)
-        if success:
-            count = self.write_appleupdates_file()
-        else:
+            'CheckForSoftwareUpdates result: %s' % updatecount)
+        if updatecount == -1:
+            # some (transient?) communications error with the su server; return
+            # cached AppleInfo
+            return self.cached_update_count()
+        elif updatecount == 0:
             self.clear_apple_update_info()
-            return 0
-        return count
+        else:
+            _ = self.write_appleupdates_file()
+        return updatecount
 
     def copy_update_metadata(self, item, metadata):
         """Applies metadata to Apple update item restricted

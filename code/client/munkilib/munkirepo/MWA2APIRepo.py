@@ -104,7 +104,6 @@ class MWA2APIRepo(Repo):
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, err = proc.communicate()
-        output = output.decode('UTF-8')
         err = err.decode('UTF-8')
         if DEBUG:
             # save our curl_directives for debugging

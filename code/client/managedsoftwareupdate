@@ -553,6 +553,22 @@ def warn_if_server_is_default(server):
             'Consider using a non-default URL, and preferably an https:// URL.')
 
 
+def remove_launchd_logout_jobs_and_exit():
+    """Removes the jobs that launch MunkiStatus and  managedsoftwareupdate at
+    the loginwindow. We do this if we decide it's not applicable to run right
+    now so we don't get relaunched repeatedly, but don't want to remove the
+    trigger file because we do want to run again at the next logout/reboot.
+    These jobs will be reloaded the next time we're in the loginwindow context.
+    """
+    munkistatus.quit_app()
+    cmd = ["/bin/launchctl", "remove", "com.googlecode.munki.MunkiStatus"]
+    subprocess.call(cmd)
+    cmd = ["/bin/launchctl", "remove",
+           "com.googlecode.munki.managedsoftwareupdate-loginwindow"]
+    subprocess.call(cmd)
+    sys.exit(0)
+
+
 def main():
     """Main"""
     # install handler for SIGTERM
@@ -735,17 +751,6 @@ def main():
                     break
                 elif filename == constants.INSTALLATSTARTUPFLAG:
                     runtype = 'installatstartup'
-                    # check to see if we should do some special handling;
-                    # we might have installed Apple updates right before a
-                    # restart
-                    try:
-                        launch_options = FoundationPlist.readPlist(filename)
-                        if launch_options.get("SkipAppleUpdates"):
-                            munkilog.log("SkipAppleUpdates is True")
-                            appleupdates.clearAppleUpdateInfo()
-                            options.munkipkgsonly = True
-                    except FoundationPlist.FoundationPlistException as err:
-                        pass
                     break
 
         # delete any triggerfile that isn't checkandinstallatstartup
@@ -1130,25 +1135,6 @@ def main():
     if options.verbose:
         print('Done.')
 
-    if notify_user:
-        # it may have been more than a minute since we ran our original
-        # updatecheck so tickle the updatecheck time so MSC.app knows to
-        # display results immediately
-        recordUpdateCheckResult(1)
-        if force_action:
-            notifyUserOfUpdates(force=True)
-            time.sleep(2)
-            startLogoutHelper()
-        elif osutils.getconsoleuser() == u'loginwindow':
-            # someone is logged in, but we're sitting at the loginwindow due to
-            # to fast user switching so do nothing
-            pass
-        elif not prefs.pref('SuppressUserNotification'):
-            notifyUserOfUpdates()
-        else:
-            munkilog.log('Skipping user notification because '
-                         'SuppressUserNotification is true.')
-
     osutils.cleanUpTmpDir()
     if mustlogout:
         # not handling this currently
@@ -1160,6 +1146,25 @@ def main():
     else:
         # tell status app we're done sending status
         munkistatus.quit_app()
+        if notify_user:
+            # it may have been more than a minute since we ran our original
+            # updatecheck so tickle the updatecheck time so MSC.app knows to
+            # display results immediately
+            recordUpdateCheckResult(1)
+            if force_action:
+                notifyUserOfUpdates(force=True)
+                time.sleep(2)
+                startLogoutHelper()
+            elif osutils.getconsoleuser() == u'loginwindow':
+                # someone is logged in, but we're sitting at the loginwindow 
+                # due to to fast user switching so do nothing
+                munkilog.log('Skipping user notification because we are at the'
+                             'loginwindow.')
+            elif prefs.pref('SuppressUserNotification'):
+                munkilog.log('Skipping user notification because '
+                             'SuppressUserNotification is true.')
+            else:
+                notifyUserOfUpdates()
 
     if (runtype == 'checkandinstallatstartup' and
             restart_action == constants.POSTACTION_NONE):
