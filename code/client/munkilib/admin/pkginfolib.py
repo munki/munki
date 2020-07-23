@@ -195,7 +195,8 @@ def get_catalog_info_from_dmg(dmgpath, options):
         if (install_macos_app and options.print_warnings and
                 osinstaller.install_macos_app_is_stub(install_macos_app)):
             print('WARNING: %s appears to be an Install macOS application, but '
-                  'it does not contain Contents/SharedSupport/InstallESD.dmg'
+                  'it does not contain Contents/SharedSupport/InstallESD.dmg '
+                  'or Contents/SharedSupport/SharedSupport.dmg'
                   % os.path.basename(install_macos_app), file=sys.stderr)
         cataloginfo = osinstaller.get_catalog_info(mountpoints[0])
 

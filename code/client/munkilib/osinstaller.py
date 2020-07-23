@@ -89,10 +89,13 @@ def find_install_macos_app(dir_path):
 def install_macos_app_is_stub(app_path):
     '''High Sierra downloaded installer is sometimes a "stub" application that
     does not contain the InstallESD.dmg. Return True if the given app path is
-    missing the InstallESD.dmg'''
+    missing the InstallESD.dmg and missing SharedSupport.dmg (new in Big Sur)'''
     installesd_dmg = os.path.join(
         app_path, 'Contents/SharedSupport/InstallESD.dmg')
-    return not os.path.exists(installesd_dmg)
+    sharedsupport_dmg = os.path.join(
+        app_path, 'Contents/SharedSupport/SharedSupport.dmg')
+    return not (os.path.exists(installesd_dmg) or
+                os.path.exists(sharedsupport_dmg))
 
 
 def get_os_version(app_path):
