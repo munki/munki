@@ -102,15 +102,32 @@ def get_os_version(app_path):
     '''Returns the os version from the OS Installer app'''
     installinfo_plist = os.path.join(
         app_path, 'Contents/SharedSupport/InstallInfo.plist')
-    if not os.path.isfile(installinfo_plist):
-        # no Contents/SharedSupport/InstallInfo.plist
-        return ''
-    try:
-        info = FoundationPlist.readPlist(installinfo_plist)
-        return info['System Image Info']['version']
-    except (FoundationPlist.FoundationPlistException,
-            IOError, KeyError, AttributeError, TypeError):
-        return ''
+    if os.path.isfile(installinfo_plist):
+        try:
+            info = FoundationPlist.readPlist(installinfo_plist)
+            return info['System Image Info']['version']
+        except (FoundationPlist.FoundationPlistException,
+                IOError, KeyError, AttributeError, TypeError):
+            return ''
+    sharedsupport_dmg = os.path.join(
+        app_path, 'Contents/SharedSupport/SharedSupport.dmg')
+    if os.path.isfile(sharedsupport_dmg):
+        # starting with macOS Big Sur
+        mountpoints = dmgutils.mountdmg(sharedsupport_dmg)
+        if mountpoints:
+            info_plist_path = os.path.join(
+                mountpoints[0],
+                "com_apple_MobileAsset_MacSoftwareUpdate",
+                "com_apple_MobileAsset_MacSoftwareUpdate.xml"
+            )
+            try:
+                info = FoundationPlist.readPlist(info_plist_path)
+                return info['Assets'][0]['OSVersion']
+            except FoundationPlist.FoundationPlistException:
+                return ''
+            finally:
+                dmgutils.unmountdmg(mountpoints[0])
+    return ''
 
 
 def setup_authrestart_if_applicable():
@@ -451,7 +468,7 @@ class StartOSInstallRunner(object):
 
 
 def get_catalog_info(mounted_dmgpath):
-    '''Returns catalog info (pkginfo) for a macOS Sierra installer on a disk
+    '''Returns catalog info (pkginfo) for a macOS installer on a disk
     image'''
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
