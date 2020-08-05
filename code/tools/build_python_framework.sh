@@ -4,7 +4,7 @@
 
 TOOLSDIR=$(dirname "$0")
 REQUIREMENTS="${TOOLSDIR}/py3_requirements.txt"
-PYTHON_VERSION=3.8.3
+PYTHON_VERSION=3.8.5
 CODEDIR=$(dirname "${TOOLSDIR}")
 MUNKIROOT=$(dirname "${CODEDIR}")
 
