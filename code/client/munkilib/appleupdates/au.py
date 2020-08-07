@@ -234,7 +234,7 @@ class AppleUpdates(object):
         # pylint: disable=no-self-use
         cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
                r'com\.apple\.*']
-        proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+        proc = subprocess.Popen(cmd, shell=False,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = proc.communicate()[0] # don't decode because we need the bytes

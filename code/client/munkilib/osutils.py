@@ -140,7 +140,7 @@ def currentGUIusers():
 def pythonScriptRunning(scriptname):
     """Returns Process ID for a running python script"""
     cmd = ['/bin/ps', '-eo', 'pid=,command=']
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out = proc.communicate()[0].decode("UTF-8")
@@ -176,7 +176,7 @@ def pythonScriptRunning(scriptname):
 def osascript(osastring):
     """Wrapper to run AppleScript commands"""
     cmd = ['/usr/bin/osascript', '-e', osastring]
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
