@@ -293,7 +293,7 @@ def get_catalog_info_from_dmg(dmgpath, options):
 def readfile(path):
     '''Reads file at path. Returns a string.'''
     try:
-        fileobject = open(os.path.expanduser(path), mode='r', buffering=1)
+        fileobject = open(os.path.expanduser(path), mode='r')
         data = fileobject.read()
         fileobject.close()
         return data
