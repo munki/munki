@@ -124,7 +124,7 @@ def archive_report():
             _warn('Could not archive report.')
         # now keep number of archived reports to 100 or fewer
         proc = subprocess.Popen(['/bin/ls', '-t1', archivepath],
-                                bufsize=1, stdout=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         output = proc.communicate()[0].decode('UTF-8')
         if output:

@@ -5,7 +5,7 @@
 "1 pending update" = "1 päivitys saatavilla";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii kaikkien ohjelmien sulkemista ja käyttäjien uloskirjautumista järjestelmästä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
+"A logout is required before updating. Log out and update now?" = "Päivitysten asentaminen vaatii kaikkien ohjelmien sulkemista ja käyttäjien uloskirjautumista järjestelmästä. Kirjaudu ulos ja päivitä nyt?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "Uloskirjautuminen suoritetaan pakotetusti noin %@.";
@@ -20,7 +20,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Poistaminen epäonnistui mutta sitä yritetään uudelleen.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjautumisikkunan avauduttua saattaa kestää hetki ennen kuin asennus alkaa. Kirjaudu ulos ja päivitä nyt?";
+"A restart is required after updating. Log out and update now?" = "Päivitysten asentaminen vaatii tietokoneen uudelleenkäynnistystä. Kirjaudu ulos ja päivitä nyt?";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Järjestelmän määritysvirhe estää Managed Software Center -ohjelman toiminnan. Raportoitu ongelma on: ";
