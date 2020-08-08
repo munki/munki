@@ -263,8 +263,7 @@ class MSCAlertController: NSObject {
             alert.messageText = NSLocalizedString(
                 "Restart Required", comment: "Restart Required title")
             alert.informativeText = NSLocalizedString(
-                "A restart is required after updating. Please be patient " +
-                "as there may be a short delay at the login window. Log " +
+                "A restart is required after updating. Log " +
                 "out and update now?", comment: "Restart Required detail")
             alert.addButton(withTitle: NSLocalizedString(
                 "Log out and update", comment: "Log out and Update button text"))
@@ -278,8 +277,7 @@ class MSCAlertController: NSObject {
             alert.messageText = NSLocalizedString(
                 "Logout Required", comment: "Logout Required title")
             alert.informativeText = NSLocalizedString(
-                "A logout is required before updating. Please be patient  " +
-                "as there may be a short delay at the login window. Log " +
+                "A logout is required before updating. Log " +
                 "out and update now?", comment: "Logout Required detail")
             alert.addButton(withTitle: NSLocalizedString(
                 "Log out and update", comment: "Log out and Update button text"))

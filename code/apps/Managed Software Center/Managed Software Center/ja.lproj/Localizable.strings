@@ -5,7 +5,7 @@
 "1 pending update" = "アップデートを1つ保留しています";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデートの前にログアウトする必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
+"A logout is required before updating. Log out and update now?" = "アップデートの前にログアウトする必要があります。今からログアウトしアップデートを実行しますか？";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "％sに、強制的にログアウトさせられます";
@@ -20,7 +20,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "削除に失敗しました。次回削除を試みます。\nそれでも削除されない場合は、システムの管理者に連絡してください。";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "アップデート後に再起動する必要があります。ログインウィンドウで若干の時間がかかります。今からログアウトしアップデートを実行しますか？";
+"A restart is required after updating. Log out and update now?" = "アップデート後に再起動する必要があります。今からログアウトしアップデートを実行しますか？";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "システムコンフィギュレーションの問題が、Managed Software Centerの正常なオペレーションを妨げています。報告された問題は:";

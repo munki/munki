@@ -5,7 +5,7 @@
 "1 pending update" = "1 отложенное обновление";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Перед установкой обновлений необходимо выйти из системы. После выхода из системы дождитесь появления окна входа. Выйти из системы и обновить?";
+"A logout is required before updating. Log out and update now?" = "Перед установкой обновлений необходимо выйти из системы. Выйти из системы и обновить?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "Работа будет принудительно завершена в %@.";
@@ -20,7 +20,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Попытка удаления не удалась. Попытка будет предпринята снова.\nЕсли эта ситуация продолжится, обратитесь к системному администратору.";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. После перезагрузки дождитесь появления окна входа. Выйти из системы и обновить?";
+"A restart is required after updating. Log out and update now?" = "После установки обновлений необходимо перезагрузить компьютер. Выйти из системы и обновить?";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Проблема с конфигурацией системы не позволяет правильному функционированию Центра Управления ПО. Сообщаемая проблема: ";
