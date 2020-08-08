@@ -5,7 +5,7 @@
 "1 pending update" = "1 ventende oppdatering";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Du må logge ut før opdatering. Vent et øyeblikb da det kan være en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+"A logout is required before updating. Log out and update now?" = "Du må logge ut før opdatering. Logg ut og oppdater nå?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "En tvungen utlogging vil skje ca. %@.";
@@ -20,7 +20,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Et forsøk på å fjerne feilet. Fjerning vil bli forsøkt igjen.\nHvis problemet fortsetter, kontakt din systemadministrator.";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Vent et øyeblikk da det kan oppstå en kort forsinkelse ved påloggingsvinduet. Logg ut og oppdater nå?";
+"A restart is required after updating. Log out and update now?" = "En omstart er påkrevd etter oppdatering. Logg ut og oppdater nå?";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Et systemkonfigurasjonsproblem hindrer Managed Software Center fra å virker som det skal. Det rapporterte problemet er: ";

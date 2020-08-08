@@ -257,7 +257,7 @@ def run_adobe_install_tool(
         # indeterminate progress bar
         munkistatus.percent(-1)
 
-    proc = subprocess.Popen(cmd, shell=False, bufsize=1,
+    proc = subprocess.Popen(cmd, shell=False,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -386,7 +386,7 @@ def writefile(stringdata, path):
     '''Writes string data to path.
     Returns the path on success, empty string on failure.'''
     try:
-        fileobject = open(path, mode='w', buffering=1)
+        fileobject = open(path, mode='wb')
         print(stringdata.encode('UTF-8'), file=fileobject)
         fileobject.close()
         return path
@@ -729,7 +729,7 @@ def update_acrobatpro(dmgpath):
     app_list = []
     app_list_file = os.path.join(resources_dir, 'app_list.txt')
     if os.path.exists(app_list_file):
-        fileobj = open(app_list_file, mode='r', buffering=-1)
+        fileobj = open(app_list_file, mode='r')
         if fileobj:
             for line in fileobj.readlines():
                 app_list.append(line)
