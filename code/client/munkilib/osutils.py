@@ -51,7 +51,18 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
       only_major_minor: Boolean. If True, only include major/minor versions.
       as_tuple: Boolean. If True, return a tuple of ints, otherwise a string.
     """
-    os_version_tuple = platform.mac_ver()[0].split('.')
+    # platform.mac_ver() returns 10.16-style version info on Big Sur
+    # and is likely to do so until Python is compiled with the macOS 11 SDK
+    # which may not happen for a while. And Apple's odd tricks mean that even
+    # reading /System/Library/CoreServices/SystemVersion.plist is unreliable.
+    # So let's use a different method.
+    try:
+        os_version_tuple = subprocess.check_output(
+            ('/usr/bin/sw_vers', '-productVersion'),
+            env={'SYSTEM_VERSION_COMPAT': '0'}
+        ).decode('UTF-8').rstrip().split('.')
+    except subprocess.CalledProcessError:
+        os_version_tuple = platform.mac_ver()[0].split(".")
     if only_major_minor:
         os_version_tuple = os_version_tuple[0:2]
     if as_tuple:
