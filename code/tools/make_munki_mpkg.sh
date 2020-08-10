@@ -722,7 +722,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             ;;
         "python")
             ver="$PYTHONVERSION"
-            SCRIPTS=""
+            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_python"
             ;;
         *)
             ver="$VERSION"
