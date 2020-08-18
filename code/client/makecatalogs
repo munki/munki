@@ -95,10 +95,7 @@ def main():
         exit(-1)
 
     # Make the catalogs
-    try:
-        errors = repo.makecatalogs(options, output_fn=print)
-    except AttributeError:
-        errors = makecatalogslib.makecatalogs(repo, options, output_fn=print)
+    errors = makecatalogslib.makecatalogs(repo, options, output_fn=print)
 
     if errors:
         # group all errors at the end for better visibility
