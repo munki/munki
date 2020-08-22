@@ -186,19 +186,27 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
     LAUNCHDVERSION=$(defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString)
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
+# get a pseudo-svn revision number for the Python pkg
+PYTHONGITREV=$(git log -n1 --format="%H" -- code/tools/py3_requirements.txt code/tools/build_python_framework.sh)
+GITREVINDEX=$(git rev-list --count "$APPSGITREV")
+PYTHONSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+if [ $PYTHONSVNREV -gt $MPKGSVNREV ] ; then
+    MPKGSVNREV=$PYTHONSVNREV
+fi
 # Get Python version
 PYTHONVERSION="NOT FOUND"
 PYTHONINFOPLIST="$MUNKIROOT"/Python.framework/Versions/Current/Resources/Info.plist
 if [ -f "$PYTHONINFOPLIST" ]; then
     PYTHONVERSION=$(defaults read "$PYTHONINFOPLIST" CFBundleVersion)
 fi
+PYTHONVERSION=$PYTHONVERSION.$PYTHONSVNREV
 
 
 # get a pseudo-svn revision number for the metapackage
 MPKGVERSION=$MUNKIVERS.$MPKGSVNREV
 
-
 MPKG="$OUTPUTDIR/munkitools-$MPKGVERSION.pkg"
+
 
 if [ "$(id -u)" -ne 0 ]; then
     cat <<EOF
@@ -210,7 +218,6 @@ if [ "$(id -u)" -ne 0 ]; then
 EOF
 fi
 
-
 echo "Build variables"
 echo
 echo "  Bundle ID: $PKGID"
@@ -219,7 +226,7 @@ echo "  Output directory: $OUTPUTDIR"
 echo "  munki core tools version: $VERSION"
 echo "  LaunchAgents/LaunchDaemons version: $LAUNCHDVERSION"
 echo "  Apps package version: $APPSVERSION"
-echo "  Python version: $PYTHONVERSION"
+echo "  Python package version: $PYTHONVERSION"
 echo
 echo "  metapackage version: $MPKGVERSION"
 echo
@@ -294,35 +301,13 @@ fi
 makeinfo() {
     pkg="$1"
     out="$2_$pkg"
-    id="$3.$pkg"
-    ver="$4"
-    size="$5"
-    nfiles="$6"
-    restart="$7"
-    #major=$(echo $ver | cut -d. -f1)
-    #minor=$(echo $ver | cut -d. -f2)
-    # Flat packages want a PackageInfo.
-    if [ "$restart" == "restart" ]; then
-        restart=' postinstall-action="restart"' # Leading space is important.
+    if [ "$3" == "restart" ]; then
+        restart='postinstall-action="restart"'
     else
         restart=""
     fi
-    if [ "$pkg" == "app" ]; then
-        MSUID=$(defaults read "$MUNKIROOT/code/apps/Managed Software Center/build/Release/Managed Software Center.app/Contents/Info" CFBundleIdentifier)
-        app="<bundle id=\"$MSUID\"
-        CFBundleIdentifier=\"$MSUID\"
-        path=\"./Applications/Managed Software Center.app\"
-        CFBundleVersion=\"$ver\"/>
-<bundle-version>
-    <bundle id=\"$MSUID\"/>
-</bundle-version>"
-    else
-        app=""
-    fi
-        cat > "$out" <<EOF
-<pkg-info format-version="2" identifier="$id" version="$ver" install-location="/" auth="root"$restart>
-    <payload installKBytes="$size" numberOfFiles="$nfiles"/>
-    $app
+    cat > "$out" <<EOF
+<pkg-info format-version="2" install-location="/" auth="root" $restart>
 </pkg-info>
 EOF
 }
@@ -392,11 +377,8 @@ mkdir -m 750 -p "$COREROOT/Library/Managed Installs/Cache"
 mkdir -m 750 -p "$COREROOT/Library/Managed Installs/catalogs"
 mkdir -m 755 -p "$COREROOT/Library/Managed Installs/manifests"
 
-
 # Create package info file.
-CORESIZE=$(du -sk "$COREROOT" | cut -f1)
-NFILES=$(echo $(find "${COREROOT}/" | wc -l))
-makeinfo core "$PKGTMP/info" "$PKGID" "$VERSION" "$CORESIZE" "$NFILES" norestart
+makeinfo core "$PKGTMP/info" norestart
 
 
 #########################################
@@ -428,9 +410,7 @@ chmod -R 755 "$ADMINROOT/private"
 chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # Create package info file.
-ADMINSIZE=$(du -sk "$ADMINROOT" | cut -f1)
-NFILES=$(echo $(find "${ADMINROOT}/" | wc -l))
-makeinfo admin "$PKGTMP/info" "$PKGID" "$VERSION" "$ADMINSIZE" "$NFILES" norestart
+makeinfo admin "$PKGTMP/info" norestart
 
 
 ###################
@@ -468,9 +448,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
 fi
 
 # Create package info file.
-APPSIZE=$(du -sk "$APPROOT" | cut -f1)
-NFILES=$(echo $(find "${APPROOT}/" | wc -l))
-makeinfo app "$PKGTMP/info" "$PKGID" "$APPSVERSION" "$APPSIZE" "$NFILES" norestart
+makeinfo app "$PKGTMP/info" norestart
 
 
 ##############
@@ -491,13 +469,11 @@ chmod 644 "$LAUNCHDROOT/Library/LaunchAgents/"*
 cp -X "$MUNKIROOT/launchd/LaunchDaemons/"*.plist "$LAUNCHDROOT/Library/LaunchDaemons/"
 chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
 # Create package info file.
-LAUNCHDSIZE=$(du -sk "$LAUNCHDROOT" | cut -f1)
-NFILES=$(echo $(find "${LAUNCHDROOT}/" | wc -l))
 RESTARTFLAG=restart
 if [ "$MDMSTYLE" == "YES" ] ; then
     RESTARTFLAG=norestart
 fi
-makeinfo launchd "$PKGTMP/info" "$PKGID" "$LAUNCHDVERSION" "$LAUNCHDSIZE" "$NFILES" "$RESTARTFLAG"
+makeinfo launchd "$PKGTMP/info" "$RESTARTFLAG"
 
 
 #######################
@@ -531,9 +507,7 @@ done
 chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
 chmod +x "$APPUSAGEROOT/usr/local/munki"
 # Create package info file.
-APPUSAGESIZE=$(du -sk "$APPUSAGEROOT" | cut -f1)
-NFILES=$(echo $(find "${APPUSAGEROOT}/" | wc -l))
-makeinfo app_usage "$PKGTMP/info" "$PKGID" "$VERSION" "$APPUSAGEROOT" "$NFILES" norestart
+makeinfo app_usage "$PKGTMP/info" norestart
 
 
 #######################
@@ -555,9 +529,7 @@ ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki
 chmod -R go-w "$PYTHONROOT/usr/local/munki"
 chmod +x "$PYTHONROOT/usr/local/munki"
 # Create package info file.
-PYTHONSIZE=$(du -sk "$PYTHONROOT" | cut -f1)
-NFILES=$(echo $(find "${PYTHONROOT}/" | wc -l))
-makeinfo python "$PKGTMP/info" "$PKGID" "$PYTHONVERSION" "$PYTHONROOT" "$NFILES" norestart
+makeinfo python "$PKGTMP/info" norestart
 
 #######################
 ## no python choice  ##
@@ -576,9 +548,7 @@ ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/munki-python"
 chmod -R go-w "$NOPYTHONROOT/usr/local/munki"
 chmod +x "$NOPYTHONROOT/usr/local/munki"
 # Create package info file.
-NOPYTHONSIZE=$(du -sk "$NOPYTHONROOT" | cut -f1)
-NFILES=$(echo $(find "${NOPYTHONROOT}/" | wc -l))
-makeinfo no_python "$PKGTMP/info" "$PKGID" "$VERSION" "$NOPYTHONROOT" "$NFILES" norestart
+makeinfo no_python "$PKGTMP/info" norestart
 
 
 #############################
@@ -644,7 +614,7 @@ if [ ! -z "$CONFPKG" ]; then
 fi
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
-<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.4" authoringToolBuild="179">
+<installer-script minSpecVersion="1.000000">
     <title>Munki - Managed software installation for macOS</title>
     <volume-check>
         <allowed-os-versions>
@@ -685,18 +655,17 @@ cat > "$DISTFILE" <<EOF
         <pkg-ref id="$PKGID.no_python"/>
     </choice>
     $CONFCHOICE
-    <pkg-ref id="$PKGID.core" installKBytes="$CORESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_core-$VERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.admin" installKBytes="$ADMINSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_admin-$VERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.app" installKBytes="$APPSIZE" version="$MSCVERSION" auth="Root">${PKGPREFIX}munkitools_app-$APPSVERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.launchd" installKBytes="$LAUNCHDSIZE" version="$LAUNCHDVERSION" auth="Root" $LAUNCHDPOSTINSTALLACTION>${PKGPREFIX}munkitools_launchd-$LAUNCHDVERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.app_usage" installKBytes="$APPUSAGESIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_app_usage-$VERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.python" installKBytes="$PYTHONSIZE" version="$PYTHONVERSION" auth="Root">${PKGPREFIX}munkitools_python-$PYTHONVERSION.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.no_python" installKBytes="$NOPYTHONSIZE" version="$VERSION" auth="Root">${PKGPREFIX}munkitools_no_python-$VERSION.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.launchd" auth="Root" $LAUNCHDPOSTINSTALLACTION>${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.no_python" auth="Root">${PKGPREFIX}munkitools_no_python.pkg</pkg-ref>
     $CONFREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
 EOF
-
 
 ###################
 ## Set ownership ##
@@ -725,6 +694,7 @@ sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 sudo chown -hR root:wheel "$PYTHONROOT/usr"
 sudo chown -hR root:wheel "$NOPYTHONROOT/usr"
+
 
 ######################
 ## Run pkgbuild ##
@@ -758,6 +728,9 @@ for pkg in core admin app launchd app_usage python no_python; do
     esac
     echo
     echo "Packaging munkitools_$pkg-$ver.pkg"
+    
+    # use sudo here so pkgutil doesn't complain when it tries to
+    # descend into root/Library/Managed Installs/*
 
     # Use pkgutil --analyze to build a component property list
     # then turn off bundle relocation
@@ -771,8 +744,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             -c 'Set :0:BundleIsRelocatable false' \
             "${PKGTMP}/munki_${pkg}_component.plist"
     fi
-    # use sudo here so pkgutil doesn't complain when it tries to
-    # descend into root/Library/Managed Installs/*
+
     if [ "$SCRIPTS" != "" ]; then
         sudo /usr/bin/pkgbuild \
             --root "$PKGTMP/munki_$pkg" \
@@ -782,7 +754,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             --info "$PKGTMP/info_$pkg" \
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
             --scripts "$SCRIPTS" \
-            "$PKGDEST/munkitools_$pkg-$ver.pkg"
+            "$PKGDEST/munkitools_$pkg.pkg"
     else
         sudo /usr/bin/pkgbuild \
             --root "$PKGTMP/munki_$pkg" \
@@ -791,11 +763,11 @@ for pkg in core admin app launchd app_usage python no_python; do
             --ownership preserve \
             --info "$PKGTMP/info_$pkg" \
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
-            "$PKGDEST/munkitools_$pkg-$ver.pkg"
+            "$PKGDEST/munkitools_$pkg.pkg"
     fi
 
     if [ "$?" -ne 0 ]; then
-        echo "Error packaging munkitools_$pkg-$ver.pkg before rebuilding it."
+        echo "Error building munkitools_$pkg.pkg."
         echo "Attempting to clean up temporary files..."
         sudo rm -rf "$PKGTMP"
         exit 2
