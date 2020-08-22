@@ -704,22 +704,22 @@ for pkg in core admin app launchd app_usage python no_python; do
     case $pkg in
         "app")
             ver="$APPSVERSION"
-            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_app"
+            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_app"
             ;;
         "launchd")
             ver="$LAUNCHDVERSION"
             SCRIPTS=""
             if [ "$MDMSTYLE" == "YES" ] ; then
-                SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_launchd"
+                SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_launchd"
             fi
             ;;
         "app_usage")
             ver="$VERSION"
-            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_app_usage"
+            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_app_usage"
             ;;
         "python")
             ver="$PYTHONVERSION"
-            SCRIPTS="${MUNKIROOT}/code/pkgtemplate/Scripts_python"
+            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_python"
             ;;
         *)
             ver="$VERSION"
