@@ -773,7 +773,7 @@ for pkg in core admin app launchd app_usage python no_python; do
         exit 2
     else
         # set ownership of package back to current user
-        sudo chown -R "$CURRENTUSER" "$PKGDEST/munkitools_$pkg-$ver.pkg"
+        sudo chown -R "$CURRENTUSER" "$PKGDEST/munkitools_$pkg.pkg"
     fi
 done
 
