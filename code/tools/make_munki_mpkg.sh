@@ -16,6 +16,7 @@ CONFPKG=""
 # consistent with old SVN repo
 MAGICNUMBER=482
 BUILDPYTHON=NO
+BOOTSTRAPPKG=NO
 MDMSTYLE=NO
 
 # try to automagically find munki source root
@@ -40,6 +41,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -r root     Set the munki source root
     -o dir      Set the output directory
     -p          Build Python.framework even if one exists
+    -b          Include a package that sets Munki's bootstrap mode
     -M          Build the package in a manner suitable for install via MDM;
                 specifically, attempt to start all the launchd agents and daemons
                 without requiring a restart. Such a package is not suited for
@@ -54,7 +56,7 @@ EOF
 }
 
 
-while getopts "i:r:o:c:s:S:hpM" option
+while getopts "i:r:o:c:s:S:hpbM" option
 do
     case $option in
         "i")
@@ -77,6 +79,9 @@ do
             ;;
         "p")
             BUILDPYTHON=YES
+            ;;
+        "b")
+            BOOTSTRAPPKG=YES
             ;;
         "M")
             MDMSTYLE=YES
@@ -229,6 +234,9 @@ echo "  Apps package version: $APPSVERSION"
 echo "  Python package version: $PYTHONVERSION"
 echo
 echo "  metapackage version: $MPKGVERSION"
+echo
+echo "  Include bootstrap pkg: $BOOTSTRAPPKG"
+echo "  MDM-style package: $MDMSTYLE"
 echo
 
 # Build Managed Software Center.
@@ -551,6 +559,24 @@ chmod +x "$NOPYTHONROOT/usr/local/munki"
 makeinfo no_python "$PKGTMP/info" norestart
 
 
+if [ "$BOOTSTRAPPKG" == "YES" ] ;  then
+    #######################
+    ## bootstrap         ##
+    #######################
+
+    echo "Creating bootstrap package template..."
+
+    # Create directory structure.
+    BOOTSTRAPROOT="$PKGTMP/munki_bootstrap"
+    mkdir -m 1775 "$BOOTSTRAPROOT"
+    mkdir -p "$BOOTSTRAPROOT/Users/Shared"
+    # Create bootstrap flag file
+    touch "$BOOTSTRAPROOT/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
+    # Create package info file.
+    makeinfo bootstrap "$PKGTMP/info" norestart
+fi
+
+
 #############################
 ## Create metapackage root ##
 #############################
@@ -582,6 +608,8 @@ PYTHONTITLE="Munki embedded Python"
 PYTHONDESC="Embedded Python 3 framework for Munki."
 NOPYTHONTITLE="System Python link"
 NOPYTHONDESC="Creates symlink to system Python at /usr/local/munki/munki-python. Available for install if you choose not to install Munki's embedded Python."
+BOOTSTRAPTITLE="Munki Bootstrap configuration"
+BOOTSTRAPDESC="Configures bootstrap mode for the Munki tools."
 
 # stuff we'll need to define if we ever implement a config pkg
 CONFOUTLINE=""
@@ -589,13 +617,22 @@ CONFCHOICE=""
 CONFREF=""
 CONFTITLE=""
 CONFDESC=""
-CONFSIZE=""
-CONFVERSION=""
 CONFBASENAME=""
 
 LAUNCHDPOSTINSTALLACTION="onConclusion=\"RequireRestart\""
 if [ "$MDMSTYLE" == "YES" ] ;  then
     LAUNCHDPOSTINSTALLACTION=""
+fi
+
+BOOTSTRAPOUTLINE=""
+BOOTSTRAPCHOICE=""
+BOOTSTRAPREF=""
+if [ "$BOOTSTRAPPKG" == "YES" ] ; then
+    BOOTSTRAPOUTLINE="<line choice=\"bootstrap\"/>"
+    BOOTSTRAPCHOICE="<choice id=\"bootstrap\" title=\"$BOOTSTRAPTITLE\" description=\"$BOOTSTRAPDESC\">
+        <pkg-ref id=\"$PKGID.bootstrap\"/>
+    </choice>"
+    BOOTSTRAPREF="<pkg-ref id=\"$PKGID.bootstrap\" auth=\"Root\">${PKGPREFIX}munkitools_bootstrap.pkg</pkg-ref>"
 fi
 
 if [ ! -z "$CONFPKG" ]; then
@@ -610,7 +647,7 @@ if [ ! -z "$CONFPKG" ]; then
     CONFCHOICE="<choice id=\"config\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
         <pkg-ref id=\"$CONFID\"/>
     </choice>"
-    CONFREF="<pkg-ref id=\"$CONFID\" installKBytes=\"$CONFSIZE\" version=\"$CONFVERSION\" auth=\"Root\">${PKGPREFIX}$CONFBASENAME</pkg-ref>"
+    CONFREF="<pkg-ref id=\"$CONFID\" auth=\"Root\">${PKGPREFIX}$CONFBASENAME</pkg-ref>"
 fi
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
@@ -631,6 +668,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="app_usage"/>
         <line choice="python"/>
         <line choice="no_python"/>
+        $BOOTSTRAPOUTLINE
         $CONFOUTLINE
     </choices-outline>
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -654,6 +692,7 @@ cat > "$DISTFILE" <<EOF
     <choice id="no_python" title="$NOPYTHONTITLE" description="$NOPYTHONDESC" selected='choices["python"].selected == false' enabled='choices["python"].selected == false'>
         <pkg-ref id="$PKGID.no_python"/>
     </choice>
+    $BOOTSTRAPCHOICE
     $CONFCHOICE
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
@@ -662,6 +701,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
     <pkg-ref id="$PKGID.no_python" auth="Root">${PKGPREFIX}munkitools_no_python.pkg</pkg-ref>
+    $BOOTSTRAPREF
     $CONFREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
@@ -695,12 +735,20 @@ sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 sudo chown -hR root:wheel "$PYTHONROOT/usr"
 sudo chown -hR root:wheel "$NOPYTHONROOT/usr"
 
+if [ "$BOOTSTRAPPKG" == "YES" ] ; then
+    sudo chown -hR root:admin "$BOOTSTRAPROOT"
+fi
+
+ALLPKGS="core admin app launchd app_usage python no_python"
+if [ "$BOOTSTRAPPKG" == "YES" ] ; then
+    ALLPKGS="${ALLPKGS} bootstrap"
+fi
 
 ######################
 ## Run pkgbuild ##
 ######################
 CURRENTUSER=$(whoami)
-for pkg in core admin app launchd app_usage python no_python; do
+for pkg in $ALLPKGS ; do
     case $pkg in
         "app")
             ver="$APPSVERSION"
@@ -721,13 +769,16 @@ for pkg in core admin app launchd app_usage python no_python; do
             ver="$PYTHONVERSION"
             SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_python"
             ;;
+        "bootstrap")
+            ver="1.0"
+            ;;
         *)
             ver="$VERSION"
             SCRIPTS=""
             ;;
     esac
     echo
-    echo "Packaging munkitools_$pkg-$ver.pkg"
+    echo "Packaging munkitools_$pkg.pkg"
     
     # use sudo here so pkgutil doesn't complain when it tries to
     # descend into root/Library/Managed Installs/*
