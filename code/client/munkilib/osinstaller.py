@@ -473,6 +473,8 @@ def get_catalog_info(mounted_dmgpath):
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
         vers = get_os_version(app_path)
+        minimum_munki_version = '3.0.0.3211'
+        minimum_os_version = '10.8'
         if vers:
             display_name = os.path.splitext(os.path.basename(app_path))[0]
             name = display_name.replace(' ', '_')
@@ -499,17 +501,30 @@ def get_catalog_info(mounted_dmgpath):
                 # storage space when upgrading from OS X Yosemite or earlier."
                 # https://support.apple.com/en-us/HT201475
                 installed_size = int(18.5 * 1024 * 1024)
-            else:
-                # will need to modify for future macOS releases
+                minimum_munki_version = '3.6.3'
+                minimum_os_version = '10.9'
+            elif vers.startswith('11.0'):
+                # No idea yet what space will be needed for Big Sur; this will
+                # need to be updated
                 installed_size = int(18.5 * 1024 * 1024)
+                # but we really need Munki 5.1 in place before we install
+                minimum_munki_version = '5.1.0'
+                minimum_os_version = '10.9'
+            else:
+                # will need to modify for future macOS releases, but should
+                # never be less than the highest version we know about
+                installed_size = int(18.5 * 1024 * 1024)
+                minimum_munki_version = '5.1.0'
+                minimum_os_version = '10.9'
+
             return {'RestartAction': 'RequireRestart',
                     'apple_item': True,
                     'description': description,
                     'display_name': display_name,
                     'installed_size': installed_size,
                     'installer_type': 'startosinstall',
-                    'minimum_munki_version': '3.0.0.3211',
-                    'minimum_os_version': '10.8',
+                    'minimum_munki_version': minimum_munki_version,
+                    'minimum_os_version': minimum_os_version,
                     'name': name,
                     'uninstallable': False,
                     'version': vers}
