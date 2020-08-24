@@ -12,7 +12,7 @@ BRANCH="main"
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") [-b branch ] [-r revision] [make_munki_mpkg.sh options]"
+Usage: $(basename "$0") [-b branch ] [-r revision] [<make_munki_mpkg.sh options>]"
 
     -b branch   Git branch to clone (main is the default)
     -r revision Git revision to check out (HEAD is the default)
