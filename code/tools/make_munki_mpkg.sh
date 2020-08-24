@@ -16,10 +16,14 @@ CONFPKG=""
 # consistent with old SVN repo
 MAGICNUMBER=482
 BUILDPYTHON=NO
+PKGSIGNINGCERT=""
+APPSIGNINGCERT=""
 BOOTSTRAPPKG=NO
+CONFPKG=NO
 MDMSTYLE=NO
+ORGNAME=macOS
 
-# try to automagically find munki source root
+# try to automagically find Munki source root
 TOOLSDIR=$(dirname "$0")
 # Convert to absolute path.
 TOOLSDIR=$(cd "$TOOLSDIR"; pwd)
@@ -38,15 +42,16 @@ usage() {
 Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
 
     -i id       Set the base package bundle ID
-    -r root     Set the munki source root
+    -r root     Set the Munki source root
     -o dir      Set the output directory
+    -n orgname  Set the name of the organzation
     -p          Build Python.framework even if one exists
-    -b          Include a package that sets Munki's bootstrap mode
-    -M          Build the package in a manner suitable for install via MDM;
+    -B          Include a package that sets Munki's bootstrap mode
+    -m          Build the package in a manner suitable for install via MDM;
                 specifically, attempt to start all the launchd agents and daemons
                 without requiring a restart. Such a package is not suited for
                 upgrade installs or install via Munki itself.
-    -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
+    -c plist    Build a configuration package using the preferences defined in [plist]
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
     -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
@@ -56,7 +61,7 @@ EOF
 }
 
 
-while getopts "i:r:o:c:s:S:hpbM" option
+while getopts "i:r:o:n:c:s:S:pBmh" option
 do
     case $option in
         "i")
@@ -68,8 +73,12 @@ do
         "o")
             OUTPUTDIR="$OPTARG"
             ;;
+        "n")
+            ORGNAME="$OPTARG"
+            ;;
         "c")
-            CONFPKG="$OPTARG"
+            CONFPLIST="$OPTARG"
+            CONFPKG=YES
             ;;
         "s")
             PKGSIGNINGCERT="$OPTARG"
@@ -80,10 +89,10 @@ do
         "p")
             BUILDPYTHON=YES
             ;;
-        "b")
+        "B")
             BOOTSTRAPPKG=YES
             ;;
-        "M")
+        "m")
             MDMSTYLE=YES
             ;;
         "h" | *)
@@ -92,7 +101,7 @@ do
             ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 if [ $# -ne 0 ]; then
     usage
@@ -113,9 +122,7 @@ if [ ! -d "$OUTPUTDIR" ]; then
 fi
 
 # Sanity checks.
-GIT=$(which git)
-WHICH_GIT_RESULT="$?"
-if [ "$WHICH_GIT_RESULT" != "0" ]; then
+if ! which git 1>/dev/null ; then
     echo "Could not find git in command path. Maybe it's not installed?" 1>&2
     echo "You can get a Git package here:" 1>&2
     echo "    https://git-scm.com/download/mac"
@@ -132,6 +139,13 @@ fi
 if [ ! -x "/usr/bin/xcodebuild" ]; then
     echo "xcodebuild is not installed!" 1>&2
     exit 1
+fi
+if [[ "$CONFPKG" == "YES" ]] ; then
+    ABSDIRPATH="$(cd "$(dirname "$CONFPLIST")" ; pwd)"
+    if ! defaults read "$ABSDIRPATH/$CONFPLIST" 1>/dev/null ; then
+        echo "Could not read $CONFPLIST, or invalid plist!"
+        exit 1
+    fi
 fi
 
 
@@ -162,14 +176,14 @@ cd "$MUNKIROOT"
 # from the list of Git revisions
 GITREV=$(git log -n1 --format="%H" -- code/client)
 GITREVINDEX=$(git rev-list --count "$GITREV")
-SVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+SVNREV=$((GITREVINDEX + MAGICNUMBER))
 MPKGSVNREV=$SVNREV
 VERSION=$MUNKIVERS.$SVNREV
 
 # get a pseudo-svn revision number for the apps pkg
 APPSGITREV=$(git log -n1 --format="%H" -- code/apps)
 GITREVINDEX=$(git rev-list --count "$APPSGITREV")
-APPSSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+APPSSVNREV=$((GITREVINDEX + MAGICNUMBER))
 if [ $APPSSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$APPSSVNREV
 fi
@@ -181,7 +195,7 @@ APPSVERSION=$APPSVERSION.$APPSSVNREV
 # get a pseudo-svn revision number for the launchd pkg
 LAUNCHDGITREV=$(git log -n1 --format="%H" -- launchd/LaunchDaemons launchd/LaunchAgents)
 GITREVINDEX=$(git rev-list --count "$LAUNCHDGITREV")
-LAUNCHDSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+LAUNCHDSVNREV=$((GITREVINDEX + MAGICNUMBER))
 if [ $LAUNCHDSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$LAUNCHDSVNREV
 fi
@@ -193,8 +207,8 @@ fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
 # get a pseudo-svn revision number for the Python pkg
 PYTHONGITREV=$(git log -n1 --format="%H" -- code/tools/py3_requirements.txt code/tools/build_python_framework.sh)
-GITREVINDEX=$(git rev-list --count "$APPSGITREV")
-PYTHONSVNREV=$(($GITREVINDEX + $MAGICNUMBER))
+GITREVINDEX=$(git rev-list --count "$PYTHONGITREV")
+PYTHONSVNREV=$((GITREVINDEX + MAGICNUMBER))
 if [ $PYTHONSVNREV -gt $MPKGSVNREV ] ; then
     MPKGSVNREV=$PYTHONSVNREV
 fi
@@ -225,9 +239,6 @@ fi
 
 echo "Build variables"
 echo
-echo "  Bundle ID: $PKGID"
-echo "  Munki root: $MUNKIROOT"
-echo "  Output directory: $OUTPUTDIR"
 echo "  munki core tools version: $VERSION"
 echo "  LaunchAgents/LaunchDaemons version: $LAUNCHDVERSION"
 echo "  Apps package version: $APPSVERSION"
@@ -235,9 +246,29 @@ echo "  Python package version: $PYTHONVERSION"
 echo
 echo "  metapackage version: $MPKGVERSION"
 echo
+echo "  Bundle ID: $PKGID"
+echo "  Munki source root: $MUNKIROOT"
+echo "  Output directory: $OUTPUTDIR"
 echo "  Include bootstrap pkg: $BOOTSTRAPPKG"
+if [ "$CONFPKG" == "YES" ] ; then
+    echo "  Include config pkg built with plist: $CONFPLIST"
+else
+    echo "  Include config pkg: NO"
+fi
 echo "  MDM-style package: $MDMSTYLE"
 echo
+if [ "$APPSIGNINGCERT" != "" ] ; then
+    echo "  Sign app with keychain cert: $APPSIGNINGCERT"
+else
+    echo "  Sign application: NO"
+fi
+if [ "$PKGSIGNINGCERT" != "" ] ; then
+    echo "  Sign package with keychain cert: $PKGSIGNINGCERT"
+else
+    echo "  Sign package: NO"
+fi
+echo
+
 
 # Build Managed Software Center.
 echo "Building Managed Software Update.xcodeproj..."
@@ -394,7 +425,7 @@ makeinfo core "$PKGTMP/info" norestart
 ## /usr/local/munki admin tools        ##
 #########################################
 
-echo "Creating admin package template..."
+echo "Creating admin package source..."
 
 # Create directory structure.
 ADMINROOT="$PKGTMP/munki_admin"
@@ -425,7 +456,7 @@ makeinfo admin "$PKGTMP/info" norestart
 ## /Applications ##
 ###################
 
-echo "Creating applications package template..."
+echo "Creating applications package source..."
 
 # Create directory structure.
 APPROOT="$PKGTMP/munki_app"
@@ -463,7 +494,7 @@ makeinfo app "$PKGTMP/info" norestart
 ## launchd ##
 ##############
 
-echo "Creating launchd package template..."
+echo "Creating launchd package source..."
 
 # Create directory structure.
 LAUNCHDROOT="$PKGTMP/munki_launchd"
@@ -488,7 +519,7 @@ makeinfo launchd "$PKGTMP/info" "$RESTARTFLAG"
 ## app_usage_monitor ##
 #######################
 
-echo "Creating app_usage package template..."
+echo "Creating app_usage package source..."
 
 # Create directory structure.
 APPUSAGEROOT="$PKGTMP/munki_app_usage"
@@ -518,11 +549,11 @@ chmod +x "$APPUSAGEROOT/usr/local/munki"
 makeinfo app_usage "$PKGTMP/info" norestart
 
 
-#######################
-## python            ##
-#######################
+############
+## python ##
+############
 
-echo "Creating python package template..."
+echo "Creating python package source..."
 
 # Create directory structure.
 PYTHONROOT="$PKGTMP/munki_python"
@@ -543,7 +574,7 @@ makeinfo python "$PKGTMP/info" norestart
 ## no python choice  ##
 #######################
 
-echo "Creating no-python package template..."
+echo "Creating no-python package source..."
 
 # Create directory structure.
 NOPYTHONROOT="$PKGTMP/munki_no_python"
@@ -559,12 +590,12 @@ chmod +x "$NOPYTHONROOT/usr/local/munki"
 makeinfo no_python "$PKGTMP/info" norestart
 
 
+###############
+## bootstrap ##
+###############
 if [ "$BOOTSTRAPPKG" == "YES" ] ;  then
-    #######################
-    ## bootstrap         ##
-    #######################
 
-    echo "Creating bootstrap package template..."
+    echo "Creating bootstrap package source..."
 
     # Create directory structure.
     BOOTSTRAPROOT="$PKGTMP/munki_bootstrap"
@@ -577,12 +608,28 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ;  then
 fi
 
 
+############
+## config ##
+############
+if [ "$CONFPKG" == "YES" ] ; then
+
+    echo "Creating configuration package souce..."
+
+    # Create directory structure.
+    CONFROOT="$PKGTMP/munki_config"
+    mkdir -m 1775 "$CONFROOT"
+    mkdir -p "$CONFROOT/Library/Preferences"
+    # Copy prefs file
+    cp "$CONFPLIST" "$CONFROOT/Library/Preferences/ManagedInstalls.plist"
+    # Create package info file.
+    makeinfo config "$PKGTMP/info" norestart
+fi
+
 #############################
 ## Create metapackage root ##
 #############################
 
-echo "Creating metapackage template..."
-
+echo "Creating metapackage source..."
 
 # Create root for productbuild.
 METAROOT="$PKGTMP/munki_mpkg"
@@ -608,16 +655,10 @@ PYTHONTITLE="Munki embedded Python"
 PYTHONDESC="Embedded Python 3 framework for Munki."
 NOPYTHONTITLE="System Python link"
 NOPYTHONDESC="Creates symlink to system Python at /usr/local/munki/munki-python. Available for install if you choose not to install Munki's embedded Python."
-BOOTSTRAPTITLE="Munki Bootstrap configuration"
-BOOTSTRAPDESC="Configures bootstrap mode for the Munki tools."
-
-# stuff we'll need to define if we ever implement a config pkg
-CONFOUTLINE=""
-CONFCHOICE=""
-CONFREF=""
-CONFTITLE=""
-CONFDESC=""
-CONFBASENAME=""
+BOOTSTRAPTITLE="Munki bootstrap setup"
+BOOTSTRAPDESC="Enables bootstrap mode for the Munki tools."
+CONFTITLE="Munki tools configuration"
+CONFDESC="Sets initial preferences for Munki tools."
 
 LAUNCHDPOSTINSTALLACTION="onConclusion=\"RequireRestart\""
 if [ "$MDMSTYLE" == "YES" ] ;  then
@@ -635,24 +676,21 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     BOOTSTRAPREF="<pkg-ref id=\"$PKGID.bootstrap\" auth=\"Root\">${PKGPREFIX}munkitools_bootstrap.pkg</pkg-ref>"
 fi
 
-if [ ! -z "$CONFPKG" ]; then
-    if [ "$PKGTYPE" == "flat" ]; then
-        echo "Flat configuration package not implemented"
-        exit 1
-    else
-        echo "Bundle-style configuration package not supported"
-        exit 1
-    fi
+CONFOUTLINE=""
+CONFCHOICE=""
+CONFREF=""
+if [ "$CONFPKG" == "YES" ]; then
     CONFOUTLINE="<line choice=\"config\"/>"
     CONFCHOICE="<choice id=\"config\" title=\"$CONFTITLE\" description=\"$CONFDESC\">
-        <pkg-ref id=\"$CONFID\"/>
+        <pkg-ref id=\"$PKGID.config\"/>
     </choice>"
-    CONFREF="<pkg-ref id=\"$CONFID\" auth=\"Root\">${PKGPREFIX}$CONFBASENAME</pkg-ref>"
+    CONFREF="<pkg-ref id=\"$PKGID.config\" auth=\"Root\">${PKGPREFIX}munkitools_config.pkg</pkg-ref>"
 fi
+
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000">
-    <title>Munki - Managed software installation for macOS</title>
+    <title>Munki - Software Management for $ORGNAME</title>
     <volume-check>
         <allowed-os-versions>
             <os-version min="10.10"/>
@@ -739,9 +777,16 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$BOOTSTRAPROOT"
 fi
 
+if [ "$CONFPKG" == "YES" ] ; then
+    sudo chown -hR root:admin "$CONFROOT"
+fi
+
 ALLPKGS="core admin app launchd app_usage python no_python"
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
+fi
+if [ "$CONFPKG" == "YES" ] ; then
+    ALLPKGS="${ALLPKGS} config"
 fi
 
 ######################
@@ -770,6 +815,9 @@ for pkg in $ALLPKGS ; do
             SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_python"
             ;;
         "bootstrap")
+            ver="1.0"
+            ;;
+        "config")
             ver="1.0"
             ;;
         *)
