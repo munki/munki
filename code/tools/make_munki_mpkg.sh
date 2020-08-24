@@ -39,23 +39,26 @@ fi
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") [<options>]
+Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
 
-    -i id       Set the base package bundle ID
-    -r root     Set the Munki source root
-    -o dir      Set the output directory
-    -n orgname  Set the name of the organzation
+    -i id       Specify the base package bundle ID
+    -r root     Specify the Munki source root
+    -o dir      Specify the output directory
+    -n orgname  Specify the name of the organzation
     -p          Build Python.framework even if one exists
     -B          Include a package that sets Munki's bootstrap mode
     -m          Build the package in a manner suitable for install via MDM;
-                specifically, attempt to start all the launchd agents and daemons
-                without requiring a restart. Such a package is not suited for
-                upgrade installs or install via Munki itself.
-    -c plist    Build a configuration package using the preferences defined in a plist file
-    -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
-                Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
-    -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
-                the certificate's Common Name. Ex: "Developer ID Application: Munki (U8PN57A5N2)"
+                specifically, attempt to start all the launchd agents and
+                daemons without requiring a restart. Such a package is not
+                suited for upgrade installs or install via Munki itself.
+    -c plist    Build a configuration package using the preferences defined in a
+                plist file
+    -s cert_cn  Sign distribution package with a Developer ID Installer
+                certificate from keychain. Provide the certificate's Common
+                Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
+    -S cert_cn  Sign apps with a Developer ID Application certificated from
+                keychain. Provide the certificate's Common Name.
+                Ex: "Developer ID Application: Munki (U8PN57A5N2)"
 
 EOF
 }
