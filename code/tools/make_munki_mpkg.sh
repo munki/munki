@@ -51,7 +51,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
                 specifically, attempt to start all the launchd agents and daemons
                 without requiring a restart. Such a package is not suited for
                 upgrade installs or install via Munki itself.
-    -c plist    Build a configuration package using the preferences defined in [plist]
+    -c plist    Build a configuration package using the preferences defined in a plist file
     -s cert_cn  Sign distribution package with a Developer ID Installer certificate from keychain.
                 Provide the certificate's Common Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
     -S cert_cn  Sign apps with a Developer ID Application certificated from keychain. Provide
