@@ -117,6 +117,7 @@ if [ "$CHECKOUT_RESULT" != "0" ]; then
 fi
 
 # now use the version of the make_munki_mpkg.sh script in the Git repo.
-"$MUNKIDIR/code/tools/make_munki_mpkg.sh" -r "$MUNKIDIR" -o "$OUTPUTDIR" $ADDITIONALARGS
+CMD="\"$MUNKIDIR/code/tools/make_munki_mpkg.sh\" -r \"$MUNKIDIR\" -o \"$OUTPUTDIR\" $ADDITIONALARGS"
+eval $CMD
 
 exit $?
