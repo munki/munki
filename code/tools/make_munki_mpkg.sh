@@ -44,7 +44,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -i id       Specify the base package bundle ID
     -r root     Specify the Munki source root
     -o dir      Specify the output directory
-    -n orgname  Specify the name of the organzation
+    -n orgname  Specify the name of the organization
     -p          Build Python.framework even if one exists
     -B          Include a package that sets Munki's bootstrap mode
     -m          Build the package in a manner suitable for install via MDM;
