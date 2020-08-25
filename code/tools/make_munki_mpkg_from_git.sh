@@ -20,7 +20,7 @@ Usage: $(basename "$0") [-b branch ] [-r revision] [<make_munki_mpkg.sh options>
     The remaining options are passed to make_munki_pkg.sh:
     -i id       Specify the base package bundle ID
     -o dir      Specify the output directory
-    -n orgname  Specify the name of the organzation
+    -n orgname  Specify the name of the organization
     -p          Build Python.framework even if one exists
     -B          Include a package that sets Munki's bootstrap mode
     -m          Build the package in a manner suitable for install via MDM;
