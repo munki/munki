@@ -33,7 +33,7 @@ fi
 
 usage() {
     cat <<EOF
-Usage: $(basename $0) [-i id] [-r root] [-o dir] [-c package] [-s cert]"
+Usage: $(basename $0) [-i id] [-r root] [-o dir] [-c package] [-s cert]
 
     -i id       Set the base package bundle ID
     -r root     Set the munki source root
@@ -385,6 +385,8 @@ mkdir -m 750 -p "$COREROOT/Library/Managed Installs/Cache"
 mkdir -m 750 -p "$COREROOT/Library/Managed Installs/catalogs"
 mkdir -m 755 -p "$COREROOT/Library/Managed Installs/manifests"
 
+# Set no-backup attribute.
+xattr -w com.apple.metadata:com_apple_backup_excludeItem com.apple.backupd "$COREROOT/Library/Managed Installs"
 
 # Create package info file.
 CORESIZE=$(du -sk $COREROOT | cut -f1)
@@ -755,6 +757,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             --info "$PKGTMP/info_$pkg" \
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
             --scripts "$SCRIPTS" \
+            --preserve-xattr \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     else
         sudo /usr/bin/pkgbuild \
@@ -764,6 +767,7 @@ for pkg in core admin app launchd app_usage python no_python; do
             --ownership preserve \
             --info "$PKGTMP/info_$pkg" \
             --component-plist "${PKGTMP}/munki_${pkg}_component.plist" \
+            --preserve-xattr \
             "$PKGDEST/munkitools_$pkg-$ver.pkg"
     fi
 
