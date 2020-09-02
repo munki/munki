@@ -5,7 +5,7 @@
 
 html {
     --background-color: transparent;
-    --boder-color: hsl(0, 0%, 87.1%);
+    --border-color: hsl(0, 0%, 87.1%);
     --line-color: hsl(0, 0%, 90.2%);
     --text-color-emphasized: hsl(0, 0%, 8%);
     --text-color-normal: hsl(0, 0%, 15.3%);
@@ -26,11 +26,12 @@ html {
     --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777));
     --install-btn-background: hsl(212, 100%, 51.4%);
     --install-btn-background-active: hsl(212, 95.4%, 42.7%);
+    --more-by-background: hsl(240, 36%, 96%);
 }
 
 html[data-theme='dark'] {
     --background-color: transparent;
-    --boder-color: hsl(0, 0%, 0%);
+    --border-color: hsl(0, 0%, 0%);
     --line-color: hsl(202, 9.7%, 22.2%);
     --text-color-emphasized: hsl(0, 0%, 92%);
     --text-color-normal: hsl(0, 0%, 88%);
@@ -51,6 +52,7 @@ html[data-theme='dark'] {
     --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#5D99F1), to(#4A65AC));
     --install-btn-background: hsl(212, 100%, 51.4%);
     --install-btn-background-active: hsl(212, 95.4%, 42.7%);
+    --more-by-background: hsl(240, 1%, 19%);
 }
 
 html.appearance-transition,
@@ -290,7 +292,7 @@ html, body {
 html {
     height: 100%;
     background-image: none;
-    border-left: 1px solid var(--boder-color);
+    border-left: 1px solid var(--border-color);
 }
 
 #wrapper {
@@ -309,20 +311,20 @@ html {
 #content {
     min-height: 100%;
     margin: 0 auto;
-    padding-bottom: 90px
+    /*padding-bottom: 90px*/
 }
 
 div.columns {
-    display: -webkit-box;
+    /*display: -webkit-box;
     -webkit-box-orient: horizontal;
     -webkit-box-align: stretch;
     position: relative;
-    z-index: 1
+    z-index: 1*/
 }
 
 #content>div:first-child+div.columns, #content>div.showcase+div.columns,
 #content>div:only-child {
-    padding-top: 20px
+    /*padding-top: 20px*/
 }
 
 .main {
@@ -334,7 +336,15 @@ div.columns {
     margin-bottom: 40px
 }
 
-.sidebar {
+
+div.sidebar li  {
+    display: inline;
+    font-size: 14px;
+}
+
+
+
+/*.sidebar {
     width: 200px;
     margin-left: 26px;
 }
@@ -352,7 +362,7 @@ div.columns {
     overflow: visible;
     position: relative;
     top: -5px;
-}
+}*/
 
 footer {
     font-size: 10px;
@@ -415,17 +425,17 @@ div.select {
 }
 
 div.select label {
-    font-size: 11px
+    font-size: 14px
 }
 
 div.select select {
     background: var(--popup-menu-background);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: normal;
     color: var(--popup-menu-text-color);
     outline: 0;
-    line-height: 15px;
-    margin: 0;
+    line-height: 20px;
+    margin: 0 0 12px 0;
     padding: 0 25px 1px 5px;
     border: 0;
     -webkit-appearance: none;
@@ -445,7 +455,7 @@ div.select:before {
     right: 16px;
     top: 0;
     width: 0;
-    height: 16px;
+    height: 20px;
     border-left: 1px solid #cecece;
     border-right: 1px solid var(--background-color);
     pointer-events: none
@@ -455,7 +465,7 @@ div.select:after {
     -webkit-mask-box-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAWCAYAAAD5Jg1dAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAl0lEQVQokWP4//8/AzIGgiggtscQR1MkBMRvgfg2ELPhUzgNiP9DcQtWhUBgg6QIhH8CsS6KQiBgBuLzaApB+DBIDllhKRZFMJwJVcMgDcSf8Sj8DFXDsBGPIhhex4AeXrjw8FIIBFuICB5QEDLIERXgUGMrCEYhVCEbjkRxDCVR4ElmBrgS7kwkhe2UZwWo4lggdkIXBwBe1apnRfWr3AAAAABJRU5ErkJggg==);
     content: "";
     position: absolute;
-    height: 11px;
+    height: 14px;
     width: 5px;
     right: 6px;
     top: 3px;
@@ -464,25 +474,33 @@ div.select:after {
 }
 
 div.titled-box {
+    border-top: 1px solid var(--line-color);
     margin-bottom: 15px;
     padding-bottom: 10px;
-    -webkit-border-radius: 5px;
+    /* -webkit-border-radius: 5px;*/
 }
 
 div.titled-box h2 {
-    font: normal 14px -apple-system, "Helvetica Neue", 'Helvetica';
+    font: 20px -apple-system, "Helvetica Neue", 'Helvetica';
+    font-weight: 600;
     color: var(--text-color-normal);
     line-height: 24px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap
+    white-space: nowrap;
+    border-bottom: 1px solid #cacaca;
+    border-width: 0 0 1px !important;
+    margin-bottom: 6px;
+    margin-top: 10px;
+    -webkit-border-image: none;
 }
 
-div.titled-box h2 a {
+
+/*div.titled-box h2 a {
     font: normal 12px -apple-system, "Helvetica Neue", 'Helvetica';
     color: var(--text-color-normal);
     line-height: 24px
-}
+}*/
 
 div.titled-box>div.content {
     margin-top: 5px
@@ -503,12 +521,13 @@ div.titled-box hr {
 div.titled-box li.popup {
     position: relative;
     text-align: center;
-    margin-bottom: 5px
+    margin-left: 12px;
+    margin-right: 100%
 }
 
 div.titled-box li.popup {
     text-align: left;
-    margin: -3px 0 6px 6px
+    /*margin: -3px 0 6px 6px */
 }
 
 div.titled-box li.popup span {
@@ -537,8 +556,8 @@ div.titled-box li.link.selected {
 }
 
 div.titled-box li.link a {
-    display: block;
-    font-size: 11px;
+    /*display: block;*/
+    /*font-size: 11px;*/
     font-weight: normal;
     color: var(--text-color-normal);
     overflow: hidden;
@@ -551,34 +570,27 @@ div.titled-box li.link.user-link a {
 }
 
 body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
-    display: block
+    /*display: block*/
 }
 
 div.lockup-container, div.container, div.titled-container {
     /*-webkit-border-radius: 5px;*/
 }
 
+div.software {
+    padding-top: 35px;
+}
+
 div.lockup-container .title, div.titled-container .title {
-    height: 32px;
-    border-top: 1px solid var(--line-color);
+    height: 46px;
+    border-bottom: 1px solid var(--line-color);
 }
 
 div.lockup-container .title h2, div.titled-container .title h2 {
     display: inline-block;
-    font: bold 20px -apple-system, "Helvetica Neue", 'Helvetica';
+    font: bold 32px -apple-system, "Helvetica Neue", 'Helvetica';
     color: var(--text-color-normal);
-    line-height: 32px
-}
-
-div.titled-box h2 {
-    color: var(--text-color-normal);
-    border-bottom: 1px solid #cacaca;
-    border-width: 0 0 1px !important;
-    margin-bottom: 6px;
-    margin-top: 10px;
-    -webkit-border-image: none;
-    font-size: 13px;
-    line-height: 22px
+    /*line-height: 36px*/
 }
 
 div.lockup-container .title h1 {
@@ -824,6 +836,12 @@ div.msc-button-inner:not(.installed-not-removable):active:hover {
     color: var(--small-button-text-color-active);
 }
 
+div.msc-button-inner.will-be-installed,
+div.msc-button-inner.will-be-removed,
+div.msc-button-inner.problem-item {
+    display:none!important
+}
+
 div.msc-button button {
     -webkit-appearance: none;
     -webkit-border-radius: 0;
@@ -837,19 +855,18 @@ div.msc-button button {
 }
 
 div.msc-button-inner.large {
-    height: 23px;
+    height: 30px;
     position: relative;
-    min-width: 50px;
+    min-width: 90px;
     margin-left: 5px;
-    font-size: 13px;
-    font-family: "Helvetica";
-    text-transform: capitalize;
-    line-height: 21px;
-    border: 1px solid rgb(42, 73, 118);
-    color: White;
-    background: var(--detail-btn-background);
+    font-size: 11px;
+    text-transform: uppercase;
+    line-height: 32px;
+    border: 0;
+    color: var(--button-text-color-enabled);
+    background: var(--install-btn-background);
     border-color: #1F4A7A;
-    -webkit-border-radius: 5px;
+    -webkit-border-radius: 15px;
 }
 
 div.msc-button-inner.large.installed-not-removable,
