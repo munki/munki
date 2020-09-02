@@ -334,6 +334,9 @@
 /* managedsoftwareupdate message */
 "Running Adobe Uninstall" = "Starte Adobe Uninstall";
 
+/* See All link text */
+"See All" = "Alle anzeigen";
+
 /* No Installed Software secondary text */
 "Select software to install." = "Wählen Sie die zu installierende Software aus.";
 
