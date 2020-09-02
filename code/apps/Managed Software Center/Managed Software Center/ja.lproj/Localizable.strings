@@ -334,6 +334,9 @@
 /* managedsoftwareupdate message */
 "Running Adobe Uninstall" = "Adobeアンインストール実行中";
 
+/* See All link text */
+"See All" = "すべて表示";
+
 /* No Installed Software secondary text */
 "Select software to install." = "インストールするソフトウェアを選択してください";
 
