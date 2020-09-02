@@ -22,15 +22,14 @@
 .main>div:not(:last-of-type) {
     margin-bottom: 20px
 }
-div.status-results {
-    border-bottom: 1px solid #d9d9d9
-}
 div.installations {
-    margin: 14px 0;
+    margin: 15px 0;
     position: relative
 }
 div.installations table {
-    width: 100%
+    width: 100%;
+    padding-top: 12px;
+    padding-bottom: 12px
 }
 div.installations table:not(.no-header):before {
     border-width: 0 0 3px 0;
@@ -44,15 +43,15 @@ div.installations table:not(.no-header):before {
 }
 div.installations thead {
     border-radius: 5px 5px 0 0;
-    height: 32px;
+    height: 42px;
     border-bottom: 1px solid #d7d7d7;
 }
 div.installations th {
     color: var(--text-color-normal);
-    font-size: 14px;
-    font-weight: normal;
-    height: 32px;
-    line-height: 14px;
+    font-size: 32px;
+    font-weight: 600;
+    height: 42px;
+    line-height: 42px;
     text-align: left
 }
 #updates div.installations th {
@@ -61,8 +60,13 @@ div.installations th {
     line-height: 32px
 }
 
-#update-count-string {
+div.non-scan-progress {
+    font-size: 16px;
+}
+
+#update-count-string, #update-warning-text {
     /*margin-left: -10px*/
+    font-size: 16px;
 }
 
 #updates-progress-spinner {
@@ -78,8 +82,8 @@ div.installations th:last-child {
     -webkit-border-top-right-radius: 5px
 }
 .installation td {
-    /* border-top: 1px solid #fff; */
-    border-bottom: 1px solid #d9d9d9;
+    border-top: 1px solid var(--line-color);
+    border-bottom: 1px solid var(--line-color);
     padding: 0 10px
 }
 .installation td,.installation td a {
@@ -226,9 +230,13 @@ div.purchases .installation td.status span.preparing-removal
 #updates #header h1 {
     font-size: 15px;
     font-weight: normal;
-    /*color: #929292;*/
     color: var(--text-color-subdued);
     text-align: center
+}
+div.main .title h2 {
+    display: inline-block;
+    font: bold 32px -apple-system, "Helvetica Neue", 'Helvetica';
+    color: var(--text-color-normal);
 }
 div.updates table {
     -webkit-box-orient: vertical;
@@ -331,7 +339,7 @@ div.os-updates p.note {
     color: #d30
 }
 .installation .description a {
-    color: var(--description-link-color)
+    color: #3E6397
 }
 .installation [data-text-truncate-lines] a.text-truncate-toggle {
     padding: 0;
@@ -503,10 +511,10 @@ body.scanning .non-scan-progress,body.page-not-ready .non-scan-progress,body:not
 }
 
 
-tr.installation.added {
+div.lockup.added {
     -webkit-animation: fade-in .5s;
 }
-tr.installation.deleted {
+div.lockup.deleted {
     -webkit-animation: fade-out-and-remove .5s;
     -webkit-animation-fill-mode: forwards;
 }

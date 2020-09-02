@@ -10,3 +10,4 @@ code/apps/MunkiStatus/build/
 
 # ignore any pkgs build by tool scripts
 munkitools*.pkg
+Python.framework
