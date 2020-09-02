@@ -4,41 +4,55 @@
 */
 
 html {
-    --background-color: hsl(0, 0%, 100%);
+    --background-color: transparent;
+    --border-color: hsl(0, 0%, 87.1%);
+    --line-color: hsl(0, 0%, 90.2%);
     --text-color-emphasized: hsl(0, 0%, 8%);
-    --text-color-normal: hsl(0, 0%, 23%);
-    --text-color-subdued: hsl(0, 0%, 48%);
+    --text-color-normal: hsl(0, 0%, 15.3%);
+    --text-color-subdued: hsl(240, 2.7%, 55.7%);
     --text-color-warning: hsl(0, 100%, 40%);
     --description-link-color: #3E6397;
     --button-text-color-enabled: hsl(0, 0%, 100%);
+    --button-text-color-active: hsl(0, 0%, 100%);
     --button-text-color-disabled: hsl(0, 0%, 74%);
+    --small-button-text-color-enabled: hsl(212, 100%, 51.4%);
+    --small-button-text-color-active: hsl(212, 95.4%, 42.7%);
+    --small-button-text-color-disabled: hsl(0, 0%, 74%);
     --popup-menu-text-color: hsl(0, 0%, 0%);
     --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(hsl(0, 0%, 100%)), to(hsl(0, 0%, 92%)));
-    --small-btn-background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
-    --small-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #85868d), to( #7a7bb2));
+    --small-btn-background: hsl(240, 30.8%, 94.9%);
+    --small-btn-background-active: hsl(240, 6.5%, 79.0%);
     --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
     --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777));
-    --install-btn-background: -webkit-gradient(linear, left top, left bottom, from( #85868d), color-stop(0.05, #84858c), color-stop(0.5, #888188), color-stop(0.96, #7b7c83), to( #7a7bb2));
-    --install-btn-background-active: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#5e5fa0), color-stop(4%,#67686f), color-stop(50%,#736d73), color-stop(95%,#6f7077), color-stop(100%,#707178));
+    --install-btn-background: hsl(212, 100%, 51.4%);
+    --install-btn-background-active: hsl(212, 95.4%, 42.7%);
+    --more-by-background: hsl(240, 36%, 96%);
 }
 
 html[data-theme='dark'] {
-    --background-color: hsl(0, 0%, 14%);
+    --background-color: transparent;
+    --border-color: hsl(0, 0%, 0%);
+    --line-color: hsl(202, 9.7%, 22.2%);
     --text-color-emphasized: hsl(0, 0%, 92%);
-    --text-color-normal: hsl(0, 0%, 77%);
+    --text-color-normal: hsl(0, 0%, 88%);
     --text-color-subdued: hsl(0, 0%, 62%);
     --text-color-warning: hsl(0, 100%, 60%);
     --description-link-color: #90B0EA;
-    --button-text-color-enabled: hsl(0, 0%, 0%);
+    --button-text-color-enabled: hsl(0, 0%, 100%);
+    --button-text-color-active: hsl(300, 1.2%, 83.3%);
     --button-text-color-disabled: hsl(0, 0%, 41%);
+    --small-button-text-color-enabled: hsl(212, 100%, 51.4%);
+    --small-button-text-color-active: hsl(212, 95.4%, 42.7%);
+    --small-button-text-color-disabled: hsl(0, 0%, 74%);
     --popup-menu-text-color: hsl(0, 0%, 100%);
     --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(hsl(0, 0%, 30%)), to(hsl(0, 0%, 38%)));
-    --small-btn-background: -webkit-gradient(linear, 0% 0, 0% 100%, from(rgb(166, 168, 174)), to(rgb(157, 159, 164)));
-    --small-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#E8E6FF), to( #F2F3FC));
+    --small-btn-background: hsl(240, 30.8%, 94.9%);
+    --small-btn-background-active: hsl(240, 6.5%, 79.0%);
     --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
     --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#5D99F1), to(#4A65AC));
-    --install-btn-background: -webkit-gradient(linear, left top, left bottom, from( #BABBC3), color-stop(0.05, #B9BAC2), color-stop(0.5, #BDB6BD), color-stop(0.96, #AFB0B8), to(#B0AFEA));
-    --install-btn-background-active: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#E8E6FF), color-stop(4%,#E7E8F0), color-stop(50%,#F5EEF5), color-stop(95%,#F1F2FA), color-stop(100%,#F2F3FC));
+    --install-btn-background: hsl(212, 100%, 51.4%);
+    --install-btn-background-active: hsl(212, 95.4%, 42.7%);
+    --more-by-background: hsl(240, 1%, 19%);
 }
 
 html.appearance-transition,
@@ -253,7 +267,7 @@ button, button *, select {
 }
 
 body {
-    -webkit-font-smoothing: antialiased
+    -webkit-font-smoothing: antialiased;
 }
 
 body:after {
@@ -277,16 +291,17 @@ html, body {
 
 html {
     height: 100%;
-    background-image: none
+    background-image: none;
+    border-left: 1px solid var(--border-color);
 }
 
 #wrapper {
     position: relative;
-    max-width: 1198px;
-    min-width: 984px;
+    max-width: 1600px;
+    min-width: 779px;
     height: 100%;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 40px;
     display: -webkit-box;
     min-height: 0;
     -webkit-box-orient: vertical;
@@ -295,21 +310,21 @@ html {
 
 #content {
     min-height: 100%;
-    margin: 0 auto -35px;
-    padding-bottom: 90px
+    margin: 0 auto;
+    /*padding-bottom: 90px*/
 }
 
 div.columns {
-    display: -webkit-box;
+    /*display: -webkit-box;
     -webkit-box-orient: horizontal;
     -webkit-box-align: stretch;
     position: relative;
-    z-index: 1
+    z-index: 1*/
 }
 
 #content>div:first-child+div.columns, #content>div.showcase+div.columns,
 #content>div:only-child {
-    padding-top: 20px
+    /*padding-top: 20px*/
 }
 
 .main {
@@ -321,7 +336,15 @@ div.columns {
     margin-bottom: 40px
 }
 
-.sidebar {
+
+div.sidebar li  {
+    display: inline;
+    font-size: 14px;
+}
+
+
+
+/*.sidebar {
     width: 200px;
     margin-left: 26px;
 }
@@ -339,19 +362,19 @@ div.columns {
     overflow: visible;
     position: relative;
     top: -5px;
-}
+}*/
 
 footer {
     font-size: 10px;
-    color: #4c4c4c;
+    color: var(--text-color-normal);
     line-height: 30px;
     text-align: center;
     position: relative;
     z-index: 1;
-    max-width: 1198px;
-    min-width: 984px;
+    max-width: 1600px;
+    min-width: 779px;
     margin: 0 auto;
-    padding: 0 20px
+    padding: 0 40px
 }
 
 footer script {
@@ -360,7 +383,7 @@ footer script {
 
 footer div.bottom-links {
     margin: 0 0 0 0;
-    border-top: 1px solid #d3d7db;
+    border-top: 1px solid var(--line-color);
     position: relative
 }
 
@@ -402,17 +425,17 @@ div.select {
 }
 
 div.select label {
-    font-size: 11px
+    font-size: 14px
 }
 
 div.select select {
     background: var(--popup-menu-background);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: normal;
     color: var(--popup-menu-text-color);
     outline: 0;
-    line-height: 15px;
-    margin: 0;
+    line-height: 20px;
+    margin: 0 0 12px 0;
     padding: 0 25px 1px 5px;
     border: 0;
     -webkit-appearance: none;
@@ -432,7 +455,7 @@ div.select:before {
     right: 16px;
     top: 0;
     width: 0;
-    height: 16px;
+    height: 20px;
     border-left: 1px solid #cecece;
     border-right: 1px solid var(--background-color);
     pointer-events: none
@@ -442,7 +465,7 @@ div.select:after {
     -webkit-mask-box-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAWCAYAAAD5Jg1dAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAl0lEQVQokWP4//8/AzIGgiggtscQR1MkBMRvgfg2ELPhUzgNiP9DcQtWhUBgg6QIhH8CsS6KQiBgBuLzaApB+DBIDllhKRZFMJwJVcMgDcSf8Sj8DFXDsBGPIhhex4AeXrjw8FIIBFuICB5QEDLIERXgUGMrCEYhVCEbjkRxDCVR4ElmBrgS7kwkhe2UZwWo4lggdkIXBwBe1apnRfWr3AAAAABJRU5ErkJggg==);
     content: "";
     position: absolute;
-    height: 11px;
+    height: 14px;
     width: 5px;
     right: 6px;
     top: 3px;
@@ -451,25 +474,33 @@ div.select:after {
 }
 
 div.titled-box {
+    border-top: 1px solid var(--line-color);
     margin-bottom: 15px;
     padding-bottom: 10px;
-    -webkit-border-radius: 5px;
+    /* -webkit-border-radius: 5px;*/
 }
 
 div.titled-box h2 {
-    font: normal 14px -apple-system, "Helvetica Neue", 'Helvetica';
+    font: 20px -apple-system, "Helvetica Neue", 'Helvetica';
+    font-weight: 600;
     color: var(--text-color-normal);
     line-height: 24px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap
+    white-space: nowrap;
+    border-bottom: 1px solid #cacaca;
+    border-width: 0 0 1px !important;
+    margin-bottom: 6px;
+    margin-top: 10px;
+    -webkit-border-image: none;
 }
 
-div.titled-box h2 a {
+
+/*div.titled-box h2 a {
     font: normal 12px -apple-system, "Helvetica Neue", 'Helvetica';
     color: var(--text-color-normal);
     line-height: 24px
-}
+}*/
 
 div.titled-box>div.content {
     margin-top: 5px
@@ -490,12 +521,13 @@ div.titled-box hr {
 div.titled-box li.popup {
     position: relative;
     text-align: center;
-    margin-bottom: 5px
+    margin-left: 12px;
+    margin-right: 100%
 }
 
 div.titled-box li.popup {
     text-align: left;
-    margin: -3px 0 6px 6px
+    /*margin: -3px 0 6px 6px */
 }
 
 div.titled-box li.popup span {
@@ -524,8 +556,8 @@ div.titled-box li.link.selected {
 }
 
 div.titled-box li.link a {
-    display: block;
-    font-size: 11px;
+    /*display: block;*/
+    /*font-size: 11px;*/
     font-weight: normal;
     color: var(--text-color-normal);
     overflow: hidden;
@@ -538,39 +570,27 @@ div.titled-box li.link.user-link a {
 }
 
 body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
-    display: block
+    /*display: block*/
 }
 
 div.lockup-container, div.container, div.titled-container {
     /*-webkit-border-radius: 5px;*/
 }
 
+div.software {
+    padding-top: 35px;
+}
+
 div.lockup-container .title, div.titled-container .title {
-    height: 32px;
-    border-bottom: 1px solid #d7d7d7
+    height: 46px;
+    border-bottom: 1px solid var(--line-color);
 }
 
 div.lockup-container .title h2, div.titled-container .title h2 {
     display: inline-block;
-    font: normal 14px -apple-system, "Helvetica Neue", 'Helvetica';
+    font: bold 32px -apple-system, "Helvetica Neue", 'Helvetica';
     color: var(--text-color-normal);
-    line-height: 32px
-}
-
-div.lockup-container .title, div.titled-container .title, div.titled-box h2 {
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
-}
-
-div.titled-box h2 {
-    color: var(--text-color-normal);
-    border-bottom: 1px solid #cacaca;
-    border-width: 0 0 1px !important;
-    margin-bottom: 6px;
-    margin-top: 10px;
-    -webkit-border-image: none;
-    font-size: 13px;
-    line-height: 22px
+    /*line-height: 36px*/
 }
 
 div.lockup-container .title h1 {
@@ -617,12 +637,23 @@ div.lockup-container .paginated-container {
 div.lockup-container div.lockup {
     display: block;
     float: left;
-    width: 33.3%;
-    height: 98px;
+    width: 50%
+}
+
+@media only screen and (min-width: 1000px) {
+    div.lockup-container div.lockup {
+        width: 33.3%; 
+    }
+}
+
+@media only screen and (min-width: 1400px) {
+    div.lockup-container div.lockup {
+        width: 25%; 
+    }
 }
 
 div.lockup-container div.lockup div.artwork {
-    margin-right: 10px
+    margin-right: 20px
 }
 
 div.lockup-container div.lockup ul {
@@ -630,14 +661,18 @@ div.lockup-container div.lockup ul {
 }
 
 div.lockup-container div.lockup li.name>* {
-    font-size: 12px;
-    color: var(--text-color-emphasized)
+    font-size: 15px;
+    color: var(--text-color-normal)
+}
+
+div.lockup-container div.lockup li.name:hover>* {
+    text-decoration: none;
 }
 
 div.lockup-container div.lockup li, div.lockup-container div.lockup li>a,
 div.lockup-container div.lockup li>span {
     color: var(--text-color-subdued);
-    font-size: 11px
+    font-size: 12px
 }
 
 div.lockup-container[data-columns-current] {
@@ -720,7 +755,7 @@ div.lockup-container[data-columns-current="5"] div.lockup:nth-last-of-type(5) {
 
 div.lockup {
     position: relative;
-    padding: 10px
+    padding-top: 15px;
 }
 
 div.lockup div.artwork {
@@ -740,7 +775,6 @@ div.lockup ul li {
 
 div.lockup li.name {
     color: var(--text-color-emphasized);
-    max-width: 190px
 }
 
 div.lockup li.artist {
@@ -773,15 +807,15 @@ div.msc-button.small {
 }
 
 div.msc-button-inner {
-    height: 13px;
-    -webkit-border-radius: 3px;
+    height: 24px;
+    -webkit-border-radius: 12px;
     background: var(--small-btn-background);
-    border: 1px solid rgba(136, 136, 138, .746094);
     text-transform: uppercase;
-    color: var(--button-text-color-enabled);
-    font: normal normal bold 9px/12px 'Helvetica';
+    color: var(--small-button-text-color-enabled);
+    font: normal normal bold 10px/14px 'Helvetica';
     padding-left: 10px;
     padding-right: 10px;
+    line-height: 24px;
 }
 
 div.msc-button-inner.installed-not-removable, 
@@ -799,6 +833,13 @@ div.msc-button-inner.removing {
 
 div.msc-button-inner:not(.installed-not-removable):active:hover {
     background: var(--small-btn-background-active);
+    color: var(--small-button-text-color-active);
+}
+
+div.msc-button-inner.will-be-installed,
+div.msc-button-inner.will-be-removed,
+div.msc-button-inner.problem-item {
+    display:none!important
 }
 
 div.msc-button button {
@@ -814,19 +855,18 @@ div.msc-button button {
 }
 
 div.msc-button-inner.large {
-    height: 23px;
+    height: 30px;
     position: relative;
-    min-width: 50px;
+    min-width: 90px;
     margin-left: 5px;
-    font-size: 13px;
-    font-family: "Helvetica";
-    text-transform: capitalize;
-    line-height: 21px;
-    border: 1px solid rgb(42, 73, 118);
-    color: White;
-    background: var(--detail-btn-background);
+    font-size: 11px;
+    text-transform: uppercase;
+    line-height: 32px;
+    border: 0;
+    color: var(--button-text-color-enabled);
+    background: var(--install-btn-background);
     border-color: #1F4A7A;
-    -webkit-border-radius: 5px;
+    -webkit-border-radius: 15px;
 }
 
 div.msc-button-inner.large.installed-not-removable,
@@ -852,22 +892,22 @@ div.msc-button.install-updates {
 }
 
 div.msc-button.install-updates.in-header {
-    margin-top: -2px;
+    margin-top: -6px;
 }
 
 div.msc-button-inner.install-updates {
-    height: 23px;
+    height: 30px;
     position: relative;
     min-width: 90px;
     margin-left: 5px;
     font-size: 11px;
     text-transform: uppercase;
-    line-height: 24px;
+    line-height: 32px;
     border: 0;
     color: var(--button-text-color-enabled);
     background: var(--install-btn-background);
     border-color: #1F4A7A;
-    -webkit-border-radius: 3px;
+    -webkit-border-radius: 15px;
 }
 
 div.msc-button-inner.install-updates.disabled,
@@ -886,6 +926,7 @@ div.msc-button-inner.install-updates.removing {
 
 div.msc-button-inner.install-updates:not(.installed-not-removable):active:hover {
     background: var(--install-btn-background-active);
+    color: var(--button-text-color-active);
 }
 
 .scrollbar::-webkit-scrollbar {
@@ -1153,7 +1194,8 @@ body {
     margin: 0;
     min-height: 100%;
     display: -webkit-box;
-    -webkit-box-orient: vertical
+    -webkit-box-orient: vertical;
+    overflow-x: hidden;
 }
 
 div#page {
@@ -1280,10 +1322,6 @@ div.lockup li.removing span.progress-spinner {
     right: 20px;
 }
 
-div.lockup li {
-    max-width: 190px;
-}
-
 div.lockup li.not-installed,
 div.lockup li.installing, 
 div.lockup li.removing {
@@ -1304,18 +1342,28 @@ div.lockup-container div.status-results {
     text-align:center;
     padding-top: 100px;
     padding-bottom: 100px;
-    color: var(--text-color-subdued);
 }
 div.lockup-container div.status-results>h2 {
     margin-bottom: 6px;
     font-weight: bold;
-    font-size: 14px
+    font-size: 25px;
+    color: var(--text-color-normal);
 }
 div.lockup-container div.status-results>p {
-    font-size: 12px
+    font-size: 14px;
+    color: var(--text-color-subdued);
 }
 div.lockup-container div.status-results>p a{
     font-weight: bold; 
     color: var(--text-color-subdued);
 }
 
+.button {
+    margin-top:10px;
+}
+
+.items {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line-color);
+    height: 105px;
+}

@@ -17,6 +17,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillFinishLaunching(_ aNotification: Notification) {
         if atLoginWindow() {
+            // hide background color
+            self.window.backgroundColor = .clear
             // don't show menu bar
             NSMenu.setMenuBarVisible(false)
             // make sure we're active
@@ -53,7 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         thisWindow.canBecomeVisibleWithoutLogin = true
         thisWindow.level = backdropWindowLevel
-        thisWindow.backgroundColor = NSColor.black.withAlphaComponent(0.35)
+        thisWindow.backgroundColor = NSColor.black
         thisWindow.isOpaque = false
         thisWindow.ignoresMouseEvents = false
         thisWindow.alphaValue = 0.0

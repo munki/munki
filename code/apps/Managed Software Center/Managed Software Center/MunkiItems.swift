@@ -926,6 +926,8 @@ class UpdateItem: GenericItem {
             my["type"] = NSLocalizedString("Managed Update",
                                            comment: "Managed Update type")
         }
+        my["category"] = NSLocalizedString("Managed Update",
+                                           comment: "Managed Update type")
         my["hide_cancel_button"]  = "hidden"
         my["dependent_items"] = dependentItems(name)
         my["days_available"] = getDaysPending(name)
