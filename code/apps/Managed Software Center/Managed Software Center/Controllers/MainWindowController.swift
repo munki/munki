@@ -46,6 +46,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBOutlet weak var sidebar: NSOutlineView!
     
+    @IBOutlet weak var softwareMenuItem: NSMenuItem!
+    @IBOutlet weak var categoriesMenuItem: NSMenuItem!
+    @IBOutlet weak var myItemsMenuItem: NSMenuItem!
+    @IBOutlet weak var updatesMenuItem: NSMenuItem!
+    @IBOutlet weak var findMenuItem: NSMenuItem!
+
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
     
@@ -249,8 +255,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func enableOrDisableSoftwareViewControls() {
         // Disable or enable the controls that let us view optional items
-        let enabled_state = (getOptionalInstallItems().count > 0)
+        let enabled_state = optionalInstallsExist()
+        //enableOrDisableToolbarItems(enabled_state)
         searchField.isEnabled = enabled_state
+        findMenuItem.isEnabled = enabled_state
+        softwareMenuItem.isEnabled = enabled_state
+        categoriesMenuItem.isEnabled = enabled_state
+        myItemsMenuItem.isEnabled = enabled_state
     }
     
     func munkiStatusSessionEnded(withStatus sessionResult: Int, errorMessage: String) {
@@ -469,7 +480,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 
     func insertWebView() {
         // replace our webview placeholder with the real one
-        if let superview = webViewPlaceholder.superview {
+        if let superview = webViewPlaceholder?.superview {
             // define webview configuration
             let webConfiguration = WKWebViewConfiguration()
             addJSmessageHandlers()
@@ -482,7 +493,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // init our webview
             let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
-            replacementWebView.allowsBackForwardNavigationGestures = false
+            replacementWebView.allowsBackForwardNavigationGestures = true
             replacementWebView.setValue(false, forKey: "drawsBackground")
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
@@ -822,6 +833,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             msc_debug_log(
                 "Could not build page for \(url_fragment): \(error)")
         }*/
+        
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
         let request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
@@ -835,6 +847,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 _alertedUserToOutstandingUpdates = true
             }
         }
+        //navigateBackButton.isHidden = !url_fragment.hasPrefix("detail-")
     }
     
     func handleMunkiURL(_ url: URL) {
@@ -1001,6 +1014,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 //        navigateForwardButton.isEnabled = webView.canGoForward
 //        navigateForwardMenuItem.isEnabled = webView.canGoForward
         clearCache()
+        let page_url = webView.url
+        let filename = page_url?.lastPathComponent ?? ""
+        navigateBackButton.isHidden = !filename.hasPrefix("detail-")
     }
     
     func webView(_ webView: WKWebView,
@@ -1324,7 +1340,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         msc_log("user", "optional_install_\(current_status)", msg: item_name)
         if pythonishBool(item["needs_update"]) {
             // make some new HTML for the updated item
-            let item_template = getTemplate("update_row_template.html")
+            let item_template = getTemplate("update_item_template.html")
+            item["added_class"] = "added"
             let item_html = item_template.substitute(item)
             if ["install-requested",
                     "update-will-be-installed", "installed"].contains(current_status) {
@@ -1439,6 +1456,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
         // Handle WebView back button
         webView.goBack(self)
+        /*let page_url = webView.url
+        let filename = page_url?.lastPathComponent ?? ""
+        navigateBackButton.isHidden = !filename.hasPrefix("detail-")*/
     }
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {

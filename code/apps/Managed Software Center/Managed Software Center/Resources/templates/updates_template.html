@@ -18,23 +18,23 @@
     <div id="page">
         <div id="wrapper">
             <div id="content">
-                <div class="background"></div>
                 <div id="updates" class="main">
                     <div id="os-and-app-updates"
                          class="lockup-container installations updates">
+                        <div class="title">
+                            <h2>${UpdatesLabel}</h2>
+                        </div>
                         <table>
                             <thead>
                                 <tr>
                                     <th colspan="3">
                                         <div class="non-scan-progress">
-                                            ${UpdatesLabel}
-                                            <!--
                                             <span id="update-count-string">${update_count}</span>
                                             &nbsp;
                                             <span class="warning" id="update-warning-text">
                                                 ${warning_text}
                                             </span>
-                                            <div class='progress-spinner ${hide_progress_spinner}' id="updates-progress-spinner"></div>-->
+                                            <div class='progress-spinner ${hide_progress_spinner}' id="updates-progress-spinner"></div>
                                             <div class="msc-button install-updates in-header">
                                                 <button class="button-area uppercase"
                                                         onClick="window.webkit.messageHandlers.installButtonClicked.postMessage('');">
@@ -50,12 +50,10 @@
                            </thead>
                            <tbody></tbody>
                         </table>
-                        <div id="os-updates" class='lockup-container installations updates'>
-                            <table class="no-header">
-                                <tbody id="updates-to-install-table">
-                                    ${update_rows}
-                                </tbody>
-                             </table>
+                        <div id="os-updates" class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls updates-page" id="updates-to-install-table">
+                                ${update_rows}
+                            </div>
                         </div>
                     </div>
                     <div id="problem-updates"
@@ -70,10 +68,13 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="problem-updates-table">
-                                ${problem_update_rows}
-                            </tbody>
+                            <tbody></tbody>
                         </table>
+                        <div id="problem-updates" class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls updates-page" id="problem-updates-table">
+                                ${problem_update_rows}
+                            </div>
+                        </div>
                     </div>
                     <div id="other-updates"
                          class="lockup-container installations updates ${hide_other_updates}">
@@ -87,10 +88,13 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="other-updates-table">
-                                ${other_update_rows}
-                            </tbody>
+                            <tbody></tbody>
                         </table>
+                        <div id="other-updates" class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls updates-page" id="other-updates-table">
+                                ${other_update_rows}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
