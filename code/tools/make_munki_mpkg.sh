@@ -52,7 +52,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
                 daemons without requiring a restart. Such a package is not
                 suited for upgrade installs or install via Munki itself.
     -c plist    Build a configuration package using the preferences defined in a
-                plist file
+                plist file. Provide the full path to the file.
     -s cert_cn  Sign distribution package with a Developer ID Installer
                 certificate from keychain. Provide the certificate's Common
                 Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -144,8 +144,7 @@ if [ ! -x "/usr/bin/xcodebuild" ]; then
     exit 1
 fi
 if [[ "$CONFPKG" == "YES" ]] ; then
-    ABSDIRPATH="$(cd "$(dirname "$CONFPLIST")" ; pwd)"
-    if ! defaults read "$ABSDIRPATH/$CONFPLIST" 1>/dev/null ; then
+    if ! defaults read "$CONFPLIST" 1>/dev/null ; then
         echo "Could not read $CONFPLIST, or invalid plist!"
         exit 1
     fi
