@@ -342,6 +342,15 @@ div.sidebar li  {
     font-size: 14px;
 }
 
+div.sidebar {
+    background: var(--more-by-background);
+    margin-left: -40px;
+    padding-left: 40px;
+    margin-right: -40px;
+    padding-right: 40px;
+    margin-bottom: 0px;
+}
+
 
 
 /*.sidebar {
@@ -484,13 +493,13 @@ div.titled-box h2 {
     font: 20px -apple-system, "Helvetica Neue", 'Helvetica';
     font-weight: 600;
     color: var(--text-color-normal);
-    line-height: 24px;
+    /*line-height: 24px;*/
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     border-bottom: 1px solid #cacaca;
     border-width: 0 0 1px !important;
-    margin-bottom: 6px;
+    margin-bottom: 0;
     margin-top: 10px;
     -webkit-border-image: none;
 }
@@ -507,7 +516,9 @@ div.titled-box>div.content {
 }
 
 div.titled-box.quick-links>div.content {
-    margin-top: 3px
+    margin-top: 0;
+    text-align: center;
+    padding-bottom: 8px;
 }
 
 div.titled-box h2, div.titled-box hr {
@@ -575,10 +586,6 @@ body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
 
 div.lockup-container, div.container, div.titled-container {
     /*-webkit-border-radius: 5px;*/
-}
-
-div.software {
-    padding-top: 35px;
 }
 
 div.lockup-container .title, div.titled-container .title {
@@ -1151,9 +1158,15 @@ p:not(.data-text-truncate-opened)[data-text-truncate-lines='20'] {
     -webkit-line-clamp: 20
 }
 
+div.showcase-empty-placeholder {
+    height: 35px;
+    margin: 0;
+    padding: 0;
+}
+
 div.showcase {
     height: 200px;
-    margin: 0;
+    margin: 0 0 10px 0;
     opacity: 1;
     overflow: hidden;
     -webkit-transition: opacity .25s;
