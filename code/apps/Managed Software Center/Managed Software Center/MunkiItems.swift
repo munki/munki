@@ -163,7 +163,7 @@ class GenericItem: BaseItem {
             my["size"] = humanReadable(installer_item_size)
         } else {
             my["size_sort"] = 0
-            my["size"] = ""
+            my["size"] = "-"
         }
     }
 
@@ -540,7 +540,7 @@ class GenericItem: BaseItem {
         // Version number for display
         let status = my["status"] as? String ?? ""
         if status == "will-be-removed" {
-            return ""
+            return "-"
         }
         return my["version_to_install"] as? String ?? ""
     }
