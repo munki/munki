@@ -52,7 +52,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
                 daemons without requiring a restart. Such a package is not
                 suited for upgrade installs or install via Munki itself.
     -c plist    Build a configuration package using the preferences defined in a
-                plist file. Provide the full path to the file.
+                plist file. 
     -s cert_cn  Sign distribution package with a Developer ID Installer
                 certificate from keychain. Provide the certificate's Common
                 Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -144,8 +144,11 @@ if [ ! -x "/usr/bin/xcodebuild" ]; then
     exit 1
 fi
 if [[ "$CONFPKG" == "YES" ]] ; then
-    if ! defaults read "$CONFPLIST" 1>/dev/null ; then
-        echo "Could not read $CONFPLIST, or invalid plist!"
+    CONFDIRPATH="$(cd "$(dirname "$CONFPLIST")" ; pwd)"
+    CONFPLISTNAME="$(basename "$CONFPLIST")"
+    CONFFULLPATH="${CONFDIRPATH}/${CONFPLISTNAME}"
+    if ! defaults read "$CONFFULLPATH" 1>/dev/null ; then
+        echo "Could not read $CONFFULLPATH, or invalid plist!"
         exit 1
     fi
 fi
@@ -253,7 +256,7 @@ echo "  Munki source root: $MUNKIROOT"
 echo "  Output directory: $OUTPUTDIR"
 echo "  Include bootstrap pkg: $BOOTSTRAPPKG"
 if [ "$CONFPKG" == "YES" ] ; then
-    echo "  Include config pkg built with plist: $CONFPLIST"
+    echo "  Include config pkg built with plist: $CONFFULLPATH"
 else
     echo "  Include config pkg: NO"
 fi
@@ -622,7 +625,7 @@ if [ "$CONFPKG" == "YES" ] ; then
     mkdir -m 1775 "$CONFROOT"
     mkdir -p "$CONFROOT/Library/Preferences"
     # Copy prefs file
-    cp "$CONFPLIST" "$CONFROOT/Library/Preferences/ManagedInstalls.plist"
+    cp "$CONFFULLPATH" "$CONFROOT/Library/Preferences/ManagedInstalls.plist"
     # Create package info file.
     makeinfo config "$PKGTMP/info" norestart
 fi
