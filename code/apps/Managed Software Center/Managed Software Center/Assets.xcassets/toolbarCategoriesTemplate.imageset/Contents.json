@@ -1,11 +1,12 @@
 {
   "images" : [
     {
+      "filename" : "SidebarCategories26x26.png",
       "idiom" : "universal",
-      "filename" : "toolbarCategoriesTemplate.pdf",
       "scale" : "1x"
     },
     {
+      "filename" : "SidebarCategories26x26@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -15,8 +16,8 @@
     }
   ],
   "info" : {
-    "version" : 1,
-    "author" : "xcode"
+    "author" : "xcode",
+    "version" : 1
   },
   "properties" : {
     "template-rendering-intent" : "template"
