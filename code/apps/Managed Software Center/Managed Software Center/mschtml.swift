@@ -377,11 +377,12 @@ func buildListPage(category: String = "",
     page["category_list"] = categories_html_list
     page["header_text"] = header
     let more_templates = BaseItem()
-    if category.isEmpty && filter.isEmpty && developer.isEmpty {
+    more_templates["showcase"] = getRawTemplate("showcase_template.html")
+    /*if category.isEmpty && filter.isEmpty && developer.isEmpty {
         more_templates["showcase"] = getRawTemplate("showcase_template.html")
     } else {
         more_templates["showcase"] = ""
-    }
+    }*/
     more_templates["sidebar"] = getRawTemplate("sidebar_template.html")
     more_templates["footer"] = getRawTemplate("footer_template.html")
     try generatePage(named: page_name,
