@@ -339,7 +339,11 @@ div.columns {
 
 div.sidebar li  {
     display: inline;
-    font-size: 14px;
+    font-size: 12px;
+}
+
+div.sidebar li:not(:first-of-type) {
+    border-left: 1px solid var(--text-color-subdued);
 }
 
 div.sidebar {
@@ -439,12 +443,12 @@ div.select label {
 
 div.select select {
     background: var(--popup-menu-background);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: normal;
     color: var(--popup-menu-text-color);
     outline: 0;
-    line-height: 20px;
-    margin: 0 0 12px 0;
+    line-height: 16px;
+    margin: 0 0 8px 0;
     padding: 0 25px 1px 5px;
     border: 0;
     -webkit-appearance: none;
@@ -474,10 +478,10 @@ div.select:after {
     -webkit-mask-box-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAWCAYAAAD5Jg1dAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAl0lEQVQokWP4//8/AzIGgiggtscQR1MkBMRvgfg2ELPhUzgNiP9DcQtWhUBgg6QIhH8CsS6KQiBgBuLzaApB+DBIDllhKRZFMJwJVcMgDcSf8Sj8DFXDsBGPIhhex4AeXrjw8FIIBFuICB5QEDLIERXgUGMrCEYhVCEbjkRxDCVR4ElmBrgS7kwkhe2UZwWo4lggdkIXBwBe1apnRfWr3AAAAABJRU5ErkJggg==);
     content: "";
     position: absolute;
-    height: 14px;
+    height: 12px;
     width: 5px;
     right: 6px;
-    top: 3px;
+    top: 4px;
     pointer-events: none;
     background-color: var(--popup-menu-text-color);
 }
@@ -485,7 +489,8 @@ div.select:after {
 div.titled-box {
     border-top: 1px solid var(--line-color);
     margin-bottom: 15px;
-    padding-bottom: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
     /* -webkit-border-radius: 5px;*/
 }
 
@@ -516,24 +521,27 @@ div.titled-box>div.content {
 }
 
 div.titled-box.quick-links>div.content {
-    margin-top: 0;
+    margin-top: 8px;
     text-align: center;
     padding-bottom: 8px;
 }
 
 div.titled-box h2, div.titled-box hr {
     border: none;
+    /*border-left: 1px solid var(--text-color-subdued);
+    height: 20px;*/
 }
 
 div.titled-box hr {
-    margin: 14px 0
+    /*margin: 14px 0;*/
+    display: none;
 }
 
 div.titled-box li.popup {
     position: relative;
     text-align: center;
     margin-left: 12px;
-    margin-right: 100%
+    margin-right: 12px;
 }
 
 div.titled-box li.popup {
@@ -546,24 +554,24 @@ div.titled-box li.popup span {
 }
 
 div.titled-box li.popup select {
-    width: 188px
+    /*width: 188px*/
 }
 
 div.titled-box li.link {
-    padding: 0 11px;
+    padding: 0 8px;
     height: 19px;
     line-height: 16px;
     font-weight: normal;
-    border-color: transparent;
+    /*border-color: transparent;
     border-width: 1px 0;
-    border-style: solid
+    border-style: solid*/
 }
 
 div.titled-box li.link.selected {
-    border-color: #e9e9e9;
+    /*border-color: #e9e9e9;
     border-width: 1px 0;
     border-style: solid;
-    background-color: #f3f3f3
+    background-color: #f3f3f3*/
 }
 
 div.titled-box li.link a {
