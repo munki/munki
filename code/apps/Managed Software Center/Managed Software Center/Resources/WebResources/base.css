@@ -342,7 +342,7 @@ div.sidebar li  {
     font-size: 12px;
 }
 
-div.sidebar li:not(:first-of-type) {
+div.sidebar li:not(:first-of-type):not(.popup) {
     border-left: 1px solid var(--text-color-subdued);
 }
 
