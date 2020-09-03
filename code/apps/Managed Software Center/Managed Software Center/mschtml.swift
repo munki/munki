@@ -153,6 +153,11 @@ extension GenericItem {
         my["display_name_escaped"] = escapeHTML(self["display_name"] as? String ?? "")
         my["developer_escaped"] = escapeHTML(self["developer"] as? String ?? "")
         my["display_version_escaped"] = escapeHTML(self["display_version"] as? String ?? "")
+        if my["status"] as? String ?? "" == "will-be-removed" {
+            my["display_version_escaped_and_size"] = ""
+        } else {
+            my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " – " + (my["size"] as? String ?? "")
+        }
     }
 
     func addGeneralLabels() {
@@ -504,7 +509,9 @@ func buildCategoriesPage() throws {
     page["header_text"] = NSLocalizedString("Categories", comment: "Categories label")
     let footer = getRawTemplate("footer_template.html")
     let additional_templates = BaseItem(
-        ["showcase": "", "sidebar": "", "footer": footer]
+        ["showcase": "<div class=\"showcase-empty-placeholder\"></div>",
+         "sidebar": "",
+         "footer": footer]
     )
     try generatePage(named: "categories.html",
                      fromTemplate: "list_template.html",
