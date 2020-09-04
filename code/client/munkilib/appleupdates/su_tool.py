@@ -67,6 +67,78 @@ def find_ptty_tool():
     return cmd
 
 
+def parse_su_update_line_new_style(line):
+    '''Parses a new-style software update line'''
+    info = {}
+    line = line.strip().rstrip(',')
+    for subitem in line.split(', '):
+        key, _, value = subitem.partition(": ")
+        if key:
+            info[key] = value
+    return info
+
+
+def parse_su_update_line_old_style(line):
+    '''Parses an old-style (pre-10.15) softwareupdate -l output line
+    into a dict'''
+    info = {}
+    # strip leading and trailing whitespace
+    line = line.strip()
+    title, seperator, line = line.partition("(")
+    if not seperator == "(":
+        # no idea of the format, just return an empty dict
+        return {}
+    info['Title'] = title.rstrip()
+    version, seperator, line = line.partition(")")
+    if not seperator == ")":
+        # no idea of the format, just return an empty dict
+        return {}
+    info['Version'] = version
+    line = line.lstrip(', ')
+    size, seperator, line = line.partition('K')
+    if seperator == 'K':
+        info['Size'] = '%sK' % size
+    # now start from the end
+    if line.endswith(" [restart]"):
+        line = line[0:-len(" [restart]")]
+        info['Action'] = 'restart'
+    if line.endswith(" [recommended]"):
+        line = line[0:-len(" [recommended]")]
+        info['Recommended'] = 'YES'
+    else:
+        info['Recommended'] = 'NO'
+    return info
+
+
+def parse_su_identifier(line):
+    '''parses first line of softwareupdate -l item output'''
+    if line.startswith('   * '):
+        update_entry = line[5:]
+    elif line.startswith('* Label: '):
+        update_entry = line[9:]
+    else:
+        return {}
+    update_parts = update_entry.split('-')
+    # version is the bit after the last hyphen
+    # (let's hope there are no hyphens in the versions!)
+    vers = update_parts[-1]
+    # identifier is everything before the last hyphen
+    identifier = '-'.join(update_parts[0:-1])
+    return {'full_identifier': update_entry,
+            'identifier': identifier,
+            'version': vers}
+
+
+def parse_su_update_lines(line1, line2):
+    '''Parses two lines from softwareupdate -l output and returns a dict'''
+    info = parse_su_identifier(line1)
+    if line1.startswith('   * '):
+        info.update(parse_su_update_line_old_style(line2))
+    elif line1.startswith('* Label: '):
+        info.update(parse_su_update_line_new_style(line2))
+    return info
+
+
 def run(options_list, catalog_url=None, stop_allowed=False):
     """Runs /usr/sbin/softwareupdate with options.
 
@@ -168,28 +240,16 @@ def run(options_list, catalog_url=None, stop_allowed=False):
 
         # --list-specific output
         if mode == 'list':
-            if output.strip().startswith('*'):
+            if output.startswith(('   * ', '* Label: ')):
                 # collect list of items available for install
-                if output.startswith('   * '):
-                    update_entry = output[5:]
-                elif output.startswith('* Label: '):
-                    # seen in 10.15 betas
-                    update_entry = output[9:]
-                else:
-                    # unknown format
-                    continue
-                update_parts = update_entry.split('-')
-                # version is the bit after the last hyphen
-                # (let's hope there are no hyphens in the versions!)
-                vers = update_parts[-1]
-                # identifier is everything before the last hyphen
-                identifier = '-'.join(update_parts[0:-1])
-                results['updates'].append(
-                    {'identifier': identifier, 'version': vers})
-                continue
-            else:
-                # we don't want any output from calling `softwareupdate -l`
-                continue
+                first_line = output
+                second_line = job.stdout.readline()
+                if second_line:
+                    second_line = second_line.decode('UTF-8').rstrip('\n\r')
+                    item = parse_su_update_lines(first_line, second_line)
+                    results['updates'].append(item)
+            # we don't want any output from calling `softwareupdate -l`
+            continue
 
         output = output.strip()
         # --download-specific output
