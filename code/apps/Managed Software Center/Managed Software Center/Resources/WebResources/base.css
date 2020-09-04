@@ -495,6 +495,7 @@ div.titled-box {
 }
 
 div.titled-box h2 {
+    display: none;
     font: 20px -apple-system, "Helvetica Neue", 'Helvetica';
     font-weight: 600;
     color: var(--text-color-normal);
@@ -523,7 +524,7 @@ div.titled-box>div.content {
 div.titled-box.quick-links>div.content {
     margin-top: 8px;
     text-align: center;
-    padding-bottom: 8px;
+    padding-bottom: 2px;
 }
 
 div.titled-box h2, div.titled-box hr {
@@ -1198,12 +1199,15 @@ div.showcase, div.showcase>div.stage, div.showcase>div.stage * {
 div.stage>img {
     position: absolute;
     height: 200px;
+    width: 100%;
     left: 0;
     /*background-color: #000;*/
     text-align: left;
     overflow: hidden;
     -webkit-transition: opacity 1s ease-in-out;
     opacity: 0;
+    object-fit: cover;
+    object-position: 0 0;
 }
 
 html {
