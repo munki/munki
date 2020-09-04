@@ -1141,21 +1141,31 @@ func optionalItem(forName name: String) -> OptionalItem? {
 }
 
 func getOptionalWillBeInstalledItems() -> [OptionalItem] {
+    let problem_item_names = getProblemItems().map(
+        { return $0["name"] as? String ?? "" }
+    )
     return getOptionalInstallItems().filter(
         {
             let status = $0["status"] as? String ?? ""
-            return ["install-requested", "will-be-installed",
-                    "update-will-be-installed", "install-error"].contains(status)
+            let name = $0["name"] as? String ?? ""
+            return (["install-requested", "will-be-installed",
+                     "update-will-be-installed", "install-error"].contains(status) &&
+                    !problem_item_names.contains(name))
         }
     )
 }
 
 func getOptionalWillBeRemovedItems() -> [OptionalItem] {
+    let problem_item_names = getProblemItems().map(
+        { return $0["name"] as? String ?? "" }
+    )
     return getOptionalInstallItems().filter(
         {
             let status = $0["status"] as? String ?? ""
-            return ["removal-requested", "will-be-removed",
-                    "removal-error"].contains(status)
+            let name = $0["name"] as? String ?? ""
+            return (["removal-requested", "will-be-removed",
+                     "removal-error"].contains(status) &&
+                    !problem_item_names.contains(name))
         }
     )
 }
