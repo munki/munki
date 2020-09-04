@@ -586,7 +586,7 @@ div.titled-box li.link a {
 }
 
 div.titled-box li.link.user-link a {
-    color: var(--text-color-subdued)
+    /*color: var(--text-color-subdued)*/
 }
 
 body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
