@@ -495,7 +495,6 @@ div.titled-box {
 }
 
 div.titled-box h2 {
-    display: none;
     font: 20px -apple-system, "Helvetica Neue", 'Helvetica';
     font-weight: 600;
     color: var(--text-color-normal);
@@ -510,6 +509,9 @@ div.titled-box h2 {
     -webkit-border-image: none;
 }
 
+div.titled-box.quick-links h2 {
+    display: none;
+}
 
 /*div.titled-box h2 a {
     font: normal 12px -apple-system, "Helvetica Neue", 'Helvetica';
