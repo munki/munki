@@ -195,13 +195,21 @@ class AppleUpdates(object):
             return []
         su_results = su_tool.run(['-l', '--no-scan'])
         filtered_updates = []
+        # add update to filtered_updates only if it is also listed
+        # in `softwareupdate -l` output
         for item in su_results.get('updates', []):
             for update in recommended_updates:
                 if (item.get('identifier') == update.get('Identifier') and
                         item.get('version') == update.get('Display Version')):
-                    # add update to filtered_updates only if it is also listed
-                    # in `softwareupdate -l` output
-                    filtered_updates.append(update)
+                    item.update(update)
+                    filtered_updates.append(item)
+                elif item.get('Title'):
+                    # new-style info first seen in Catalina
+                    if (item.get('Title') == update.get('Display Name') and
+                            item.get('Version') == update.get('Display Version')
+                       ):
+                        item.update(update)
+                        filtered_updates.append(item)
         return filtered_updates
 
     def available_update_product_ids(self):
@@ -379,11 +387,16 @@ class AppleUpdates(object):
         product_keys = []
         english_su_info = {}
         apple_updates = []
+        updates_dict = {}
 
         # first, try to get the list from com.apple.SoftwareUpdate preferences
         # and softwareupdate -l
         recommended_updates = self.get_filtered_recommendedupdates()
         for item in recommended_updates:
+            try:
+                updates_dict[item['Product Key']] = item
+            except (TypeError, AttributeError, KeyError):
+                pass
             try:
                 update_display_names[item['Product Key']] = (
                     item['Display Name'])
@@ -401,7 +414,31 @@ class AppleUpdates(object):
             pass
 
         for product_key in product_keys:
-            if not self.update_downloaded(product_key):
+            if updates_dict.get(product_key, {}).get('MobileSoftwareUpdate'):
+                # New in Big Sur. These updates are not downloaded to
+                # /Library/Updates and we don't (yet) have access to any
+                # additional metadata
+                su_info = {}
+                su_info['productKey'] = product_key
+                su_info['name'] = updates_dict[
+                    product_key].get('Display Name', '')
+                su_info['apple_product_name'] = su_info['name']
+                su_info['display_name'] = su_info['name']
+                su_info['version_to_install'] = updates_dict[
+                    product_key].get('Display Version', '')
+                su_info['description'] = ''
+                try:
+                    size = int(updates_dict[
+                        product_key].get('Size', '0K')[:-1])
+                    su_info['installer_item_size'] = size
+                    su_info['installed_size'] = size
+                except (ValueError, TypeError, IndexError):
+                    su_info['installed_size'] = 0
+                if updates_dict[product_key].get('Action') == 'restart':
+                    su_info['RestartAction'] = 'RequireRestart'
+                apple_updates.append(su_info)
+                continue
+            elif not self.update_downloaded(product_key):
                 display.display_warning(
                     'Product %s does not appear to be downloaded',
                     product_key)
@@ -502,7 +539,7 @@ class AppleUpdates(object):
         for item in apple_updates:
             display.display_info(
                 '    + %s-%s' % (
-                    item.get('display_name', ''),
+                    item.get('display_name', item.get('name', '')),
                     item.get('version_to_install', '')))
             if item.get('RestartAction') in self.RESTART_ACTIONS:
                 display.display_info('       *Restart required')
