@@ -262,13 +262,18 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 continue
 
         # other output
-        if output.startswith('Progress: '):
+        if output.startswith(('Progress: ', 'downloading: ', 'preparing: ')):
             # Snow Leopard/Lion progress info with '-v' flag
+            # Big Sur has 'downloading' percent-done
             try:
                 percent = int(output[10:].rstrip('%'))
             except ValueError:
                 percent = -1
             display.display_percent_done(percent, 100)
+            if output.startswith('downloading: '):
+                display.display_status_minor('Downloading...')
+            if output.startswith('downloading: '):
+                display.display_status_minor('Preparing...')
             continue
         if output.startswith('Software Update Tool'):
             # don't display this
