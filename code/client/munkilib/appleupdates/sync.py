@@ -28,6 +28,7 @@ import subprocess
 import time
 import xattr
 
+# pylint: disable=ungrouped-imports
 try:
     # Python 2
     from urllib2 import quote, unquote
@@ -40,6 +41,7 @@ try:
 except ImportError:
     # Python 3
     from urllib.parse import urlsplit
+# pylint: enable=ungrouped-imports
 
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -88,7 +90,13 @@ DEFAULT_CATALOG_URLS = {
               'snowleopard-leopard.merged-1.sucatalog'),
     '10.15': ('https://swscan.apple.com/content/catalogs/others/'
               'index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-'
-              'lion-snowleopard-leopard.merged-1.sucatalog')
+              'lion-snowleopard-leopard.merged-1.sucatalog'),
+    '10.16': ('https://swscan.apple.com/content/catalogs/others/'
+              'index-10.16-10.15-10.14-10.13-10.12-10.11-10.10-10.9-'
+              'mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
+    '11.0': ('https://swscan.apple.com/content/catalogs/others/'
+             'index-10.16-10.15-10.14-10.13-10.12-10.11-10.10-10.9-'
+             'mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
 }
 
 # Preference domain for Apple Software Update.
