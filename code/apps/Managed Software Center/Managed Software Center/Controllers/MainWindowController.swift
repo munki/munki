@@ -61,7 +61,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @objc private func onItemClicked() {
         if 0 ... items.count ~= sidebar.clickedRow {
-            self.searchField.stringValue = ""
+            clearSearchField()
             switch sidebar.clickedRow {
                 case 0:
                     loadAllSoftwarePage(self)
@@ -251,6 +251,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             }
         }
         
+    }
+    
+    func clearSearchField() {
+        self.searchField.stringValue = ""
     }
     
     func enableOrDisableSoftwareViewControls() {
@@ -1454,6 +1458,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
+        clearSearchField()
         // Handle WebView back button
         webView.goBack(self)
         /*let page_url = webView.url
@@ -1463,26 +1468,31 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {
         // Handle WebView forward button
+        clearSearchField()
         webView.goForward(self)
     }
     
     @IBAction func loadAllSoftwarePage(_ sender: Any) {
         // Called by Navigate menu item
+        clearSearchField()
         load_page("category-all.html")
     }
     
     @IBAction func loadCategoriesPage(_ sender: Any) {
         // Called by Navigate menu item
+        clearSearchField()
         load_page("categories.html")
     }
     
     @IBAction func loadMyItemsPage(_ sender: Any) {
         // Called by Navigate menu item'''
+        clearSearchField()
         load_page("myitems.html")
     }
     
     @IBAction func loadUpdatesPage(_ sender: Any) {
         // Called by Navigate menu item'''
+        clearSearchField()
         load_page("updates.html")
     }
     
