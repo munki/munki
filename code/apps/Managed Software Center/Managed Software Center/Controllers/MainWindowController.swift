@@ -57,22 +57,22 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     override func windowDidLoad() {
         super.windowDidLoad()
-
     }
     
     @objc private func onItemClicked() {
         if 0 ... items.count ~= sidebar.clickedRow {
+            clearSearchField()
             switch sidebar.clickedRow {
-            case 0:
-                loadAllSoftwarePage(self)
-            case 1:
-                loadCategoriesPage(self)
-            case 2:
-                loadMyItemsPage(self)
-            case 3:
-                loadUpdatesPage(self)
-            default:
-                loadUpdatesPage(self)
+                case 0:
+                    loadAllSoftwarePage(self)
+                case 1:
+                    loadCategoriesPage(self)
+                case 2:
+                    loadMyItemsPage(self)
+                case 3:
+                    loadUpdatesPage(self)
+                default:
+                    loadUpdatesPage(self)
             }
         }
     }
@@ -250,7 +250,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             }
         }
-        
+    }
+    
+    func clearSearchField() {
+        self.searchField.stringValue = ""
     }
     
     func enableOrDisableSoftwareViewControls() {
@@ -493,7 +496,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // init our webview
             let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
-            replacementWebView.allowsBackForwardNavigationGestures = true
+            replacementWebView.allowsBackForwardNavigationGestures = false
             replacementWebView.setValue(false, forKey: "drawsBackground")
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
@@ -1454,6 +1457,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
+        clearSearchField()
         // Handle WebView back button
         webView.goBack(self)
         /*let page_url = webView.url
@@ -1463,51 +1467,32 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {
         // Handle WebView forward button
+        clearSearchField()
         webView.goForward(self)
     }
     
     @IBAction func loadAllSoftwarePage(_ sender: Any) {
         // Called by Navigate menu item
+        clearSearchField()
         load_page("category-all.html")
     }
     
     @IBAction func loadCategoriesPage(_ sender: Any) {
         // Called by Navigate menu item
+        clearSearchField()
         load_page("categories.html")
     }
     
     @IBAction func loadMyItemsPage(_ sender: Any) {
         // Called by Navigate menu item'''
+        clearSearchField()
         load_page("myitems.html")
     }
     
     @IBAction func loadUpdatesPage(_ sender: Any) {
         // Called by Navigate menu item'''
+        clearSearchField()
         load_page("updates.html")
-    }
-    
-    @IBAction func softwareToolbarItemClicked(_ sender: Any) {
-        // User clicked Software toolbar button
-        highlightToolbarButtons("Software")
-        loadAllSoftwarePage(sender)
-    }
-    
-    @IBAction func categoriesToolbarItemClicked(_ sender: Any) {
-        // User clicked Categories toolbar button'''
-        highlightToolbarButtons("Categories")
-        loadCategoriesPage(sender)
-    }
-    
-    @IBAction func myItemsToolbarItemClicked(_ sender: Any) {
-        // User clicked My Items toolbar button'''
-        highlightToolbarButtons("My Items")
-        loadMyItemsPage(sender)
-    }
-    
-    @IBAction func updatesToolbarItemClicked(_ sender: Any) {
-        // User clicked Updates toolbar button'''
-        highlightToolbarButtons("Updates")
-        loadUpdatesPage(sender)
     }
     
     @IBAction func searchFilterChanged(_ sender: Any) {
