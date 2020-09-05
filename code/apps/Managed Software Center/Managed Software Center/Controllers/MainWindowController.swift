@@ -61,17 +61,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @objc private func onItemClicked() {
         if 0 ... items.count ~= sidebar.clickedRow {
+            self.searchField.stringValue = ""
             switch sidebar.clickedRow {
-            case 0:
-                loadAllSoftwarePage(self)
-            case 1:
-                loadCategoriesPage(self)
-            case 2:
-                loadMyItemsPage(self)
-            case 3:
-                loadUpdatesPage(self)
-            default:
-                loadUpdatesPage(self)
+                case 0:
+                    loadAllSoftwarePage(self)
+                case 1:
+                    loadCategoriesPage(self)
+                case 2:
+                    loadMyItemsPage(self)
+                case 3:
+                    loadUpdatesPage(self)
+                default:
+                    loadUpdatesPage(self)
             }
         }
     }
