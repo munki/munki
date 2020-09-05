@@ -1373,7 +1373,7 @@ div.lockup-container div.status-results {
 div.lockup-container div.status-results>h2 {
     margin-bottom: 6px;
     font-weight: bold;
-    font-size: 25px;
+    font-size: 20px;
     color: var(--text-color-normal);
 }
 div.lockup-container div.status-results>p {
