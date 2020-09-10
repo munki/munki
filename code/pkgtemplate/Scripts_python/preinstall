@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# removes old versions when installing/upgrading the Python framework.
+# will need to be updated if/when we move to Python 3.9
+
+MUNKI_DIR="usr/local/munki"
+# Only clean up legacy python if both legacy and new python exist.
+# Because we are doing this in a preinstall, it means the new python was
+# installed in a prior run and therefore this *should* be safe to do now.
+if [ -L "$3/$MUNKI_DIR/python" ] && [ -L "$3/$MUNKI_DIR/munki-python" ]; then
+  echo "Cleaning up legacy munki python"
+  /bin/rm -f "$3/$MUNKI_DIR/python"
+  /bin/rm -rf "$3/$MUNKI_DIR/Python.framework/Versions/3.7"
+fi
