@@ -39,18 +39,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var updateButtonCell: MSCToolbarButtonCell!
     
     @IBOutlet weak var navigateBackButton: NSButton!
-    @IBOutlet weak var navigateForwardButton: NSButton!
     @IBOutlet weak var progressSpinner: NSProgressIndicator!
     
     @IBOutlet weak var searchField: NSSearchField!
     
     @IBOutlet weak var sidebar: NSOutlineView!
     
+    @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
+    @IBOutlet weak var findMenuItem: NSMenuItem!
     @IBOutlet weak var softwareMenuItem: NSMenuItem!
     @IBOutlet weak var categoriesMenuItem: NSMenuItem!
     @IBOutlet weak var myItemsMenuItem: NSMenuItem!
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
-    @IBOutlet weak var findMenuItem: NSMenuItem!
+
 
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
@@ -1020,6 +1021,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         let page_url = webView.url
         let filename = page_url?.lastPathComponent ?? ""
         navigateBackButton.isHidden = !filename.hasPrefix("detail-")
+        navigateBackMenuItem.isEnabled = filename.hasPrefix("detail-")
     }
     
     func webView(_ webView: WKWebView,
