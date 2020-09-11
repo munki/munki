@@ -57,6 +57,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var webView: WKWebView!
     
     override func windowDidLoad() {
+        self.window!.title = ""
         super.windowDidLoad()
     }
     

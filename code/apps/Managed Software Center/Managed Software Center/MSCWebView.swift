@@ -29,12 +29,16 @@ class MSCWebView: WKWebView {
     }
     
     override func mouseDown(with mouseDownEvent: NSEvent) {
-        let window = self.window!
-        let startingPoint = mouseDownEvent.locationInWindow
-        guard let menubarheight = NSApp.mainMenu?.menuBarHeight else {
+        guard let window = self.window else {
             return super.mouseDown(with: mouseDownEvent)
         }
-        if startingPoint.y < window.frame.height - menubarheight {
+        let startingPoint = mouseDownEvent.locationInWindow
+        var fullSizeContentViewNoContentAreaHeight : CGFloat = 32.0
+        if let windowFrameHeight = window.contentView?.frame.height {
+            let contentLayoutRectHeight = window.contentLayoutRect.height
+            fullSizeContentViewNoContentAreaHeight = windowFrameHeight - contentLayoutRectHeight
+        }
+        if startingPoint.y < window.frame.height - fullSizeContentViewNoContentAreaHeight {
             return super.mouseDown(with: mouseDownEvent)
         }
         
