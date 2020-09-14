@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# Lovingly lifted from Per Olofsson
+# https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
+
+# this is intended for a new install of the Munki tools -- the tools will be 
+# installed and the launchagents/daemons will be activated without the need for
+# a restart
+#
+# This should not be used for "upgrade" installs of the munkitools, or by
+# installs handled by Munki itself.
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+# Execute postinstall actions if we're installing on a live system.
+# This is useful for loading launch daemons and agents.
+if [ "$3" == "/" ]; then
+
+    # Load all launch daemons.
+    launchctl load /Library/LaunchDaemons/com.googlecode.munki.logouthelper.plist
+    launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-check.plist
+    launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-install.plist
+    launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-manualcheck.plist
+    
+    loggedInUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+    if [ "$loggedInUser" == "" ] ; then
+        # no-one is logged in; I.E. we're at the loginwindow.
+        # Load the loginwindow launchagents
+        launchctl load -S LoginWindow /Library/LaunchAgents/com.googlecode.munki.managedsoftwareupdate-loginwindow.plist
+        launchctl load -S LoginWindow /Library/LaunchAgents/com.googlecode.munki.MunkiStatus.plist
+    fi
+
+    # Load launch agents for all currently logged in users.
+    os_major_version=$(sw_vers -productVersion | cut -d. -f2)
+    for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
+        pid=$(echo $pid_uid | cut -d, -f1)
+        uid=$(echo $pid_uid | cut -d, -f2)
+        if [[ $os_major_version -lt 10 ]] ; then
+            launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
+            launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
+        else
+            launchctl asuser "$uid" launchctl load /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
+            launchctl asuser "$uid" launchctl load /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
+        fi
+    done
+
+fi
+
+exit 0

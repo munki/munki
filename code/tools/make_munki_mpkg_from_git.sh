@@ -1,48 +1,80 @@
 #!/bin/bash
 #
-# Check out Munki from git and build an mpkg distribution package.
+# Check out Munki source from GitHub and build a distribution package.
 
 
 # Defaults.
-PKGTYPE="bundle"
 PKGID="com.googlecode.munki"
-OUTPUTDIR=`pwd`
-CONFPKG=""
+OUTPUTDIR="$(pwd)"
 CHECKOUTREV="HEAD"
 BRANCH="main"
 
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [-i id] [-o dir] [-c package] [-r revision]"
+Usage: $(basename "$0") [-b branch ] [-r revision] [<make_munki_mpkg.sh options>]"
 
-    -i id       Set the base package bundle ID
-    -o dir      Set the output directory
-    -c package  Include a configuration package (NOT CURRENTLY IMPLEMENTED)
-    -b branch   Git branch to clone (master is the default)
+    -b branch   Git branch to clone (main is the default)
     -r revision Git revision to check out (HEAD is the default)
+
+    The remaining options are passed to make_munki_pkg.sh:
+    -i id       Specify the base package bundle ID
+    -o dir      Specify the output directory
+    -n orgname  Specify the name of the organization
+    -p          Build Python.framework even if one exists
+    -B          Include a package that sets Munki's bootstrap mode
+    -m          Build the package in a manner suitable for install via MDM;
+                specifically, attempt to start all the launchd agents and
+                daemons without requiring a restart. Such a package is not
+                suited for upgrade installs or install via Munki itself.
+    -c plist    Build a configuration package using the preferences defined in a
+                plist file
+    -s cert_cn  Sign distribution package with a Developer ID Installer
+                certificate from keychain. Provide the certificate's Common
+                Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
+    -S cert_cn  Sign apps with a Developer ID Application certificated from
+                keychain. Provide the certificate's Common Name.
+                Ex: "Developer ID Application: Munki (U8PN57A5N2)"
 
 EOF
 }
 
-
-while getopts "i:r:o:b:c:h" option
+ADDITIONALARGS=""
+while getopts "b:r:i:o:n:c:s:S:pBmh" option
 do
     case $option in
-        "i")
-            PKGID="$OPTARG"
-            ;;
-        "o")
-            OUTPUTDIR="$OPTARG"
-            ;;
         "b")
             BRANCH="$OPTARG"
             ;;
-        "c")
-            CONFPKG="$OPTARG"
-            ;;
         "r")
             CHECKOUTREV="$OPTARG"
+            ;;
+        "i")
+            ADDITIONALARGS="${ADDITIONALARGS} -i \"$OPTARG\""
+            ;;
+        "o")
+            ADDITIONALARGS="${ADDITIONALARGS} -o \"$OPTARG\""
+            ;;
+        "n")
+            ADDITIONALARGS="${ADDITIONALARGS} -n \"$OPTARG\""
+            ;;
+        "c")
+            ADDITIONALARGS="${ADDITIONALARGS} -c \"$OPTARG\""
+            ;;
+        "s")
+            ADDITIONALARGS="${ADDITIONALARGS} -s \"$OPTARG\""
+            ;;
+        "S")
+            ADDITIONALARGS="${ADDITIONALARGS} -S \"$OPTARG\""
+            ;;
+        "p")
+            ADDITIONALARGS="${ADDITIONALARGS} -p"
+            ;;
+        "B")
+            ADDITIONALARGS="${ADDITIONALARGS} -B"
+            ;;
+        "m")
+            ADDITIONALARGS="${ADDITIONALARGS} -m"
             ;;
         "h" | *)
             usage
@@ -57,27 +89,13 @@ if [ $# -ne 0 ]; then
     exit 1
 fi
 
-MUNKIDIR=`pwd`/"munki-git"
+MUNKIDIR="$(pwd)/munki-git"
 
 # Sanity checks.
-GIT=`which git`
-WHICH_GIT_RESULT="$?"
-if [ "$WHICH_GIT_RESULT" != "0" ]; then
+if ! which git 1>/dev/null ; then
     echo "Could not find git in command path. Maybe it's not installed?" 1>&2
     echo "You can get a Git package here:" 1>&2
     echo "    https://git-scm.com/download/mac"
-    exit 1
-fi
-if [ ! -x "/usr/bin/pkgbuild" ]; then
-    echo "pkgbuild is not installed!"
-    exit 1
-fi
-if [ ! -x "/usr/bin/productbuild" ]; then
-    echo "productbuild is not installed!"
-    exit 1
-fi
-if [ ! -x "/usr/bin/xcodebuild" ]; then
-    echo "xcodebuild is not installed!"
     exit 1
 fi
 
@@ -98,13 +116,8 @@ if [ "$CHECKOUT_RESULT" != "0" ]; then
     exit 1
 fi
 
-if [ ! -z "$CONFPKG" ]; then
-    CONFPKGARG="-c $CONFPKG"
-else
-    CONFPKGARG=""
-fi
-
 # now use the version of the make_munki_mpkg.sh script in the Git repo.
-"$MUNKIDIR/code/tools/make_munki_mpkg.sh" -i "$PKGID" -r "$MUNKIDIR" -o "$OUTPUTDIR" $CONFPKGARG
+CMD="\"$MUNKIDIR/code/tools/make_munki_mpkg.sh\" -r \"$MUNKIDIR\" -o \"$OUTPUTDIR\" $ADDITIONALARGS"
+eval $CMD
 
 exit $?
