@@ -568,7 +568,7 @@ chmod -R 755 "$PYTHONROOT/usr"
 # Copy framework
 cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
 # Create symlink
-ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki/munki-python"
+ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki/python"
 # Set permissions.
 chmod -R go-w "$PYTHONROOT/usr/local/munki"
 chmod +x "$PYTHONROOT/usr/local/munki"
@@ -587,7 +587,7 @@ mkdir -m 1775 "$NOPYTHONROOT"
 mkdir -p "$NOPYTHONROOT/usr/local/munki"
 chmod -R 755 "$NOPYTHONROOT/usr"
 # Create symlink
-ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/munki-python"
+ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/python"
 # Set permissions.
 chmod -R go-w "$NOPYTHONROOT/usr/local/munki"
 chmod +x "$NOPYTHONROOT/usr/local/munki"
