@@ -1,6 +1,4 @@
 #!/bin/sh
 
-# removes old versions when installing/upgrading the Python framework.
-# will need to be updated if/when we move to Python 3.9
-
-/bin/rm -rf "$3/usr/local/munki/Python.framework/Versions/3.7"
+# currently does nothing at all
+exit 0
