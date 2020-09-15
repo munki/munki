@@ -4,4 +4,3 @@
 # will need to be updated if/when we move to Python 3.9
 
 /bin/rm -rf "$3/usr/local/munki/Python.framework/Versions/3.7"
-/bin/rm -f "$3/usr/local/munki/python"
