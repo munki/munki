@@ -52,7 +52,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
                 daemons without requiring a restart. Such a package is not
                 suited for upgrade installs or install via Munki itself.
     -c plist    Build a configuration package using the preferences defined in a
-                plist file. 
+                plist file.
     -s cert_cn  Sign distribution package with a Developer ID Installer
                 certificate from keychain. Provide the certificate's Common
                 Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -570,6 +570,10 @@ chmod -R 755 "$PYTHONROOT/usr"
 cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
 # Create symlink
 ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki/munki-python"
+
+# copy in cleanup scripts
+rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/cleanup_scripts/" "$PYTHONROOT/usr/local/munki/cleanup/"
+
 # Set permissions.
 chmod -R go-w "$PYTHONROOT/usr/local/munki"
 chmod +x "$PYTHONROOT/usr/local/munki"
@@ -833,7 +837,7 @@ for pkg in $ALLPKGS ; do
     esac
     echo
     echo "Packaging munkitools_$pkg.pkg"
-    
+
     # use sudo here so pkgutil doesn't complain when it tries to
     # descend into root/Library/Managed Installs/*
 
