@@ -218,6 +218,24 @@ def runScript(script, display_name, runtype):
         display.display_warning(unicode_or_str(err))
     return result
 
+def cleanup(runtype):
+    """
+    If there are executables inside the cleanup directory, run them and remove them if successful
+    """
+    cleanupdir = os.path.join(os.path.realpath(os.path.dirname(sys.argv[0])), 'cleanup')
+    if not os.path.isdir(cleanupdir):
+        # path doesn't exist or isn't a directory
+        return
+    
+    # get only filenames (and not directory names) from cleanupdir
+    (_, _, filenames) = next(os.walk(cleanupdir))
+    for filename in filenames:
+        script_path = os.path.join(cleanupdir, filename)
+        result = runScript(script_path, 'cleanup', runtype)
+        if not result:
+            # no output is a good thing
+            os.remove(script_path)
+
 
 def doInstallTasks(do_apple_updates, only_unattended=False):
     """Perform our installation/removal tasks.
@@ -824,6 +842,9 @@ def main():
     # Set environment variable for verbosity
     os.environ['MUNKI_VERBOSITY_LEVEL'] = str(options.verbose)
 
+    # Run cleanup scripts if required
+    cleanup(runtype)
+
     if options.installonly:
         # we're only installing, not checking, so we should copy
         # some report values from the prior run
@@ -1156,7 +1177,7 @@ def main():
                 time.sleep(2)
                 startLogoutHelper()
             elif osutils.getconsoleuser() == u'loginwindow':
-                # someone is logged in, but we're sitting at the loginwindow 
+                # someone is logged in, but we're sitting at the loginwindow
                 # due to to fast user switching so do nothing
                 munkilog.log('Skipping user notification because we are at the'
                              'loginwindow.')
