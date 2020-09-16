@@ -210,8 +210,9 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
     LAUNCHDVERSION=$(defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString)
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
-# get a pseudo-svn revision number for the Python pkg
-PYTHONGITREV=$(git log -n1 --format="%H" -- code/tools/py3_requirements.txt code/tools/build_python_framework.sh)
+# get a pseudo-svn revision number for the Python pkg.
+# Yes this is a bit broad, but better than too narrow!
+PYTHONGITREV=$(git log -n1 --format="%H" -- code/tools)
 GITREVINDEX=$(git rev-list --count "$PYTHONGITREV")
 PYTHONSVNREV=$((GITREVINDEX + MAGICNUMBER))
 if [ $PYTHONSVNREV -gt $MPKGSVNREV ] ; then
