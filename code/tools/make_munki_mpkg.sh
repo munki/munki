@@ -422,6 +422,11 @@ mkdir -m 750 -p "$COREROOT/Library/Managed Installs/Cache"
 mkdir -m 750 -p "$COREROOT/Library/Managed Installs/catalogs"
 mkdir -m 755 -p "$COREROOT/Library/Managed Installs/manifests"
 
+# copy in core cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/core_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/core_cleanup_scripts/" "$COREROOT/usr/local/munki/cleanup/"
+fi
+
 # Create package info file.
 makeinfo core "$PKGTMP/info" norestart
 
@@ -453,6 +458,11 @@ mkdir -p "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
 chmod -R 755 "$ADMINROOT/private"
 chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
+
+# copy in admin cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/admin_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/admin_cleanup_scripts/" "$ADMINROOT/usr/local/munki/cleanup/"
+fi
 
 # Create package info file.
 makeinfo admin "$PKGTMP/info" norestart
@@ -492,6 +502,11 @@ if [ "$APPSIGNINGCERT" != "" ]; then
     fi
 fi
 
+# copy in app cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/app_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/app_cleanup_scripts/" "$APPROOT/usr/local/munki/cleanup/"
+fi
+
 # Create package info file.
 makeinfo app "$PKGTMP/info" norestart
 
@@ -518,6 +533,12 @@ RESTARTFLAG=restart
 if [ "$MDMSTYLE" == "YES" ] ; then
     RESTARTFLAG=norestart
 fi
+
+# copy in launchd cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" "$LAUNCHDROOT/usr/local/munki/cleanup/"
+fi
+
 makeinfo launchd "$PKGTMP/info" "$RESTARTFLAG"
 
 
@@ -551,6 +572,12 @@ done
 # Set permissions.
 chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
 chmod +x "$APPUSAGEROOT/usr/local/munki"
+
+# copy in app_usage cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/app_usage_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/app_usage_cleanup_scripts/" "$APPUSAGEROOT/usr/local/munki/cleanup/"
+fi
+
 # Create package info file.
 makeinfo app_usage "$PKGTMP/info" norestart
 
@@ -571,12 +598,15 @@ cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
 # Create symlink
 ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki/munki-python"
 
-# copy in cleanup scripts
-rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/cleanup_scripts/" "$PYTHONROOT/usr/local/munki/cleanup/"
-
 # Set permissions.
 chmod -R go-w "$PYTHONROOT/usr/local/munki"
 chmod +x "$PYTHONROOT/usr/local/munki"
+
+# copy in python cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/python_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/python_cleanup_scripts/" "$PYTHONROOT/usr/local/munki/cleanup/"
+fi
+
 # Create package info file.
 makeinfo python "$PKGTMP/info" norestart
 
@@ -596,6 +626,12 @@ ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/munki-python"
 # Set permissions.
 chmod -R go-w "$NOPYTHONROOT/usr/local/munki"
 chmod +x "$NOPYTHONROOT/usr/local/munki"
+
+# copy in no_python cleanup scripts
+if [ -d "$MUNKIROOT/code/tools/pkgresources/no_python_cleanup_scripts/" ] ; then
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/no_python_cleanup_scripts/" "$NOPYTHONROOT/usr/local/munki/cleanup/"
+fi
+
 # Create package info file.
 makeinfo no_python "$PKGTMP/info" norestart
 
@@ -613,6 +649,12 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ;  then
     mkdir -p "$BOOTSTRAPROOT/Users/Shared"
     # Create bootstrap flag file
     touch "$BOOTSTRAPROOT/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
+
+    # copy in bootstrap cleanup scripts
+    if [ -d "$MUNKIROOT/code/tools/pkgresources/bootstrap_cleanup_scripts/" ] ; then
+        rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/bootstrap_cleanup_scripts/" "$BOOTSTRAPROOT/usr/local/munki/cleanup/"
+    fi
+
     # Create package info file.
     makeinfo bootstrap "$PKGTMP/info" norestart
 fi
@@ -631,6 +673,12 @@ if [ "$CONFPKG" == "YES" ] ; then
     mkdir -p "$CONFROOT/Library/Preferences"
     # Copy prefs file
     cp "$CONFFULLPATH" "$CONFROOT/Library/Preferences/ManagedInstalls.plist"
+
+    # copy in config cleanup scripts
+    if [ -d "$MUNKIROOT/code/tools/pkgresources/config_cleanup_scripts/" ] ; then
+        rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/config_cleanup_scripts/" "$CONFROOT/usr/local/munki/cleanup/"
+    fi
+
     # Create package info file.
     makeinfo config "$PKGTMP/info" norestart
 fi
