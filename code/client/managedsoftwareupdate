@@ -226,8 +226,8 @@ def cleanup(runtype):
     if not os.path.isdir(cleanupdir):
         # path doesn't exist or isn't a directory
         return
-
-    # get all of the files in the cleanup directory
+    
+    # get only filenames (and not directory names) from cleanupdir
     (_, _, filenames) = next(os.walk(cleanupdir))
     for filename in filenames:
         script_path = os.path.join(cleanupdir, filename)
