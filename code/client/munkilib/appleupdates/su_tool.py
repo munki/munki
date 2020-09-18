@@ -322,9 +322,10 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 continue
 
         # other output
-        if output.startswith(('Progress: ', 'downloading: ', 'preparing: ')):
+        if output.lower().startswith(
+                ('progress: ', 'downloading: ', 'preparing: ')):
             # Snow Leopard/Lion progress info with '-v' flag
-            # Big Sur has 'downloading' percent-done
+            # Big Sur has 'downloading/Downloading' percent-done
             try:
                 percent = int(output[10:].rstrip('%'))
             except ValueError:
