@@ -188,6 +188,10 @@ div.more-by div.msc-button-inner {
     background: white;
 }
 
+span.progress-spinner {
+    margin-right: 32px;
+}
+
 /* display a variable number of related items based on screen width */
 /* display 2 items if window is under 1000px wide*/
 @media only screen and (max-width: 999px) {

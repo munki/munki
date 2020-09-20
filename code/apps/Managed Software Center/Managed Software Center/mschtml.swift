@@ -156,7 +156,7 @@ extension GenericItem {
         if my["status"] as? String ?? "" == "will-be-removed" {
             my["display_version_escaped_and_size"] = ""
         } else {
-            my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " – " + (my["size"] as? String ?? "")
+            my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + (my["size"] as? String ?? "")
         }
     }
 
@@ -393,12 +393,18 @@ func buildListPage(category: String = "",
 
 
 func buildItemListHTML(_ items: [GenericItem],
-                       template: String = "list_item_template.html") -> String {
+                       template: String = "list_item_template.html",
+                       sort: Bool = true) -> String {
     var item_html = ""
+    var sorted_items: [GenericItem] = []
     let item_template = getTemplate(template)
-    // sort items by display_name_lowercase
-    let sorted_items = items.sorted(by:
-        { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
+    if sort {
+        // sort items by display_name_lowercase
+        sorted_items = items.sorted(by:
+            { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
+    } else {
+        sorted_items = items
+    }
     for item in sorted_items {
         item.escapeAndQuoteCommonFields()
         let category_and_developer = item["category_and_developer"] as? String ?? ""
@@ -665,8 +671,6 @@ func buildUpdatesPage() throws {
     page["hide_other_updates"] = "hidden"
     page["install_all_button_classes"] = ""
     
-    //let item_template = getTemplate("update_row_template.html")
-    
     if item_list.isEmpty && other_updates.isEmpty && problem_updates.isEmpty {
         let status_results_template = getTemplate("status_results_template.html")
         let alert = BaseItem()
@@ -681,7 +685,7 @@ func buildUpdatesPage() throws {
     } else {
         if !item_list.isEmpty {
             page["update_rows"] = buildItemListHTML(
-                item_list, template: "update_item_template.html")
+                item_list, template: "update_item_template.html", sort: false)
         }
     }
     

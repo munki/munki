@@ -510,6 +510,69 @@ body.scanning .non-scan-progress,body.page-not-ready .non-scan-progress,body:not
     background-position: bottom
 }
 
+div.lockup.small.detailed.update {
+    /*border-bottom: 1px solid var(--line-color);*/
+    padding-bottom: 15px;
+}
+
+div.lockup .row1,
+div.lockup .row2 {
+    display: flex;
+}
+
+div.lockup .row1 .list {
+    flex-grow: 1;
+    border-bottom: 0;
+}
+
+div.lockup .row1 .list.items {
+    height: auto;
+}
+
+div.msc-button-inner.will-be-installed,
+div.msc-button-inner.will-be-removed {
+    display: inline-block!important;
+}
+
+div.lockup .row2 p.description {
+    font-size: 14px;
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+div.lockup .row2 a {
+    font-size: 14px;
+    color: var(--install-btn-background);
+    float: right;
+}
+
+[data-text-truncate-lines] a.text-truncate-toggle:after {
+    content: none;
+}
+
+@media only screen and (max-width: 1279px) {
+    div.lockup.small.detailed.update {
+        width: calc(50% - 20px);
+    }
+    div.lockup.small.detailed.update:not(:nth-of-type(2n)) {
+      margin-right: 40px;
+    }
+    div.lockup.small.detailed.update:not(:nth-of-type(1)):not(:nth-of-type(2)) {
+      border-top: 1px solid var(--line-color);
+    }
+}
+
+@media only screen and (min-width: 1280px) {
+    div.lockup.small.detailed.update {
+        width: calc(33.333% - 27px);
+    }
+    div.lockup.small.detailed.update:not(:nth-of-type(3n)) {
+      margin-right: 40px;
+    }
+    div.lockup.small.detailed.update:not(:nth-of-type(1)):not(:nth-of-type(2)):not(:nth-of-type(3)) {
+      border-top: 1px solid var(--line-color);
+    }
+}
 
 div.lockup.added {
     -webkit-animation: fade-in .5s;
