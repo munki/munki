@@ -33,7 +33,7 @@ function showOrHideMoreLinks() {
 function fadeOutAndRemove(item_name) {
     /* add a class to trigger a CSS transition fade-out, then
        register a callback for when the transition completes so we can remove the item */
-    update_table_row = document.getElementById(item_name + '_update_table_row');
+    update_table_row = document.getElementById(item_name + '_update_item');
     update_table_row.classList.add('deleted');
     update_table_row.addEventListener('webkitAnimationEnd',
         function() {

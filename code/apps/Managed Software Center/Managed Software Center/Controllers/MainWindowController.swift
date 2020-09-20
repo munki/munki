@@ -1331,7 +1331,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         
         // remove row for this item from its current table
-        webView.evaluateJavaScript("removeElementByID('\(item_name)_update_table_row')")
+        webView.evaluateJavaScript("removeElementByID('\(item_name)_update_item')")
         
         // update item status
         if !update_status_for_item(item) {

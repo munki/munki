@@ -854,8 +854,8 @@ div.msc-button-inner:not(.installed-not-removable):active:hover {
     color: var(--small-button-text-color-active);
 }
 
-div.msc-button-inner.will-be-installed,
-div.msc-button-inner.will-be-removed,
+/*div.msc-button-inner.will-be-installed,
+div.msc-button-inner.will-be-removed,*/
 div.msc-button-inner.problem-item {
     display:none!important
 }
