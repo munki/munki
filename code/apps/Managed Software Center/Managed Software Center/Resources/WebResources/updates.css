@@ -543,7 +543,7 @@ div.lockup .row2 p.description {
 div.lockup .row2 a {
     font-size: 14px;
     color: var(--install-btn-background);
-    float: right;
+    align-self: flex-end;
 }
 
 [data-text-truncate-lines] a.text-truncate-toggle:after {
@@ -574,6 +574,59 @@ div.lockup .row2 a {
     }
 }
 
+/* modal background */
+.modal {
+  display: none;
+  opacity: 0;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.2);
+  -webkit-transition: opacity 400ms linear;
+}
+
+/* modal 'alert/window' */
+.modal-content {
+  background-color: var(--modal-background-color);
+  margin: 20% auto;
+  padding: 10px;
+  border-radius: 8px;
+  width: 50%;
+}
+
+/* modal close button */
+.close {
+  color: var(--text-color-subdued);
+  float: right;
+  font-size: 24px;
+  line-height: 20px;
+}
+
+.close:hover,
+.close:focus {
+  color: var(--text-color-normal);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* modal full description field */
+#fullDescription {
+    font-size: 14px;
+    padding: 20px;
+    color: var(--text-color-normal);
+}
+
+/* modal version-and-size field */
+#versionAndSize {
+    font-size: 14px;
+    padding: 0 20px 20px 20px;
+    color: var(--text-color-subdued);
+}
+
 div.lockup.added {
     -webkit-animation: fade-in .5s;
 }
@@ -585,7 +638,6 @@ div.lockup.deleted {
     0% {opacity: 0}
     100% {opacity: 1}
 }
-
 
 div.updates {
     -webkit-transition: all 1s ease-in-out;
