@@ -5,6 +5,7 @@
 
 html {
     --background-color: transparent;
+    --modal-background-color: hsl(0, 0%, 100%);
     --border-color: hsl(0, 0%, 87.1%);
     --line-color: hsl(0, 0%, 90.2%);
     --text-color-emphasized: hsl(0, 0%, 8%);
@@ -31,6 +32,7 @@ html {
 
 html[data-theme='dark'] {
     --background-color: transparent;
+    --modal-background-color: hsl(0, 0%, 18%);
     --border-color: hsl(0, 0%, 0%);
     --line-color: hsl(202, 9.7%, 22.2%);
     --text-color-emphasized: hsl(0, 0%, 92%);

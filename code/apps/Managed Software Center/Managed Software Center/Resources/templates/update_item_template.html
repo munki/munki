@@ -8,7 +8,7 @@
         <ul class="list items">
             <li class="name" title="${display_name_escaped}"><a href="${detail_link}">${display_name_escaped}</a></li>
             <li class="genre">${developer_escaped}</li>
-            <li>${version_label} ${display_version_escaped_and_size}</li>
+            <li class="version_and_size">${version_label} ${display_version_escaped_and_size}</li>
             <li class="warning">${restart_action_text}</li>
             <li class="warning">${note}</li>
         </ul>
@@ -24,7 +24,7 @@
     <div class="row2">
         <p class="description" data-text-truncate-lines="2">
             ${description_without_images}
-            <a class="text-truncate-toggle hidden" href="#">${more_link_text}</a>
         </p>
+        <a class="text-truncate-toggle hidden" href="#">${more_link_text}</a>
     </div>
 </div>
