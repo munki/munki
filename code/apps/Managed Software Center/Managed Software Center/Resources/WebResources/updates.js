@@ -61,10 +61,12 @@ function registerWindowClicks() {
         function(e) {
             if (e.target.classList.contains('text-truncate-toggle')) {
                 // clicked a More link
-                description = e.target.parentNode.getElementsByClassName('description')[0];
-                version_and_size = e.target.parentNode.parentNode.getElementsByClassName('version_and_size')[0];
-                fullDescription.innerHTML = description.innerHTML
-                versionAndSize.innerHTML = version_and_size.innerHTML
+                item_description = e.target.parentNode.getElementsByClassName('description')[0];
+                item_version_and_size = e.target.parentNode.parentNode.getElementsByClassName('version_and_size')[0];
+                modal_descritption = document.getElementById("fullDescription")
+                modal_version_and_size = document.getElementById("versionAndSize")
+                modal_descritption.innerHTML = item_description.innerHTML
+                modal_version_and_size.innerHTML = item_version_and_size.innerHTML
                 modal = document.getElementById("moreInfoModal");
                 modal.style.display = "block";
                 setTimeout(function(){modal.style.opacity = 1;}, 10);

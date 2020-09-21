@@ -600,23 +600,25 @@ div.lockup .row2 a {
 
 /* modal close button */
 .close {
-  color: var(--text-color-subdued);
-  float: left;
-  font-size: 24px;
-  line-height: 14px;
+  width: 19px;
+  height: 19px;
+  background: transparent url(close-button-sprite.png) no-repeat;
+  -webkit-background-size: 19px 57px;
+  border: 0;
 }
 
-.close:hover,
-.close:focus {
-  color: var(--text-color-normal);
-  text-decoration: none;
-  cursor: pointer;
+.close:hover {
+  background-position: center;
+}
+
+.close:active {
+    background-position: bottom;
 }
 
 /* modal full description field */
 #fullDescription {
     font-size: 14px;
-    padding: 30px 20px 20px 30px;
+    padding: 10px 20px 20px 30px;
     color: var(--text-color-normal);
 }
 
