@@ -635,7 +635,6 @@ def getInstalledPackageVersion(pkgid):
     # First check (Leopard and later) package database
     proc = subprocess.Popen(['/usr/sbin/pkgutil',
                              '--pkg-info-plist', pkgid],
-                            bufsize=1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     out = proc.communicate()[0]
@@ -776,7 +775,7 @@ def getChoiceChangesXML(pkgitem):
     try:
         proc = subprocess.Popen(
             ['/usr/sbin/installer', '-showChoiceChangesXML', '-pkg', pkgitem],
-            bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out = proc.communicate()[0]
         if out:
             plist = FoundationPlist.readPlistFromString(out)

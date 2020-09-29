@@ -89,25 +89,45 @@ def find_install_macos_app(dir_path):
 def install_macos_app_is_stub(app_path):
     '''High Sierra downloaded installer is sometimes a "stub" application that
     does not contain the InstallESD.dmg. Return True if the given app path is
-    missing the InstallESD.dmg'''
+    missing the InstallESD.dmg and missing SharedSupport.dmg (new in Big Sur)'''
     installesd_dmg = os.path.join(
         app_path, 'Contents/SharedSupport/InstallESD.dmg')
-    return not os.path.exists(installesd_dmg)
+    sharedsupport_dmg = os.path.join(
+        app_path, 'Contents/SharedSupport/SharedSupport.dmg')
+    return not (os.path.exists(installesd_dmg) or
+                os.path.exists(sharedsupport_dmg))
 
 
 def get_os_version(app_path):
     '''Returns the os version from the OS Installer app'''
     installinfo_plist = os.path.join(
         app_path, 'Contents/SharedSupport/InstallInfo.plist')
-    if not os.path.isfile(installinfo_plist):
-        # no Contents/SharedSupport/InstallInfo.plist
-        return ''
-    try:
-        info = FoundationPlist.readPlist(installinfo_plist)
-        return info['System Image Info']['version']
-    except (FoundationPlist.FoundationPlistException,
-            IOError, KeyError, AttributeError, TypeError):
-        return ''
+    if os.path.isfile(installinfo_plist):
+        try:
+            info = FoundationPlist.readPlist(installinfo_plist)
+            return info['System Image Info']['version']
+        except (FoundationPlist.FoundationPlistException,
+                IOError, KeyError, AttributeError, TypeError):
+            return ''
+    sharedsupport_dmg = os.path.join(
+        app_path, 'Contents/SharedSupport/SharedSupport.dmg')
+    if os.path.isfile(sharedsupport_dmg):
+        # starting with macOS Big Sur
+        mountpoints = dmgutils.mountdmg(sharedsupport_dmg)
+        if mountpoints:
+            info_plist_path = os.path.join(
+                mountpoints[0],
+                "com_apple_MobileAsset_MacSoftwareUpdate",
+                "com_apple_MobileAsset_MacSoftwareUpdate.xml"
+            )
+            try:
+                info = FoundationPlist.readPlist(info_plist_path)
+                return info['Assets'][0]['OSVersion']
+            except FoundationPlist.FoundationPlistException:
+                return ''
+            finally:
+                dmgutils.unmountdmg(mountpoints[0])
+    return ''
 
 
 def setup_authrestart_if_applicable():
@@ -448,11 +468,13 @@ class StartOSInstallRunner(object):
 
 
 def get_catalog_info(mounted_dmgpath):
-    '''Returns catalog info (pkginfo) for a macOS Sierra installer on a disk
+    '''Returns catalog info (pkginfo) for a macOS installer on a disk
     image'''
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
         vers = get_os_version(app_path)
+        minimum_munki_version = '3.0.0.3211'
+        minimum_os_version = '10.8'
         if vers:
             display_name = os.path.splitext(os.path.basename(app_path))[0]
             name = display_name.replace(' ', '_')
@@ -479,17 +501,30 @@ def get_catalog_info(mounted_dmgpath):
                 # storage space when upgrading from OS X Yosemite or earlier."
                 # https://support.apple.com/en-us/HT201475
                 installed_size = int(18.5 * 1024 * 1024)
-            else:
-                # will need to modify for future macOS releases
+                minimum_munki_version = '3.6.3'
+                minimum_os_version = '10.9'
+            elif vers.startswith('11.0'):
+                # No idea yet what space will be needed for Big Sur; this will
+                # need to be updated
                 installed_size = int(18.5 * 1024 * 1024)
+                # but we really need Munki 5.1 in place before we install
+                minimum_munki_version = '5.1.0'
+                minimum_os_version = '10.9'
+            else:
+                # will need to modify for future macOS releases, but should
+                # never be less than the highest version we know about
+                installed_size = int(18.5 * 1024 * 1024)
+                minimum_munki_version = '5.1.0'
+                minimum_os_version = '10.9'
+
             return {'RestartAction': 'RequireRestart',
                     'apple_item': True,
                     'description': description,
                     'display_name': display_name,
                     'installed_size': installed_size,
                     'installer_type': 'startosinstall',
-                    'minimum_munki_version': '3.0.0.3211',
-                    'minimum_os_version': '10.8',
+                    'minimum_munki_version': minimum_munki_version,
+                    'minimum_os_version': minimum_os_version,
                     'name': name,
                     'uninstallable': False,
                     'version': vers}

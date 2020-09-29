@@ -60,7 +60,7 @@ def log(msg, logname=''):
     else:
         logpath = os.path.join(os.path.dirname(prefs.pref('LogFile')), logname)
     try:
-        fileobj = codecs.open(logpath, mode='a', buffering=1, encoding='UTF-8')
+        fileobj = codecs.open(logpath, mode='a', encoding='UTF-8')
         try:
             fileobj.write("%s %s\n" % (time.strftime(formatstr), msg))
         except (OSError, IOError):
