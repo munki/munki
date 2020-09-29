@@ -327,7 +327,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             # Snow Leopard/Lion progress info with '-v' flag
             # Big Sur has 'downloading/Downloading' percent-done
             try:
-                percent = int(output.partition(": ")[2].rstrip('%'))
+                percent = int(float(output.partition(": ")[2].rstrip('%')))
             except ValueError:
                 percent = -1
             display.display_percent_done(percent, 100)
