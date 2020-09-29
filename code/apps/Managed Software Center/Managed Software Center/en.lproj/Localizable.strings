@@ -5,7 +5,7 @@
 "1 pending update" = "1 pending update";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
+"A logout is required before updating. Log out and update now?" = "A logout is required before updating. Log out and update now?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "A logout will be forced at approximately %@.";
@@ -20,7 +20,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?";
+"A restart is required after updating. Log out and update now?" = "A restart is required after updating. Log out and update now?";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: ";

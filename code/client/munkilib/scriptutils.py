@@ -36,7 +36,7 @@ def _writefile(stringdata, path):
     '''Writes string data to path.
     Returns the path on success, empty string on failure.'''
     try:
-        fileobject = open(path, mode='wb', buffering=1)
+        fileobject = open(path, mode='wb')
         # write line-by-line to ensure proper UNIX line-endings
         for line in stringdata.splitlines():
             fileobject.write(line.encode('UTF-8') + b"\n")
@@ -93,7 +93,7 @@ def run_script(itemname, path, scriptname, suppress_error=False):
 
     scriptoutput = []
     try:
-        proc = subprocess.Popen(path, shell=False, bufsize=1,
+        proc = subprocess.Popen(path, shell=False,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)

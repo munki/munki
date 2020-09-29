@@ -5,7 +5,7 @@
 "1 pending update" = "1 actualización pendiente";
 
 /* Logout Required detail */
-"A logout is required before updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario cerrar la sesión antes de actualizar. Por favor se paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar sesión y actualizar ahora?";
+"A logout is required before updating. Log out and update now?" = "Es necesario cerrar la sesión antes de actualizar. ¿Cerrar sesión y actualizar ahora?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "Se va a forzar el cierre de sesión en aproximadamente %@.";
@@ -20,7 +20,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Una desinstalación ha fallado. Se volverá a intentar.\nSi esta situación continua, contacta con el administrador de sistemas.";
 
 /* Restart Required detail */
-"A restart is required after updating. Please be patient as there may be a short delay at the login window. Log out and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. Por favor se paciente ya que puede tardar en aparecer la ventana de inicio. ¿Cerrar sesión y actualizar ahora?";
+"A restart is required after updating. Log out and update now?" = "Es necesario reiniciar después de instalar las actualizaciones. ¿Cerrar sesión y actualizar ahora?";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Un fallo en la configuración del sistema ha provocado que Centro de Aplicaciones no funcione de forma correcta. El fallo reportado es: ";
