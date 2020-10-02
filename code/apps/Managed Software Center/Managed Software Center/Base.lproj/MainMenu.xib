@@ -46,7 +46,7 @@
                 <outlet property="categoriesMenuItem" destination="IjL-Sm-tWj" id="Nu2-xf-MO3"/>
                 <outlet property="findMenuItem" destination="JRN-bq-1gM" id="r2S-8Y-njg"/>
                 <outlet property="myItemsMenuItem" destination="1bG-B4-adC" id="PCP-Ye-eRl"/>
-                <outlet property="navigateBackButton" destination="i5p-mb-nwY" id="kAW-CK-XkD"/>
+                <outlet property="navigateBackButton" destination="LRY-q4-rBU" id="Z08-Ex-3t6"/>
                 <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
                 <outlet property="progressSpinner" destination="Ti6-HC-kVU" id="PkK-Fh-91U"/>
                 <outlet property="searchField" destination="0L3-LH-chu" id="yAV-Sz-rao"/>
@@ -334,10 +334,6 @@
                 <rect key="frame" x="0.0" y="0.0" width="1000" height="500"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wf8-HB-bc8">
-                        <rect key="frame" x="220" y="0.0" width="780" height="500"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                    </customView>
                     <visualEffectView appearanceType="inheritedVibrantLight" fixedFrame="YES" blendingMode="behindWindow" material="underWindowBackground" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="Z53-oE-BgS">
                         <rect key="frame" x="0.0" y="0.0" width="220" height="500"/>
                         <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
@@ -439,39 +435,24 @@
                             </progressIndicator>
                         </subviews>
                     </visualEffectView>
+                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wf8-HB-bc8">
+                        <rect key="frame" x="220" y="0.0" width="780" height="500"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    </customView>
+                    <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LRY-q4-rBU">
+                        <rect key="frame" x="240" y="469" width="42" height="23"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSGoLeftTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="M5T-lv-26O">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <color key="contentTintColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <connections>
+                            <action selector="navigateBackBtnClicked:" target="XGW-R4-ybE" id="VVy-XS-tVH"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="15CD5D47-D75F-4666-8C9B-7883C32CA42D" autosavesConfiguration="NO" allowsUserCustomization="NO" showsBaselineSeparator="NO" displayMode="iconAndLabel" sizeMode="regular" id="ijT-fF-8BM">
-                <allowedToolbarItems>
-                    <toolbarItem implicitItemIdentifier="57AADEAF-64E5-4DFD-98F9-EC05E4894264" label="Back" paletteLabel="Back" image="NSGoLeftTemplate" id="Nd5-Qh-Y9u">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="50" height="32"/>
-                        <size key="maxSize" width="50" height="32"/>
-                        <button key="view" hidden="YES" verticalHuggingPriority="750" id="i5p-mb-nwY">
-                            <rect key="frame" x="0.0" y="14" width="50" height="32"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSGoLeftTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="qm2-YV-4Z6">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="navigateBackBtnClicked:" target="XGW-R4-ybE" id="aj0-hG-ZBN"/>
-                            </connections>
-                        </button>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="VPN-z1-8F8"/>
-                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="ark-q4-SIB"/>
-                </allowedToolbarItems>
-                <defaultToolbarItems>
-                    <toolbarItem reference="VPN-z1-8F8"/>
-                    <toolbarItem reference="VPN-z1-8F8"/>
-                    <toolbarItem reference="VPN-z1-8F8"/>
-                    <toolbarItem reference="VPN-z1-8F8"/>
-                    <toolbarItem reference="Nd5-Qh-Y9u"/>
-                    <toolbarItem reference="ark-q4-SIB"/>
-                    <toolbarItem reference="ark-q4-SIB"/>
-                </defaultToolbarItems>
-            </toolbar>
             <userDefinedRuntimeAttributes>
                 <userDefinedRuntimeAttribute type="color" keyPath="backgroundColor">
                     <color key="value" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
