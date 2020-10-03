@@ -1203,15 +1203,12 @@ div.showcase, div.showcase>div.stage, div.showcase>div.stage * {
 div.stage>img {
     position: absolute;
     height: 200px;
-    width: 100%;
     left: 0;
     /*background-color: #000;*/
     text-align: left;
     overflow: hidden;
     -webkit-transition: opacity 1s ease-in-out;
     opacity: 0;
-    object-fit: cover;
-    object-position: 0 0;
 }
 
 html {
