@@ -650,72 +650,10 @@ div.updates.updating .installation button {
     opacity: 0;
 }
 
-div.progress {
-    -webkit-appearance: none;
+div.progress > progress {
     margin-top: 8px;
-    display: inline-block;
-    border: 1px solid #a9a9a9;
-    width: 200px;
-    height: 8px;
-    -webkit-box-sizing: content-box;
-    padding: 1px 3px;
-    -webkit-border-radius: 8px;
-    background: var(--background-color);
-}
-
-div.progress > span {
-    display: block;
-    position: relative;
-    height: 100%;
-    padding: 0 2px;
-    margin: 0 -2px;
-    -webkit-border-radius: 4px;
-    -webkit-box-sizing: content-box;
-    background: -webkit-gradient(linear,left top,left bottom,from( #4C95DF),to( #3B64C8));
-    border-width: 0;
-    overflow: hidden;
-    vertical-align: top;
-    color: transparent;
-    text-shadow: none;
-    -webkit-transition: width 1s ease-in-out;
-}
-
-div.progress > span.indeterminate {
-    -webkit-transition: none;
-}
-
-div.progress > span[style*="width: 100%"],
-div.progress > span[style*="width:100%"],
-div.progress > span.indeterminate {
-    -webkit-border-radius: 4px;
-}
-
-div.progress > span.indeterminate > span {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background-image: 
-    -webkit-gradient(linear, left bottom, right top, 
-    color-stop(.25, var(--background-color)),
-    color-stop(.25, transparent), color-stop(.5, transparent), 
-    color-stop(.5, var(--background-color)),
-    color-stop(.75, var(--background-color)), 
-    color-stop(.76, transparent), to(transparent)
-    );
-    z-index: 1;
-    -webkit-background-size: 21px 21px;
-    -webkit-animation: barber-pole 2s linear infinite;
-    -webkit-border-radius: 4px;
-    overflow: hidden;
-}
-
-@-webkit-keyframes barber-pole {
-    0% {
-        background-position: 0 21px;
-    }
-    100% {
-        background-position: 21px 0;
-    }
+    width: 300px;
+    height: 20px;
 }
 
 
