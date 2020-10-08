@@ -159,11 +159,11 @@ if [ -f "$VERSIONFILE.plist" ]; then
     # Get the munki version
     MUNKIVERS=$(defaults read "$VERSIONFILE" CFBundleShortVersionString)
     if [ "$?" != "0" ]; then
-        echo "$VERSIONFILE can not be read" 1>&2
+        echo "${VERSIONFILE}.plist can not be read" 1>&2
         exit 1
     fi
 else
-    echo "$VERSIONFILE Missing" 1>&2
+    echo "${VERSIONFILE}.plist Missing" 1>&2
     exit 1
 fi
 
