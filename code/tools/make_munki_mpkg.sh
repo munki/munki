@@ -19,6 +19,7 @@ BUILDPYTHON=NO
 PKGSIGNINGCERT=""
 APPSIGNINGCERT=""
 BOOTSTRAPPKG=NO
+AUTORUNPKG=NO
 CONFPKG=NO
 MDMSTYLE=NO
 ORGNAME=macOS
@@ -47,6 +48,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -n orgname  Specify the name of the organization
     -p          Build Python.framework even if one exists
     -B          Include a package that sets Munki's bootstrap mode
+    -A          Initiate an --auto run that performs checks for updates in the background.
     -m          Build the package in a manner suitable for install via MDM;
                 specifically, attempt to start all the launchd agents and
                 daemons without requiring a restart. Such a package is not
@@ -64,7 +66,7 @@ EOF
 }
 
 
-while getopts "i:r:o:n:c:s:S:pBmh" option
+while getopts "i:r:o:n:c:s:S:pBAmh" option
 do
     case $option in
         "i")
@@ -94,6 +96,9 @@ do
             ;;
         "B")
             BOOTSTRAPPKG=YES
+            ;;
+        "A")
+            AUTORUNPKG=YES
             ;;
         "m")
             MDMSTYLE=YES
@@ -256,6 +261,7 @@ echo "  Bundle ID: $PKGID"
 echo "  Munki source root: $MUNKIROOT"
 echo "  Output directory: $OUTPUTDIR"
 echo "  Include bootstrap pkg: $BOOTSTRAPPKG"
+echo "  Include autorun pkg: $AUTORUNPKG"
 if [ "$CONFPKG" == "YES" ] ; then
     echo "  Include config pkg built with plist: $CONFFULLPATH"
 else
@@ -490,7 +496,7 @@ chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 # sign MSC app
 if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing Managed Software Center.app..."
-    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose \
+    /usr/bin/codesign -s "$APPSIGNINGCERT" --options runtime --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
@@ -660,6 +666,38 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ;  then
 fi
 
 
+###############
+## autorun ##
+###############
+if [ "$AUTORUNPKG" == "YES" ] ;  then
+
+    echo "Creating autorun package source..."
+
+    # Create directory structure.
+    AUTORUNROOT="$PKGTMP/munki_autorun"
+    mkdir -m 1775 "$AUTORUNROOT"
+    mkdir -p "$AUTORUNROOT/Users/Shared"
+    mkdir -p "$AUTORUNROOT/Library/LaunchDaemons"
+    mkdir -p "$AUTORUNROOT/tmp"
+    # Create autorun flag file
+    touch "$AUTORUNROOT/Users/Shared/.com.googlecode.munki.autorun"
+    # Copy launch daemon
+    cp -X "$MUNKIROOT/launchd/autorun_LaunchDaemon/"*.plist "$AUTORUNROOT/Library/LaunchDaemons/"
+    chmod 644 "$AUTORUNROOT/Library/LaunchDaemons/"*
+    # Copy autorun script
+    cp -X "$MUNKIROOT/code/tools/pkgresources/autorun_launchd_script/autorun.sh" "$AUTORUNROOT/tmp/"
+    chmod +x "$AUTORUNROOT/tmp/autorun.sh"
+
+    # copy in bootstrap cleanup scripts
+    if [ -d "$MUNKIROOT/code/tools/pkgresources/bootstrap_cleanup_scripts/" ] ; then
+        rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/autorun_cleanup_scripts/" "$AUTORUNROOT/usr/local/munki/cleanup/"
+    fi
+
+    # Create package info file.
+    makeinfo autorun "$PKGTMP/info" norestart
+fi
+
+
 ############
 ## config ##
 ############
@@ -715,6 +753,8 @@ NOPYTHONTITLE="System Python link"
 NOPYTHONDESC="Creates symlink to system Python at /usr/local/munki/munki-python. Available for install if you choose not to install Munki's embedded Python."
 BOOTSTRAPTITLE="Munki bootstrap setup"
 BOOTSTRAPDESC="Enables bootstrap mode for the Munki tools."
+AUTORUNTITLE="Munki automatic run"
+AUTORUNDESC="Initiate an --auto run that performs checks for updates in the background."
 CONFTITLE="Munki tools configuration"
 CONFDESC="Sets initial preferences for Munki tools."
 
@@ -732,6 +772,17 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ; then
         <pkg-ref id=\"$PKGID.bootstrap\"/>
     </choice>"
     BOOTSTRAPREF="<pkg-ref id=\"$PKGID.bootstrap\" auth=\"Root\">${PKGPREFIX}munkitools_bootstrap.pkg</pkg-ref>"
+fi
+
+AUTORUNOUTLINE=""
+AUTORUNCHOICE=""
+AUTORUNREF=""
+if [ "$AUTORUNPKG" == "YES" ] ; then
+    AUTORUNOUTLINE="<line choice=\"autorun\"/>"
+    AUTORUNCHOICE="<choice id=\"autorun\" title=\"$AUTORUNTITLE\" description=\"$AUTORUNDESC\">
+        <pkg-ref id=\"$PKGID.autorun\"/>
+    </choice>"
+    AUTORUNREF="<pkg-ref id=\"$PKGID.autorun\" auth=\"Root\">${PKGPREFIX}munkitools_autorun.pkg</pkg-ref>"
 fi
 
 CONFOUTLINE=""
@@ -765,6 +816,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="python"/>
         <line choice="no_python"/>
         $BOOTSTRAPOUTLINE
+        $AUTORUNOUTLINE
         $CONFOUTLINE
     </choices-outline>
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -789,6 +841,7 @@ cat > "$DISTFILE" <<EOF
         <pkg-ref id="$PKGID.no_python"/>
     </choice>
     $BOOTSTRAPCHOICE
+    $AUTORUNCHOICE
     $CONFCHOICE
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
@@ -798,6 +851,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
     <pkg-ref id="$PKGID.no_python" auth="Root">${PKGPREFIX}munkitools_no_python.pkg</pkg-ref>
     $BOOTSTRAPREF
+    $AUTORUNREF
     $CONFREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
@@ -835,6 +889,10 @@ if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$BOOTSTRAPROOT"
 fi
 
+if [ "$AUTORUNPKG" == "YES" ] ; then
+    sudo chown -hR root:admin "$AUTORUNROOT"
+fi
+
 if [ "$CONFPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$CONFROOT"
 fi
@@ -842,6 +900,9 @@ fi
 ALLPKGS="core admin app launchd app_usage python no_python"
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
+fi
+if [ "$AUTORUNPKG" == "YES" ] ; then
+    ALLPKGS="${ALLPKGS} autorun"
 fi
 if [ "$CONFPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} config"
@@ -874,6 +935,10 @@ for pkg in $ALLPKGS ; do
             ;;
         "bootstrap")
             ver="1.0"
+            ;;
+        "autorun")
+            ver="1.0"
+            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_autorun"
             ;;
         "config")
             ver="1.0"

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+# Execute postinstall actions if we're installing on a live system.
+# This is useful for loading launch daemons and agents.
+if [ "$3" == "/" ]; then
+
+    launchctl load /Library/LaunchDaemons/com.googlecode.munki.autorun.plist
+    
+fi
+
+exit 0

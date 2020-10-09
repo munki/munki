@@ -23,6 +23,7 @@ Usage: $(basename "$0") [-b branch ] [-r revision] [<make_munki_mpkg.sh options>
     -n orgname  Specify the name of the organization
     -p          Build Python.framework even if one exists
     -B          Include a package that sets Munki's bootstrap mode
+    -A          Initiate an --auto run that performs checks for updates in the background.
     -m          Build the package in a manner suitable for install via MDM;
                 specifically, attempt to start all the launchd agents and
                 daemons without requiring a restart. Such a package is not
@@ -40,7 +41,7 @@ EOF
 }
 
 ADDITIONALARGS=""
-while getopts "b:r:i:o:n:c:s:S:pBmh" option
+while getopts "b:r:i:o:n:c:s:S:pBAmh" option
 do
     case $option in
         "b")
@@ -71,6 +72,9 @@ do
             ADDITIONALARGS="${ADDITIONALARGS} -p"
             ;;
         "B")
+            ADDITIONALARGS="${ADDITIONALARGS} -B"
+            ;;
+        "A")
             ADDITIONALARGS="${ADDITIONALARGS} -B"
             ;;
         "m")
