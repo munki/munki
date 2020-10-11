@@ -344,8 +344,11 @@ div.sidebar li  {
     font-size: 12px;
 }
 
-div.sidebar li:not(:first-of-type):not(.popup) {
-    border-left: 1px solid var(--text-color-subdued);
+div.sidebar li:not(:first-of-type):not(.separator):before {
+    content: "|";
+    color: var(--text-color-subdued);
+    margin-left: 6px;
+    margin-right: 8px;
 }
 
 div.sidebar {
@@ -354,30 +357,9 @@ div.sidebar {
     padding-left: 40px;
     margin-right: -40px;
     padding-right: 40px;
+    margin-top: 20px;
     margin-bottom: 0px;
 }
-
-
-
-/*.sidebar {
-    width: 200px;
-    margin-left: 26px;
-}
-
-.sidebar h1, .main>h1 {
-    -webkit-background-clip: text;
-    -webkit-font-smoothing: subpixel-antialiased;
-    background-color: #002354;
-    color: transparent;
-    font-family: -apple-system, "Helvetica Neue", Helvetica;
-    font-size: 24px;
-    font-weight: normal;
-    line-height: 26px;
-    margin-bottom: 5px;
-    overflow: visible;
-    position: relative;
-    top: -5px;
-}*/
 
 footer {
     font-size: 10px;
@@ -450,8 +432,8 @@ div.select select {
     color: var(--popup-menu-text-color);
     outline: 0;
     line-height: 16px;
-    margin: 0 0 8px 0;
-    padding: 0 25px 1px 5px;
+    margin: 0 0 4px 0;
+    padding: 1px 25px 1px 5px;
     border: 0;
     -webkit-appearance: none;
     -webkit-box-shadow: rgba(0, 0, 0, .35) 0 1px 2px, rgba(0, 0, 0, .8) 0 0 1px;
@@ -468,12 +450,12 @@ div.select:before {
     content: "";
     position: absolute;
     right: 16px;
-    top: 0;
+    top: 1px;
     width: 0;
-    height: 20px;
+    height: 18px;
     border-left: 1px solid #cecece;
     border-right: 1px solid var(--background-color);
-    pointer-events: none
+    pointer-events: none;
 }
 
 div.select:after {
@@ -515,12 +497,6 @@ div.titled-box.quick-links h2 {
     display: none;
 }
 
-/*div.titled-box h2 a {
-    font: normal 12px -apple-system, "Helvetica Neue", 'Helvetica';
-    color: var(--text-color-normal);
-    line-height: 24px
-}*/
-
 div.titled-box>div.content {
     margin-top: 5px
 }
@@ -528,7 +504,7 @@ div.titled-box>div.content {
 div.titled-box.quick-links>div.content {
     margin-top: 8px;
     text-align: center;
-    padding-bottom: 2px;
+    padding-bottom: 8px;
 }
 
 div.titled-box h2, div.titled-box hr {
@@ -545,8 +521,8 @@ div.titled-box hr {
 div.titled-box li.popup {
     position: relative;
     text-align: center;
-    margin-left: 12px;
-    margin-right: 12px;
+    /*margin-left: 12px;*/
+    margin-right: 2px;
 }
 
 div.titled-box li.popup {
@@ -558,25 +534,10 @@ div.titled-box li.popup span {
     display: none
 }
 
-div.titled-box li.popup select {
-    /*width: 188px*/
-}
-
 div.titled-box li.link {
-    padding: 0 8px;
     height: 19px;
     line-height: 16px;
     font-weight: normal;
-    /*border-color: transparent;
-    border-width: 1px 0;
-    border-style: solid*/
-}
-
-div.titled-box li.link.selected {
-    /*border-color: #e9e9e9;
-    border-width: 1px 0;
-    border-style: solid;
-    background-color: #f3f3f3*/
 }
 
 div.titled-box li.link a {
@@ -587,18 +548,6 @@ div.titled-box li.link a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap
-}
-
-div.titled-box li.link.user-link a {
-    /*color: var(--text-color-subdued)*/
-}
-
-body.screen-reader div.chart ol>li div.lockup div.lockup-info>div.multi-button {
-    /*display: block*/
-}
-
-div.lockup-container, div.container, div.titled-container {
-    /*-webkit-border-radius: 5px;*/
 }
 
 div.lockup-container .title, div.titled-container .title {
@@ -856,8 +805,6 @@ div.msc-button-inner:not(.installed-not-removable):active:hover {
     color: var(--small-button-text-color-active);
 }
 
-/*div.msc-button-inner.will-be-installed,
-div.msc-button-inner.will-be-removed,*/
 div.msc-button-inner.problem-item {
     display:none!important
 }
