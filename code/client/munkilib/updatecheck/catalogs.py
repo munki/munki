@@ -23,6 +23,7 @@ Functions for working with Munki catalogs
 from __future__ import absolute_import, print_function
 
 import os
+import unicodedata
 
 from . import download
 
@@ -52,6 +53,9 @@ def make_catalog_db(catalogitems):
 
         # normalize the version number
         vers = pkgutils.trim_version_string(vers)
+        
+        # unicode normalize the name 
+        name = unicodedata.normalize("NFC", name)
 
         # build indexes for items by name and version
         if not name in name_table:
@@ -562,6 +566,7 @@ def get_item_detail(name, cataloglist, vers='',
 
     for catalogname in cataloglist:
         # is name in the catalog?
+        name = unicodedata.normalize("NFC", name)
         if catalogname in _CATALOG and name in _CATALOG[catalogname]['named']:
             itemsmatchingname = _CATALOG[catalogname]['named'][name]
             indexlist = []
