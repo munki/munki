@@ -1020,8 +1020,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         clearCache()
         let page_url = webView.url
         let filename = page_url?.lastPathComponent ?? ""
-        navigateBackButton.isHidden = !filename.hasPrefix("detail-")
-        navigateBackMenuItem.isEnabled = filename.hasPrefix("detail-")
+        let allowNavigateBack = filename.hasPrefix("detail-") || filename.hasPrefix("updatedetail-")
+        navigateBackButton.isHidden = !allowNavigateBack
+        navigateBackMenuItem.isEnabled = allowNavigateBack
     }
     
     func webView(_ webView: WKWebView,
