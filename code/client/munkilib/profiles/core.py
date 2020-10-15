@@ -43,6 +43,12 @@ def profile_install_supported():
     return darwin_vers > 10 and darwin_vers < 20
 
 
+def should_emulate_profile_support():
+    '''Returns True if admin has indicated we should fake profile support
+    on Big Sur+'''
+    return prefs.pref('EmulateProfileSupport')
+
+
 def config_profile_info(ignore_cache=False):
     '''Returns a dictionary representing the output of `profiles -C -o`'''
     if not hasattr(config_profile_info, 'cache'):
@@ -209,6 +215,11 @@ def get_profile_receipt(profile_identifier):
 def install_profile(profile_path, profile_identifier):
     '''Installs a profile. Returns True on success, False otherwise'''
     if not profile_install_supported():
+        if not should_emulate_profile_support():
+            display.display_info(
+                "Cannot install profiles in this macOS version.")
+            return False
+        display.display_debug1('Emulating profile install via LocalMCX')
         # create some localmcx instead
         profile_data = read_profile(profile_path)
         if localmcx.install_profile(profile_data):
