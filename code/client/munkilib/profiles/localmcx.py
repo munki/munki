@@ -76,7 +76,7 @@ def remove_profile(identifier):
 
 
 def profile_is_installed(identifier):
-    '''Returns true if the list of/Local/Default ComputerGroups contain
+    '''Returns true if the list of/Local/Default ComputerGroups contains
     identifier'''
     cmd = ['/usr/bin/dscl', '.', 'list', '/ComputerGroups']
     output, err, exitcode = run(cmd)
@@ -213,7 +213,7 @@ def local_computer_record():
 
 
 def add_local_computer_record_to_computer_group(groupname):
-    '''Adds the lcoal computer record to the computer group.
+    '''Adds the local computer record to the computer group.
     Returns a boolean indicating success (or not)'''
     local_computer_record_name = local_computer_record()
     if not local_computer_record_name:
@@ -233,6 +233,7 @@ def add_local_computer_record_to_computer_group(groupname):
 def create_computer_group_with_mcx(groupname, mcx_data):
     '''Creates or replaces a computer group containing MCX data
     Returns a boolean indicating success (or not)'''
+    # with -q option an existing group will be replaced without confirmation
     cmd = ['/usr/sbin/dseditgroup', '-q', '-o', 'create',
            '-T', 'computergroup', groupname]
     _, err, exitcode = run(cmd)
