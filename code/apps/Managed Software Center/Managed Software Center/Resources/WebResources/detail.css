@@ -135,7 +135,7 @@ body.product .sidebar .more-by div.lockup li.genre {
 }*/
 
 div.product-review a {
-    color: var(--install-btn-background);
+    color: var(--text-color-normal);
     font-size: 14px;
     line-height: 24px;
 }
@@ -185,7 +185,7 @@ div.more-items-header-inner a {
 }
 
 div.more-by div.msc-button-inner {
-    background: white;
+    background: var(--small-btn-background);
 }
 
 span.progress-spinner {
@@ -211,4 +211,3 @@ span.progress-spinner {
         display: none;
     }
 }
-

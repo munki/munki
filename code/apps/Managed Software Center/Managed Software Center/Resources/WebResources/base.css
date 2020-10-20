@@ -13,48 +13,49 @@ html {
     --text-color-subdued: hsl(240, 2.7%, 55.7%);
     --text-color-warning: hsl(0, 100%, 40%);
     --description-link-color: #3E6397;
-    --button-text-color-enabled: hsl(0, 0%, 100%);
-    --button-text-color-active: hsl(0, 0%, 100%);
+    --button-text-color-enabled: hsl(211, 100%, 50%);
+    --button-text-color-active: hsl(105, 0%, 47%);
     --button-text-color-disabled: hsl(0, 0%, 74%);
-    --small-button-text-color-enabled: hsl(212, 100%, 51.4%);
-    --small-button-text-color-active: hsl(212, 95.4%, 42.7%);
+    --small-button-text-color-enabled: hsl(211, 100%, 50%);
+    --small-button-text-color-active: hsl(105, 0%, 51%);
     --small-button-text-color-disabled: hsl(0, 0%, 74%);
+    --large-button-text-color-active: hsl(105, 0%, 100%);
     --popup-menu-text-color: hsl(0, 0%, 0%);
     --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(hsl(0, 0%, 100%)), to(hsl(0, 0%, 92%)));
-    --small-btn-background: hsl(240, 30.8%, 94.9%);
-    --small-btn-background-active: hsl(240, 6.5%, 79.0%);
+    --small-btn-background: hsl(241, 27%, 96%);
+    --small-btn-background-active: hsl(241, 5%, 82%);
     --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
-    --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from( #0067B8), to( #003777));
-    --install-btn-background: hsl(212, 100%, 51.4%);
-    --install-btn-background-active: hsl(212, 95.4%, 42.7%);
-    --more-by-background: hsl(240, 36%, 96%);
+    --detail-btn-background-active: hsl(125, 54%, 58%);
+    --install-btn-background: hsl(241, 27%, 96%);
+    --install-btn-background-active: hsl(241, 5%, 82%);
+    --more-by-background: hsl(0, 0%, 100%, 0);
 }
 
 html[data-theme='dark'] {
     --background-color: transparent;
     --modal-background-color: hsl(0, 0%, 18%);
     --border-color: hsl(0, 0%, 0%);
-    --line-color: hsl(202, 9.7%, 22.2%);
+    --line-color: hsl(307, 4%, 18%);
     --text-color-emphasized: hsl(0, 0%, 92%);
     --text-color-normal: hsl(0, 0%, 88%);
     --text-color-subdued: hsl(0, 0%, 62%);
     --text-color-warning: hsl(0, 100%, 60%);
     --description-link-color: #90B0EA;
-    --button-text-color-enabled: hsl(0, 0%, 100%);
+    --button-text-color-enabled: hsl(308, 3%, 90%);
     --button-text-color-active: hsl(300, 1.2%, 83.3%);
     --button-text-color-disabled: hsl(0, 0%, 41%);
-    --small-button-text-color-enabled: hsl(212, 100%, 51.4%);
-    --small-button-text-color-active: hsl(212, 95.4%, 42.7%);
+    --small-button-text-color-enabled: hsl(240, 2%, 91%);
+    --small-button-text-color-active: hsl(359, 1%, 20%);
     --small-button-text-color-disabled: hsl(0, 0%, 74%);
     --popup-menu-text-color: hsl(0, 0%, 100%);
     --popup-menu-background: -webkit-gradient(linear, left top, left bottom, from(hsl(0, 0%, 30%)), to(hsl(0, 0%, 38%)));
-    --small-btn-background: hsl(240, 30.8%, 94.9%);
-    --small-btn-background-active: hsl(240, 6.5%, 79.0%);
-    --detail-btn-background: -webkit-gradient(linear, left top, left bottom, from(rgb(73,124,205)), to(rgb(47,79,143)));
-    --detail-btn-background-active: -webkit-gradient(linear, left top, left bottom, from(#5D99F1), to(#4A65AC));
-    --install-btn-background: hsl(212, 100%, 51.4%);
-    --install-btn-background-active: hsl(212, 95.4%, 42.7%);
-    --more-by-background: hsl(240, 1%, 19%);
+    --small-btn-background: hsl(105, 0%, 37%);
+    --small-btn-background-active: hsl(342, 2%, 67%);
+    --detail-btn-background: hsl(105, 0%, 68%);
+    --detail-btn-background-active: hsl(307, 1%, 67%);
+    --install-btn-background: hsl(105, 0%, 37%);
+    --install-btn-background-active: hsl(342, 2%, 67%);
+    --more-by-background: hsl(0, 0%, 100%, 0);
 }
 
 html.appearance-transition,
@@ -611,13 +612,13 @@ div.lockup-container div.lockup {
 
 @media only screen and (min-width: 1000px) {
     div.lockup-container div.lockup {
-        width: 33.3%; 
+        width: 33.3%;
     }
 }
 
 @media only screen and (min-width: 1400px) {
     div.lockup-container div.lockup {
-        width: 25%; 
+        width: 25%;
     }
 }
 
@@ -802,7 +803,7 @@ div.msc-button-inner.removing {
 
 div.msc-button-inner:not(.installed-not-removable):active:hover {
     background: var(--small-btn-background-active);
-    color: var(--small-button-text-color-active);
+    color: var(--large-button-text-color-active);
 }
 
 div.msc-button-inner.problem-item {
