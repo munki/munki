@@ -153,12 +153,17 @@ if [[ "$CONFPKG" == "YES" ]] ; then
     fi
 fi
 
-
-# Get the munki version
-MUNKIVERS=$(defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString)
-if [ "$?" != "0" ]; then
-    echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
-    echo "Perhaps $MUNKIROOT does not contain the munki source?" 1>&2
+VERSIONFILE="$MUNKIROOT/code/client/munkilib/version"
+# Check to see if file exists
+if [ -f "$VERSIONFILE.plist" ]; then
+    # Get the munki version
+    MUNKIVERS=$(defaults read "$VERSIONFILE" CFBundleShortVersionString)
+    if [ "$?" != "0" ]; then
+        echo "${VERSIONFILE}.plist can not be read" 1>&2
+        exit 1
+    fi
+else
+    echo "${VERSIONFILE}.plist Missing" 1>&2
     exit 1
 fi
 
