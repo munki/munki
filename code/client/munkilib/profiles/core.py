@@ -293,6 +293,13 @@ def profile_needs_to_be_installed(identifier, hash_value):
     2) We don't have a receipt for this profile identifier
     3) receipt's hash_value for identifier does not match ours
     4) ProfileInstallDate doesn't match the receipt'''
+    if not profile_install_supported():
+        if not should_emulate_profile_support():
+            display.display_info(
+                "Cannot install profiles in this macOS version, so skipping "
+                "check, and will treat as already installed.")
+            # profile _can't_ be installed so return False
+            return False
     if (not in_config_profile_info(identifier) and
             not localmcx.profile_is_installed(identifier)):
         display.display_debug2(
