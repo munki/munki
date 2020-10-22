@@ -163,7 +163,7 @@ if [ -f "$VERSIONFILE.plist" ]; then
         exit 1
     fi
 else
-    echo "${VERSIONFILE}.plist Missing" 1>&2
+    echo "${VERSIONFILE}.plist is missing" 1>&2
     exit 1
 fi
 
