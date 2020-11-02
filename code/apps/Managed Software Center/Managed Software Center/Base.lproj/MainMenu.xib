@@ -353,7 +353,7 @@
                             <scrollView fixedFrame="YES" borderType="none" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="WBA-O8-AVZ">
                                 <rect key="frame" x="0.0" y="0.0" width="220" height="411"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
-                                <clipView key="contentView" copiesOnScroll="NO" id="fUg-6X-3lt">
+                                <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="fUg-6X-3lt">
                                     <rect key="frame" x="0.0" y="0.0" width="220" height="411"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
