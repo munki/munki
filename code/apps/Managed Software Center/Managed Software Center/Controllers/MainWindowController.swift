@@ -36,8 +36,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     // Cocoa UI binding properties
     
-    @IBOutlet weak var updateButtonCell: MSCToolbarButtonCell!
-    
     @IBOutlet weak var navigateBackButton: NSButton!
     @IBOutlet weak var progressSpinner: NSProgressIndicator!
     
