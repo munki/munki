@@ -467,7 +467,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             }
         }
     }
-        
+
     override func awakeFromNib() {
         // Stuff we need to initialize when we start
         super.awakeFromNib()
