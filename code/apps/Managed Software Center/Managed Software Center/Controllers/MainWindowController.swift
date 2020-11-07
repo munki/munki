@@ -51,8 +51,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var myItemsMenuItem: NSMenuItem!
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
 
-
-    @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
     
     override func windowDidLoad() {
@@ -469,76 +467,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             }
         }
     }
-    
-    func addJSmessageHandlers() {
-        // define messages JavaScript can send us
-        wkContentController.add(self, name: "openExternalLink")
-        wkContentController.add(self, name: "installButtonClicked")
-        wkContentController.add(self, name: "myItemsButtonClicked")
-        wkContentController.add(self, name: "actionButtonClicked")
-        wkContentController.add(self, name: "changeSelectedCategory")
-        wkContentController.add(self, name: "updateOptionalInstallButtonClicked")
-        wkContentController.add(self, name: "updateOptionalInstallButtonFinishAction")
-    }
-
-    func insertWebView() {
-        // replace our webview placeholder with the real one
-        if let superview = webViewPlaceholder?.superview {
-            // define webview configuration
-            let webConfiguration = WKWebViewConfiguration()
-            addJSmessageHandlers()
-            webConfiguration.userContentController = wkContentController
-            webConfiguration.preferences.javaScriptEnabled = true
-            webConfiguration.preferences.javaEnabled = false
-            if UserDefaults.standard.bool(forKey: "developerExtrasEnabled") {
-                webConfiguration.preferences.setValue(true, forKey: "developerExtrasEnabled")
-            }
-            // init our webview
-            let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
-            replacementWebView.translatesAutoresizingMaskIntoConstraints = false  // we'll add them later, by hand
-            replacementWebView.allowsBackForwardNavigationGestures = false
-            replacementWebView.setValue(false, forKey: "drawsBackground")
-            // replace the placeholder in the window view with the real webview
-            superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
-            webView = replacementWebView
-
-            // configure constraints
-            superview.addConstraint(NSLayoutConstraint(item: webView!,
-                                                       attribute: .top,
-                                                       relatedBy: .equal,
-                                                       toItem: superview,
-                                                       attribute: .top,
-                                                       multiplier: 1, constant: 0))
-            
-            superview.addConstraint(NSLayoutConstraint(item: webView!,
-                                                       attribute: .bottom,
-                                                       relatedBy: .equal,
-                                                       toItem: superview,
-                                                       attribute: .bottom,
-                                                       multiplier: 1, constant: 0))
-            
-            superview.addConstraint(NSLayoutConstraint(item: webView!,
-                                                       attribute: .left,
-                                                       relatedBy: .equal,
-                                                       toItem: sidebarPanelView,
-                                                       attribute: .right,
-                                                       multiplier: 1, constant: 0))
-
-            superview.addConstraint(NSLayoutConstraint(item: webView!,
-                                                       attribute: .right,
-                                                       relatedBy: .equal,
-                                                       toItem: superview,
-                                                       attribute: .right,
-                                                       multiplier: 1, constant: 0))
-
-        }
-    }
-    
+        
     override func awakeFromNib() {
         // Stuff we need to initialize when we start
         super.awakeFromNib()
-        insertWebView()
-        webView.navigationDelegate = self
         setNoPageCache()
         alert_controller = MSCAlertController()
         alert_controller.window = self.window

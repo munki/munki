@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		54C84C942556E20D00D84F92 /* MSCWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C84C932556E20D00D84F92 /* MSCWebViewController.swift */; };
 		56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E762173DC8E00D727DC /* MSCTableRowView.swift */; };
 		56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E802174D7A200D727DC /* MSCTableCellView.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
@@ -65,6 +66,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		54C84C932556E20D00D84F92 /* MSCWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCWebViewController.swift; sourceTree = "<group>"; };
 		56C33E762173DC8E00D727DC /* MSCTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCTableRowView.swift; sourceTree = "<group>"; };
 		56C33E7821740B6F00D727DC /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		56C33E7921740D9B00D727DC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				C04CA61B20E68B1800711461 /* authrestart.swift */,
 				C0546BD720FDAD82003FE5A6 /* power.swift */,
 				C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */,
+				54C84C932556E20D00D84F92 /* MSCWebViewController.swift */,
 				56C33E802174D7A200D727DC /* MSCTableCellView.swift */,
 			);
 			path = "Managed Software Center";
@@ -417,6 +420,7 @@
 				56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */,
 				C03107C520C8F220007FE337 /* msclog.swift in Sources */,
 				C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */,
+				54C84C942556E20D00D84F92 /* MSCWebViewController.swift in Sources */,
 				C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */,
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
