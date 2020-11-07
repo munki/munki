@@ -1040,17 +1040,16 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // react to end of displaying a new page
         progressSpinner.stopAnimation(self)
-//        navigateBackButton.isEnabled = webView.canGoBack
-//        navigateBackMenuItem.isEnabled = webView.canGoBack
-//        navigateForwardButton.isEnabled = webView.canGoForward
-//        navigateForwardMenuItem.isEnabled = webView.canGoForward
         clearCache()
+        let allowNavigateBack = webView.canGoBack
         let page_url = webView.url
         let filename = page_url?.lastPathComponent ?? ""
-        let allowNavigateBack = filename.hasPrefix("detail-") || filename.hasPrefix("updatedetail-")
-        navigateBackButton.isHidden = !allowNavigateBack
-        navigateBackMenuItem.isEnabled = allowNavigateBack
+        let onMainPage = (
+            ["category-all.html", "categories.html", "myitems.html", "updates.html"].contains(filename))
+        navigateBackButton.isHidden = !allowNavigateBack || onMainPage
+        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onMainPage)
     }
     
     func webView(_ webView: WKWebView,
