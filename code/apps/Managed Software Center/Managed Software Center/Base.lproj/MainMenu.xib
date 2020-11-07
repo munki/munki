@@ -51,6 +51,7 @@
                 <outlet property="progressSpinner" destination="Ti6-HC-kVU" id="PkK-Fh-91U"/>
                 <outlet property="searchField" destination="0L3-LH-chu" id="yAV-Sz-rao"/>
                 <outlet property="sidebar" destination="pGV-ZA-L14" id="rl2-BU-gEi"/>
+                <outlet property="sidebarPanelView" destination="Z53-oE-BgS" id="b4h-jD-YC7"/>
                 <outlet property="softwareMenuItem" destination="YIg-jD-AbB" id="D6s-mC-x4d"/>
                 <outlet property="updatesMenuItem" destination="HOZ-SU-4Sm" id="UdT-3I-JpJ"/>
                 <outlet property="webViewPlaceholder" destination="Wf8-HB-bc8" id="qCG-zy-8UQ"/>

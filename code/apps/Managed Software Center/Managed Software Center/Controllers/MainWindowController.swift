@@ -41,6 +41,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBOutlet weak var searchField: NSSearchField!
     
+    @IBOutlet weak var sidebarPanelView: NSVisualEffectView!
     @IBOutlet weak var sidebar: NSOutlineView!
     
     @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
@@ -519,9 +520,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             superview.addConstraint(NSLayoutConstraint(item: webView!,
                                                        attribute: .left,
                                                        relatedBy: .equal,
-                                                       toItem: superview,
-                                                       attribute: .left,
-                                                       multiplier: 1, constant: 220)) // the width of the visual effect view
+                                                       toItem: sidebarPanelView,
+                                                       attribute: .right,
+                                                       multiplier: 1, constant: 0))
 
             superview.addConstraint(NSLayoutConstraint(item: webView!,
                                                        attribute: .right,
