@@ -830,12 +830,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
-        /*do {
-            try buildPage(url_fragment)
-        } catch {
-            msc_debug_log(
-                "Could not build page for \(url_fragment): \(error)")
-        }*/
         
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
         let request = URLRequest(url: URL(fileURLWithPath: html_file),
@@ -850,7 +844,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 _alertedUserToOutstandingUpdates = true
             }
         }
-        //navigateBackButton.isHidden = !url_fragment.hasPrefix("detail-")
     }
     
     func handleMunkiURL(_ url: URL) {
