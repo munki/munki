@@ -494,12 +494,42 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             }
             // init our webview
             let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
-            replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
+            replacementWebView.translatesAutoresizingMaskIntoConstraints = false  // we'll add them later, by hand
             replacementWebView.allowsBackForwardNavigationGestures = false
             replacementWebView.setValue(false, forKey: "drawsBackground")
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             webView = replacementWebView
+
+            // configure constraints
+            superview.addConstraint(NSLayoutConstraint(item: webView!,
+                                                       attribute: .top,
+                                                       relatedBy: .equal,
+                                                       toItem: superview,
+                                                       attribute: .top,
+                                                       multiplier: 1, constant: 0))
+            
+            superview.addConstraint(NSLayoutConstraint(item: webView!,
+                                                       attribute: .bottom,
+                                                       relatedBy: .equal,
+                                                       toItem: superview,
+                                                       attribute: .bottom,
+                                                       multiplier: 1, constant: 0))
+            
+            superview.addConstraint(NSLayoutConstraint(item: webView!,
+                                                       attribute: .left,
+                                                       relatedBy: .equal,
+                                                       toItem: superview,
+                                                       attribute: .left,
+                                                       multiplier: 1, constant: 220)) // the width of the visual effect view
+
+            superview.addConstraint(NSLayoutConstraint(item: webView!,
+                                                       attribute: .right,
+                                                       relatedBy: .equal,
+                                                       toItem: superview,
+                                                       attribute: .right,
+                                                       multiplier: 1, constant: 0))
+
         }
     }
     
