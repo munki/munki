@@ -940,7 +940,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 decisionHandler(.cancel)
                 return
             }
-            if scheme == "mailto" {
+            if scheme == "mailto" || scheme == "http" || scheme == "https" {
                 // open link in default mail client since WKWebView doesn't
                 // forward these links natively
                 NSWorkspace.shared.open(url)
