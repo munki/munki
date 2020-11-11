@@ -292,6 +292,7 @@ func buildDetailPage(item_name: String) throws {
             // might need better logic here eventually
             page["dueLabel"] = ""
             page["short_due_date"] = ""
+            item["hide_cancel_button"] = ""
             let footer = getRawTemplate("footer_template.html")
             try generatePage(named: page_name,
                              fromTemplate: "detail_template.html",

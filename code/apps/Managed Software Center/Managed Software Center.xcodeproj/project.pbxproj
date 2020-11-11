@@ -285,7 +285,7 @@
 			attributes = {
 				CLASSPREFIX = MSC;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1170;
 				ORGANIZATIONNAME = "The Munki Project";
 				TargetAttributes = {
 					C0196316210507DB0009F51A = {
