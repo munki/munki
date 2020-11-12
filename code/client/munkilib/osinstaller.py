@@ -504,16 +504,20 @@ def get_catalog_info(mounted_dmgpath):
                 minimum_munki_version = '3.6.3'
                 minimum_os_version = '10.9'
             elif vers.startswith('11.0'):
-                # No idea yet what space will be needed for Big Sur; this will
-                # need to be updated
-                installed_size = int(18.5 * 1024 * 1024)
+                # Big Sur
+                # If upgrading from macOS Sierra or later, macOS Big Sur
+                # requires 35.5GB of available storage to upgrade. If upgrading
+                # from an earlier release, macOS Big Sur requires up to 44.5GB
+                # of available storage.
+                # https://support.apple.com/en-us/HT211238
+                installed_size = int(35.5 * 1024 * 1024)
                 # but we really need Munki 5.1 in place before we install
                 minimum_munki_version = '5.1.0'
                 minimum_os_version = '10.9'
             else:
                 # will need to modify for future macOS releases, but should
                 # never be less than the highest version we know about
-                installed_size = int(18.5 * 1024 * 1024)
+                installed_size = int(35.5 * 1024 * 1024)
                 minimum_munki_version = '5.1.0'
                 minimum_os_version = '10.9'
 
