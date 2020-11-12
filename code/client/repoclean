@@ -347,10 +347,15 @@ class RepoCleaner(object):
             if print_this:
                 print()
         if self.orphaned_pkgs:
+            if self.options.delete_items_in_no_manifests:
+                line_info = "[to be DELETED]"
+            else:
+                line_info = ""
+
             print('The following pkgs are not referred to by any pkginfo '
                   'item:')
             for pkg in self.orphaned_pkgs:
-                print("\t%s" % pkg)
+                print("\t%s %s" % (pkg, line_info))
         if print_this:
             print()
             
@@ -400,14 +405,15 @@ class RepoCleaner(object):
                     self.repo.delete(pkg_to_remove)
                 except munkirepo.RepoError as err:
                     print(unicode_or_str(err), file=sys.stderr)
-        # remove orphaned pkgs
-        for pkg in self.orphaned_pkgs:
-            pkg_to_remove = os.path.join('pkgs', pkg)
-            print('Removing %s' % pkg_to_remove)
-            try:
-                self.repo.delete(pkg_to_remove)
-            except munkirepo.RepoError as err:
-                print(unicode_or_str(err), file=sys.stderr)
+        # remove orphaned pkgs if the option to do so is set
+        if self.options.delete_items_in_no_manifests:
+            for pkg in self.orphaned_pkgs:
+                pkg_to_remove = os.path.join('pkgs', pkg)
+                print('Removing %s' % pkg_to_remove)
+                try:
+                    self.repo.delete(pkg_to_remove)
+                except munkirepo.RepoError as err:
+                    print(unicode_or_str(err), file=sys.stderr)
             
 
     def make_catalogs(self):
@@ -482,7 +488,7 @@ def main():
                       help='Show all items even if none will be deleted.')
     parser.add_option('--delete-items-in-no-manifests', action='store_true',
                       help='Also delete items that are not referenced in any '
-                           'manifests. Not yet implemented.')
+                           'manifests.')
     parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL. If specified, overrides any '
                            'repo_url specified via --configure.')
