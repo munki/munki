@@ -347,7 +347,7 @@ class RepoCleaner(object):
             if print_this:
                 print()
         if self.orphaned_pkgs:
-            if self.options.delete_items_in_no_manifests:
+            if self.options.delete_orphaned_items:
                 line_info = "[to be DELETED]"
             else:
                 line_info = ""
@@ -406,7 +406,7 @@ class RepoCleaner(object):
                 except munkirepo.RepoError as err:
                     print(unicode_or_str(err), file=sys.stderr)
         # remove orphaned pkgs if the option to do so is set
-        if self.options.delete_items_in_no_manifests:
+        if self.options.delete_orphaned_items:
             for pkg in self.orphaned_pkgs:
                 pkg_to_remove = os.path.join('pkgs', pkg)
                 print('Removing %s' % pkg_to_remove)
@@ -486,9 +486,12 @@ def main():
                            'Defaults to 2.')
     parser.add_option('--show-all', action='store_true',
                       help='Show all items even if none will be deleted.')
+    parser.add_option('--delete-orphaned-items', action='store_true',
+                      help='Also delete items that do not have associated '
+                           'pkginfo.')
     parser.add_option('--delete-items-in-no-manifests', action='store_true',
                       help='Also delete items that are not referenced in any '
-                           'manifests.')
+                           'manifests. Not yet implemented.')
     parser.add_option('--repo_url', '--repo-url',
                       help='Optional repo URL. If specified, overrides any '
                            'repo_url specified via --configure.')
