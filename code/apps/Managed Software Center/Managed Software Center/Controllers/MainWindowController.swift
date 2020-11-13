@@ -497,7 +497,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
             //replacementWebView.translatesAutoresizingMaskIntoConstraints = false  // we'll add them later, by hand
             replacementWebView.allowsBackForwardNavigationGestures = false
-            replacementWebView.setValue(false, forKey: "drawsBackground")
+            if #available(OSX 10.12, *) {
+                replacementWebView.setValue(false, forKey: "drawsBackground")
+            }
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             webView = replacementWebView
