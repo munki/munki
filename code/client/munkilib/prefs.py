@@ -58,6 +58,7 @@ DEFAULT_PREFS = {
     'ClientResourcesFilename': None,
     'ClientResourceURL': None,
     'DaysBetweenNotifications': 1,
+    'EmulateProfileSupport': False,
     'FollowHTTPRedirects': 'none',
     'HelpURL': None,
     'IconURL': None,
