@@ -23,7 +23,6 @@ CONFPKG=NO
 MDMSTYLE=NO
 ORGNAME=macOS
 ROSETTA2=NO
-HOSTARCHITECTURES="x86_64"
 
 # try to automagically find Munki source root
 TOOLSDIR=$(dirname "$0")
@@ -103,7 +102,6 @@ do
             ;;
         "R") 
             ROSETTA2=YES
-            HOSTARCHITECTURES+=",arm64"
             ;;
         "h" | *)
             usage
@@ -779,12 +777,14 @@ fi
 ROSETTA2OUTLINE=""
 ROSETTA2CHOICE=""
 ROSETTA2REF=""
+HOSTARCHITECTURES=""
 if [ "$ROSETTA2" == "YES" ]; then
     ROSETTA2OUTLINE="<line choice=\"rosetta2\"/>"
     ROSETTA2CHOICE="<choice id=\"rosetta2\" title=\"$ROSETTA2TITLE\" description=\"$ROSETTA2DESC\">
         <pkg-ref id=\"$PKGID.rosetta2\"/>
     </choice>"
     ROSETTA2REF="<pkg-ref id=\"$PKGID.rosetta2\" auth=\"Root\">${PKGPREFIX}munkitools_rosetta2.pkg</pkg-ref>"
+    HOSTARCHITECTURES="hostArchitectures=\"x86_64,arm64\""
 fi
 
 cat > "$DISTFILE" <<EOF
@@ -796,7 +796,7 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.11"/>
         </allowed-os-versions>
     </volume-check>
-    <options hostArchitectures="${HOSTARCHITECTURES}" customize="allow" allow-external-scripts="no"/>
+    <options $HOSTARCHITECTURES customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
         $ROSETTA2OUTLINE
