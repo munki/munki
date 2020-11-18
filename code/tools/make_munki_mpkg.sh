@@ -756,7 +756,7 @@ cat > "$DISTFILE" <<EOF
     <title>Munki - Software Management for $ORGNAME</title>
     <volume-check>
         <allowed-os-versions>
-            <os-version min="10.10"/>
+            <os-version min="10.11"/>
         </allowed-os-versions>
     </volume-check>
     <options customize="allow" allow-external-scripts="no"/>
