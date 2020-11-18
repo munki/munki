@@ -29,6 +29,7 @@ Usage: $(basename "$0") [-b branch ] [-r revision] [<make_munki_mpkg.sh options>
                 suited for upgrade installs or install via Munki itself.
     -c plist    Build a configuration package using the preferences defined in a
                 plist file
+    -R          Include a pkg to install Rosetta2 on ARM-based hardware.
     -s cert_cn  Sign distribution package with a Developer ID Installer
                 certificate from keychain. Provide the certificate's Common
                 Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -40,7 +41,7 @@ EOF
 }
 
 ADDITIONALARGS=""
-while getopts "b:r:i:o:n:c:s:S:pBmh" option
+while getopts "b:r:i:o:n:c:s:S:pBmhR" option
 do
     case $option in
         "b")
@@ -75,6 +76,9 @@ do
             ;;
         "m")
             ADDITIONALARGS="${ADDITIONALARGS} -m"
+            ;;
+        "R")
+            ADDITIONALARGS="${ADDITIONALARGS} -R"
             ;;
         "h" | *)
             usage
