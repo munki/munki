@@ -993,7 +993,6 @@ echo
 # Sign package if specified with options.
 if [ "$PKGSIGNINGCERT" != "" ]; then
      /usr/bin/productbuild \
-        --product "${MUNKIROOT}/code/tools/pkgresources/arm64_architecture_requirements/arch_requirements.plist" \
         --distribution "$DISTFILE" \
         --package-path "$METAROOT" \
         --resources "$METAROOT/Resources" \
@@ -1001,7 +1000,6 @@ if [ "$PKGSIGNINGCERT" != "" ]; then
         "$MPKG"
 else
     /usr/bin/productbuild \
-        --product "${MUNKIROOT}/code/tools/pkgresources/arm64_architecture_requirements/arch_requirements.plist" \
         --distribution "$DISTFILE" \
         --package-path "$METAROOT" \
         --resources "$METAROOT/Resources" \
