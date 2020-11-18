@@ -23,6 +23,7 @@ CONFPKG=NO
 MDMSTYLE=NO
 ORGNAME=macOS
 ROSETTA2=NO
+HOSTARCHITECTURES="x86_64"
 
 # try to automagically find Munki source root
 TOOLSDIR=$(dirname "$0")
@@ -102,6 +103,7 @@ do
             ;;
         "R") 
             ROSETTA2=YES
+            HOSTARCHITECTURES+=",arm64"
             ;;
         "h" | *)
             usage
@@ -794,7 +796,7 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.10"/>
         </allowed-os-versions>
     </volume-check>
-    <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>
+    <options hostArchitectures="${HOSTARCHITECTURES}" customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
         $ROSETTA2OUTLINE
