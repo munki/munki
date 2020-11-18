@@ -794,7 +794,7 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.10"/>
         </allowed-os-versions>
     </volume-check>
-    <options customize="allow" allow-external-scripts="no"/>
+    <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
         $ROSETTA2OUTLINE
@@ -993,6 +993,7 @@ echo
 # Sign package if specified with options.
 if [ "$PKGSIGNINGCERT" != "" ]; then
      /usr/bin/productbuild \
+        --product "${MUNKIROOT}/code/tools/pkgresources/arm64_architecture_requirements/arch_requirements.plist" \
         --distribution "$DISTFILE" \
         --package-path "$METAROOT" \
         --resources "$METAROOT/Resources" \
@@ -1000,6 +1001,7 @@ if [ "$PKGSIGNINGCERT" != "" ]; then
         "$MPKG"
 else
     /usr/bin/productbuild \
+        --product "${MUNKIROOT}/code/tools/pkgresources/arm64_architecture_requirements/arch_requirements.plist" \
         --distribution "$DISTFILE" \
         --package-path "$METAROOT" \
         --resources "$METAROOT/Resources" \
