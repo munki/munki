@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9B87363921E37F0100B5B5CF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B87363B21E37F0100B5B5CF /* InfoPlist.strings */; };
+		56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E762173DC8E00D727DC /* MSCTableRowView.swift */; };
+		56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E802174D7A200D727DC /* MSCTableCellView.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
 		C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603D020D0A7FA00DEF9E4 /* SelfService.swift */; };
 		C019631121039F020009F51A /* templates in Resources */ = {isa = PBXBuildFile; fileRef = C019630F21039F020009F51A /* templates */; };
 		C019631221039F020009F51A /* WebResources in Resources */ = {isa = PBXBuildFile; fileRef = C019631021039F020009F51A /* WebResources */; };
 		C019631F2105080B0009F51A /* MSCDockTilePlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = C019631D2105080B0009F51A /* MSCDockTilePlugIn.m */; };
 		C019632221050C910009F51A /* MSCDockTilePlugin.docktileplugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = C0196317210507DB0009F51A /* MSCDockTilePlugin.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C03107C120C77E5A007FE337 /* MSCBadgedTemplateImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C020C77E5A007FE337 /* MSCBadgedTemplateImage.swift */; };
 		C03107C320C8B65E007FE337 /* msclib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C220C8B65E007FE337 /* msclib.swift */; };
 		C03107C520C8F220007FE337 /* msclog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C420C8F220007FE337 /* msclog.swift */; };
 		C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04CA61920E682AE00711461 /* passwdutil.swift */; };
@@ -25,11 +25,6 @@
 		C04F828420BB319B00F9C57D /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C04F828220BB319B00F9C57D /* MainMenu.xib */; };
 		C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F828C20BB32EA00F9C57D /* LogViewController.swift */; };
 		C04F829120BB34D100F9C57D /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F829020BB34D100F9C57D /* Localization.swift */; };
-		C04F829820BB381D00F9C57D /* MyStuffTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C04F829420BB381C00F9C57D /* MyStuffTemplate.png */; };
-		C04F829920BB381D00F9C57D /* updatesTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C04F829520BB381C00F9C57D /* updatesTemplate.png */; };
-		C04F829A20BB381D00F9C57D /* AllItemsTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = C04F829620BB381D00F9C57D /* AllItemsTemplate.png */; };
-		C04F829B20BB381D00F9C57D /* toolbarCategoriesTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C04F829720BB381D00F9C57D /* toolbarCategoriesTemplate.pdf */; };
-		C04F829D20BB5B9E00F9C57D /* MSCToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F829C20BB5B9E00F9C57D /* MSCToolbarButton.swift */; };
 		C04F829F20BB713B00F9C57D /* munki.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F829E20BB713B00F9C57D /* munki.swift */; };
 		C04F82A120BB77CF00F9C57D /* FoundationPlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F82A020BB77CF00F9C57D /* FoundationPlist.swift */; };
 		C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */; };
@@ -70,22 +65,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		9B87363A21E37F0100B5B5CF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87363C21E37F0500B5B5CF /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87363D21E37F0700B5B5CF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87363E21E37F0A00B5B5CF /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-AU"; path = "en-AU.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		9B87363F21E37F0C00B5B5CF /* en-CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-CA"; path = "en-CA.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		9B87364021E37F0E00B5B5CF /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		9B87364121E37F1000B5B5CF /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364221E37F1200B5B5CF /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364321E37F1500B5B5CF /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364421E37F1800B5B5CF /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364521E37F1C00B5B5CF /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364621E37F1E00B5B5CF /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364721E37F2000B5B5CF /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364821E37F2200B5B5CF /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364921E37F2500B5B5CF /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		9B87364A21E37F5400B5B5CF /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		56C33E762173DC8E00D727DC /* MSCTableRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCTableRowView.swift; sourceTree = "<group>"; };
+		56C33E7821740B6F00D727DC /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		56C33E7921740D9B00D727DC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		56C33E802174D7A200D727DC /* MSCTableCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCTableCellView.swift; sourceTree = "<group>"; };
 		C005116821055FC500F2D091 /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-AU"; path = "en-AU.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C00511692105600A00F2D091 /* en-CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-CA"; path = "en-CA.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C005116A2105602000F2D091 /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -97,7 +80,6 @@
 		C0196319210507DB0009F51A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C019631D2105080B0009F51A /* MSCDockTilePlugIn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSCDockTilePlugIn.m; sourceTree = "<group>"; };
 		C019631E2105080B0009F51A /* MSCDockTilePlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSCDockTilePlugIn.h; sourceTree = "<group>"; };
-		C03107C020C77E5A007FE337 /* MSCBadgedTemplateImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCBadgedTemplateImage.swift; sourceTree = "<group>"; };
 		C03107C220C8B65E007FE337 /* msclib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msclib.swift; sourceTree = "<group>"; };
 		C03107C420C8F220007FE337 /* msclog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msclog.swift; sourceTree = "<group>"; };
 		C04CA61920E682AE00711461 /* passwdutil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = passwdutil.swift; sourceTree = "<group>"; };
@@ -110,11 +92,6 @@
 		C04F828C20BB32EA00F9C57D /* LogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		C04F829020BB34D100F9C57D /* Localization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		C04F829220BB36C300F9C57D /* Managed Software Center.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Managed Software Center.entitlements"; sourceTree = "<group>"; };
-		C04F829420BB381C00F9C57D /* MyStuffTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MyStuffTemplate.png; sourceTree = "<group>"; };
-		C04F829520BB381C00F9C57D /* updatesTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = updatesTemplate.png; sourceTree = "<group>"; };
-		C04F829620BB381D00F9C57D /* AllItemsTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AllItemsTemplate.png; sourceTree = "<group>"; };
-		C04F829720BB381D00F9C57D /* toolbarCategoriesTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = toolbarCategoriesTemplate.pdf; sourceTree = "<group>"; };
-		C04F829C20BB5B9E00F9C57D /* MSCToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCToolbarButton.swift; sourceTree = "<group>"; };
 		C04F829E20BB713B00F9C57D /* munki.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munki.swift; sourceTree = "<group>"; };
 		C04F82A020BB77CF00F9C57D /* FoundationPlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationPlist.swift; sourceTree = "<group>"; };
 		C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCAlertController.swift; sourceTree = "<group>"; };
@@ -124,7 +101,6 @@
 		C05F878E21055746000DB8D8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Base; path = Base.lproj/Info.plist; sourceTree = "<group>"; };
 		C05F879621055BFE000DB8D8 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F879721055DAA000DB8D8 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
-		C05F879821055DE2000DB8D8 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A221055E7F000DB8D8 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A321055E8F000DB8D8 /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A421055E9D000DB8D8 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -138,7 +114,6 @@
 		C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appleupdates.swift; sourceTree = "<group>"; };
 		C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCStatusController.swift; sourceTree = "<group>"; };
 		C0D30BEA20CA445A005E876E /* MunkiItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiItems.swift; sourceTree = "<group>"; };
-		C0E10E58245494C4003E04F2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C0E2599D210AD8CD00C3A3D9 /* Socket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Socket.swift; sourceTree = "<group>"; };
 		C0F8E3DF2105622F00718259 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0F8E3E221057A1500718259 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -220,11 +195,10 @@
 				C04F828020BB319B00F9C57D /* Assets.xcassets */,
 				C04F828220BB319B00F9C57D /* MainMenu.xib */,
 				C05F878F21055746000DB8D8 /* Info.plist */,
-				C04F829C20BB5B9E00F9C57D /* MSCToolbarButton.swift */,
+				56C33E762173DC8E00D727DC /* MSCTableRowView.swift */,
 				C04F829E20BB713B00F9C57D /* munki.swift */,
 				C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */,
 				C04F82A020BB77CF00F9C57D /* FoundationPlist.swift */,
-				C03107C020C77E5A007FE337 /* MSCBadgedTemplateImage.swift */,
 				C03107C220C8B65E007FE337 /* msclib.swift */,
 				C03107C420C8F220007FE337 /* msclog.swift */,
 				C0FBF1BC20D4945B00FAD1BE /* mschtml.swift */,
@@ -237,7 +211,7 @@
 				C04CA61B20E68B1800711461 /* authrestart.swift */,
 				C0546BD720FDAD82003FE5A6 /* power.swift */,
 				C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */,
-				9B87363B21E37F0100B5B5CF /* InfoPlist.strings */,
+				56C33E802174D7A200D727DC /* MSCTableCellView.swift */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -247,10 +221,6 @@
 			children = (
 				C019630F21039F020009F51A /* templates */,
 				C019631021039F020009F51A /* WebResources */,
-				C04F829620BB381D00F9C57D /* AllItemsTemplate.png */,
-				C04F829420BB381C00F9C57D /* MyStuffTemplate.png */,
-				C04F829720BB381D00F9C57D /* toolbarCategoriesTemplate.pdf */,
-				C04F829520BB381C00F9C57D /* updatesTemplate.png */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -295,7 +265,7 @@
 				C04F827820BB319B00F9C57D /* Frameworks */,
 				C04F827920BB319B00F9C57D /* Resources */,
 				C0196320210508450009F51A /* CopyFiles */,
-				C05BD40421B76D730025F304 /* Embed version info */,
+				C096D376251AA6C000977E34 /* Embed revision into app version */,
 			);
 			buildRules = (
 			);
@@ -315,7 +285,7 @@
 			attributes = {
 				CLASSPREFIX = MSC;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1170;
 				ORGANIZATIONNAME = "The Munki Project";
 				TargetAttributes = {
 					C0196316210507DB0009F51A = {
@@ -382,35 +352,34 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C04F829B20BB381D00F9C57D /* toolbarCategoriesTemplate.pdf in Resources */,
 				C019631121039F020009F51A /* templates in Resources */,
-				C04F829920BB381D00F9C57D /* updatesTemplate.png in Resources */,
 				C04F828120BB319B00F9C57D /* Assets.xcassets in Resources */,
 				C05F87932105587A000DB8D8 /* Localizable.strings in Resources */,
 				C04F828420BB319B00F9C57D /* MainMenu.xib in Resources */,
 				C019631221039F020009F51A /* WebResources in Resources */,
-				C04F829A20BB381D00F9C57D /* AllItemsTemplate.png in Resources */,
-				C04F829820BB381D00F9C57D /* MyStuffTemplate.png in Resources */,
-				9B87363921E37F0100B5B5CF /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		C05BD40421B76D730025F304 /* Embed version info */ = {
+		C096D376251AA6C000977E34 /* Embed revision into app version */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+			);
 			inputPaths = (
 			);
-			name = "Embed version info";
+			name = "Embed revision into app version";
+			outputFileListPaths = (
+			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a pseudo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a pseudo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -429,7 +398,6 @@
 			files = (
 				C0FBF1BF20D4A0BB00FAD1BE /* Template.swift in Sources */,
 				C0FD710A20D485A80018A002 /* HtmlFilter.swift in Sources */,
-				C03107C120C77E5A007FE337 /* MSCBadgedTemplateImage.swift in Sources */,
 				C0FBF1BD20D4945B00FAD1BE /* mschtml.swift in Sources */,
 				C03107C320C8B65E007FE337 /* msclib.swift in Sources */,
 				C04F829F20BB713B00F9C57D /* munki.swift in Sources */,
@@ -441,17 +409,18 @@
 				C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */,
 				C04CA61E20E6ADA100711461 /* MainWindowController.swift in Sources */,
 				C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */,
+				56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */,
 				C04CA61C20E68B1800711461 /* authrestart.swift in Sources */,
 				C04F827F20BB319B00F9C57D /* AppDelegate.swift in Sources */,
 				C0D30BEB20CA445A005E876E /* MunkiItems.swift in Sources */,
 				C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */,
+				56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */,
 				C03107C520C8F220007FE337 /* msclog.swift in Sources */,
 				C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */,
 				C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */,
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
-				C04F829D20BB5B9E00F9C57D /* MSCToolbarButton.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -466,29 +435,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		9B87363B21E37F0100B5B5CF /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				9B87363A21E37F0100B5B5CF /* en */,
-				9B87363C21E37F0500B5B5CF /* da */,
-				9B87363D21E37F0700B5B5CF /* de */,
-				9B87363E21E37F0A00B5B5CF /* en-AU */,
-				9B87363F21E37F0C00B5B5CF /* en-CA */,
-				9B87364021E37F0E00B5B5CF /* en-GB */,
-				9B87364121E37F1000B5B5CF /* es */,
-				9B87364221E37F1200B5B5CF /* fi */,
-				9B87364321E37F1500B5B5CF /* fr */,
-				9B87364421E37F1800B5B5CF /* it */,
-				9B87364521E37F1C00B5B5CF /* ja */,
-				9B87364621E37F1E00B5B5CF /* nb */,
-				9B87364721E37F2000B5B5CF /* nl */,
-				9B87364821E37F2200B5B5CF /* ru */,
-				9B87364921E37F2500B5B5CF /* sv */,
-				9B87364A21E37F5400B5B5CF /* Base */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
 		C04F828220BB319B00F9C57D /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -525,7 +471,6 @@
 			children = (
 				C05F879621055BFE000DB8D8 /* Base */,
 				C05F879721055DAA000DB8D8 /* da */,
-				C05F879821055DE2000DB8D8 /* de */,
 				C05F87A221055E7F000DB8D8 /* es */,
 				C05F87A321055E8F000DB8D8 /* fi */,
 				C05F87A421055E9D000DB8D8 /* fr */,
@@ -538,7 +483,8 @@
 				C005116821055FC500F2D091 /* en-AU */,
 				C00511692105600A00F2D091 /* en-CA */,
 				C005116A2105602000F2D091 /* en-GB */,
-				C0E10E58245494C4003E04F2 /* en */,
+				56C33E7821740B6F00D727DC /* de */,
+				56C33E7921740D9B00D727DC /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -551,12 +497,11 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = MSCDockTilePlugin/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MSCDockTilePlugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -574,7 +519,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = MSCDockTilePlugin/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MSCDockTilePlugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -633,7 +578,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -687,7 +632,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -705,7 +650,8 @@
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MARKETING_VERSION = 5.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -724,7 +670,8 @@
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/Managed Software Center/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MARKETING_VERSION = 5.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

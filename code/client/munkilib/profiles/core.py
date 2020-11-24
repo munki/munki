@@ -23,11 +23,12 @@ import os
 import subprocess
 import tempfile
 
-from . import display
-from . import munkihash
-from . import osutils
-from . import prefs
-from . import FoundationPlist
+from . import localmcx
+from .. import display
+from .. import munkihash
+from .. import osutils
+from .. import prefs
+from .. import FoundationPlist
 
 
 def profiles_supported():
@@ -40,6 +41,12 @@ def profile_install_supported():
     '''Returns True if we can install profiles on this OS'''
     darwin_vers = int(os.uname()[2].split('.')[0])
     return darwin_vers > 10 and darwin_vers < 20
+
+
+def should_emulate_profile_support():
+    '''Returns True if admin has indicated we should fake profile support
+    on Big Sur+'''
+    return prefs.pref('EmulateProfileSupport')
 
 
 def config_profile_info(ignore_cache=False):
@@ -208,7 +215,19 @@ def get_profile_receipt(profile_identifier):
 def install_profile(profile_path, profile_identifier):
     '''Installs a profile. Returns True on success, False otherwise'''
     if not profile_install_supported():
-        display.display_info("Cannot install profiles in this macOS version.")
+        if not should_emulate_profile_support():
+            display.display_info(
+                "Cannot install profiles in this macOS version.")
+            return False
+        display.display_debug1('Emulating profile install via LocalMCX')
+        # create some localmcx instead
+        profile_data = read_profile(profile_path)
+        if localmcx.install_profile(profile_data):
+            # remove any existing profile with the same identifier
+            if in_config_profile_info(profile_identifier):
+                _remove_profile_basic(profile_identifier)
+            record_profile_receipt(profile_path, profile_identifier)
+            return True
         return False
     cmd = ['/usr/bin/profiles', '-IF', profile_path]
     # /usr/bin/profiles likes to output errors to stdout instead of stderr
@@ -230,12 +249,9 @@ def install_profile(profile_path, profile_identifier):
     return True
 
 
-def remove_profile(identifier):
-    '''Removes a profile with the given identifier. Returns True on success,
-    False otherwise'''
-    if not profiles_supported():
-        display.display_info("No support for profiles in this macOS version.")
-        return False
+def _remove_profile_basic(identifier):
+    '''Lower-level profile removal code called a couple of places.
+    Returns a boolean to indicate success.'''
     cmd = ['/usr/bin/profiles', '-Rp', identifier]
     # /usr/bin/profiles likes to output errors to stdout instead of stderr
     # so let's redirect everything to stdout and just use that
@@ -246,8 +262,29 @@ def remove_profile(identifier):
         display.display_error(
             'Profile %s removal failed: %s' % (identifier, stdout))
         return False
-    remove_profile_receipt(identifier)
     return True
+
+
+def remove_profile(identifier):
+    '''Removes a profile with the given identifier. Returns True on success,
+    False otherwise'''
+    if not profiles_supported():
+        display.display_info("No support for profiles in this macOS version.")
+        return False
+    if in_config_profile_info(identifier):
+        if _remove_profile_basic(identifier):
+            remove_profile_receipt(identifier)
+            return True
+        return False
+    elif localmcx.profile_is_installed(identifier):
+        if localmcx.remove_profile(identifier):
+            remove_profile_receipt(identifier)
+            return True
+        return False
+    else:
+        # no evidence it's installed at all!
+        remove_profile_receipt(identifier)
+        return True
 
 
 def profile_needs_to_be_installed(identifier, hash_value):
@@ -257,9 +294,14 @@ def profile_needs_to_be_installed(identifier, hash_value):
     3) receipt's hash_value for identifier does not match ours
     4) ProfileInstallDate doesn't match the receipt'''
     if not profile_install_supported():
-        display.display_info("Cannot install profiles in this macOS version.")
-        return False
-    if not in_config_profile_info(identifier):
+        if not should_emulate_profile_support():
+            display.display_info(
+                "Cannot install profiles in this macOS version, so skipping "
+                "check, and will treat as already installed.")
+            # profile _can't_ be installed so return False
+            return False
+    if (not in_config_profile_info(identifier) and
+            not localmcx.profile_is_installed(identifier)):
         display.display_debug2(
             'Profile identifier %s is not installed.' % identifier)
         return True
@@ -275,7 +317,8 @@ def profile_needs_to_be_installed(identifier, hash_value):
             % identifier)
         return True
     installed_dict = info_for_installed_identifier(identifier)
-    if (installed_dict.get('ProfileInstallDate')
+    if (installed_dict and
+            installed_dict.get('ProfileInstallDate')
             != receipt.get('ProfileInstallDate')):
         display.display_debug2(
             'Receipt ProfileInstallDate for profile identifier %s does not '
@@ -293,6 +336,10 @@ def profile_is_installed(identifier):
     if in_config_profile_info(identifier):
         display.display_debug2(
             'Profile identifier %s is installed.' % identifier)
+        return True
+    if localmcx.profile_is_installed(identifier):
+        display.display_debug2(
+            'Profile identifier %s is installed as localmcx.' % identifier)
         return True
     display.display_debug2(
         'Profile identifier %s is not installed.' % identifier)

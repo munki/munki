@@ -16,15 +16,27 @@
             <div id="content">
                 <div class="background"></div>
                 <div class="columns">
-
                     <div class="main">
                         <div class="product-detail">
                             <div class="lockup product">
                                 <div class="artwork">
                                     <img width="175" height="175" alt="${display_name_escaped}" class="artwork" src="${icon}" />
                                 </div>
-                                <div class="msc-button large">
-                                    <button class="button-area uppercase" 
+                            </div>
+                            <div class="product-info box-flex">
+                                <div class="product-review">
+                                    <div class="title">
+                                        <h1>${display_name_escaped}</h1>
+                                    </div>
+                                    <a href="${developer_link}">${developer_escaped}</a>
+                                    <p class="more-text">
+                                    ${description}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="product-btn box-flex">
+                                <div class="msc-button large ${hide_cancel_button}">
+                                    <button class="button-area uppercase"
                                      onClick="window.webkit.messageHandlers.actionButtonClicked.postMessage('${name_quoted}');">
                                         <div class="msc-button-inner large ${status}"
                                              id="${name_escaped}_action_button_text">
@@ -34,78 +46,83 @@
                                 </div>
                                 <div class="warning">
                                     <br/>&nbsp;
-                                    <strong>${restart_action_text}</strong>
-                                </div>
-                            </div>
-
-                            <div class="product-info box-flex">
-                                <div class="product-review">
-                                    <div class="title">
-                                        <h1>${display_name_escaped}</h1>
-                                    </div>
-                                    <div class="more-text">
-                                        ${description}
-                                    </div>
+                                    ${restart_action_text}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="sidebar">
-                        <!-- Item information sidebar list-->
-                        <div class="titled-box app-info">
-                            <h2>${informationLabel}</h2>
-                            <div class="content">
-                                <ul class="list">
-                                    <li class="genre">
-                                        <span class="label">${categoryLabel} </span>
-                                        <a href="${category_link}">${category}</a>
-                                    </li>
-                                    <li><span class="label">${versionLabel} </span>${version_to_install}</li>
-                                    <li><span class="label">${sizeLabel} </span>${size}</li>
-                                    <li>
-                                        <span class="label">${developerLabel} </span>
-                                        <a href="${developer_link}">${developer_escaped}</a>
-                                    </li>
-                                </ul>
-                                <hr/>
-                                <ul class="list">
-                                    <li>
-                                        <span class="label">${statusLabel} </span>
-                                        <span class="${status}" id="${name_escaped}_status_text">
-                                            <span id="${name_escaped}_status_text_span">
-                                                ${status_text}
-                                            </span>
-                                            <a class="follow" href="munki://updates.html"></a>
-                                            <span class="progress-spinner"></span>
+                    <!-- Item information block -->
+                    <div class="titled-box app-info">
+                        <h2>${informationLabel}</h2>
+                        <div class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls detail-page information-list">
+                                <div class="lockup small detailed option information-item">
+                                    <div class="label">${developerLabel}</div>
+                                    <a href="${developer_link}">${developer_escaped}</a>
+                                </div>
+                                <div class="lockup small detailed option information-item">
+                                    <div class="label">${sizeLabel}</div>
+                                    ${size}
+                                </div>
+                                <div class="lockup small detailed option information-item">
+                                    <div class="label">${categoryLabel}</div>
+                                    <a href="${category_link}">${category}</a>
+                                </div>
+                                <div class="lockup small detailed option information-item">
+                                    <div class="label">${versionLabel}</div>
+                                    ${display_version}
+                                </div>
+                                <div class="lockup small detailed option information-item">
+                                    <div class="label">${statusLabel}</div>
+                                    <span class="${status}" id="${name_escaped}_status_text">
+                                        <span id="${name_escaped}_status_text_span">
+                                            ${status_text}
                                         </span>
-                                    </li>
-                                    <li class="warning">${restart_action_text}</li>
-                                </ul>
+                                        <a class="follow" href="munki://updates.html"></a>
+                                        <span class="progress-spinner"></span>
+                                    </span>
+                                </div>
+                                <div class="lockup small detailed option information-item">
+                                    <div class="label warning">${dueLabel}</div>
+                                    <span class="warning"${short_due_date}</span>
+                                    <span class="warning">${restart_action_text}</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- More in category sidebar list-->
-                        <div class="titled-box more-by ${hide_more_in_category}">
-                            <h2>
-                                <a href="${category_link}">${moreInCategoryLabel}</a>
-                            </h2>
-                            <div class="content">${more_in_category}</div>
+                    </div>
+
+                    <!-- More in category list -->
+                    <div class="titled-box more-by ${hide_more_in_category}">
+                        <div class="more-items-header">
+                            <div class="more-items-header-inner">
+                                <h2>${moreInCategoryLabel}</a></h2>
+                                <a href="${category_link}">${seeAllLocalizedString}</a>
+                            </div>
                         </div>
-                        <!-- More by developer sidebar list-->
-                        <div class="titled-box more-by ${hide_more_by_developer}">
-                            <h2>
-                                <a href="${developer_link}">${moreByDeveloperLabel}</a>
-                            </h2>
-                            <div class="content">${more_by_developer}</div>
+                        <div class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls detail-page">
+                                ${more_in_category}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- More by developer list -->
+                    <div class="titled-box more-by ${hide_more_by_developer}">
+                        <div class="more-items-header">
+                            <div class="more-items-header-inner">
+                                <h2>${moreByDeveloperLabel}</a></h2>
+                                <a href="${developer_link}">${seeAllLocalizedString}</a>
+                            </div>
+                        </div>
+                        <div class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls detail-page">
+                                ${more_by_developer}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <footer>
-        ${footer}
-    </footer>
 </body>
 </html>

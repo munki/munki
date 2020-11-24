@@ -334,6 +334,9 @@
 /* managedsoftwareupdate message */
 "Running Adobe Uninstall" = "Ajetaan Adobe Uninstall -ohjelmistoa";
 
+/* See All link text */
+"See All" = "Näytä kaikki";
+
 /* No Installed Software secondary text */
 "Select software to install." = "Valitse asennettavat ohjelmistot.";
 

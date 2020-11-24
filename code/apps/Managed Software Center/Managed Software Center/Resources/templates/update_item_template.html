@@ -1,0 +1,30 @@
+<div class="lockup small detailed update ${added_class}" id="${name_escaped}_update_item">
+    <div class="row1">
+        <a href="${detail_link}" class="artwork-link">
+            <div class="artwork">
+                <img width="64" height="64" alt="${display_name_escaped}" class="artwork" src="${icon}" />
+            </div>
+        </a>
+        <ul class="list items">
+            <li class="name" title="${display_name_escaped}"><a href="${detail_link}">${display_name_escaped}</a></li>
+            <li class="genre">${developer_escaped}</li>
+            <li class="version_and_size">${version_label} ${display_version_escaped_and_size}</li>
+            <li class="warning">${restart_action_text}</li>
+            <li class="warning">${note}</li>
+        </ul>
+        <div class="msc-button small ${hide_cancel_button}">
+            <button class="button-area uppercase"
+                    onClick="window.webkit.messageHandlers.updateOptionalInstallButtonClicked.postMessage('${name_quoted}');">
+                <div class="msc-button-inner ${status}" id="${name_escaped}_action_button_text">
+                    ${short_action_text}
+                </div>
+            </button>
+        </div>
+    </div>
+    <div class="row2">
+        <p class="description" data-text-truncate-lines="2">
+            ${description_without_images}
+        </p>
+        <a class="text-truncate-toggle hidden" href="#">${more_link_text}</a>
+    </div>
+</div>

@@ -60,11 +60,9 @@ function updateProgress(percent_done) {
     if (progress_bar != null) {
         progress_bar.parentElement.classList.remove("hidden");
         if (Number(percent_done) < 0) {
-            progress_bar.classList.add("indeterminate");
-            progress_bar.removeAttribute("style");
+            progress_bar.removeAttribute("value");
         } else {
-            progress_bar.classList.remove("indeterminate");
-            progress_bar.setAttribute("style", "width: " + percent_done.toString() + "%");
+            progress_bar.setAttribute("value", percent_done.toString());
         }
     }
 }
