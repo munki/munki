@@ -13,12 +13,16 @@ body.product.software .main {
     margin-top: 8px
 }
 body.product .main>.product-detail {
+    padding-top: 40px;
     margin-bottom: 23px;
     min-height: 196px;
     margin-right: 10px;
     display: -webkit-box;
     -webkit-box-orient: horizontal;
     -webkit-box-align: stretch
+}
+body.product .product-detail .warning {
+    font-size: 14px;
 }
 body.product .product-detail .lockup {
     display: inline-block;
@@ -39,11 +43,11 @@ body.product .product-detail .product-info {
     -webkit-box-flex: 1
 }
 body.product .product-detail .product-info .title h1 {
-    margin-bottom: 12px;
+    margin-bottom: 2px;
     font-family: -apple-system, "Helvetica Neue", Helvetica;
     font-size: 24px;
     line-height: 22px;
-    /*font-weight: bold;*/
+    font-weight: bold;
     color: var(--text-color-emphasized);
     /*text-shadow: rgba(255,255,255,1) 0 1px 0*/
 }
@@ -59,14 +63,21 @@ body.product .product-detail .product-info .product-review h4 {
     /*text-shadow: rgba(255,255,255,1) 0 1px 0*/
 }
 body.product .product-detail .product-info .product-review p,body.product .product-detail .product-info .product-review div,body.product .product-detail .product-info .product-review ul {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 14px;
+    line-height: 18px;
     color: var(--text-color-normal);
 }
 body.product .product-detail .product-info .product-review p a {
     color: var(--description-link-color);
 }
-body.product .sidebar .app-info .content {
+
+div.product-btn.box-flex {
+    margin-top: 24px;
+}
+div.product-btn.box-flex .msc-button {
+    float: right;
+}
+/*body.product .sidebar .app-info .content {
     font-size: 11px;
     color: var(--text-color-emphasized)
 }
@@ -117,10 +128,87 @@ body.product .sidebar .more-by div.lockup li {
 body.product .sidebar .more-by div.lockup li.name {
     margin-bottom: 1px;
     font-size: 11px;
-    /*font-weight: bold*/
 }
 body.product .sidebar .more-by div.lockup li.genre {
     color: var(--text-color-subdued);
     font-size: 10px
+}*/
+
+div.product-review a {
+    color: var(--install-btn-background);
+    font-size: 14px;
+    line-height: 24px;
+}
+
+div.app-info {
+    padding-bottom: 20px;
+}
+
+div.app-info .information-item {
+    font-size: 14px;
+    padding-bottom: 10px;
+    width: 50%;
+    position: relative;
+}
+div.app-info .information-item .label {
+    color: var(--text-color-subdued);
+}
+
+div.more-by {
+    background: var(--more-by-background);
+    margin-left: -40px;
+    padding-left: 40px;
+    margin-right: -40px;
+    padding-right: 40px;
+    margin-bottom: 0px;
+}
+
+div.more-items-header {
+    display: block;
+    height: 40px;
+}
+
+div.more-items-header-inner {
+    display: inline;
+}
+
+div.more-items-header-inner h2 {
+    float: left;
+}
+
+div.more-items-header-inner a {
+    float: right;
+    color: var(--install-btn-background);
+    font-size: 16px;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+
+div.more-by div.msc-button-inner {
+    background: white;
+}
+
+span.progress-spinner {
+    margin-right: 32px;
+}
+
+/* display a variable number of related items based on screen width */
+/* display 2 items if window is under 1000px wide*/
+@media only screen and (max-width: 999px) {
+    div.more-by div.lockup:nth-of-type(n+3) {
+        display: none;
+    }
+}
+/* display 2 items if window is 1000-1399px wide*/
+@media only screen and (min-width: 1000px) and (max-width: 1399px) {
+    div.more-by div.lockup:nth-of-type(n+4) {
+        display: none;
+    }
+}
+/* display 4 items if window is at least 1400px wide*/
+@media only screen and (min-width: 1400px) {
+    div.more-by div.lockup:nth-of-type(n+5) {
+        display: none;
+    }
 }
 

@@ -22,6 +22,7 @@ BOOTSTRAPPKG=NO
 CONFPKG=NO
 MDMSTYLE=NO
 ORGNAME=macOS
+ROSETTA2=NO
 
 # try to automagically find Munki source root
 TOOLSDIR=$(dirname "$0")
@@ -53,6 +54,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
                 suited for upgrade installs or install via Munki itself.
     -c plist    Build a configuration package using the preferences defined in a
                 plist file.
+    -R          Include a pkg to install Rosetta2 on ARM-based hardware.
     -s cert_cn  Sign distribution package with a Developer ID Installer
                 certificate from keychain. Provide the certificate's Common
                 Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
@@ -64,7 +66,7 @@ EOF
 }
 
 
-while getopts "i:r:o:n:c:s:S:pBmh" option
+while getopts "i:r:o:n:c:s:S:pBmhR" option
 do
     case $option in
         "i")
@@ -97,6 +99,9 @@ do
             ;;
         "m")
             MDMSTYLE=YES
+            ;;
+        "R") 
+            ROSETTA2=YES
             ;;
         "h" | *)
             usage
@@ -153,12 +158,17 @@ if [[ "$CONFPKG" == "YES" ]] ; then
     fi
 fi
 
-
-# Get the munki version
-MUNKIVERS=$(defaults read "$MUNKIROOT/code/client/munkilib/version" CFBundleShortVersionString)
-if [ "$?" != "0" ]; then
-    echo "$MUNKIROOT/code/client/munkilib/version is missing!" 1>&2
-    echo "Perhaps $MUNKIROOT does not contain the munki source?" 1>&2
+VERSIONFILE="$MUNKIROOT/code/client/munkilib/version"
+# Check to see if file exists
+if [ -f "$VERSIONFILE.plist" ]; then
+    # Get the munki version
+    MUNKIVERS=$(defaults read "$VERSIONFILE" CFBundleShortVersionString)
+    if [ "$?" != "0" ]; then
+        echo "${VERSIONFILE}.plist can not be read" 1>&2
+        exit 1
+    fi
+else
+    echo "${VERSIONFILE}.plist is missing" 1>&2
     exit 1
 fi
 
@@ -256,6 +266,7 @@ echo "  Bundle ID: $PKGID"
 echo "  Munki source root: $MUNKIROOT"
 echo "  Output directory: $OUTPUTDIR"
 echo "  Include bootstrap pkg: $BOOTSTRAPPKG"
+echo "  Include Rosetta2: $ROSETTA2"
 if [ "$CONFPKG" == "YES" ] ; then
     echo "  Include config pkg built with plist: $CONFFULLPATH"
 else
@@ -490,7 +501,7 @@ chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 # sign MSC app
 if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing Managed Software Center.app..."
-    /usr/bin/codesign -s "$APPSIGNINGCERT" --options runtime --verbose \
+    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
@@ -683,6 +694,22 @@ if [ "$CONFPKG" == "YES" ] ; then
     makeinfo config "$PKGTMP/info" norestart
 fi
 
+###############
+## Rosetta 2 ##
+###############
+if [ "$ROSETTA2" == "YES" ] ;  then
+
+    echo "Creating Rosetta2 package source..."
+
+    # Create directory structure.
+    ROSETTA2ROOT="$PKGTMP/munki_rosetta2"
+    mkdir -m 1775 "$ROSETTA2ROOT"
+    mkdir -p "$ROSETTA2ROOT"
+
+    # Create package info file.
+    makeinfo rosetta2 "$PKGTMP/info" norestart
+fi
+
 #############################
 ## Create metapackage root ##
 #############################
@@ -717,6 +744,8 @@ BOOTSTRAPTITLE="Munki bootstrap setup"
 BOOTSTRAPDESC="Enables bootstrap mode for the Munki tools."
 CONFTITLE="Munki tools configuration"
 CONFDESC="Sets initial preferences for Munki tools."
+ROSETTA2TITLE="Install Rosetta2"
+ROSETTA2DESC="Installs Rosetta2 for ARM-based hardware."
 
 LAUNCHDPOSTINSTALLACTION="onConclusion=\"RequireRestart\""
 if [ "$MDMSTYLE" == "YES" ] ;  then
@@ -745,18 +774,32 @@ if [ "$CONFPKG" == "YES" ]; then
     CONFREF="<pkg-ref id=\"$PKGID.config\" auth=\"Root\">${PKGPREFIX}munkitools_config.pkg</pkg-ref>"
 fi
 
+ROSETTA2OUTLINE=""
+ROSETTA2CHOICE=""
+ROSETTA2REF=""
+HOSTARCHITECTURES=""
+if [ "$ROSETTA2" == "YES" ]; then
+    ROSETTA2OUTLINE="<line choice=\"rosetta2\"/>"
+    ROSETTA2CHOICE="<choice id=\"rosetta2\" title=\"$ROSETTA2TITLE\" description=\"$ROSETTA2DESC\">
+        <pkg-ref id=\"$PKGID.rosetta2\"/>
+    </choice>"
+    ROSETTA2REF="<pkg-ref id=\"$PKGID.rosetta2\" auth=\"Root\">${PKGPREFIX}munkitools_rosetta2.pkg</pkg-ref>"
+    HOSTARCHITECTURES="hostArchitectures=\"x86_64,arm64\""
+fi
+
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000">
     <title>Munki - Software Management for $ORGNAME</title>
     <volume-check>
         <allowed-os-versions>
-            <os-version min="10.10"/>
+            <os-version min="10.11"/>
         </allowed-os-versions>
     </volume-check>
-    <options customize="allow" allow-external-scripts="no"/>
+    <options $HOSTARCHITECTURES customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
+        $ROSETTA2OUTLINE
         <line choice="core"/>
         <line choice="admin"/>
         <line choice="app"/>
@@ -767,6 +810,7 @@ cat > "$DISTFILE" <<EOF
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
     </choices-outline>
+    $ROSETTA2CHOICE
     <choice id="core" title="$CORETITLE" description="$COREDESC">
         <pkg-ref id="$PKGID.core"/>
     </choice>
@@ -790,6 +834,7 @@ cat > "$DISTFILE" <<EOF
     </choice>
     $BOOTSTRAPCHOICE
     $CONFCHOICE
+    $ROSETTA2REF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
@@ -839,12 +884,19 @@ if [ "$CONFPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$CONFROOT"
 fi
 
+if [ "$ROSETTA2" == "YES" ] ; then
+    sudo chown -hR root:admin "$ROSETTA2ROOT"
+fi
+
 ALLPKGS="core admin app launchd app_usage python no_python"
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
 fi
 if [ "$CONFPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} config"
+fi
+if [ "$ROSETTA2" == "YES" ] ; then
+    ALLPKGS="${ALLPKGS} rosetta2"
 fi
 
 ######################
@@ -877,6 +929,10 @@ for pkg in $ALLPKGS ; do
             ;;
         "config")
             ver="1.0"
+            ;;
+        "rosetta2")
+            ver="1.0"
+            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_rosetta2"
             ;;
         *)
             ver="$VERSION"

@@ -20,7 +20,7 @@ function showOrHideMoreLinks() {
     var elements = document.getElementsByClassName('description');
     for (var i = 0; i < elements.length; i++) {
         var truncated = (elements[i].getElementHeight() < elements[i].scrollHeight);
-        var more_link = elements[i].getElementsByClassName('text-truncate-toggle')[0];
+        var more_link = elements[i].parentElement.getElementsByClassName('text-truncate-toggle')[0];
         if (truncated && more_link.classList.contains('hidden')) {
             more_link.classList.remove('hidden');
         }
@@ -33,12 +33,13 @@ function showOrHideMoreLinks() {
 function fadeOutAndRemove(item_name) {
     /* add a class to trigger a CSS transition fade-out, then
        register a callback for when the transition completes so we can remove the item */
-    update_table_row = document.getElementById(item_name + '_update_table_row');
-    update_table_row.classList.add('deleted');
-    update_table_row.addEventListener('webkitAnimationEnd',
+    update_item = document.getElementById(item_name + '_update_item');
+    update_item.classList.add('deleted');
+    update_item.addEventListener('webkitAnimationEnd',
         function() {
             window.webkit.messageHandlers.updateOptionalInstallButtonFinishAction.postMessage(item_name)
-        });
+        }
+    );
 }
 
 function registerFadeInCleanup() {
@@ -50,26 +51,49 @@ function registerFadeInCleanup() {
                 /* our newly-added table row */
                 e.target.classList.remove('added');
             }
-        });
+        }
+    );
 }
 
-function registerMoreLinkClick() {
-    /* add an event listener for the More links */
+function registerWindowClicks() {
+    /* add an event listener for the More links and modal clicks */
     window.addEventListener('click',
         function(e) {
             if (e.target.classList.contains('text-truncate-toggle')) {
-                description = e.target.parentNode;
-                description.style.webkitLineClamp = "100%"
-                e.target.classList.add('hidden');
+                // clicked a More link
+                item_description = e.target.parentNode.getElementsByClassName('description')[0];
+                item_version_and_size = e.target.parentNode.parentNode.getElementsByClassName('version_and_size')[0];
+                modal_descritption = document.getElementById("fullDescription")
+                modal_version_and_size = document.getElementById("versionAndSize")
+                modal_descritption.innerHTML = item_description.innerHTML
+                modal_version_and_size.innerHTML = item_version_and_size.innerHTML
+                modal = document.getElementById("moreInfoModal");
+                modal.style.display = "block";
+                setTimeout(function(){modal.style.opacity = 1;}, 10);
                 e.preventDefault();
             }
-        });
+            if (e.target.classList.contains('close')) {
+                // clicked the modal close button
+                modal = document.getElementById("moreInfoModal");
+                modal.style.opacity = 0;
+                setTimeout(function(){modal.style.display = "none";}, 400);
+                e.preventDefault();
+            }
+            if (e.target.classList.contains('modal')) {
+                // clicked outside the modal content
+                modal = document.getElementById("moreInfoModal");
+                modal.style.opacity = 0;
+                setTimeout(function(){modal.style.display = "none";}, 500);
+                e.preventDefault();
+            }
+        }
+    );
 }
 
 window.onload=function() {
     showOrHideMoreLinks();
     registerFadeInCleanup();
-    registerMoreLinkClick();
+    registerWindowClicks();
 }
 
 window.onresize=function() {
