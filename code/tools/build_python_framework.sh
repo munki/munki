@@ -1,10 +1,13 @@
 #!/bin/bash
 #
-# Build script for Python 3 framework for Munki
+# Build script for universal Python 3 framework for Munki
 
 TOOLSDIR=$(dirname "$0")
 REQUIREMENTS="${TOOLSDIR}/py3_requirements.txt"
-PYTHON_VERSION=3.8.5
+PYTHON_VERSION=3.9.1
+PYTHON_PRERELEASE_VERSION=rc1
+PYTHON_BASEURL="https://www.python.org/ftp/python/%s/python-%s${PYTHON_PRERELEASE_VERSION}-macosx%s.pkg"
+MACOS_VERSION=11.0
 CODEDIR=$(dirname "${TOOLSDIR}")
 MUNKIROOT=$(dirname "${CODEDIR}")
 
@@ -46,7 +49,9 @@ fi
 
 # build the framework
 "${PYTHONTOOLDIR}/make_relocatable_python_framework.py" \
+    --baseurl "${PYTHON_BASEURL}" \
     --python-version "${PYTHON_VERSION}" \
+    --os-version "${MACOS_VERSION}" \
     --pip-requirements "${REQUIREMENTS}" \
     --destination "${MUNKIROOT}"
 
