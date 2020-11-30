@@ -55,3 +55,13 @@ fi
     --pip-requirements "${REQUIREMENTS}" \
     --destination "${MUNKIROOT}"
 
+# ad-hoc re-sign the framework so it will run on Apple Silicon
+echo
+echo "Adding ad-hoc code signing so the framework will run on Apple Silicon..."
+codesign -s - --deep --force --preserve-metadata=identifier,entitlements,flags,runtime "${MUNKIROOT}/Python.framework/Versions/3.9/Resources/Python.app"
+codesign -s - --force --preserve-metadata=identifier,entitlements,flags,runtime "${MUNKIROOT}/Python.framework/Versions/Current/Python"
+find "${MUNKIROOT}/Python.framework/Versions/Current/bin/" -type f -perm -u=x -exec codesign -s - --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+find "${MUNKIROOT}/Python.framework/Versions/Current/lib/" -type f -perm -u=x -exec codesign -s - --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+find "${MUNKIROOT}/Python.framework/Versions/Current/lib/" -type f -name "*dylib" -exec codesign -s - --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+
+
