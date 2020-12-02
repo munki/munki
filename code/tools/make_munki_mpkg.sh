@@ -796,7 +796,7 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.11"/>
         </allowed-os-versions>
     </volume-check>
-    <options $HOSTARCHITECTURES customize="allow" allow-external-scripts="no"/>
+    <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
         $ROSETTA2OUTLINE
