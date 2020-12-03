@@ -656,7 +656,16 @@ def getMachineFacts():
     # pylint: disable=C0103
     machine = dict()
     machine['hostname'] = unicode_or_str(os.uname()[1])
-    machine['arch'] = os.uname()[4]
+    arch = os.uname()[4]
+    if arch == 'x86_64':
+        # we might be natively Intel64, or running under Rosetta.
+        # os.uname()[4] returns the current execution arch, which under Rosetta
+        # will be x86_64. Since what we want here is the _native_ arch, we're
+        # going to use a hack for now to see if we're natively arm64
+        uname_version = os.uname()[3]
+        if 'ARM64' in uname_version:
+            arch = 'arm64'
+    machine['arch'] = arch
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     machine['os_build_number'] = get_os_build()
     hardware_info = get_hardware_info()
