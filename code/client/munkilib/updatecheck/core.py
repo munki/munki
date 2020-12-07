@@ -187,6 +187,15 @@ def check(client_id='', localmanifestpath=None):
                         installinfo
                     )
 
+                localonlyupdates = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'managed_updates') or []
+                for item in localonlyupdates:
+                    dummy_result = analyze.process_managed_update(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
                 localonlyoptionals = manifestutils.get_manifest_value_for_key(
                     localonlymanifest, 'optional_installs') or []
                 for item in localonlyoptionals:
