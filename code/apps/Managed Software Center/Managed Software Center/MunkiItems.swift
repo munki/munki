@@ -1267,15 +1267,14 @@ func updatesRequireRestart() -> Bool {
 
 func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
     // Return true if any item in the apple update list requires a restart
-    var osMinorVers = 9
     if #available(OSX 10.10, *) {
-        osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
-    }
-    if osMinorVers >= 14 {
-        let requiresRestart = getAppleUpdates().filter(
-                { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
-            ).count > 0
-        return requiresRestart
+        let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 14, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers) {
+            let requiresRestart = getAppleUpdates().filter(
+                    { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+                ).count > 0
+            return requiresRestart
+        }
     }
     return false
 }
