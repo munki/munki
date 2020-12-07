@@ -20,7 +20,7 @@ extension Array {
 func interfaceTheme() -> String {
     // Returns "dark" if using Dark Mode, otherwise "light"
     if #available(OSX 10.10, *) {
-        let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 13, patchVersion: 0)
+        let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 14, patchVersion: 0)
         if ProcessInfo().isOperatingSystemAtLeast(os_vers) || UserDefaults.standard.bool(forKey: "AllowDarkModeOnUnsupportedOSes") {
             if let interfaceType = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") {
                 if interfaceType == "Dark" {
