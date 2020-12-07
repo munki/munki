@@ -70,8 +70,8 @@ func checkForElCapPolicyBanner() -> Bool {
     // Returns True if we are running El Cap or later and there is
     // a loginwindow PolicyBanner in place
     if #available(OSX 10.10, *) {
-        let osMinorVers = ProcessInfo.processInfo.operatingSystemVersion.minorVersion
-        if osMinorVers > 10 {
+        let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 10, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers) {
             let testfiles = ["/Library/Security/PolicyBanner.txt",
                              "/Library/Security/PolicyBanner.rtf",
                              "/Library/Security/PolicyBanner.rtfd"]
