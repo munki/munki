@@ -905,16 +905,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func clearCache() {
-        var osMinorVers = 9
         if #available(OSX 10.10, *) {
-            osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
-        }
-        if osMinorVers >= 11 {
-            if #available(OSX 10.11, *) {
+            let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 11, patchVersion: 0)
+            if ProcessInfo().isOperatingSystemAtLeast(os_vers) {
                 let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
-
-            let dateFrom = Date.init(timeIntervalSince1970: 0)
-            WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+                let dateFrom = Date.init(timeIntervalSince1970: 0)
+                WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
             }
         } else {
             // Fallback on earlier versions
