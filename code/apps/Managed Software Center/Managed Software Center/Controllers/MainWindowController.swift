@@ -911,11 +911,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
                 let dateFrom = Date.init(timeIntervalSince1970: 0)
                 WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+                return
             }
-        } else {
-            // Fallback on earlier versions
-            URLCache.shared.removeAllCachedResponses()
         }
+        // Fallback on earlier versions
+        URLCache.shared.removeAllCachedResponses()
     }
 
     // WKNavigationDelegateMethods

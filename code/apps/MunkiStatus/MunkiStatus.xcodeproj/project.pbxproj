@@ -63,7 +63,6 @@
 		C04F825B20BB158A00F9C57D /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C04F825C20BB15F500F9C57D /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		C04F825E20BB1A8100F9C57D /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
-		C04F825F20BB213700F9C57D /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Base; path = Base.lproj/Info.plist; sourceTree = "<group>"; };
 		C04F826F20BB214F00F9C57D /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-AU"; path = "en-AU.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C04F827020BB215200F9C57D /* en-CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-CA"; path = "en-CA.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		C04F827120BB215500F9C57D /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -71,6 +70,7 @@
 		C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C0544D4D20AF0EDA00DC86F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C0544D5020AF0EDA00DC86F6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C077FCFC257EF513001AA249 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0787F7A2315C6210054D130 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiStatusViewController.swift; sourceTree = "<group>"; };
 		C0A7937F20B0EA7800F56DD5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
@@ -114,7 +114,7 @@
 				C0A7937F20B0EA7800F56DD5 /* Utils.swift */,
 				C0544D4D20AF0EDA00DC86F6 /* Assets.xcassets */,
 				C0544D4F20AF0EDA00DC86F6 /* MainMenu.xib */,
-				C04F826020BB213700F9C57D /* Info.plist */,
+				C077FCFC257EF513001AA249 /* Info.plist */,
 				9B28B78A21E3B88F002C58D2 /* InfoPlist.strings */,
 				C04F825020BB157800F9C57D /* Localizable.strings */,
 			);
@@ -149,7 +149,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1220;
 				ORGANIZATIONNAME = "The Munki Project";
 				TargetAttributes = {
 					C0544D4720AF0EDA00DC86F6 = {
@@ -223,7 +223,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a pseudo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi";
+			shellScript = "# add this number to Git revision index to get \"build\" number consistent with old SVN repo\nMAGICNUMBER=482\n\nBASEVERNUM=`/usr/libexec/PlistBuddy -c \"Print :CFBundleShortVersionString\" \"${INFOPLIST_FILE}\"`\n\nGIT=`which git`\n\nif [ \"$GIT\" != \"\" ] ; then\n# generate a pseudo-svn revision number from the list of Git revisions\nGITREV=`$GIT log -n1 --format=\"%H\" -- ./`\nGITREVINDEX=`$GIT rev-list --count $GITREV`\nREV=$(($GITREVINDEX + $MAGICNUMBER))\n\n/usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $BASEVERNUM.$REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $REV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n/usr/libexec/PlistBuddy -c \"Set :GitRevision string $GITREV\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -288,14 +288,6 @@
 			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
-		C04F826020BB213700F9C57D /* Info.plist */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C04F825F20BB213700F9C57D /* Base */,
-			);
-			name = Info.plist;
-			sourceTree = "<group>";
-		};
 		C0544D4F20AF0EDA00DC86F6 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -347,6 +339,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -407,6 +400,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -442,7 +436,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = MunkiStatus/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/MunkiStatus/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MunkiStatus;
@@ -461,7 +455,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = MunkiStatus/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/MunkiStatus/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MunkiStatus;
