@@ -5,8 +5,8 @@
 TOOLSDIR=$(dirname "$0")
 REQUIREMENTS="${TOOLSDIR}/py3_requirements.txt"
 PYTHON_VERSION=3.9.1
-PYTHON_PRERELEASE_VERSION=rc1
-PYTHON_BASEURL="https://www.python.org/ftp/python/%s/python-%s${PYTHON_PRERELEASE_VERSION}-macosx%s.pkg"
+PYTHON_PRERELEASE_VERSION=
+PYTHON_BASEURL="https://www.python.org/ftp/python/%s/python-%s${PYTHON_PRERELEASE_VERSION}-macos%s.pkg"
 MACOS_VERSION=11.0
 CODEDIR=$(dirname "${TOOLSDIR}")
 MUNKIROOT=$(dirname "${CODEDIR}")
