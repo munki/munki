@@ -52,16 +52,34 @@ fi
     --baseurl "${PYTHON_BASEURL}" \
     --python-version "${PYTHON_VERSION}" \
     --os-version "${MACOS_VERSION}" \
+    --upgrade-pip \
     --pip-requirements "${REQUIREMENTS}" \
     --destination "${MUNKIROOT}"
 
-# ad-hoc re-sign the framework so it will run on Apple Silicon
-echo
-echo "Adding ad-hoc code signing so the framework will run on Apple Silicon..."
-codesign -s - --deep --force --preserve-metadata=identifier,entitlements,flags,runtime "${MUNKIROOT}/Python.framework/Versions/3.9/Resources/Python.app"
-codesign -s - --force --preserve-metadata=identifier,entitlements,flags,runtime "${MUNKIROOT}/Python.framework/Versions/Current/Python"
-find "${MUNKIROOT}/Python.framework/Versions/Current/bin/" -type f -perm -u=x -exec codesign -s - --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
-find "${MUNKIROOT}/Python.framework/Versions/Current/lib/" -type f -perm -u=x -exec codesign -s - --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
-find "${MUNKIROOT}/Python.framework/Versions/Current/lib/" -type f -name "*dylib" -exec codesign -s - --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+# verify we actually have a universal build
+echo "Verifying Universal2 builds..."
+STATUS=0
 
+# ensure all .so and .dylibs are universal
+LIB_COUNT=$(find "${MUNKIROOT}/Python.framework" -name "*.so" -or -name "*.dylib" | wc -l)
+UNIVERSAL_COUNT=$(find "${MUNKIROOT}/Python.framework" -name "*.so" -or -name "*.dylib" | xargs file | grep "2 architectures" | wc -l)
+if [ "$LIB_COUNT" != "$UNIVERSAL_COUNT" ] ; then 
+    echo "$LIB_COUNT libraries (*.so and *.dylib) found in the framework; only $UNIVERSAL_COUNT are universal!"
+    STATUS=1
+fi
+
+# test some more files in the framework
+MORE_FILES="Python.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python
+Python.framework/Versions/Current/Python
+Python.framework/Versions/Current/bin/python3.9"
+
+for TESTFILE in $MORE_FILES ; do
+    ARCH_TEST=$(file "${MUNKIROOT}/$TESTFILE" | grep "2 architectures")
+    if [ "$ARCH_TEST" == "" ]  ; then
+        echo "${MUNKIROOT}/$TESTFILE is not universal!"
+        STATUS=1
+    fi
+done
+
+exit $STATUS
 
