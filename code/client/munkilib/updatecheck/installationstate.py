@@ -84,8 +84,12 @@ def installed_state(item_pl):
     if item_pl.get('installer_type') == 'startosinstall':
         current_os_vers = osutils.getOsVersion()
         item_os_vers = item_pl.get('version')
-        # need just major.minor part of the version -- 10.12 and not 10.12.4
-        item_os_vers = '.'.join(item_os_vers.split('.')[0:2])
+        if int(item_os_vers.split('.')[0]) > 10:
+            # if we're running Big Sur+, we just want the major (11)
+            item_os_vers = item_os_vers.split('.')[0]
+        else:
+            # need just major.minor part of the version -- 10.12 and not 10.12.4
+            item_os_vers = '.'.join(item_os_vers.split('.')[0:2])
         comparison = compare.compare_versions(current_os_vers, item_os_vers)
         if comparison == compare.VERSION_IS_LOWER:
             return 0
