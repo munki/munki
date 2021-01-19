@@ -19,12 +19,12 @@ if [ "$3" == "/" ]; then
             exit 0
         fi
         CONSOLE_UID=$(id -u "$CONSOLEUSER")
-        os_major_version=$(sw_vers -productVersion | cut -d. -f2)
+        os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
         for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
             pid=$(echo $pid_uid | cut -d, -f1)
             uid=$(echo $pid_uid | cut -d, -f2)
             if [ "$uid" == "$CONSOLE_UID" ] ; then
-                if [[ $os_major_version -lt 10 ]] ; then
+                if [[ $os_build_version -lt 14 ]] ; then
                     launchctl bsexec "$pid" chroot -u "$uid" / $OPENCMD "$MSC_APP"
                     exit 0
                 else

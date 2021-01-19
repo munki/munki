@@ -31,11 +31,11 @@ if [ "$3" == "/" ]; then
     fi
 
     # Load launch agents for all currently logged in users.
-    os_major_version=$(sw_vers -productVersion | cut -d. -f2)
+    os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
     for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
         pid=$(echo $pid_uid | cut -d, -f1)
         uid=$(echo $pid_uid | cut -d, -f2)
-        if [[ $os_major_version -lt 10 ]] ; then
+        if [[ $os_build_version -lt 14 ]] ; then
             launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
             launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
         else
