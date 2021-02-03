@@ -171,6 +171,8 @@ class NotificationHandler(NSObject):
                         app_info_plist.get('CFBundleVersion', '0'))
                 else:
                     app_version = '0'
+            else:
+                app_version = '0'
 
         return {'bundle_id': bundle_id,
                 'path': app_path,
