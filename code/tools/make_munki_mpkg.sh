@@ -621,31 +621,6 @@ fi
 # Create package info file.
 makeinfo python "$PKGTMP/info" norestart
 
-#######################
-## no python choice  ##
-#######################
-
-echo "Creating no-python package source..."
-
-# Create directory structure.
-NOPYTHONROOT="$PKGTMP/munki_no_python"
-mkdir -m 1775 "$NOPYTHONROOT"
-mkdir -p "$NOPYTHONROOT/usr/local/munki"
-chmod -R 755 "$NOPYTHONROOT/usr"
-# Create symlink
-ln -s /usr/bin/python "$NOPYTHONROOT/usr/local/munki/munki-python"
-# Set permissions.
-chmod -R go-w "$NOPYTHONROOT/usr/local/munki"
-chmod +x "$NOPYTHONROOT/usr/local/munki"
-
-# copy in no_python cleanup scripts
-if [ -d "$MUNKIROOT/code/tools/pkgresources/no_python_cleanup_scripts/" ] ; then
-    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/tools/pkgresources/no_python_cleanup_scripts/" "$NOPYTHONROOT/usr/local/munki/cleanup/"
-fi
-
-# Create package info file.
-makeinfo no_python "$PKGTMP/info" norestart
-
 
 ###############
 ## bootstrap ##
@@ -738,8 +713,6 @@ APPUSAGETITLE="Munki app usage monitoring tool"
 APPUSAGEDESC="Munki app usage monitoring tool and launchdaemon. Optional install; if installed Munki can use data collected by this tool to automatically remove unused software."
 PYTHONTITLE="Munki embedded Python"
 PYTHONDESC="Embedded Python 3 framework for Munki."
-NOPYTHONTITLE="System Python link"
-NOPYTHONDESC="Creates symlink to system Python at /usr/local/munki/munki-python. Available for install if you choose not to install Munki's embedded Python."
 BOOTSTRAPTITLE="Munki bootstrap setup"
 BOOTSTRAPDESC="Enables bootstrap mode for the Munki tools."
 CONFTITLE="Munki tools configuration"
@@ -806,7 +779,6 @@ cat > "$DISTFILE" <<EOF
         <line choice="launchd"/>
         <line choice="app_usage"/>
         <line choice="python"/>
-        <line choice="no_python"/>
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
     </choices-outline>
@@ -829,9 +801,6 @@ cat > "$DISTFILE" <<EOF
     <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
         <pkg-ref id="$PKGID.python"/>
     </choice>
-    <choice id="no_python" title="$NOPYTHONTITLE" description="$NOPYTHONDESC" selected='choices["python"].selected == false' enabled='choices["python"].selected == false'>
-        <pkg-ref id="$PKGID.no_python"/>
-    </choice>
     $BOOTSTRAPCHOICE
     $CONFCHOICE
     $ROSETTA2REF
@@ -841,7 +810,6 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.launchd" auth="Root" $LAUNCHDPOSTINSTALLACTION>${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.no_python" auth="Root">${PKGPREFIX}munkitools_no_python.pkg</pkg-ref>
     $BOOTSTRAPREF
     $CONFREF
     <product id="$PKGID" version="$VERSION" />
@@ -874,7 +842,6 @@ sudo chown -hR root:wheel "$APPUSAGEROOT/Library/LaunchAgents"
 sudo chown -hR root:wheel "$APPUSAGEROOT/usr"
 
 sudo chown -hR root:wheel "$PYTHONROOT/usr"
-sudo chown -hR root:wheel "$NOPYTHONROOT/usr"
 
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$BOOTSTRAPROOT"
@@ -888,7 +855,7 @@ if [ "$ROSETTA2" == "YES" ] ; then
     sudo chown -hR root:admin "$ROSETTA2ROOT"
 fi
 
-ALLPKGS="core admin app launchd app_usage python no_python"
+ALLPKGS="core admin app launchd app_usage python"
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
 fi
