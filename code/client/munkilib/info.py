@@ -33,12 +33,13 @@ import subprocess
 import sys
 
 # Apple's libs
+import objc
 import LaunchServices
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSMetadataQuery, NSPredicate, NSRunLoop
-from Foundation import NSDate, NSTimeZone
+from Foundation import NSBundle, NSDate, NSTimeZone
 # pylint: enable=E0611
 
 # our libs
@@ -605,6 +606,34 @@ def get_ip_addresses(kind):
     return ip_addresses
 
 
+def get_serial_number():
+    """Returns the serial number of this Mac _without_ calling system_profiler."""
+    # Borrowed with love from
+    # https://github.com/chilcote/unearth/blob/master/artifacts/serial_number.py
+    # thanks, Joe!
+    IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
+
+    functions = [
+        ("IOServiceGetMatchingService", b"II@"),
+        ("IOServiceMatching", b"@*"),
+        ("IORegistryEntryCreateCFProperty", b"@I@@I"),
+    ]
+    objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
+
+    kIOMasterPortDefault = 0
+    kIOPlatformSerialNumberKey = "IOPlatformSerialNumber"
+    kCFAllocatorDefault = None
+
+    platformExpert = IOServiceGetMatchingService(
+        kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice")
+    )
+    serial = IORegistryEntryCreateCFProperty(
+        platformExpert, kIOPlatformSerialNumberKey, kCFAllocatorDefault, 0
+    )
+
+    return serial
+
+
 def has_intel64support():
     """Does this machine support 64-bit Intel instruction set?"""
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -673,7 +702,7 @@ def getMachineFacts():
     machine['munki_version'] = get_version()
     machine['ipv4_address'] = get_ip_addresses('IPv4')
     machine['ipv6_address'] = get_ip_addresses('IPv6')
-    machine['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
+    machine['serial_number'] = get_serial_number() or 'UNKNOWN'
     ibridge_info = get_ibridge_info()
     machine['ibridge_model_name'] = ibridge_info.get(
         'ibridge_model_name', 'NO IBRIDGE CHIP')
