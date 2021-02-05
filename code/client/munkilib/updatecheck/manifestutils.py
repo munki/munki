@@ -192,7 +192,7 @@ def get_primary_manifest(alternate_id=''):
 
         if not manifest:
             # try the machine serial number
-            clientidentifier = info.getMachineFacts()['serial_number']
+            clientidentifier = info.get_serial_number() or 'UNKNOWN'
             if clientidentifier != 'UNKNOWN':
                 display.display_detail(
                     'Request failed. Trying %s...', clientidentifier)
