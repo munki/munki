@@ -634,6 +634,22 @@ def get_serial_number():
     return serial
 
 
+def hardware_model():
+    """Gets the hardware model without calling system_profiler"""
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+
+    size = ctypes.c_size_t()
+    buf = ctypes.c_int()
+    size.value = ctypes.sizeof(buf)
+
+    libc.sysctlbyname(
+        "hw.model", None, ctypes.byref(size), None, 0)
+    buf = ctypes.create_string_buffer(size.value)
+    libc.sysctlbyname(
+        "hw.model", ctypes.byref(buf), ctypes.byref(size), None, 0)
+    return buf.value.decode("utf-8")
+
+
 def has_intel64support():
     """Does this machine support 64-bit Intel instruction set?"""
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -697,8 +713,7 @@ def getMachineFacts():
     machine['arch'] = arch
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     machine['os_build_number'] = get_os_build()
-    hardware_info = get_hardware_info()
-    machine['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
+    machine['machine_model'] = hardware_model() or 'UNKNOWN'
     machine['munki_version'] = get_version()
     machine['ipv4_address'] = get_ip_addresses('IPv4')
     machine['ipv6_address'] = get_ip_addresses('IPv6')
