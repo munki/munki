@@ -625,7 +625,7 @@ def get_serial_number():
     kCFAllocatorDefault = None
 
     platformExpert = IOServiceGetMatchingService(
-        kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice")
+        kIOMasterPortDefault, IOServiceMatching(b"IOPlatformExpertDevice")
     )
     serial = IORegistryEntryCreateCFProperty(
         platformExpert, kIOPlatformSerialNumberKey, kCFAllocatorDefault, 0
@@ -635,7 +635,6 @@ def get_serial_number():
 
 
 def hardware_model():
-    """Gets the hardware model without calling system_profiler"""
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
 
     size = ctypes.c_size_t()
@@ -643,10 +642,10 @@ def hardware_model():
     size.value = ctypes.sizeof(buf)
 
     libc.sysctlbyname(
-        "hw.model", None, ctypes.byref(size), None, 0)
+        b"hw.model", None, ctypes.byref(size), None, 0)
     buf = ctypes.create_string_buffer(size.value)
     libc.sysctlbyname(
-        "hw.model", ctypes.byref(buf), ctypes.byref(size), None, 0)
+        b"hw.model", ctypes.byref(buf), ctypes.byref(size), None, 0)
     return buf.value.decode("utf-8")
 
 
@@ -659,7 +658,7 @@ def has_intel64support():
     size.value = ctypes.sizeof(buf)
 
     libc.sysctlbyname(
-        "hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
+        b"hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
 
     return buf.value == 1
 
