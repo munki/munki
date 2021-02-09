@@ -22,6 +22,8 @@ Preferences functions and classes used by the munki tools.
 """
 from __future__ import absolute_import, print_function
 
+import os
+
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
@@ -90,6 +92,11 @@ DEFAULT_PREFS = {
     'UseClientCertificateCNAsClientIdentifier': False,
     'UseNotificationCenterDays': 3,
 }
+
+FORCE_FALSE_ON_APPLE_SILICON = (
+    'AppleSoftwareUpdatesOnly',
+    'InstallAppleSoftwareUpdates',
+)
 
 
 class Preferences(object):
@@ -178,6 +185,20 @@ class SecureManagedInstallsPreferences(Preferences):
         Preferences.__init__(self, 'ManagedInstalls', kCFPreferencesCurrentUser)
 
 
+def is_apple_silicon():
+    """Returns True if we're running on Apple Silicon"""
+    arch = os.uname()[4]
+    if arch == 'x86_64':
+        # we might be natively Intel64, or running under Rosetta.
+        # os.uname()[4] returns the current execution arch, which under Rosetta
+        # will be x86_64. Since what we want here is the _native_ arch, we're
+        # going to use a hack for now to see if we're natively arm64
+        uname_version = os.uname()[3]
+        if 'ARM64' in uname_version:
+            arch = 'arm64'
+    return arch == 'arm64'
+
+
 def reload_prefs():
     """Uses CFPreferencesAppSynchronize(BUNDLE_ID)
     to make sure we have the latest prefs. Call this
@@ -222,6 +243,8 @@ def pref(pref_name):
     if isinstance(pref_value, NSDate):
         # convert NSDate/CFDates to strings
         pref_value = str(pref_value)
+    if is_apple_silicon() and pref_name in FORCE_FALSE_ON_APPLE_SILICON:
+        pref_value = False
     return pref_value
 
 
@@ -283,8 +306,12 @@ def print_config():
         if pref_name == 'LastNotifiedDate':
             # skip it
             continue
-        value = pref(pref_name)
-        where = get_config_level(BUNDLE_ID, pref_name, value)
+        if pref_name in FORCE_FALSE_ON_APPLE_SILICON:
+            value = false
+            where = "Forced as False on Apple Silicon"
+        else:
+            value = pref(pref_name)
+            where = get_config_level(BUNDLE_ID, pref_name, value)
         repr_value = value
         if is_a_string(value):
             repr_value = repr(value)
