@@ -45,6 +45,22 @@ func restartNow() {
     let _ = osascript("tell application \"System Events\" to restart")
 }
 
+func uname_version() -> String {
+    var system = utsname()
+    uname(&system)
+    let version = withUnsafePointer(to: &system.version.0) { ptr in
+        return String(cString: ptr)
+    }
+    return version
+}
+
+func isAppleSilicon() -> Bool {
+    // Lame but same logic as the Munki Python code,
+    // so at least consistent!
+    let version_str = uname_version()
+    return version_str.contains("ARM64")
+}
+
 func reloadPrefs() {
     /* Uses CFPreferencesAppSynchronize(BUNDLE_ID)
      to make sure we have the latest prefs. Call this
@@ -100,6 +116,16 @@ func pref(_ prefName: String) -> Any? {
         "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS,
         "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     ]
+    
+    let forceFalseOnAppleSilicon = [
+        "AppleSoftwareUpdatesOnly",
+        "InstallAppleSoftwareUpdates"
+    ]
+    
+    if isAppleSilicon() && forceFalseOnAppleSilicon.contains(prefName) {
+        return false
+    }
+    
     var value: Any?
     value = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
     if value == nil {
