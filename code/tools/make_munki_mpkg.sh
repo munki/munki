@@ -58,7 +58,7 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -s cert_cn  Sign distribution package with a Developer ID Installer
                 certificate from keychain. Provide the certificate's Common
                 Name. Ex: "Developer ID Installer: Munki (U8PN57A5N2)"
-    -S cert_cn  Sign apps with a Developer ID Application certificated from
+    -S cert_cn  Sign apps with a Developer ID Application certificate from
                 keychain. Provide the certificate's Common Name.
                 Ex: "Developer ID Application: Munki (U8PN57A5N2)"
 
