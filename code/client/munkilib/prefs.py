@@ -307,7 +307,7 @@ def print_config():
             # skip it
             continue
         if pref_name in FORCE_FALSE_ON_APPLE_SILICON:
-            value = false
+            value = False
             where = "Forced as False on Apple Silicon"
         else:
             value = pref(pref_name)
