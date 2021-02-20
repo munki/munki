@@ -3,7 +3,7 @@
 //  MunkiStatus
 //
 //  Created by Greg Neagle on 5/19/18.
-//  Copyright © 2018-2020 The Munki Project. All rights reserved.
+//  Copyright © 2018-2021 The Munki Project. All rights reserved.
 //
 
 import Foundation
