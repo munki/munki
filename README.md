@@ -19,7 +19,7 @@ Munki is currently in use at organizations all over the world, managing software
 
 Get started with Munki here: [Getting Started with Munki](https://github.com/munki/munki/wiki/)
 
-Check out the [Wiki](https://github.com/munki/munki/wiki) for some notes and documentation, and browse and/or check out the source. See the [releases page](https://github.com/munki/munki/releases) for pre-built installer packages of supported releases, or [munkibuilds.org](https://munkibuilds.org) for packages built from the current Git revision, which may contain development, testing, or work-in-progress code.
+Check out the [Wiki](https://github.com/munki/munki/wiki) for some notes and documentation, and browse and/or check out the source. See the [releases page](https://github.com/munki/munki/releases) for pre-built installer packages of supported releases.
 
 Some video learning resources are [here](https://github.com/munki/munki/wiki/More-Links-And-Tools#video-resources).
 
