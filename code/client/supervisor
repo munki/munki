@@ -53,7 +53,7 @@ KILL_WAIT_SECS = 1
 
 
 class Supervisor(object):
-    """Class to handle our supervisiory functions"""
+    """Class to handle our supervisory functions"""
     def __init__(self, delayrandom_abort=False):
         """Init.
 
