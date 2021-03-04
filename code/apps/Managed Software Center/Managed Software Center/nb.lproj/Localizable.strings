@@ -35,7 +35,7 @@
 "All items" = "Alle objekter";
 
 /* Forced Logout warning detail */
-"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende oppdateringer vil bli installeret. Arbeid som ikke er lagret vil gå tapt.\nDu kan unngå den tvungne utloggingen, hvis du selv velger å logge ut nå.";
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende oppdateringer vil bli installert. Arbeid som ikke er lagret vil gå tapt.\nDu kan unngå den tvungne utloggingen, hvis du selv velger å logge ut nå.";
 
 /* Allow button text */
 "Allow" = "Tillat";
@@ -62,10 +62,10 @@
 "Cancel install" = "Avbryt installering";
 
 /* Cancel Removal long action text */
-"Cancel removal" = "Anbryt fjerning";
+"Cancel removal" = "Avbryt fjerning";
 
 /* Cancel Update long action text */
-"Cancel update" = "Avryt oppdatering";
+"Cancel update" = "Avbryt oppdatering";
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan ikke vise ønsket objekt.";
@@ -128,13 +128,13 @@
 "Due:" = "Forfall:";
 
 /* FeaturedLabel */
-"Featured" = "Valgt";
+"Featured" = "Anbefalt";
 
 /* FeaturedItemsHeaderText */
-"Featured items" = "Valgte elementer";
+"Featured items" = "Anbefalte elementer";
 
 /* managedsoftwareupdate message */
-"Finishing..." = "Avslutter...";
+"Finishing..." = "Fullfører...";
 
 /* Firmware Alert Default detail */
 "Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmwaren på din datamaskin vil bli oppdatert. Påse at din datamaskin tilkoblet strømforsyningen og at denne er satt i stikkontakten. Oppdateringen kan ta flere minutter. Ikke avbryt oppdateringen eller koble datamaskinen fra strømnettet.";
@@ -149,7 +149,7 @@
 "Gathering information on installed packages" = "Samler informasjon om installert programvare";
 
 /* No help alert title */
-"Help" = "Hjælp";
+"Help" = "Hjelp";
 
 /* No help alert detail */
 "Help isn't available for Managed Software Center." = "Hjelp er ikke tilgjengelig for Managed Software Center.";
@@ -206,7 +206,7 @@
 "Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan ikke kontakte oppdateringsserveren.\nPrøv igjen senere. Hvis problemet fortsetter, kontakt din systemadministrator.";
 
 /* Password prompt title */
-"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center vil låse startdisken opp etter omstart får å ferdigjøre alle ventende oppdateringer.";
+"Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center vil låse startdisken opp etter omstart får å ferdstille alle ventende oppdateringer.";
 
 /* Managed Update type */
 "Managed Update" = "Administrert oppdatering";
@@ -260,7 +260,7 @@
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "En eller flere påkrevde oppdateringer burde vært installert. En tvungen utlogging vil skje snart.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "En eller flere oppdateringer må installeres innen %@. Hvis du venter forlenge med å oppdatere, vil en tvungen utlogging skje.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "En eller flere oppdateringer må installeres innen %@. Hvis du venter for lenge med å oppdatere, vil en tvungen utlogging skje.";
 
 /* Other Available Updates label */
 "Other available updates" = "Andre tilgjengelige oppdateringer";
@@ -344,7 +344,7 @@
 "Size:" = "Størrelse:";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Hopp over";
+"Skip these updates" = "Hopp over oppdateringer";
 
 /* Software label */
 "Software" = "Programvare";
@@ -455,16 +455,16 @@
 "Update All" = "Oppdater alle";
 
 /* No comment provided by engineer. */
-"Update available" = "Kan oppdateres";
+"Update available" = "Oppdatering tilgjengelig";
 
 /* Update Check Failed title */
 "Update check failed" = "Søk etter oppdateringer mislyktes";
 
 /* Update In Progress primary text */
-"Update in progress." = "Oppdatering i gang.";
+"Update in progress." = "Oppdatering pågår.";
 
 /* Update Now button title */
-"Update now" = "Oppdater nu";
+"Update now" = "Oppdater nå";
 
 /* Update Required long action text */
 "Update Required" = "Oppdatering påkrevd";
@@ -512,4 +512,4 @@
 "Your search had no results." = "Ditt søk ga ingen resultater.";
 
 /* No Pending Updates primary text */
-"Your software is up to date." = "Din programvare er oppdateret.";
+"Your software is up to date." = "Din programvare er oppdatert.";
