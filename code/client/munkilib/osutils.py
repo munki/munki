@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2020 Greg Neagle.
+# Copyright 2009-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,12 @@ def getOsVersion(only_major_minor=True, as_tuple=False):
     except subprocess.CalledProcessError:
         os_version_tuple = platform.mac_ver()[0].split(".")
     if only_major_minor:
-        os_version_tuple = os_version_tuple[0:2]
+        if int(os_version_tuple[0]) > 10:
+            # return something like (11,)
+            os_version_tuple = (os_version_tuple[0],)
+        else:
+            # return something like (10,15)
+            os_version_tuple = os_version_tuple[0:2]
     if as_tuple:
         return tuple(map(int, os_version_tuple))
     # default

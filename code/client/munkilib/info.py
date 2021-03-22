@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2020 Greg Neagle.
+# Copyright 2009-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -33,12 +33,13 @@ import subprocess
 import sys
 
 # Apple's libs
+import objc
 import LaunchServices
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
 # pylint: disable=E0611
 from Foundation import NSMetadataQuery, NSPredicate, NSRunLoop
-from Foundation import NSDate, NSTimeZone
+from Foundation import NSBundle, NSDate, NSTimeZone
 # pylint: enable=E0611
 
 # our libs
@@ -605,6 +606,49 @@ def get_ip_addresses(kind):
     return ip_addresses
 
 
+def get_serial_number():
+    """Returns the serial number of this Mac _without_ calling system_profiler."""
+    # Borrowed with love from
+    # https://github.com/chilcote/unearth/blob/master/artifacts/serial_number.py
+    # thanks, Joe!
+    IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
+
+    functions = [
+        ("IOServiceGetMatchingService", b"II@"),
+        ("IOServiceMatching", b"@*"),
+        ("IORegistryEntryCreateCFProperty", b"@I@@I"),
+    ]
+    objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
+
+    kIOMasterPortDefault = 0
+    kIOPlatformSerialNumberKey = "IOPlatformSerialNumber"
+    kCFAllocatorDefault = None
+
+    platformExpert = IOServiceGetMatchingService(
+        kIOMasterPortDefault, IOServiceMatching(b"IOPlatformExpertDevice")
+    )
+    serial = IORegistryEntryCreateCFProperty(
+        platformExpert, kIOPlatformSerialNumberKey, kCFAllocatorDefault, 0
+    )
+
+    return serial
+
+
+def hardware_model():
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+
+    size = ctypes.c_size_t()
+    buf = ctypes.c_int()
+    size.value = ctypes.sizeof(buf)
+
+    libc.sysctlbyname(
+        b"hw.model", None, ctypes.byref(size), None, 0)
+    buf = ctypes.create_string_buffer(size.value)
+    libc.sysctlbyname(
+        b"hw.model", ctypes.byref(buf), ctypes.byref(size), None, 0)
+    return buf.value.decode("utf-8")
+
+
 def has_intel64support():
     """Does this machine support 64-bit Intel instruction set?"""
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -614,7 +658,7 @@ def has_intel64support():
     size.value = ctypes.sizeof(buf)
 
     libc.sysctlbyname(
-        "hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
+        b"hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
 
     return buf.value == 1
 
@@ -656,15 +700,23 @@ def getMachineFacts():
     # pylint: disable=C0103
     machine = dict()
     machine['hostname'] = unicode_or_str(os.uname()[1])
-    machine['arch'] = os.uname()[4]
+    arch = os.uname()[4]
+    if arch == 'x86_64':
+        # we might be natively Intel64, or running under Rosetta.
+        # os.uname()[4] returns the current execution arch, which under Rosetta
+        # will be x86_64. Since what we want here is the _native_ arch, we're
+        # going to use a hack for now to see if we're natively arm64
+        uname_version = os.uname()[3]
+        if 'ARM64' in uname_version:
+            arch = 'arm64'
+    machine['arch'] = arch
     machine['os_vers'] = osutils.getOsVersion(only_major_minor=False)
     machine['os_build_number'] = get_os_build()
-    hardware_info = get_hardware_info()
-    machine['machine_model'] = hardware_info.get('machine_model', 'UNKNOWN')
+    machine['machine_model'] = hardware_model() or 'UNKNOWN'
     machine['munki_version'] = get_version()
     machine['ipv4_address'] = get_ip_addresses('IPv4')
     machine['ipv6_address'] = get_ip_addresses('IPv6')
-    machine['serial_number'] = hardware_info.get('serial_number', 'UNKNOWN')
+    machine['serial_number'] = get_serial_number() or 'UNKNOWN'
     ibridge_info = get_ibridge_info()
     machine['ibridge_model_name'] = ibridge_info.get(
         'ibridge_model_name', 'NO IBRIDGE CHIP')

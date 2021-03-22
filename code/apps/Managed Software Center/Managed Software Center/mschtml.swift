@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/15/18.
-//  Copyright © 2018-2020 The Munki Project. All rights reserved.
+//  Copyright © 2018-2021 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -19,14 +19,13 @@ extension Array {
 
 func interfaceTheme() -> String {
     // Returns "dark" if using Dark Mode, otherwise "light"
-    var osMinorVers = 9
     if #available(OSX 10.10, *) {
-        osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
-    }
-    if osMinorVers > 13 || UserDefaults.standard.bool(forKey: "AllowDarkModeOnUnsupportedOSes") {
-        if let interfaceType = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") {
-            if interfaceType == "Dark" {
-                return "dark"
+        let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 14, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers) || UserDefaults.standard.bool(forKey: "AllowDarkModeOnUnsupportedOSes") {
+            if let interfaceType = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") {
+                if interfaceType == "Dark" {
+                    return "dark"
+                }
             }
         }
     }
@@ -153,6 +152,11 @@ extension GenericItem {
         my["display_name_escaped"] = escapeHTML(self["display_name"] as? String ?? "")
         my["developer_escaped"] = escapeHTML(self["developer"] as? String ?? "")
         my["display_version_escaped"] = escapeHTML(self["display_version"] as? String ?? "")
+        if my["status"] as? String ?? "" == "will-be-removed" {
+            my["display_version_escaped_and_size"] = ""
+        } else {
+            my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + (my["size"] as? String ?? "")
+        }
     }
 
     func addGeneralLabels() {
@@ -168,15 +172,20 @@ extension GenericItem {
         my["informationLabel"] = NSLocalizedString(
             "Information", comment: "Sidebar Information label")
         my["categoryLabel"] = NSLocalizedString(
-            "Category:", comment: "Sidebar Category label")
+            "Category:", comment: "Sidebar Category label").trimmingCharacters(
+                in: CharacterSet(charactersIn: ":"))
         my["versionLabel"] = NSLocalizedString(
-            "Version:", comment: "Sidebar Version label")
+            "Version:", comment: "Sidebar Version label").trimmingCharacters(
+                in: CharacterSet(charactersIn: ":"))
         my["sizeLabel"] = NSLocalizedString(
-            "Size:", comment: "Sidebar Size label")
+            "Size:", comment: "Sidebar Size label").trimmingCharacters(
+                in: CharacterSet(charactersIn: ":"))
         my["developerLabel"] = NSLocalizedString(
-            "Developer:", comment: "Sidebar Developer label")
+            "Developer:", comment: "Sidebar Developer label").trimmingCharacters(
+                in: CharacterSet(charactersIn: ":"))
         my["statusLabel"] = NSLocalizedString(
-            "Status:", comment: "Sidebar Status label")
+            "Status:", comment: "Sidebar Status label").trimmingCharacters(
+                in: CharacterSet(charactersIn: ":"))
         my["moreByDeveloperLabel"] = NSLocalizedString(
             "More by %@", comment: "Sidebar More By Developer label")
         my["moreInCategoryLabel"] = NSLocalizedString(
@@ -184,7 +193,9 @@ extension GenericItem {
         my["typeLabel"] = NSLocalizedString(
             "Type", comment: "Sidebar Type label")
         my["dueLabel"] = NSLocalizedString(
-            "Due:", comment: "Sidebar Due label")
+            "Due:", comment: "Sidebar Due label").trimmingCharacters(
+                in: CharacterSet(charactersIn: ":"))
+        my["seeAllLocalizedString"] = NSLocalizedString("See All", comment: "See All link text")
     }
     
     func addMoreInCategory(of item: GenericItem, fromItems items: [GenericItem]) {
@@ -192,14 +203,17 @@ extension GenericItem {
         let item_name = item["name"] as? String ?? ""
         my["hide_more_in_category"] = "hidden"
         var more_in_category_html = ""
-        var excludeFromMoreByDeveloperNames = [String]()
+        //var excludeFromMoreByDeveloperNames = [String]()
         if let category = item["category"] as? String {
+            let developer = item["developer"] as? String ?? "non-existent-developer-name"
             my["category_link"] = "munki://category-\(quote(category)).html"
             var more_in_category = items.filter(
                 {
                     ( $0["category"] as? String == category &&
                       $0["name"] as? String != item_name &&
-                      $0["status"] as? String != "installed" )
+                      $0["status"] as? String != "installed" &&
+                      $0["developer"] as? String != developer
+                    )
                 }
             )
             if more_in_category.count > 0 {
@@ -207,17 +221,11 @@ extension GenericItem {
                 let formatStr = my["moreInCategoryLabel"] as? NSString ?? ""
                 my["moreInCategoryLabel"] = NSString(format: formatStr, category)
                 more_in_category.shuffle()
-                let more_template = getTemplate("detail_more_items_template.html")
-                for i in 0..<(min(4, more_in_category.count)) {
-                    excludeFromMoreByDeveloperNames.append(more_in_category[i]["name"] as? String ?? "")
-                    more_in_category[i]["display_name_escaped"] = escapeHTML(
-                        more_in_category[i]["display_name"] as? String ?? "")
-                    more_in_category[i]["second_line"] = more_in_category[i]["developer"] as? String ?? ""
-                    more_in_category_html += more_template.substitute(more_in_category[i])
-                }
+                more_in_category_html = buildItemListHTML(
+                    Array(more_in_category[..<min(4, more_in_category.count)]))
             }
         }
-        my["_excludeFromMoreByDeveloperNames"] = excludeFromMoreByDeveloperNames
+        //my["_excludeFromMoreByDeveloperNames"] = excludeFromMoreByDeveloperNames
         my["more_in_category"] = more_in_category_html
     }
     
@@ -245,12 +253,8 @@ extension GenericItem {
                 let formatStr = my["moreByDeveloperLabel"] as? NSString ?? ""
                 my["moreByDeveloperLabel"] = NSString(format: formatStr, developer)
                 more_by_developer.shuffle()
-                let more_template = getTemplate("detail_more_items_template.html")
-                for i in 0..<(min(4, more_by_developer.count)) {
-                    more_by_developer[i].escapeAndQuoteCommonFields()
-                    more_by_developer[i]["second_line"] = more_by_developer[i]["category"] as? String ?? ""
-                    more_by_developer_html += more_template.substitute(more_by_developer[i])
-                }
+                more_by_developer_html = buildItemListHTML(
+                    Array(more_by_developer[..<min(4, more_by_developer.count)]))
             }
         }
         my["more_by_developer"] = more_by_developer_html
@@ -284,6 +288,10 @@ func buildDetailPage(item_name: String) throws {
             page.addDetailSidebarLabels()
             page.addMoreInCategory(of: item, fromItems: items)
             page.addMoreFromDeveloper(of: item, fromItems: items)
+            // might need better logic here eventually
+            page["dueLabel"] = ""
+            page["short_due_date"] = ""
+            item["hide_cancel_button"] = ""
             let footer = getRawTemplate("footer_template.html")
             try generatePage(named: page_name,
                              fromTemplate: "detail_template.html",
@@ -369,11 +377,12 @@ func buildListPage(category: String = "",
     page["category_list"] = categories_html_list
     page["header_text"] = header
     let more_templates = BaseItem()
-    if category.isEmpty && filter.isEmpty && developer.isEmpty {
+    more_templates["showcase"] = getRawTemplate("showcase_template.html")
+    /*if category.isEmpty && filter.isEmpty && developer.isEmpty {
         more_templates["showcase"] = getRawTemplate("showcase_template.html")
     } else {
         more_templates["showcase"] = ""
-    }
+    }*/
     more_templates["sidebar"] = getRawTemplate("sidebar_template.html")
     more_templates["footer"] = getRawTemplate("footer_template.html")
     try generatePage(named: page_name,
@@ -381,6 +390,30 @@ func buildListPage(category: String = "",
                      usingItem: page,
                      additionalTemplates: more_templates)
 }
+
+
+func buildItemListHTML(_ items: [GenericItem],
+                       template: String = "list_item_template.html",
+                       sort: Bool = true) -> String {
+    var item_html = ""
+    var sorted_items: [GenericItem] = []
+    let item_template = getTemplate(template)
+    if sort {
+        // sort items by display_name_lowercase
+        sorted_items = items.sorted(by:
+            { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
+    } else {
+        sorted_items = items
+    }
+    for item in sorted_items {
+        item.escapeAndQuoteCommonFields()
+        let category_and_developer = item["category_and_developer"] as? String ?? ""
+        item["category_and_developer_escaped"] = escapeHTML(category_and_developer)
+        item_html += item_template.substitute(item)
+    }
+    return item_html
+}
+
 
 func buildListPageItemsHTML(category: String = "",
                             developer: String = "",
@@ -421,21 +454,7 @@ func buildListPageItemsHTML(category: String = "",
         }
     }
     if !items.isEmpty {
-        let item_template = getTemplate("list_item_template.html")
-        // sort items by display_name_lowercase
-        let sorted_items = items.sorted(by: { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
-        for item in sorted_items {
-            item.escapeAndQuoteCommonFields()
-            let category_and_developer = item["category_and_developer"] as? String ?? ""
-            item["category_and_developer_escaped"] = escapeHTML(category_and_developer)
-            item_html += item_template.substitute(item)
-        }
-        // pad with extra empty items so we have a multiple of 3
-        if items.count % 3 > 0 {
-            for _ in 0..<(3 - items.count % 3) {
-                item_html += "<div class=\"lockup\"></div>\n"
-            }
-        }
+        item_html = buildItemListHTML(items)
     } else {
         // no items; build appropriate alert messages
         let status_results_template = getTemplate("status_results_template.html")
@@ -497,7 +516,9 @@ func buildCategoriesPage() throws {
     page["header_text"] = NSLocalizedString("Categories", comment: "Categories label")
     let footer = getRawTemplate("footer_template.html")
     let additional_templates = BaseItem(
-        ["showcase": "", "sidebar": "", "footer": footer]
+        ["showcase": "<div class=\"showcase-empty-placeholder\"></div>",
+         "sidebar": "",
+         "footer": footer]
     )
     try generatePage(named: "categories.html",
                      fromTemplate: "list_template.html",
@@ -584,12 +605,8 @@ func buildMyItemsRows() -> String {
     var myitems_rows = ""
     let item_list = getMyItemsList()
     if !item_list.isEmpty {
-        let item_template = getTemplate("myitems_row_template.html")
-        let sorted_items = item_list.sorted(by: { $0["display_name_lower"] as? String ?? "" < $1["display_name_lower"] as? String ?? "" })
-        for item in sorted_items {
-            item.escapeAndQuoteCommonFields()
-            myitems_rows += item_template.substitute(item)
-        }
+        myitems_rows = buildItemListHTML(item_list,
+                                         template: "myitems_item_template.html")
     } else {
         let status_results_template = getTemplate("status_results_template.html")
         let alert = BaseItem()
@@ -615,8 +632,15 @@ func buildUpdatesPage() throws {
     }
     let filterAppleUpdates = (NSApp.delegate! as! AppDelegate).mainWindowController.should_filter_apple_updates
     let item_list = getEffectiveUpdateList(filterAppleUpdates)
+    for item in item_list {
+        item["added_class"] = ""
+        if item["note"] == nil {
+            item["note"] = ""
+        }
+    }
     let problem_updates = getProblemItems()
     for item in problem_updates {
+        item["added_class"] = ""
         item["hide_cancel_button"] = "hidden"
     }
     // find any optional installs with update available
@@ -636,6 +660,9 @@ func buildUpdatesPage() throws {
         item["hide_cancel_button"] = "hidden"
     }
     other_updates += blocked_optional_updates
+    for item in other_updates {
+        item["added_class"] = ""
+    }
     
     let page = GenericItem()
     page["update_rows"] = ""
@@ -643,8 +670,6 @@ func buildUpdatesPage() throws {
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
     page["install_all_button_classes"] = ""
-    
-    let item_template = getTemplate("update_row_template.html")
     
     if item_list.isEmpty && other_updates.isEmpty && problem_updates.isEmpty {
         let status_results_template = getTemplate("status_results_template.html")
@@ -659,13 +684,8 @@ func buildUpdatesPage() throws {
         page["update_rows"] = status_results_template.substitute(alert)
     } else {
         if !item_list.isEmpty {
-            // build pending updates table
-            var update_rows = ""
-            for item in item_list {
-                item.escapeAndQuoteCommonFields()
-                update_rows += item_template.substitute(item)
-            }
-            page["update_rows"] = update_rows
+            page["update_rows"] = buildItemListHTML(
+                item_list, template: "update_item_template.html", sort: false)
         }
     }
     
@@ -681,12 +701,8 @@ func buildUpdatesPage() throws {
     page["problem_update_rows"] = ""
     if !problem_updates.isEmpty {
         page["hide_problem_updates"] = ""
-        var problem_update_rows = ""
-        for item in problem_updates {
-            item.escapeAndQuoteCommonFields()
-            problem_update_rows += item_template.substitute(item)
-        }
-        page["problem_update_rows"] = problem_update_rows
+        page["problem_update_rows"] = buildItemListHTML(
+            problem_updates, template: "update_item_template.html")
     }
     
     // build other available updates table
@@ -696,12 +712,8 @@ func buildUpdatesPage() throws {
     page["other_update_rows"] = ""
     if !other_updates.isEmpty {
         page["hide_other_updates"] = ""
-        var other_update_rows = ""
-        for item in other_updates {
-            item.escapeAndQuoteCommonFields()
-            other_update_rows += item_template.substitute(item)
-        }
-        page["other_update_rows"] = other_update_rows
+        page["other_update_rows"] = buildItemListHTML(
+            other_updates, template: "update_item_template.html")
     }
     
     let additional_templates = BaseItem(["footer": getRawTemplate("footer_template.html")])
@@ -838,6 +850,8 @@ func buildUpdateDetailPage(_ identifier: String) throws {
             let page = UpdateItem(item)
             page.escapeAndQuoteCommonFields()
             page.addDetailSidebarLabels()
+            page.addMoreInCategory(of: item, fromItems: getOptionalInstallItems())
+            page.addMoreFromDeveloper(of: item, fromItems: getOptionalInstallItems())
             if let force_install_after_date = item["force_install_after_date"] as? Date {
                 let local_date = discardTimeZoneFromDate(force_install_after_date)
                 let date_str = shortRelativeStringFromDate(local_date)
@@ -849,7 +863,7 @@ func buildUpdateDetailPage(_ identifier: String) throws {
             }
             let additional_templates = BaseItem(["footer": getRawTemplate("footer_template.html")])
             try generatePage(named: page_name,
-                             fromTemplate: "updatedetail_template.html",
+                             fromTemplate: "detail_template.html",
                              usingItem: page,
                              additionalTemplates: additional_templates)
             return

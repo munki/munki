@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2020 Greg Neagle.
+# Copyright 2009-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ def get_primary_manifest(alternate_id=''):
 
         if not manifest:
             # try the machine serial number
-            clientidentifier = info.getMachineFacts()['serial_number']
+            clientidentifier = info.get_serial_number() or 'UNKNOWN'
             if clientidentifier != 'UNKNOWN':
                 display.display_detail(
                     'Request failed. Trying %s...', clientidentifier)

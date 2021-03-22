@@ -1,7 +1,7 @@
 #!/usr/local/munki/munki-python
 # encoding: utf-8
 #
-# Copyright 2008-2020 Greg Neagle.
+# Copyright 2008-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ from munkilib import FoundationPlist
 from munkilib.admin import pkginfolib
 
 
-def has_valid_install_critieria(pkginfo):
+def has_valid_install_criteria(pkginfo):
     """
     Inspects compiled catalog info dictionary for valid install criteria.
     Returns boolean.
@@ -120,7 +120,7 @@ def main():
         exit(-1)
 
     if (len(arguments) == 1 and
-            not has_valid_install_critieria(pkginfo)):
+            not has_valid_install_criteria(pkginfo)):
         item = pkginfo['name']
         msg = (
             "WARNING: pkginfo for '%s' contains no installation check info!\n"

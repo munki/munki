@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ "$3" != "/" ] ; then
+    # can only install Rosetta to the current startup disk
+    exit 0
+fi
+
+arch=$(/usr/bin/arch)
+
+if [ "$arch" = "arm64" ]; then
+    /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+fi

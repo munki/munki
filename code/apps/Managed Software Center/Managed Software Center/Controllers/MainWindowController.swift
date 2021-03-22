@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2020 The Munki Project. All rights reserved.
+//  Copyright © 2018-2021 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -20,6 +20,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
+    let items = [["title": "Software", "icon": "AllItemsTemplate"],
+                 ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
+                 ["title": "My Items", "icon": "MyStuffTemplate"],
+                 ["title": "Updates", "icon": "updatesTemplate"]]
+    
     // status properties
     var _status_title = ""
     var stop_requested = false
@@ -30,32 +35,45 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var backdropWindows: [NSWindow] = []
     
     // Cocoa UI binding properties
-    @IBOutlet weak var softwareToolbarItem: NSToolbarItem!
-    @IBOutlet weak var categoriesToolbarItem: NSToolbarItem!
-    @IBOutlet weak var myItemsToolbarItem: NSToolbarItem!
-    @IBOutlet weak var updatesToolbarItem: NSToolbarItem!
-    
-    @IBOutlet weak var updateButtonCell: MSCToolbarButtonCell!
     
     @IBOutlet weak var navigateBackButton: NSButton!
-    @IBOutlet weak var navigateForwardButton: NSButton!
     @IBOutlet weak var progressSpinner: NSProgressIndicator!
     
     @IBOutlet weak var searchField: NSSearchField!
     
+    @IBOutlet weak var sidebar: NSOutlineView!
+    
     @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
-    @IBOutlet weak var navigateForwardMenuItem: NSMenuItem!
+    @IBOutlet weak var findMenuItem: NSMenuItem!
     @IBOutlet weak var softwareMenuItem: NSMenuItem!
     @IBOutlet weak var categoriesMenuItem: NSMenuItem!
     @IBOutlet weak var myItemsMenuItem: NSMenuItem!
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
-    @IBOutlet weak var findMenuItem: NSMenuItem!
-    
+
+
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
     
     override func windowDidLoad() {
         super.windowDidLoad()
+    }
+    
+    @objc private func onItemClicked() {
+        if 0 ... items.count ~= sidebar.clickedRow {
+            clearSearchField()
+            switch sidebar.clickedRow {
+                case 0:
+                    loadAllSoftwarePage(self)
+                case 1:
+                    loadCategoriesPage(self)
+                case 2:
+                    loadMyItemsPage(self)
+                case 3:
+                    loadUpdatesPage(self)
+                default:
+                    loadUpdatesPage(self)
+            }
+        }
     }
     
     func appShouldTerminate() -> NSApplication.TerminateReply {
@@ -98,7 +116,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return toolBarItemIsHighlighted(updatesToolbarItem)
+        return sidebar.selectedRow == 3
     }
 
     func newTranslucentWindow(screen: NSScreen) -> NSWindow {
@@ -143,7 +161,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
-            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+            window.styleMask = [.titled, .fullSizeContentView, .closable, .miniaturizable, .resizable]
             window.level = .normal
         }
         self.forceFrontmost = false
@@ -163,19 +181,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if let window = self.window {
             window.center()
             window.collectionBehavior = .fullScreenNone
-            window.styleMask = [.titled, .closable]
+            window.styleMask = [.titled, .fullSizeContentView, .closable]
             window.level = .floating
         }
         
         // disable all of the other controls
-        softwareToolbarItem.isEnabled = false
-        categoriesToolbarItem.isEnabled = false
-        myItemsToolbarItem.isEnabled = false
         searchField.isEnabled = false
-        findMenuItem.isEnabled = false
-        softwareMenuItem.isEnabled = false
-        categoriesMenuItem.isEnabled = false
-        myItemsMenuItem.isEnabled = false
+//        findMenuItem.isEnabled = false
+//        softwareMenuItem.isEnabled = false
+//        categoriesMenuItem.isEnabled = false
+//        myItemsMenuItem.isEnabled = false
+        self.sidebar.isEnabled = false
         
         // set flag to cause us to always be brought to front
         self.forceFrontmost = true
@@ -228,32 +244,21 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func highlightToolbarButtons(_ nameToHighlight: String) {
-        setHighlightFor(item: softwareToolbarItem, doHighlight: (nameToHighlight == "Software"))
-        setHighlightFor(item: categoriesToolbarItem, doHighlight: (nameToHighlight == "Categories"))
-        setHighlightFor(item: myItemsToolbarItem, doHighlight: (nameToHighlight == "My Items"))
-        setHighlightFor(item: updatesToolbarItem, doHighlight: (nameToHighlight == "Updates"))
-    }
-    
-    func enableOrDisableToolbarItems(_ enabled: Bool) {
-        // Enable or disable buttons in our toolbar
-        var enabled_state = enabled
-        var updates_button_state = true
-        if let window = self.window {
-            if window.isMainWindow == false {
-                enabled_state = false
-                updates_button_state = false
+        for (index, item) in items.enumerated() {
+            if nameToHighlight == item["title"] {
+                sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             }
         }
-        softwareToolbarItem.isEnabled = enabled_state
-        categoriesToolbarItem.isEnabled = enabled_state
-        myItemsToolbarItem.isEnabled = enabled_state
-        updatesToolbarItem.isEnabled = updates_button_state
+    }
+    
+    func clearSearchField() {
+        self.searchField.stringValue = ""
     }
     
     func enableOrDisableSoftwareViewControls() {
         // Disable or enable the controls that let us view optional items
         let enabled_state = optionalInstallsExist()
-        enableOrDisableToolbarItems(enabled_state)
+        //enableOrDisableToolbarItems(enabled_state)
         searchField.isEnabled = enabled_state
         findMenuItem.isEnabled = enabled_state
         softwareMenuItem.isEnabled = enabled_state
@@ -417,13 +422,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func windowDidBecomeMain(_ notification: Notification) {
         // Our window was activated, make sure controls enabled as needed
-        let enabled_state = optionalInstallsExist()
-        enableOrDisableToolbarItems(enabled_state)
+        sidebar.action = #selector(onItemClicked)
     }
     
     func windowDidResignMain(_ notification: Notification) {
         // Our window was deactivated, make sure controls enabled as needed
-        enableOrDisableToolbarItems(false)
     }
     
     // End NSWindowDelegate methods
@@ -479,7 +482,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 
     func insertWebView() {
         // replace our webview placeholder with the real one
-        if let superview = webViewPlaceholder.superview {
+        if let superview = webViewPlaceholder?.superview {
             // define webview configuration
             let webConfiguration = WKWebViewConfiguration()
             addJSmessageHandlers()
@@ -492,7 +495,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // init our webview
             let replacementWebView = MSCWebView(frame: webViewPlaceholder.frame, configuration: webConfiguration)
             replacementWebView.autoresizingMask = webViewPlaceholder.autoresizingMask
-            replacementWebView.allowsBackForwardNavigationGestures = true
+            //replacementWebView.translatesAutoresizingMaskIntoConstraints = false  // we'll add them later, by hand
+            replacementWebView.allowsBackForwardNavigationGestures = false
+            if #available(OSX 10.12, *) {
+                replacementWebView.setValue(false, forKey: "drawsBackground")
+            }
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             webView = replacementWebView
@@ -760,13 +767,19 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Display the update count as a badge in the window toolbar
         // and as an icon badge in the Dock
         let updateCount = getUpdateCount()
-        let btn_image = MSCBadgedTemplateImage.image(named: "updatesTemplate.pdf",
-                                                     withCount: updateCount)
-        updateButtonCell.image = btn_image
+        
+        var cellView:MSCTableCellView?
+        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+            cellView = view.view(atColumn: 0) as? MSCTableCellView
+        }
+
         if updateCount > 0 {
             NSApp.dockTile.badgeLabel = String(updateCount)
+            cellView?.badge.title = String(updateCount)
+            cellView?.badge.isHidden = false
         } else {
             NSApp.dockTile.badgeLabel = nil
+            cellView?.badge.isHidden = true
         }
     }
     
@@ -819,12 +832,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
-        /*do {
-            try buildPage(url_fragment)
-        } catch {
-            msc_debug_log(
-                "Could not build page for \(url_fragment): \(error)")
-        }*/
+        
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
         let request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
@@ -897,21 +905,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func clearCache() {
-        var osMinorVers = 9
         if #available(OSX 10.10, *) {
-            osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
-        }
-        if osMinorVers >= 11 {
-            if #available(OSX 10.11, *) {
+            let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 11, patchVersion: 0)
+            if ProcessInfo().isOperatingSystemAtLeast(os_vers) {
                 let cacheDataTypes = Set([WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache])
-
-            let dateFrom = Date.init(timeIntervalSince1970: 0)
-            WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+                let dateFrom = Date.init(timeIntervalSince1970: 0)
+                WKWebsiteDataStore.default().removeData(ofTypes: cacheDataTypes, modifiedSince: dateFrom, completionHandler: {})
+                return
             }
-        } else {
-            // Fallback on earlier versions
-            URLCache.shared.removeAllCachedResponses()
         }
+        // Fallback on earlier versions
+        URLCache.shared.removeAllCachedResponses()
     }
 
     // WKNavigationDelegateMethods
@@ -934,7 +938,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 decisionHandler(.cancel)
                 return
             }
-            if scheme == "mailto" {
+            if scheme == "mailto" || scheme == "http" || scheme == "https" {
                 // open link in default mail client since WKWebView doesn't
                 // forward these links natively
                 NSWorkspace.shared.open(url)
@@ -998,12 +1002,16 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // react to end of displaying a new page
         progressSpinner.stopAnimation(self)
-        navigateBackButton.isEnabled = webView.canGoBack
-        navigateBackMenuItem.isEnabled = webView.canGoBack
-        navigateForwardButton.isEnabled = webView.canGoForward
-        navigateForwardMenuItem.isEnabled = webView.canGoForward
         clearCache()
+        let allowNavigateBack = webView.canGoBack
+        let page_url = webView.url
+        let filename = page_url?.lastPathComponent ?? ""
+        let onMainPage = (
+            ["category-all.html", "categories.html", "myitems.html", "updates.html"].contains(filename))
+        navigateBackButton.isHidden = !allowNavigateBack || onMainPage
+        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onMainPage)
     }
     
     func webView(_ webView: WKWebView,
@@ -1313,7 +1321,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         
         // remove row for this item from its current table
-        webView.evaluateJavaScript("removeElementByID('\(item_name)_update_table_row')")
+        webView.evaluateJavaScript("removeElementByID('\(item_name)_update_item')")
         
         // update item status
         if !update_status_for_item(item) {
@@ -1327,7 +1335,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         msc_log("user", "optional_install_\(current_status)", msg: item_name)
         if pythonishBool(item["needs_update"]) {
             // make some new HTML for the updated item
-            let item_template = getTemplate("update_row_template.html")
+            let item_template = getTemplate("update_item_template.html")
+            item["added_class"] = "added"
             let item_html = item_template.substitute(item)
             if ["install-requested",
                     "update-will-be-installed", "installed"].contains(current_status) {
@@ -1440,57 +1449,42 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     @IBAction func navigateBackBtnClicked(_ sender: Any) {
+        clearSearchField()
         // Handle WebView back button
         webView.goBack(self)
+        /*let page_url = webView.url
+        let filename = page_url?.lastPathComponent ?? ""
+        navigateBackButton.isHidden = !filename.hasPrefix("detail-")*/
     }
     
     @IBAction func navigateForwardBtnClicked(_ sender: Any) {
         // Handle WebView forward button
+        clearSearchField()
         webView.goForward(self)
     }
     
     @IBAction func loadAllSoftwarePage(_ sender: Any) {
         // Called by Navigate menu item
+        clearSearchField()
         load_page("category-all.html")
     }
     
     @IBAction func loadCategoriesPage(_ sender: Any) {
         // Called by Navigate menu item
+        clearSearchField()
         load_page("categories.html")
     }
     
     @IBAction func loadMyItemsPage(_ sender: Any) {
         // Called by Navigate menu item'''
+        clearSearchField()
         load_page("myitems.html")
     }
     
     @IBAction func loadUpdatesPage(_ sender: Any) {
         // Called by Navigate menu item'''
+        clearSearchField()
         load_page("updates.html")
-    }
-    
-    @IBAction func softwareToolbarItemClicked(_ sender: Any) {
-        // User clicked Software toolbar button
-        highlightToolbarButtons("Software")
-        loadAllSoftwarePage(sender)
-    }
-    
-    @IBAction func categoriesToolbarItemClicked(_ sender: Any) {
-        // User clicked Categories toolbar button'''
-        highlightToolbarButtons("Categories")
-        loadCategoriesPage(sender)
-    }
-    
-    @IBAction func myItemsToolbarItemClicked(_ sender: Any) {
-        // User clicked My Items toolbar button'''
-        highlightToolbarButtons("My Items")
-        loadMyItemsPage(sender)
-    }
-    
-    @IBAction func updatesToolbarItemClicked(_ sender: Any) {
-        // User clicked Updates toolbar button'''
-        highlightToolbarButtons("Updates")
-        loadUpdatesPage(sender)
     }
     
     @IBAction func searchFilterChanged(_ sender: Any) {
@@ -1500,5 +1494,73 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             msc_debug_log("Search filter is: \(filterString)")
             load_page("filter-\(filterString).html")
         }
+    }
+}
+
+extension MainWindowController: NSOutlineViewDataSource {
+    // Number of items in the sidebar
+    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        return items.count
+    }
+    
+    // Items to be added to sidebar
+    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
+        return items[index]
+    }
+    
+    // Whether rows are expandable by an arrow
+    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
+        return false
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+        return MSCTableRowView(frame: NSZeroRect);
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, didAdd rowView: NSTableRowView, forRow row: Int) {
+        rowView.selectionHighlightStyle = .regular
+    }
+}
+
+extension MainWindowController: NSOutlineViewDelegate {
+    
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        var view: MSCTableCellView?
+        let itemDict = item as? [String: String]
+        if let title = itemDict?["title"], let icon = itemDict?["icon"] {
+            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? MSCTableCellView
+            if let textField = view?.title {
+                textField.stringValue = title.localized(withComment: "\(title) label")
+            }
+            if let imageView = view?.imgView {
+                imageView.image = NSImage(named: NSImage.Name(icon))?.tint(color: .secondaryLabelColor)
+            }
+        }
+        return view
+    }
+}
+
+extension NSImage {
+    func tint(color: NSColor) -> NSImage {
+        guard !self.isTemplate else { return self }
+        
+        let image = self.copy() as! NSImage
+        image.lockFocus()
+        
+        color.set()
+        
+        let imageRect = NSRect(origin: NSZeroPoint, size: image.size)
+        imageRect.fill(using: .sourceAtop)
+        
+        image.unlockFocus()
+        image.isTemplate = false
+        
+        return image
+    }
+}
+
+extension String {
+    func localized(withComment comment: String? = nil) -> String {
+        return NSLocalizedString(self, comment: comment ?? "")
     }
 }

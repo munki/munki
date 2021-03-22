@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2020 Greg Neagle.
+# Copyright 2009-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -94,9 +94,9 @@ DEFAULT_CATALOG_URLS = {
     '10.16': ('https://swscan.apple.com/content/catalogs/others/'
               'index-10.16-10.15-10.14-10.13-10.12-10.11-10.10-10.9-'
               'mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
-    '11.0': ('https://swscan.apple.com/content/catalogs/others/'
-             'index-10.16-10.15-10.14-10.13-10.12-10.11-10.10-10.9-'
-             'mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
+    '11': ('https://swscan.apple.com/content/catalogs/others/'
+           'index-11-10.15-10.14-10.13-10.12-10.11-10.10-10.9-'
+           'mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'),
 }
 
 # Preference domain for Apple Software Update.
@@ -218,7 +218,7 @@ class AppleUpdateSync(object):
             return catalog_url
 
         raise CatalogNotFoundError(
-            'No default Software Update CatalogURL for: %s' % os_version)
+            'No default Software Update CatalogURL for macOS %s' % os_version)
 
     def copy_downloaded_catalog(self, _open=open):
         """Copy the downloaded catalog to a new file, extracting if gzipped.
@@ -420,9 +420,15 @@ class AppleUpdateSync(object):
             display.display_status_minor(
                 'Caching metadata for product ID %s', product_key)
             if product_key not in catalog['Products']:
-                display.display_warning(
-                    'Could not cache metadata for product ID %s'
-                    % product_key)
+                if product_key.startswith("MSU_UPDATE_"):
+                    # BigSur+ updates don't have metadata in the sucatalog
+                    display.display_info(
+                        'Skipping metadata caching for product ID %s'
+                        % product_key)
+                else:
+                    display.display_warning(
+                        'Could not cache metadata for product ID %s'
+                        % product_key)
                 continue
             product = catalog['Products'][product_key]
             if 'ServerMetadataURL' in product:

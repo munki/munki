@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2020 Greg Neagle.
+# Copyright 2009-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -182,6 +182,15 @@ def check(client_id='', localmanifestpath=None):
                     localonlymanifest, 'managed_uninstalls') or []
                 for item in localonlyuninstalls:
                     dummy_result = analyze.process_removal(
+                        item,
+                        cataloglist,
+                        installinfo
+                    )
+
+                localonlyupdates = manifestutils.get_manifest_value_for_key(
+                    localonlymanifest, 'managed_updates') or []
+                for item in localonlyupdates:
+                    dummy_result = analyze.process_managed_update(
                         item,
                         cataloglist,
                         installinfo

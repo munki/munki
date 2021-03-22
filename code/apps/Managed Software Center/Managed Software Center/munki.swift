@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 5/27/18.
-//  Copyright © 2018-2020 The Munki Project. All rights reserved.
+//  Copyright © 2018-2021 The Munki Project. All rights reserved.
 //
 
 import AppKit
@@ -43,6 +43,22 @@ func osascript(_ osastring: String) -> String {
 func restartNow() {
     // Trigger a restart'''
     let _ = osascript("tell application \"System Events\" to restart")
+}
+
+func uname_version() -> String {
+    var system = utsname()
+    uname(&system)
+    let version = withUnsafePointer(to: &system.version.0) { ptr in
+        return String(cString: ptr)
+    }
+    return version
+}
+
+func isAppleSilicon() -> Bool {
+    // Lame but same logic as the Munki Python code,
+    // so at least consistent!
+    let version_str = uname_version()
+    return version_str.contains("ARM64")
 }
 
 func reloadPrefs() {
@@ -100,6 +116,16 @@ func pref(_ prefName: String) -> Any? {
         "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS,
         "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     ]
+    
+    let forceFalseOnAppleSilicon = [
+        "AppleSoftwareUpdatesOnly",
+        "InstallAppleSoftwareUpdates"
+    ]
+    
+    if isAppleSilicon() && forceFalseOnAppleSilicon.contains(prefName) {
+        return false
+    }
+    
     var value: Any?
     value = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
     if value == nil {

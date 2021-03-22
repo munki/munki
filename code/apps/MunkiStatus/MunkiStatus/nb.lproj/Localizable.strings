@@ -20,7 +20,7 @@
 "Downloading available Apple Software Updates..." = "Henter tilgjengelige Apple-programvareoppdateringer...";
 
 /* managedsoftwareupdate message */
-"Finishing..." = "Avslutter...";
+"Finishing..." = "Fullfører...";
 
 /* managedsoftwareupdate message */
 "Gathering information on installed packages" = "Samler informasjon om installert programvare";

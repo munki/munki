@@ -1,7 +1,7 @@
 #!/usr/local/munki/munki-python
 # encoding: utf-8
 #
-# Copyright 2017-2020 Greg Neagle.
+# Copyright 2017-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ except ImportError:
     sys.exit(-1)
 
 # our libs
-from munkilib.wrappers import writePlistToString
+from munkilib.wrappers import writePlistToString, PlistWriteError
 
 
 APPUSAGED_SOCKET = "/var/run/appusaged"
@@ -74,7 +74,11 @@ class AppUsageClient(object):
 
     def send_request(self, request):
         '''Send a request to appusaged'''
-        self.socket.send(writePlistToString(request))
+        try:
+            request_string = writePlistToString(request)
+            self.socket.send(request_string)
+        except PlistWriteError as err:
+            return "ERROR:Bad request: %s" % err
         # use select so we don't hang indefinitely if appusaged dies
         ready = select.select([self.socket.fileno()], [], [], 2)
         if ready[0]:
@@ -171,6 +175,8 @@ class NotificationHandler(NSObject):
                         app_info_plist.get('CFBundleVersion', '0'))
                 else:
                     app_version = '0'
+            else:
+                app_version = '0'
 
         return {'bundle_id': bundle_id,
                 'path': app_path,

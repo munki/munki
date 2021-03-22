@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2020 Greg Neagle.
+# Copyright 2009-2021 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -383,9 +383,10 @@ class Gurl(NSObject):
         '''NSURLSessionTaskDelegate method.'''
         if self.destination and self.destination_path:
             self.destination.close()
-            self.removeExpectedSizeFromStoredHeaders()
         if error:
             self.recordError_(error)
+        else:
+            self.removeExpectedSizeFromStoredHeaders()
         self.done = True
 
     def connection_didFailWithError_(self, _connection, error):

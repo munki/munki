@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/7/18.
-//  Copyright © 2018-2020 The Munki Project. All rights reserved.
+//  Copyright © 2018-2021 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -163,7 +163,7 @@ class GenericItem: BaseItem {
             my["size"] = humanReadable(installer_item_size)
         } else {
             my["size_sort"] = 0
-            my["size"] = ""
+            my["size"] = "-"
         }
     }
 
@@ -540,7 +540,7 @@ class GenericItem: BaseItem {
         // Version number for display
         let status = my["status"] as? String ?? ""
         if status == "will-be-removed" {
-            return ""
+            return "-"
         }
         return my["version_to_install"] as? String ?? ""
     }
@@ -926,6 +926,8 @@ class UpdateItem: GenericItem {
             my["type"] = NSLocalizedString("Managed Update",
                                            comment: "Managed Update type")
         }
+        my["category"] = NSLocalizedString("Managed Update",
+                                           comment: "Managed Update type")
         my["hide_cancel_button"]  = "hidden"
         my["dependent_items"] = dependentItems(name)
         my["days_available"] = getDaysPending(name)
@@ -1265,15 +1267,14 @@ func updatesRequireRestart() -> Bool {
 
 func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
     // Return true if any item in the apple update list requires a restart
-    var osMinorVers = 9
     if #available(OSX 10.10, *) {
-        osMinorVers = ProcessInfo().operatingSystemVersion.minorVersion
-    }
-    if osMinorVers >= 14 {
-        let requiresRestart = getAppleUpdates().filter(
-                { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
-            ).count > 0
-        return requiresRestart
+        let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 14, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers) {
+            let requiresRestart = getAppleUpdates().filter(
+                    { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+                ).count > 0
+            return requiresRestart
+        }
     }
     return false
 }

@@ -14,11 +14,11 @@ if [ "$3" == "/" ]; then
     launchctl unload /Library/LaunchDaemons/com.googlecode.munki.appusaged.plist
 
     # Run preinstall actions for all logged in users.
-    os_major_version=$(sw_vers -productVersion | cut -d. -f2)
+    os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
     for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
         pid=$(echo $pid_uid | cut -d, -f1)
         uid=$(echo $pid_uid | cut -d, -f2)
-        if [[ $os_major_version -lt 10 ]] ; then
+        if [[ $os_build_version -lt 14 ]] ; then
             launchctl bsexec "$pid" chroot -u "$uid" / launchctl unload /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
         else
             launchctl asuser "$uid" launchctl unload /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
