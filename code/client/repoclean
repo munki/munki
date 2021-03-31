@@ -331,6 +331,15 @@ class RepoCleaner(object):
                     for item in item_list:
                         self.items_to_delete.append(item)
                         line_info = "[to be DELETED]"
+                if self.options.skip_pkgs:
+                    for item in item_list:
+                        if item['pkg_path']:
+                            self.pkgs_to_keep.add(item['pkg_path'])
+                        if item['uninstallpkg_path']:
+                            self.pkgs_to_keep.add(item['uninstallpkg_path'])
+                    line_info = "[pkginfo to be DELETED]"
+                else: 
+                     pass
                 if len(item_list) > 1:
                     line_info = (
                         "(multiple items share this version number) "
@@ -480,6 +489,8 @@ def main():
                            'Defaults to 2.')
     parser.add_option('--show-all', action='store_true',
                       help='Show all items even if none will be deleted.')
+    parser.add_option('--skip-pkgs', '--skip_pkgs', action='store_true',
+                      help='Deletes pkginfo items but preserves installer pkg files.')
     parser.add_option('--delete-items-in-no-manifests', action='store_true',
                       help='Also delete items that are not referenced in any '
                            'manifests. Not yet implemented.')
