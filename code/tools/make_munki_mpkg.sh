@@ -5,7 +5,9 @@
 
 # Defaults.
 PKGID="com.googlecode.munki"
-MUNKIROOT="."
+# MUNKIROOT="/Users/admin/Documents/Repository/packages/Munki/"
+# MUNKIROOT="/Users/rod/Documents/Tech/University/Repository/packages/Munki/"
+MUNKIROOT="/Users/Shared/Munki/"
 # Convert to absolute path.
 MUNKIROOT=$(cd "$MUNKIROOT"; pwd)
 OUTPUTDIR="."
@@ -371,15 +373,15 @@ EOF
 
 # Pre-build cleanup.
 
-if ! rm -rf "$MPKG" ; then
-    echo "Error removing $MPKG before rebuilding it."
-    exit 2
-fi
+# if ! rm -rf "$MPKG" ; then
+#     echo "Error removing $MPKG before rebuilding it."
+#     exit 2
+# fi
 
 
 # Create temporary directory
-PKGTMP=$(mktemp -d -t munkipkg)
-
+# PKGTMP=$(mktemp -d -t munkipkg)
+PKGTMP=$(mkdir -p $MUNKIROOT/build/)
 
 #########################################
 ## core munki tools                    ##
@@ -769,7 +771,7 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.11"/>
         </allowed-os-versions>
     </volume-check>
-    <options $HOSTARCHITECTURES customize="allow" allow-external-scripts="no"/>
+    <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
         $ROSETTA2OUTLINE
@@ -949,7 +951,7 @@ for pkg in $ALLPKGS ; do
     if [ "$?" -ne 0 ]; then
         echo "Error building munkitools_$pkg.pkg."
         echo "Attempting to clean up temporary files..."
-        sudo rm -rf "$PKGTMP"
+#         sudo rm -rf "$PKGTMP"
         exit 2
     else
         # set ownership of package back to current user
@@ -978,13 +980,13 @@ fi
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."
     echo "Attempting to clean up temporary files..."
-    sudo rm -rf "$PKGTMP"
+#     sudo rm -rf "$PKGTMP"
     exit 2
 fi
 
 echo "Distribution package created at $MPKG."
 echo
-echo "Removing temporary files..."
-sudo rm -rf "$PKGTMP"
+# echo "Removing temporary files..."
+# sudo rm -rf "$PKGTMP"
 
 echo "Done."

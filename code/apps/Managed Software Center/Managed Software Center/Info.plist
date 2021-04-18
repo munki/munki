@@ -35,6 +35,8 @@
 	<string>1</string>
 	<key>GitRevision</key>
 	<string></string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
 	<key>LSHasLocalizedDisplayName</key>
 	<true/>
 	<key>LSMinimumSystemVersion</key>
