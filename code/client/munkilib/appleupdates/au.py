@@ -193,7 +193,12 @@ class AppleUpdates(object):
             # if the list is empty no need to run softwareupdate -l to filter
             # the list
             return []
-        su_results = su_tool.run(['-l', '--no-scan'])
+        if os_version_tuple < (11, 0):
+            # don't use --no-scan since that results in inaccurate results
+            su_results = su_tool.run(['-l'])
+        else:
+            # use --no-scan to avoid network usage and slow check
+            su_results = su_tool.run(['-l', '--no-scan'])
         filtered_updates = []
         # add update to filtered_updates only if it is also listed
         # in `softwareupdate -l` output
@@ -218,19 +223,7 @@ class AppleUpdates(object):
         Returns:
           A list of string Apple update product ids.
         """
-        recommended_updates = self.get_filtered_recommendedupdates()
-        try:
-            return [item['Product Key'] for item in recommended_updates
-                    if 'Product Key' in item]
-        except IndexError:
-            # RecommendedUpdates is an empty list
-            pass
-        except (KeyError, AttributeError):
-            # RecommendedUpdates is in an unexpected format
-            display.display_debug1(
-                'com.apple.SoftwareUpdate RecommendedUpdates is in an '
-                'unexpected format: %s', recommended_updates)
-        return []
+        return [item['productKey'] for item in self.software_update_info()]
 
     def installed_apple_pkgs_changed(self):
         """Generates a SHA-256 checksum of the info for all packages in the
@@ -277,9 +270,14 @@ class AppleUpdates(object):
             munkilog.log('Installed Apple packages have changed.')
             return True
 
-        if not self.available_updates_downloaded():
-            munkilog.log('Downloaded updates do not match our list of '
-                         'available updates.')
+        os_version_tuple = osutils.getOsVersion(as_tuple=True)
+        # since OS updates in Big Sur don't get downloaded to
+        # /Library/Updates, this will trigger false positives
+        # So only check this on Catalina and lower
+        if os_version_tuple < (11, 0):
+            if not self.available_updates_downloaded():
+                munkilog.log('Downloaded updates do not match our list of '
+                             'available updates.')
             return True
 
         return False
@@ -486,7 +484,7 @@ class AppleUpdates(object):
         return self.apple_updates
 
     def write_appleupdates_file(self):
-        """Writes a file used by the MSU GUI to display available updates.
+        """Writes a file used by the MSC GUI to display available updates.
 
         Returns:
           Integer. Count of available Apple updates.

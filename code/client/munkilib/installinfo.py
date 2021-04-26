@@ -129,6 +129,52 @@ def get_pending_update_info():
     return data
 
 
+def get_appleupdates_with_history():
+    '''Attempt to find the date Apple Updates were first seen since they can
+    appear and disappear from the list of available updates, which screws up
+    our tracking of pending updates that can trigger more aggressive update
+    notifications.
+    Returns a dict.'''
+
+    now = NSDate.date()
+    managed_install_dir = prefs.pref('ManagedInstallDir')
+    appleupdatehistorypath = os.path.join(
+        managed_install_dir, 'AppleUpdateHistory.plist')
+    appleupdatesinfo = get_appleupdates().get('AppleUpdates', [])
+    history_info = {}
+    if appleupdatesinfo:
+        try:
+            appleupdateshistory = FoundationPlist.readPlist(
+                appleupdatehistorypath)
+        except FoundationPlist.NSPropertyListSerializationException:
+            appleupdateshistory = {}
+        history_updated = False
+        for item in appleupdatesinfo:
+            product_key = item.get('productKey')
+            if not product_key:
+                continue
+            if product_key in appleupdateshistory:
+                history_info[item['name']] = (
+                    appleupdateshistory[product_key].get('firstSeen', now))
+            else:
+                history_info[item['name']] = now
+                # record this for the future
+                appleupdateshistory[product_key] = {
+                    'firstSeen': now,
+                    'displayName': item.get('display_name', ''),
+                    'version': item.get('version_to_install', '')
+                }
+                history_updated = True
+        if history_updated:
+            try:
+                FoundationPlist.writePlist(
+                    appleupdateshistory, appleupdatehistorypath)
+            except FoundationPlist.NSPropertyListWriteException:
+                # we tried! oh well
+                pass
+    return history_info
+
+
 def save_pending_update_times():
     '''Record the time each update first is made available. We can use this to
     escalate our notifications if there are items that have been skipped a lot
@@ -143,14 +189,13 @@ def save_pending_update_times():
                      for item in installinfo.get('managed_installs', [])]
     removal_names = [item['name']
                      for item in installinfo.get('removals', [])]
+    apple_updates = get_appleupdates_with_history()
 
-    appleupdatesinfo = get_appleupdates()
-    appleupdate_names = [item['name']
-                         for item in appleupdatesinfo.get('AppleUpdates', [])]
     update_names = {
         'managed_installs': install_names,
         'removals': removal_names,
-        'AppleUpdates': appleupdate_names}
+        'AppleUpdates': apple_updates.keys()
+    }
 
     try:
         prior_pending_updates = FoundationPlist.readPlist(pendingupdatespath)
@@ -167,14 +212,17 @@ def save_pending_update_times():
                 current_pending_updates[category][name] = prior_pending_updates[
                     category][name]
             else:
-                # record new item with current datetime
-                current_pending_updates[category][name] = now
+                if category == 'AppleUpdates':
+                    current_pending_updates[category][name] = apple_updates[name]
+                else:
+                    # record new item with current datetime
+                    current_pending_updates[category][name] = now
+
     try:
         FoundationPlist.writePlist(current_pending_updates, pendingupdatespath)
     except FoundationPlist.NSPropertyListWriteException:
         # we tried! oh well
         pass
-
 
 
 def display_update_info():
