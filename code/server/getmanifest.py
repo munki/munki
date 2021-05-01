@@ -28,6 +28,7 @@ This could be extended to do wildcard matching, or to
 read another file that mapped hostnames/strings to manifest
 files
 """
+form __future__ import print_function
 
 import os
 import socket
@@ -59,19 +60,19 @@ if os.path.exists(manifest):
     modtime = statinfo.st_mtime
     inode = statinfo.st_ino
     size = statinfo.st_size
-    print "Content-type: text/plain"
-    print "Content-length: %s" % size
-    print "Last-modified:", time.strftime("%a, %d %b %Y %H:%M:%S GMT",time.gmtime(modtime))
+    print("Content-type: text/plain")
+    print("Content-length: %s" % size)
+    print("Last-modified:", time.strftime("%a, %d %b %Y %H:%M:%S GMT",time.gmtime(modtime)))
     # Generate ETag the same way Apache does on OS X...
-    print "ETag:", '"%s-%s-%s"' % (hex(int(inode))[2:], hex(int(size))[2:], hex(int(modtime))[2:])
-    print
+    print("ETag:", '"%s-%s-%s"' % (hex(int(inode))[2:], hex(int(size))[2:], hex(int(modtime))[2:]))
+    print()
 
     f = open(manifest, mode='r', buffering=1)
     if f:
         for line in f.readlines():
-            print line.rstrip('\n')
+            print(line.rstrip('\n'))
         f.close()
 else:
-    print "Content-type: text/plain"
-    print "Content-length: 0"
-    print
+    print("Content-type: text/plain")
+    print("Content-length: 0")
+    print()
