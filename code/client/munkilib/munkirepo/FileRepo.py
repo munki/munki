@@ -10,18 +10,16 @@ import subprocess
 import sys
 
 try:
-    # Python 2
-    from urllib import unquote
+    unicode
 except ImportError:
-    # Python 3
-    from urllib.parse import unquote
+    unicode = str
 
 try:
-    # Python 2
-    from urlparse import urlparse
-except ImportError:
     # Python 3
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse, unquote
+except ImportError:
+    # Python 2
+    from urlparse import urlparse, unquote
 
 from munkilib.munkirepo import Repo, RepoError
 from munkilib.wrappers import get_input
