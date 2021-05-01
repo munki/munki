@@ -28,7 +28,7 @@ This could be extended to do wildcard matching, or to
 read another file that mapped hostnames/strings to manifest
 files
 """
-form __future__ import print_function
+from __future__ import print_function
 
 import os
 import socket
