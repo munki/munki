@@ -11,7 +11,7 @@ import sys
 
 try:
     unicode
-except ImportError:
+except NameError:
     unicode = str
 
 try:
