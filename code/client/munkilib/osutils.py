@@ -22,14 +22,19 @@ Common functions and classes used by the munki tools.
 """
 from __future__ import absolute_import, print_function
 
-import platform
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
 
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
