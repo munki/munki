@@ -618,6 +618,7 @@ def get_serial_number():
         ("IOServiceMatching", b"@*"),
         ("IORegistryEntryCreateCFProperty", b"@I@@I"),
     ]
+    global IOServiceGetMatchingService, IOServiceMatching, IORegistryEntryCreateCFProperty
     objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
 
     kIOMasterPortDefault = 0
