@@ -46,7 +46,14 @@ functions = [("IOPMAssertionCreateWithName", b"i@i@o^i"),
              ("IOPSCopyPowerSourcesList", b"@@"),
              ("IOPSGetProvidingPowerSourceType", b"@@"),
             ]
-
+global (
+    IOPMAssertionCreateWithName,
+    IOPMAssertionRelease,
+    IOPSCopyPowerSourcesInfo,
+    IOPSCopyPowerSourcesList,
+    IOPSGetPowerSourceDescription,
+    IOPSGetProvidingPowerSourceType,
+)
 # No idea why PyLint complains about objc.loadBundleFunctions
 # pylint: disable=no-member
 objc.loadBundleFunctions(IOKit, globals(), functions)
