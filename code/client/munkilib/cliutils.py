@@ -50,7 +50,7 @@ except ImportError:
     from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
-from munkilib.wrappers import unicode_or_str, get_input
+from munkilib.wrappers import unicode_or_str, get_input, readPlist
 
 FOUNDATION_SUPPORT = True
 try:
@@ -110,7 +110,7 @@ def get_version():
     versionfile = os.path.join(munkilibdir, "version.plist")
     if os.path.exists(versionfile):
         try:
-            vers_plist = plistlib.readPlist(versionfile)
+            vers_plist = readPlist(versionfile)
         except (IOError, OSError, ExpatError):
             pass
         else:
