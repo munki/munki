@@ -1,3 +1,4 @@
+asn1crypto
 cffi
 pyobjc==7.1
 six==1.15.0
