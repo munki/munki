@@ -249,7 +249,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             myItemsMenuItem.isHidden = true
             updatesMenuItem.isHidden = true
             loadUpdatesPage(self)
-        } else if optional_items.isEmpty || getUpdateCount() > 0 || !getProblemItems().isEmpty {
+        } else if getUpdateCount() > 0 || !getProblemItems().isEmpty {
             loadUpdatesPage(self)
         } else {
             loadAllSoftwarePage(self)
