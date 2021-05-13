@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function
 
 import imp
 import os
+import pkg_resources
 import sys
 
 from ._baseclasses import RepoError, Repo
@@ -14,9 +15,16 @@ def import_plugins(dirpath=None):
     plugin_names = []
 
     if not dirpath:
-        # get the directory this __init__.py file is in
-        dirpath = os.path.dirname(os.path.abspath(__file__))
-
+        plugin_names = [
+            os.path.splitext(os.path.basename(name))[0]
+            for name in pkg_resources.resource_listdir(__name__, "")
+            if name.endswith(".py") and not name.startswith("_")
+        ]
+        for name in plugin_names:
+            globals()[name] = getattr(
+                __import__(__name__ + "." + name, fromlist=[name]), name
+            )
+        return plugin_names
     # find all the .py files (minus __init__.py)
     plugin_files = [
         os.path.splitext(name)[0]
