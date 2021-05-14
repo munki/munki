@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# currently does nothing at all
+exit 0

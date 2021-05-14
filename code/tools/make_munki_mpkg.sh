@@ -23,6 +23,7 @@ CONFPKG=NO
 MDMSTYLE=NO
 ORGNAME=macOS
 ROSETTA2=NO
+CLIENTCERTPKG=NO
 
 # try to automagically find Munki source root
 TOOLSDIR=$(dirname "$0")
@@ -61,12 +62,14 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -S cert_cn  Sign apps with a Developer ID Application certificate from
                 keychain. Provide the certificate's Common Name.
                 Ex: "Developer ID Application: Munki (U8PN57A5N2)"
+    -T pemfile  Include a pkg to install a client certificate for server mTLS
+                mutual authentication, at /Library/Managed Installs/certs/.
 
 EOF
 }
 
 
-while getopts "i:r:o:n:c:s:S:pBmhR" option
+while getopts "i:r:o:n:c:s:S:T:pBmhR" option
 do
     case $option in
         "i")
@@ -102,6 +105,10 @@ do
             ;;
         "R") 
             ROSETTA2=YES
+            ;;
+        "T")
+            CLIENTCERT="$OPTARG"
+            CLIENTCERTPKG=YES
             ;;
         "h" | *)
             usage
@@ -154,6 +161,13 @@ if [[ "$CONFPKG" == "YES" ]] ; then
     CONFFULLPATH="${CONFDIRPATH}/${CONFPLISTNAME}"
     if ! defaults read "$CONFFULLPATH" 1>/dev/null ; then
         echo "Could not read $CONFFULLPATH, or invalid plist!"
+        exit 1
+    fi
+fi
+if [[ "$CLIENTCERTPKG" == "YES" ]] ; then
+    CLIENTCERTPEMCHECK="$(sudo /usr/bin/file "$CLIENTCERT" 2>/dev/null)"
+    if [[ ! $CLIENTCERTPEMCHECK =~ "PEM certificate" ]] ; then
+        echo "Could not read $CLIENTCERT, or invalid PEM file!"
         exit 1
     fi
 fi
@@ -271,6 +285,11 @@ if [ "$CONFPKG" == "YES" ] ; then
     echo "  Include config pkg built with plist: $CONFFULLPATH"
 else
     echo "  Include config pkg: NO"
+fi
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+    echo "  Include client cert pkg built with PEM file: $CLIENTCERT"
+else
+    echo "  Include client cert pkg: NO"
 fi
 echo "  MDM-style package: $MDMSTYLE"
 echo
@@ -685,6 +704,25 @@ if [ "$ROSETTA2" == "YES" ] ;  then
     makeinfo rosetta2 "$PKGTMP/info" norestart
 fi
 
+#################
+## client cert ##
+#################
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+
+    echo "Creating client cert package souce..."
+
+    # Create directory structure
+    CLIENTCERTROOT="$PKGTMP/munki_clientcert"
+    mkdir -m 1755 "$CLIENTCERTROOT"
+    mkdir -m 755 -p "$CLIENTCERTROOT/Library/Managed Installs"
+    mkdir -m 700 "$CLIENTCERTROOT/Library/Managed Installs/certs"
+    # Copy cert file
+    sudo cp -p "$CLIENTCERT" "$CLIENTCERTROOT/Library/Managed Installs/certs/client.pem"
+
+    # Create package info file
+    makeinfo clientcert "$PKGTMP/info" norestart
+fi
+
 #############################
 ## Create metapackage root ##
 #############################
@@ -719,7 +757,8 @@ CONFTITLE="Munki tools configuration"
 CONFDESC="Sets initial preferences for Munki tools."
 ROSETTA2TITLE="Install Rosetta2"
 ROSETTA2DESC="Installs Rosetta2 for ARM-based hardware."
-
+CLIENTCERTTITLE="Munki client certificate"
+CLIENTCERTDESC="Required client certificate for Munki."
 LAUNCHDPOSTINSTALLACTION="onConclusion=\"RequireRestart\""
 if [ "$MDMSTYLE" == "YES" ] ;  then
     LAUNCHDPOSTINSTALLACTION=""
@@ -760,6 +799,17 @@ if [ "$ROSETTA2" == "YES" ]; then
     HOSTARCHITECTURES="hostArchitectures=\"x86_64,arm64\""
 fi
 
+CLIENTCERTOUTLINE=""
+CLIENTCERTCHOICE=""
+CLIENTCERTREF=""
+if [ "$CLIENTCERTPKG" == "YES" ]; then
+    CLIENTCERTOUTLINE="<line choice=\"clientcert\"/>"
+    CLIENTCERTCHOICE="<choice id=\"clientcert\" title=\"$CLIENTCERTTITLE\" description=\"$CLIENTCERTDESC\">
+        <pkg-ref id=\"$PKGID.clientcert\"/>
+    </choice>"
+    CLIENTCERTREF="<pkg-ref id=\"$PKGID.clientcert\" auth=\"Root\">${PKGPREFIX}munkitools_clientcert.pkg</pkg-ref>"
+fi
+
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000">
@@ -781,6 +831,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="python"/>
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
+        $CLIENTCERTOUTLINE
     </choices-outline>
     $ROSETTA2CHOICE
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -803,6 +854,7 @@ cat > "$DISTFILE" <<EOF
     </choice>
     $BOOTSTRAPCHOICE
     $CONFCHOICE
+    $CLIENTCERTCHOICE
     $ROSETTA2REF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
@@ -812,6 +864,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
     $BOOTSTRAPREF
     $CONFREF
+    $CLIENTCERTREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
 EOF
@@ -855,6 +908,10 @@ if [ "$ROSETTA2" == "YES" ] ; then
     sudo chown -hR root:admin "$ROSETTA2ROOT"
 fi
 
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+    sudo chown -hR root:admin "$CLIENTCERTROOT"
+fi
+
 ALLPKGS="core admin app launchd app_usage python"
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
@@ -864,6 +921,9 @@ if [ "$CONFPKG" == "YES" ] ; then
 fi
 if [ "$ROSETTA2" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} rosetta2"
+fi
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+    ALLPKGS="${ALLPKGS} clientcert"
 fi
 
 ######################
@@ -896,6 +956,10 @@ for pkg in $ALLPKGS ; do
             ;;
         "config")
             ver="1.0"
+            ;;
+        "clientcert")
+            ver="1.0"
+            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_nothing"
             ;;
         "rosetta2")
             ver="1.0"
