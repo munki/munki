@@ -953,13 +953,15 @@ for pkg in $ALLPKGS ; do
             ;;
         "bootstrap")
             ver="1.0"
+            SCRIPTS=""
             ;;
         "config")
             ver="1.0"
+            SCRIPTS=""
             ;;
         "clientcert")
             ver="1.0"
-            SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_nothing"
+            SCRIPTS=""
             ;;
         "rosetta2")
             ver="1.0"
