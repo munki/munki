@@ -417,8 +417,6 @@ class AppleUpdateSync(object):
         for product_key in product_ids:
             if processes.stop_requested():
                 return
-            display.display_status_minor(
-                'Caching metadata for product ID %s', product_key)
             if product_key not in catalog['Products']:
                 if product_key.startswith("MSU_UPDATE_"):
                     # BigSur+ updates don't have metadata in the sucatalog
@@ -430,6 +428,8 @@ class AppleUpdateSync(object):
                         'Could not cache metadata for product ID %s'
                         % product_key)
                 continue
+            display.display_status_minor(
+                'Caching metadata for product ID %s', product_key)
             product = catalog['Products'][product_key]
             if 'ServerMetadataURL' in product:
                 self.retrieve_url_to_cache_dir(

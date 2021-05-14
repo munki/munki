@@ -1,3 +1,5 @@
-xattr==0.9.6
-pyobjc==6.2.2
-six
+cffi
+pyobjc==7.1
+six==1.15.0
+xattr==0.9.7
+--no-binary :all:
