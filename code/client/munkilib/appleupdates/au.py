@@ -546,6 +546,7 @@ class AppleUpdates(object):
                 'Error reading: %s', self.apple_updates_plist)
             return
         apple_updates = pl_dict.get('AppleUpdates', [])
+        display.display_info('')
         if not apple_updates:
             display.display_info('No available Apple Software Updates.')
             return
@@ -553,6 +554,7 @@ class AppleUpdates(object):
         display.display_info(
             'The following Apple Software Updates are available to '
             'install:')
+        munki_installable_updates = self.installable_updates()
         for item in apple_updates:
             display.display_info(
                 '    + %s-%s' % (
@@ -564,6 +566,8 @@ class AppleUpdates(object):
             elif item.get('RestartAction') == 'RequireLogout':
                 display.display_info('       *Logout required')
                 reports.report['LogoutRequired'] = True
+            if item not in munki_installable_updates:
+                display.display_info('       *Must be manually installed')
 
     def installable_updates(self):
         """Returns a list of installable Apple updates.
