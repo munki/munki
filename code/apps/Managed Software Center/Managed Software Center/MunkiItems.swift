@@ -1279,6 +1279,11 @@ func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
     return false
 }
 
+func appleUpdatesMustBeDoneWithSystemPreferences() -> Bool {
+    // Return true if any item in the apple update list must be done with System Preferences Software Update
+    return isAppleSilicon() || appleUpdatesRequireRestartOnMojaveAndUp()
+}
+
 func updatesContainNonUserSelectedItems() -> Bool {
     // Does the list of updates contain items not selected by the user?
     if !munkiUpdatesContainAppleItems() && getAppleUpdates().count > 0 {

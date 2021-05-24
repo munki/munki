@@ -97,7 +97,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // no pending updates
             return .terminateNow
         }
-        if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
+        if !should_filter_apple_updates && appleUpdatesMustBeDoneWithSystemPreferences() {
             if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
@@ -1130,7 +1130,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            if !should_filter_apple_updates && appleUpdatesRequireRestartOnMojaveAndUp() {
+            if !should_filter_apple_updates && appleUpdatesMustBeDoneWithSystemPreferences() {
                 // if there are pending Apple updates, alert the user to
                 // install via System Preferences
                 alert_controller.alertToAppleUpdates()
