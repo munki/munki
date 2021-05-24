@@ -392,10 +392,10 @@
 "There are no items in this category." = "Det finnes ingen objekter i kategorien.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "En eller flere ventende Apple-programvareoppdateringer krever en omstart.\n\nDu må installere disse fra Programvareoppdatering-valgpanelet i Systemvalg.";
+"You must install these updates using Software Update in System Preferences." = "Du må installere disse fra Programvareoppdatering-valgpanelet i Systemvalg.";
 
 /* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "En eller flere ventende Apple-programvareoppdateringer krever en omstart.\n\nAdministratoren har blokkert installasjon av disse oppdateringene. Kontakt administratoren for å få hjelp.";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Administratoren har blokkert installasjon av disse oppdateringene. Kontakt administratoren for å få hjelp.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det er andre påloggede brukere på datamaskinen.\nHvis du oppdaterer nå, risikerer du at de mister deres ulagrede arbeid.\n\nPrøv igjen senere når de andre brukerne har logget ut.";

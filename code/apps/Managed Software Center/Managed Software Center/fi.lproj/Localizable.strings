@@ -392,10 +392,10 @@
 "There are no items in this category." = "Ei kohteita tässä kategoriassa.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Yksi tai useampi saatavilla oleva Applen päivitys vaatii uudelleenkäynnistyksen.\n\nPäivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
+"You must install these updates using Software Update in System Preferences." = "Päivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
 
 /* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Yksi tai useampi saatavilla oleva Applen päivitys vaatii uudelleenkäynnistyksen.\n\nYlläpitäjä on rajoittanut näiden päivitysten asentamista. Ota yhteyttä ylläpitäjään.";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Ylläpitäjä on rajoittanut näiden päivitysten asentamista. Ota yhteyttä ylläpitäjään.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Tietokoneelle on kirjautuneena muita käyttäjiä.\nMuut käyttäjät saattavat menettää tallentamattomia muutoksia jos päivitys tehdään nyt.\n\nYritä uudelleen kun muut käyttäjät ovat kirjautuneet ulos.";

@@ -392,10 +392,10 @@
 "There are no items in this category." = "Нет элементов в этой категории.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Одно или более обновлений ПО Apple требуют перезагрузки.\n\nВам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
+"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Вам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
 
 /* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Одно или более обновлений ПО Apple требуют перезагрузки.\n\nАдминистратор запретил установку этих обновлений. Обратитесь за помощью к администратору.";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Администратор запретил установку этих обновлений. Обратитесь за помощью к администратору.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другие пользователи сейчас в системе.\nОбновление может привести к потере их несохраненных документов.\n\nПовторите попытку после выхода других пользователей из системы.";

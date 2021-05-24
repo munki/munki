@@ -392,10 +392,10 @@
 "There are no items in this category." = "このカテゴリにアイテムはありません";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "再起動が必要となる Apple ソフトウェアアップデートが保留中となっています。\n\nこのアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
+"You must install these updates using Software Update in System Preferences." = "このアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
 
 /* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "再起動が必要となる Apple ソフトウェアアップデートが保留中となっています。\n\nこのアップデートのインストールは制限されています。システム管理者にお問い合わせください。";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "このアップデートのインストールは制限されています。システム管理者にお問い合わせください。";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "他のユーザーがこのコンピューターにログインしています。\n今アップデートを実行すると、他のユーザーのワークが失われる原因になります。\n\n他のユーザーがログアウトしたのち、もう一度アップデートを実行してください。";
