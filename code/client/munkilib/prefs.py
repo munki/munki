@@ -285,9 +285,6 @@ def print_config():
         if pref_name == 'LastNotifiedDate':
             # skip it
             continue
-        if is_apple_silicon() and pref_name in FORCE_FALSE_ON_APPLE_SILICON:
-            value = False
-            where = "Forced as False on Apple Silicon"
         else:
             value = pref(pref_name)
             where = get_config_level(BUNDLE_ID, pref_name, value)
