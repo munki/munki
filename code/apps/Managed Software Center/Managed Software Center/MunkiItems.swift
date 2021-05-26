@@ -1281,7 +1281,10 @@ func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
 
 func appleUpdatesMustBeDoneWithSystemPreferences() -> Bool {
     // Return true if any item in the apple update list must be done with System Preferences Software Update
-    return isAppleSilicon() || appleUpdatesRequireRestartOnMojaveAndUp()
+    if isAppleSilicon() {
+        return getAppleUpdates().count > 0
+    }
+    return appleUpdatesRequireRestartOnMojaveAndUp()
 }
 
 func updatesContainNonUserSelectedItems() -> Bool {
