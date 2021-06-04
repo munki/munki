@@ -568,6 +568,7 @@ class MSCAlertController: NSObject {
         alert.informativeText = alertDetail
         var quitButton = NSApplication.ModalResponse.alertFirstButtonReturn
         var updateButton = NSApplication.ModalResponse.alertSecondButtonReturn
+        let quitButtonTimeout = pref("quitButtonTimeout") as? Float ?? 5.0
         if !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
             alert.addButton(withTitle: NSLocalizedString("Quit", comment: "Quit button title"))
             alert.addButton(withTitle: NSLocalizedString("Update now", comment: "Update Now button title"))
@@ -578,7 +579,7 @@ class MSCAlertController: NSObject {
             // initially disable the Quit button
             self.quitButton = alert.buttons[1]
             alert.buttons[1].isEnabled = false
-            let timer1 = Timer.scheduledTimer(timeInterval: 5.0,
+            let timer1 = Timer.scheduledTimer(timeInterval: quitButtonTimeout,
                                               target: self,
                                               selector: #selector(self.activateQuitButton),
                                               userInfo: nil,
