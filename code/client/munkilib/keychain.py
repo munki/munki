@@ -250,7 +250,7 @@ def make_client_keychain(cert_info=None):
     if os.path.exists(abs_keychain_path):
         os.unlink(abs_keychain_path)
     if not os.path.exists(os.path.dirname(abs_keychain_path)):
-        os.makedirs(os.path.dirname(abs_keychain_path))
+        os.makedirs(os.path.dirname(abs_keychain_path),0o700)
     # create a new keychain
     display.display_debug1('Creating client keychain...')
     try:
