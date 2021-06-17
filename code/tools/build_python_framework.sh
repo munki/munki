@@ -66,7 +66,7 @@ UNIVERSAL_COUNT=$(find "${MUNKIROOT}/Python.framework" -name "*.so" -or -name "*
 if [ "$LIB_COUNT" != "$UNIVERSAL_COUNT" ] ; then 
     echo "$LIB_COUNT libraries (*.so and *.dylib) found in the framework; only $UNIVERSAL_COUNT are universal!"
     echo "The following libraries are not universal:"
-    find Python.framework -name "*.so" -or -name "*.dylib" | xargs file | grep -v "2 architectures" | grep -v "(for architecture"
+    find "${MUNKIROOT}"/Python.framework -name "*.so" -or -name "*.dylib" | xargs file | grep -v "2 architectures" | grep -v "(for architecture"
     STATUS=1
 fi
 
