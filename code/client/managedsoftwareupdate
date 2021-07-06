@@ -127,6 +127,13 @@ def networkUp():
     return False
 
 
+def detectNetworkHardware():
+    """Trigger the detection of new network hardware,
+       like a USB-to-Ethernet adapter"""
+    cmd = ["/usr/sbin/networksetup", "-detectnewhardware"]
+    subprocess.call(cmd)
+
+
 def clearLastNotifiedDate():
     """Clear the last date the user was notified of updates."""
     prefs.set_pref('LastNotifiedDate', None)
@@ -218,15 +225,18 @@ def runScript(script, display_name, runtype):
         display.display_warning(unicode_or_str(err))
     return result
 
+
 def cleanup(runtype):
     """
-    If there are executables inside the cleanup directory, run them and remove them if successful
+    If there are executables inside the cleanup directory,
+    run them and remove them if successful
     """
-    cleanupdir = os.path.join(os.path.realpath(os.path.dirname(sys.argv[0])), 'cleanup')
+    cleanupdir = os.path.join(os.path.realpath(
+        os.path.dirname(sys.argv[0])), 'cleanup')
     if not os.path.isdir(cleanupdir):
         # path doesn't exist or isn't a directory
         return
-    
+
     # get only filenames (and not directory names) from cleanupdir
     (_, _, filenames) = next(os.walk(cleanupdir))
     for filename in filenames:
@@ -762,6 +772,7 @@ def main():
                     # we'll attempt to wait up to 60 seconds for the network
                     # interfaces to come up before continuing
                     display.display_status_minor('Waiting for network...')
+                    detectNetworkHardware()
                     for dummy_i in range(60):
                         if networkUp():
                             break

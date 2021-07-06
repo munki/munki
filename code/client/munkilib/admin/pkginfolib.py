@@ -654,6 +654,8 @@ def makepkginfo(installeritem, options):
         pkginfo['minimum_os_version'] = options.minimum_os_version
     if options.maximum_os_version:
         pkginfo['maximum_os_version'] = options.maximum_os_version
+    if options.arch:
+        pkginfo['supported_architectures'] = options.arch
     if options.force_install_after_date:
         date_obj = convert_date_string_to_nsdate(
             options.force_install_after_date)
@@ -1014,6 +1016,14 @@ def add_option_groups(parser):
         '--maximum_os_version', '--maximum-os-version', '--max-os-ver',
         metavar='VERSION',
         help='Maximum OS version for the installer item.'
+        )
+    additional_options.add_option(
+        '--arch', '--supported_architecture', '--supported-architecture',
+        action="append",
+        metavar='ARCH',
+        help=('Declares a supported architecture for the item. '
+              'Can be specified multiple times to declare multiple '
+              'supported architectures.')
         )
     additional_options.add_option(
         '--update_for', '--update-for', '-u',

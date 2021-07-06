@@ -116,16 +116,7 @@ func pref(_ prefName: String) -> Any? {
         "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS,
         "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
     ]
-    
-    let forceFalseOnAppleSilicon = [
-        "AppleSoftwareUpdatesOnly",
-        "InstallAppleSoftwareUpdates"
-    ]
-    
-    if isAppleSilicon() && forceFalseOnAppleSilicon.contains(prefName) {
-        return false
-    }
-    
+
     var value: Any?
     value = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
     if value == nil {
