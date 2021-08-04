@@ -172,15 +172,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // reverse all the obnoxious changes
         msc_log("msc", "end_obnoxious_mode")
         
-        let options = NSApplication.PresentationOptions([])
-        NSApp.presentationOptions = options
+        // remove obnoxious presentation options
+        NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.subtracting(
+            NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
         
         for window in self.backdropWindows {
             window.orderOut(self)
         }
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
-            window.styleMask = [.titled, .fullSizeContentView, .closable, .miniaturizable, .resizable]
+            // turn .closable, .miniaturizable, .resizable back on
+            let addedStyleMask : NSWindow.StyleMask = [.closable, .miniaturizable, .resizable]
+            window.styleMask = window.styleMask.union(addedStyleMask)
             window.level = .normal
         }
         self.forceFrontmost = false
@@ -193,14 +196,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         msc_log("msc", "start_obnoxious_mode")
         
         // make it very difficult to switch away from this app
-        let options = NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit])
-        NSApp.presentationOptions = options
+        NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
+            NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
         
         // alter some window properties to make the window harder to ignore
         if let window = self.window {
             window.center()
             window.collectionBehavior = .fullScreenNone
-            window.styleMask = [.titled, .fullSizeContentView, .closable]
+            window.styleMask = window.styleMask.subtracting(
+                NSWindow.StyleMask([.miniaturizable, .resizable]))
             window.level = .floating
         }
         
