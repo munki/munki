@@ -326,16 +326,6 @@ def process_install(manifestitem, cataloglist, installinfo,
             'Could not process item %s for install. No pkginfo found in '
             'catalogs: %s ', manifestitem, ', '.join(cataloglist))
         return False
-    elif is_managed_update:
-        # we're processing this as a managed update, so don't
-        # add it to the processed_installs list
-        pass
-    else:
-        # we found it, so add it to our list of processed installs
-        # so we don't process it again in the future
-        display.display_debug2(
-            'Adding %s to list of processed installs' % manifestitemname)
-        installinfo['processed_installs'].append(manifestitemname)
 
     if item_in_installinfo(item_pl, installinfo['managed_installs'],
                            vers=item_pl.get('version')):
@@ -629,6 +619,14 @@ def process_install(manifestitem, cataloglist, installinfo,
             dummy_result = process_install(
                 update_item, cataloglist, installinfo,
                 is_managed_update=is_managed_update)
+
+        # done successfully processing this install; add it to our list
+        # of processed installs so we don't process it again in the future
+        # (unless it is a managed_update)
+        if not is_managed_update:
+            display.display_debug2(
+                'Adding %s to list of processed installs' % manifestitemname)
+            installinfo['processed_installs'].append(manifestitemname)
 
         return True
 
