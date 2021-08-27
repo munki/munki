@@ -20,7 +20,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
-    let items = [["title": "Software", "icon": "AllItemsTemplate"],
+    let sidebar_items = [["title": "Software", "icon": "AllItemsTemplate"],
                  ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
                  ["title": "My Items", "icon": "MyStuffTemplate"],
                  ["title": "Updates", "icon": "updatesTemplate"]]
@@ -61,7 +61,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
 
     @objc private func onItemClicked() {
-        if 0 ... items.count ~= sidebar.clickedRow {
+        if 0 ... sidebar_items.count ~= sidebar.clickedRow {
                 clearSearchField()
                 switch sidebar.clickedRow {
                     case 0:
@@ -118,11 +118,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        if items.count == 1 {
-            return sidebar.selectedRow == 0
-        } else {
-            return sidebar.selectedRow == 3
-        }
+        return sidebar.selectedRow == 3
     }
 
     func newTranslucentWindow(screen: NSScreen) -> NSWindow {
@@ -304,7 +300,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func highlightToolbarButtons(_ nameToHighlight: String) {
-        for (index, item) in items.enumerated() {
+        for (index, item) in sidebar_items.enumerated() {
             if nameToHighlight == item["title"] {
                 sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             }
@@ -820,11 +816,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         var cellView:MSCTableCellView?
 
-        if items.count == 1 {
-            if let view = self.sidebar.rowView(atRow: 0, makeIfNecessary: false) {
-                cellView = view.view(atColumn: 0) as? MSCTableCellView
-            }
-        } else if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
             cellView = view.view(atColumn: 0) as? MSCTableCellView
         }
 
@@ -1555,12 +1547,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 extension MainWindowController: NSOutlineViewDataSource {
     // Number of items in the sidebar
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        return items.count
+        return sidebar_items.count
     }
     
     // Items to be added to sidebar
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        return items[index]
+        return sidebar_items[index]
     }
     
     // Whether rows are expandable by an arrow
