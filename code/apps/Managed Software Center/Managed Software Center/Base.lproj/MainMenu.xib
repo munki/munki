@@ -45,6 +45,7 @@
             <connections>
                 <outlet property="categoriesMenuItem" destination="IjL-Sm-tWj" id="Nu2-xf-MO3"/>
                 <outlet property="findMenuItem" destination="JRN-bq-1gM" id="r2S-8Y-njg"/>
+                <outlet property="fullSidebar" destination="Z53-oE-BgS" id="6Tx-qj-TLx"/>
                 <outlet property="myItemsMenuItem" destination="1bG-B4-adC" id="PCP-Ye-eRl"/>
                 <outlet property="navigateBackButton" destination="LRY-q4-rBU" id="Z08-Ex-3t6"/>
                 <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
@@ -53,6 +54,7 @@
                 <outlet property="sidebar" destination="pGV-ZA-L14" id="rl2-BU-gEi"/>
                 <outlet property="softwareMenuItem" destination="YIg-jD-AbB" id="D6s-mC-x4d"/>
                 <outlet property="updatesMenuItem" destination="HOZ-SU-4Sm" id="UdT-3I-JpJ"/>
+                <outlet property="webViewContainer" destination="DjW-0r-xfk" id="mxV-qW-x83"/>
                 <outlet property="webViewPlaceholder" destination="Wf8-HB-bc8" id="qCG-zy-8UQ"/>
                 <outlet property="window" destination="EeR-uP-dFY" id="FfQ-Q4-xUU"/>
             </connections>
@@ -165,17 +167,17 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="0W8-g5-gCj"/>
-                            <menuItem title="Software" enabled="NO" keyEquivalent="1" id="YIg-jD-AbB">
+                            <menuItem title="Software" keyEquivalent="1" id="YIg-jD-AbB">
                                 <connections>
                                     <action selector="loadAllSoftwarePage:" target="XGW-R4-ybE" id="dt1-OC-ObZ"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Categories" enabled="NO" keyEquivalent="2" id="IjL-Sm-tWj">
+                            <menuItem title="Categories" keyEquivalent="2" id="IjL-Sm-tWj">
                                 <connections>
                                     <action selector="loadCategoriesPage:" target="XGW-R4-ybE" id="Agt-cx-joI"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="My Items" enabled="NO" keyEquivalent="3" id="1bG-B4-adC">
+                            <menuItem title="My Items" keyEquivalent="3" id="1bG-B4-adC">
                                 <connections>
                                     <action selector="loadMyItemsPage:" target="XGW-R4-ybE" id="Hec-MQ-1q1"/>
                                 </connections>
