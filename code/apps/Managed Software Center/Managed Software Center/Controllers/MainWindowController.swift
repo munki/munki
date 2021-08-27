@@ -171,7 +171,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         self.forceFrontmost = false
         // enable/disable controls as needed
-        updatesAndOptionalWindowMode()
         determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
     }
     
