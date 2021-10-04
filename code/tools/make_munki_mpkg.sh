@@ -411,8 +411,10 @@ echo "Creating core package template..."
 # Create directory structure.
 COREROOT="$PKGTMP/munki_core"
 mkdir -m 1775 "$COREROOT"
-mkdir -p "$COREROOT/usr/local/munki/munkilib"
-chmod -R 755 "$COREROOT/usr"
+mkdir -m 755 "$COREROOT/usr"
+mkdir -m 755 "$COREROOT/usr/local"
+mkdir -m 755 "$COREROOT/usr/local/munki"
+mkdir -m 755 "$COREROOT/usr/local/munki/munkilib"
 # Copy command line utilities.
 # edit this if list of tools changes!
 for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor precache_agent ptyexec removepackages
@@ -440,17 +442,18 @@ chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
 
 # make paths.d file
-mkdir -p "$COREROOT/private/etc/paths.d"
+mkdir -m 755 "$COREROOT/private"
+mkdir -m 755 "$COREROOT/private/etc/"
+mkdir -m 755 "$COREROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
-chmod -R 755 "$COREROOT/private"
 chmod 644 "$COREROOT/private/etc/paths.d/munki"
 
 # Create directory structure for /Library/Managed Installs.
 mkdir -m 1775 "$COREROOT/Library"
-mkdir -m 755 -p "$COREROOT/Library/Managed Installs"
-mkdir -m 750 -p "$COREROOT/Library/Managed Installs/Cache"
-mkdir -m 750 -p "$COREROOT/Library/Managed Installs/catalogs"
-mkdir -m 755 -p "$COREROOT/Library/Managed Installs/manifests"
+mkdir -m 755 "$COREROOT/Library/Managed Installs"
+mkdir -m 750 "$COREROOT/Library/Managed Installs/Cache"
+mkdir -m 750 "$COREROOT/Library/Managed Installs/catalogs"
+mkdir -m 755 "$COREROOT/Library/Managed Installs/manifests"
 
 # copy in core cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/core_cleanup_scripts/" ] ; then
@@ -471,8 +474,9 @@ echo "Creating admin package source..."
 # Create directory structure.
 ADMINROOT="$PKGTMP/munki_admin"
 mkdir -m 1775 "$ADMINROOT"
-mkdir -p "$ADMINROOT/usr/local/munki"
-chmod -R 755 "$ADMINROOT/usr"
+mkdir -m 755 "$ADMINROOT/usr"
+mkdir -m 755 "$ADMINROOT/usr/local"
+mkdir -m 755 "$ADMINROOT/usr/local/munki"
 # Copy command line admin utilities.
 # edit this if list of tools changes!
 for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean
@@ -484,9 +488,10 @@ chmod -R go-w "$ADMINROOT/usr/local/munki"
 chmod +x "$ADMINROOT/usr/local/munki"
 
 # make paths.d file
-mkdir -p "$ADMINROOT/private/etc/paths.d"
+mkdir -m 755 "$ADMINROOT/private"
+mkdir -m 755 "$ADMINROOT/private/etc"
+mkdir -m 755 "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
-chmod -R 755 "$ADMINROOT/private"
 chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # copy in admin cleanup scripts
@@ -584,8 +589,9 @@ mkdir -m 1775 "$APPUSAGEROOT"
 mkdir -m 1775 "$APPUSAGEROOT/Library"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchAgents"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
-mkdir -p "$APPUSAGEROOT/usr/local/munki"
-chmod -R 755 "$APPUSAGEROOT/usr"
+mkdir -m 755 "$APPUSAGEROOT/usr"
+mkdir -m 755 "$APPUSAGEROOT/usr/local"
+mkdir -m 755 "$APPUSAGEROOT/usr/local/munki"
 # Copy launch agent, launch daemon, daemon, and agent
 # LaunchAgent
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
@@ -621,8 +627,9 @@ echo "Creating python package source..."
 # Create directory structure.
 PYTHONROOT="$PKGTMP/munki_python"
 mkdir -m 1775 "$PYTHONROOT"
-mkdir -p "$PYTHONROOT/usr/local/munki"
-chmod -R 755 "$PYTHONROOT/usr"
+mkdir -m 755 "$PYTHONROOT/usr"
+mkdir -m 755 "$PYTHONROOT/usr/local"
+mkdir -m 755 "$PYTHONROOT/usr/local/munki"
 # Copy framework
 cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
 # Create symlink
@@ -1051,6 +1058,6 @@ fi
 echo "Distribution package created at $MPKG."
 echo
 echo "Removing temporary files..."
-sudo rm -rf "$PKGTMP"
+#sudo rm -rf "$PKGTMP"
 
 echo "Done."
