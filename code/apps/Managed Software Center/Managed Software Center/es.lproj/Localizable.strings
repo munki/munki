@@ -392,10 +392,10 @@
 "There are no items in this category." = "No hay ítems en esta categoria.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Hay una o mas actualizaciones de software de Apple que requieren un reinicio.\n\nDebes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
+"You must install these updates using Software Update in System Preferences." = "Debes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
 
 /* Apple Software Updates Unable detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYour administrator has restricted installation of these updates. Contact your administrator for assistance." = "Hay una o mas actualizaciones de software de Apple que requieren un reinicio.\n\nTu administrador de sistemas ha restringido la instalación de estas actualizaciones. Contacta con tu administrador para recibir asistencia.";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Tu administrador de sistemas ha restringido la instalación de estas actualizaciones. Contacta con tu administrador para recibir asistencia.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Hay otros usuarios con sesiones abiertas en este equipo.\nActualizar ahora puede causar perdidas en su trabajo.\n\nPor favor prueba más tarde cuando los otros usuarios hayan cerrado sus sesiones.";
