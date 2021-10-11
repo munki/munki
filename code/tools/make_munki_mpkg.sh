@@ -5,9 +5,7 @@
 
 # Defaults.
 PKGID="com.googlecode.munki"
-# MUNKIROOT="/Users/admin/Documents/Repository/packages/Munki/"
-# MUNKIROOT="/Users/rod/Documents/Tech/University/Repository/packages/Munki/"
-MUNKIROOT="/Users/Shared/Munki/"
+MUNKIROOT="."
 # Convert to absolute path.
 MUNKIROOT=$(cd "$MUNKIROOT"; pwd)
 OUTPUTDIR="."
@@ -25,6 +23,7 @@ CONFPKG=NO
 MDMSTYLE=NO
 ORGNAME=macOS
 ROSETTA2=NO
+CLIENTCERTPKG=NO
 
 # try to automagically find Munki source root
 TOOLSDIR=$(dirname "$0")
@@ -63,12 +62,14 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -S cert_cn  Sign apps with a Developer ID Application certificate from
                 keychain. Provide the certificate's Common Name.
                 Ex: "Developer ID Application: Munki (U8PN57A5N2)"
+    -T pemfile  Include a pkg to install a client certificate for server mTLS
+                mutual authentication, at /Library/Managed Installs/certs/.
 
 EOF
 }
 
 
-while getopts "i:r:o:n:c:s:S:pBmhR" option
+while getopts "i:r:o:n:c:s:S:T:pBmhR" option
 do
     case $option in
         "i")
@@ -104,6 +105,10 @@ do
             ;;
         "R") 
             ROSETTA2=YES
+            ;;
+        "T")
+            CLIENTCERT="$OPTARG"
+            CLIENTCERTPKG=YES
             ;;
         "h" | *)
             usage
@@ -156,6 +161,13 @@ if [[ "$CONFPKG" == "YES" ]] ; then
     CONFFULLPATH="${CONFDIRPATH}/${CONFPLISTNAME}"
     if ! defaults read "$CONFFULLPATH" 1>/dev/null ; then
         echo "Could not read $CONFFULLPATH, or invalid plist!"
+        exit 1
+    fi
+fi
+if [[ "$CLIENTCERTPKG" == "YES" ]] ; then
+    CLIENTCERTPEMCHECK="$(sudo /usr/bin/file "$CLIENTCERT" 2>/dev/null)"
+    if [[ ! $CLIENTCERTPEMCHECK =~ "PEM certificate" ]] ; then
+        echo "Could not read $CLIENTCERT, or invalid PEM file!"
         exit 1
     fi
 fi
@@ -274,6 +286,11 @@ if [ "$CONFPKG" == "YES" ] ; then
 else
     echo "  Include config pkg: NO"
 fi
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+    echo "  Include client cert pkg built with PEM file: $CLIENTCERT"
+else
+    echo "  Include client cert pkg: NO"
+fi
 echo "  MDM-style package: $MDMSTYLE"
 echo
 if [ "$APPSIGNINGCERT" != "" ] ; then
@@ -373,15 +390,15 @@ EOF
 
 # Pre-build cleanup.
 
-# if ! rm -rf "$MPKG" ; then
-#     echo "Error removing $MPKG before rebuilding it."
-#     exit 2
-# fi
+if ! rm -rf "$MPKG" ; then
+    echo "Error removing $MPKG before rebuilding it."
+    exit 2
+fi
 
 
 # Create temporary directory
-# PKGTMP=$(mktemp -d -t munkipkg)
-PKGTMP=$(mkdir -p $MUNKIROOT/build/)
+PKGTMP=$(mktemp -d -t munkipkg)
+
 
 #########################################
 ## core munki tools                    ##
@@ -394,8 +411,10 @@ echo "Creating core package template..."
 # Create directory structure.
 COREROOT="$PKGTMP/munki_core"
 mkdir -m 1775 "$COREROOT"
-mkdir -p "$COREROOT/usr/local/munki/munkilib"
-chmod -R 755 "$COREROOT/usr"
+mkdir -m 755 "$COREROOT/usr"
+mkdir -m 755 "$COREROOT/usr/local"
+mkdir -m 755 "$COREROOT/usr/local/munki"
+mkdir -m 755 "$COREROOT/usr/local/munki/munkilib"
 # Copy command line utilities.
 # edit this if list of tools changes!
 for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor precache_agent ptyexec removepackages
@@ -423,17 +442,18 @@ chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
 
 # make paths.d file
-mkdir -p "$COREROOT/private/etc/paths.d"
+mkdir -m 755 "$COREROOT/private"
+mkdir -m 755 "$COREROOT/private/etc/"
+mkdir -m 755 "$COREROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$COREROOT/private/etc/paths.d/munki"
-chmod -R 755 "$COREROOT/private"
 chmod 644 "$COREROOT/private/etc/paths.d/munki"
 
 # Create directory structure for /Library/Managed Installs.
 mkdir -m 1775 "$COREROOT/Library"
-mkdir -m 755 -p "$COREROOT/Library/Managed Installs"
-mkdir -m 750 -p "$COREROOT/Library/Managed Installs/Cache"
-mkdir -m 750 -p "$COREROOT/Library/Managed Installs/catalogs"
-mkdir -m 755 -p "$COREROOT/Library/Managed Installs/manifests"
+mkdir -m 755 "$COREROOT/Library/Managed Installs"
+mkdir -m 750 "$COREROOT/Library/Managed Installs/Cache"
+mkdir -m 750 "$COREROOT/Library/Managed Installs/catalogs"
+mkdir -m 755 "$COREROOT/Library/Managed Installs/manifests"
 
 # copy in core cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/core_cleanup_scripts/" ] ; then
@@ -454,8 +474,9 @@ echo "Creating admin package source..."
 # Create directory structure.
 ADMINROOT="$PKGTMP/munki_admin"
 mkdir -m 1775 "$ADMINROOT"
-mkdir -p "$ADMINROOT/usr/local/munki"
-chmod -R 755 "$ADMINROOT/usr"
+mkdir -m 755 "$ADMINROOT/usr"
+mkdir -m 755 "$ADMINROOT/usr/local"
+mkdir -m 755 "$ADMINROOT/usr/local/munki"
 # Copy command line admin utilities.
 # edit this if list of tools changes!
 for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean
@@ -467,9 +488,10 @@ chmod -R go-w "$ADMINROOT/usr/local/munki"
 chmod +x "$ADMINROOT/usr/local/munki"
 
 # make paths.d file
-mkdir -p "$ADMINROOT/private/etc/paths.d"
+mkdir -m 755 "$ADMINROOT/private"
+mkdir -m 755 "$ADMINROOT/private/etc"
+mkdir -m 755 "$ADMINROOT/private/etc/paths.d"
 echo "/usr/local/munki" > "$ADMINROOT/private/etc/paths.d/munki"
-chmod -R 755 "$ADMINROOT/private"
 chmod 644 "$ADMINROOT/private/etc/paths.d/munki"
 
 # copy in admin cleanup scripts
@@ -567,8 +589,9 @@ mkdir -m 1775 "$APPUSAGEROOT"
 mkdir -m 1775 "$APPUSAGEROOT/Library"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchAgents"
 mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
-mkdir -p "$APPUSAGEROOT/usr/local/munki"
-chmod -R 755 "$APPUSAGEROOT/usr"
+mkdir -m 755 "$APPUSAGEROOT/usr"
+mkdir -m 755 "$APPUSAGEROOT/usr/local"
+mkdir -m 755 "$APPUSAGEROOT/usr/local/munki"
 # Copy launch agent, launch daemon, daemon, and agent
 # LaunchAgent
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
@@ -604,8 +627,9 @@ echo "Creating python package source..."
 # Create directory structure.
 PYTHONROOT="$PKGTMP/munki_python"
 mkdir -m 1775 "$PYTHONROOT"
-mkdir -p "$PYTHONROOT/usr/local/munki"
-chmod -R 755 "$PYTHONROOT/usr"
+mkdir -m 755 "$PYTHONROOT/usr"
+mkdir -m 755 "$PYTHONROOT/usr/local"
+mkdir -m 755 "$PYTHONROOT/usr/local/munki"
 # Copy framework
 cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
 # Create symlink
@@ -687,6 +711,25 @@ if [ "$ROSETTA2" == "YES" ] ;  then
     makeinfo rosetta2 "$PKGTMP/info" norestart
 fi
 
+#################
+## client cert ##
+#################
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+
+    echo "Creating client cert package souce..."
+
+    # Create directory structure
+    CLIENTCERTROOT="$PKGTMP/munki_clientcert"
+    mkdir -m 1755 "$CLIENTCERTROOT"
+    mkdir -m 755 -p "$CLIENTCERTROOT/Library/Managed Installs"
+    mkdir -m 700 "$CLIENTCERTROOT/Library/Managed Installs/certs"
+    # Copy cert file
+    sudo cp -p "$CLIENTCERT" "$CLIENTCERTROOT/Library/Managed Installs/certs/client.pem"
+
+    # Create package info file
+    makeinfo clientcert "$PKGTMP/info" norestart
+fi
+
 #############################
 ## Create metapackage root ##
 #############################
@@ -721,7 +764,8 @@ CONFTITLE="Munki tools configuration"
 CONFDESC="Sets initial preferences for Munki tools."
 ROSETTA2TITLE="Install Rosetta2"
 ROSETTA2DESC="Installs Rosetta2 for ARM-based hardware."
-
+CLIENTCERTTITLE="Munki client certificate"
+CLIENTCERTDESC="Required client certificate for Munki."
 LAUNCHDPOSTINSTALLACTION="onConclusion=\"RequireRestart\""
 if [ "$MDMSTYLE" == "YES" ] ;  then
     LAUNCHDPOSTINSTALLACTION=""
@@ -762,6 +806,17 @@ if [ "$ROSETTA2" == "YES" ]; then
     HOSTARCHITECTURES="hostArchitectures=\"x86_64,arm64\""
 fi
 
+CLIENTCERTOUTLINE=""
+CLIENTCERTCHOICE=""
+CLIENTCERTREF=""
+if [ "$CLIENTCERTPKG" == "YES" ]; then
+    CLIENTCERTOUTLINE="<line choice=\"clientcert\"/>"
+    CLIENTCERTCHOICE="<choice id=\"clientcert\" title=\"$CLIENTCERTTITLE\" description=\"$CLIENTCERTDESC\">
+        <pkg-ref id=\"$PKGID.clientcert\"/>
+    </choice>"
+    CLIENTCERTREF="<pkg-ref id=\"$PKGID.clientcert\" auth=\"Root\">${PKGPREFIX}munkitools_clientcert.pkg</pkg-ref>"
+fi
+
 cat > "$DISTFILE" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-script minSpecVersion="1.000000">
@@ -783,6 +838,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="python"/>
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
+        $CLIENTCERTOUTLINE
     </choices-outline>
     $ROSETTA2CHOICE
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -805,6 +861,7 @@ cat > "$DISTFILE" <<EOF
     </choice>
     $BOOTSTRAPCHOICE
     $CONFCHOICE
+    $CLIENTCERTCHOICE
     $ROSETTA2REF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
@@ -814,6 +871,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
     $BOOTSTRAPREF
     $CONFREF
+    $CLIENTCERTREF
     <product id="$PKGID" version="$VERSION" />
 </installer-script>
 EOF
@@ -857,6 +915,10 @@ if [ "$ROSETTA2" == "YES" ] ; then
     sudo chown -hR root:admin "$ROSETTA2ROOT"
 fi
 
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+    sudo chown -hR root:admin "$CLIENTCERTROOT"
+fi
+
 ALLPKGS="core admin app launchd app_usage python"
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
@@ -866,6 +928,9 @@ if [ "$CONFPKG" == "YES" ] ; then
 fi
 if [ "$ROSETTA2" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} rosetta2"
+fi
+if [ "$CLIENTCERTPKG" == "YES" ] ; then
+    ALLPKGS="${ALLPKGS} clientcert"
 fi
 
 ######################
@@ -895,9 +960,15 @@ for pkg in $ALLPKGS ; do
             ;;
         "bootstrap")
             ver="1.0"
+            SCRIPTS=""
             ;;
         "config")
             ver="1.0"
+            SCRIPTS=""
+            ;;
+        "clientcert")
+            ver="1.0"
+            SCRIPTS=""
             ;;
         "rosetta2")
             ver="1.0"
@@ -951,7 +1022,7 @@ for pkg in $ALLPKGS ; do
     if [ "$?" -ne 0 ]; then
         echo "Error building munkitools_$pkg.pkg."
         echo "Attempting to clean up temporary files..."
-#         sudo rm -rf "$PKGTMP"
+        sudo rm -rf "$PKGTMP"
         exit 2
     else
         # set ownership of package back to current user
@@ -980,13 +1051,13 @@ fi
 if [ "$?" -ne 0 ]; then
     echo "Error creating $MPKG."
     echo "Attempting to clean up temporary files..."
-#     sudo rm -rf "$PKGTMP"
+    sudo rm -rf "$PKGTMP"
     exit 2
 fi
 
 echo "Distribution package created at $MPKG."
 echo
-# echo "Removing temporary files..."
-# sudo rm -rf "$PKGTMP"
+echo "Removing temporary files..."
+#sudo rm -rf "$PKGTMP"
 
 echo "Done."
