@@ -331,9 +331,9 @@ def doFinishingTasks(runtype=None):
     reports.savereport()
 
     # store the current pending update count and other data for munki-notifier
+    installinfo.save_pending_update_times()
     update_info = installinfo.get_pending_update_info()
     prefs.set_pref('PendingUpdateCount', update_info['PendingUpdateCount'])
-    installinfo.save_pending_update_times()
     prefs.set_pref('OldestUpdateDays', update_info['OldestUpdateDays'])
     prefs.set_pref('ForcedUpdateDueDate', update_info['ForcedUpdateDueDate'])
 
