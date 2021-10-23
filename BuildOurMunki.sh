@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 
 SCRIPT_PATH=$(dirname $0)
 
