@@ -20,6 +20,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
+    let sidebar_items = [["title": "Software", "icon": "AllItemsTemplate"],
+                 ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
+                 ["title": "My Items", "icon": "MyStuffTemplate"],
+                 ["title": "Updates", "icon": "updatesTemplate"]]
+    
     // status properties
     var _status_title = ""
     var stop_requested = false
@@ -38,6 +43,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     @IBOutlet weak var sidebar: NSOutlineView!
     
+    @IBOutlet weak var fullSidebar: NSVisualEffectView!
+    
     @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
     @IBOutlet weak var findMenuItem: NSMenuItem!
     @IBOutlet weak var softwareMenuItem: NSMenuItem!
@@ -45,6 +52,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var myItemsMenuItem: NSMenuItem!
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
 
+    @IBOutlet weak var webViewContainer: NSView!
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
 
@@ -53,11 +61,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
 
     @objc private func onItemClicked() {
-        let items = populateItems()
-        if items.count == 1 {
-            loadUpdatesPage(self)
-        } else {
-            if 0 ... items.count ~= sidebar.clickedRow {
+        if 0 ... sidebar_items.count ~= sidebar.clickedRow {
                 clearSearchField()
                 switch sidebar.clickedRow {
                     case 0:
@@ -70,26 +74,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                         loadUpdatesPage(self)
                     default:
                         loadUpdatesPage(self)
-                }
             }
         }
     }
-
-    func populateItems() -> [[String: String]] {
-        // create an items dict with only "Updates" if no optional_items
-        let optional_items = getOptionalInstallItems()
-        if optional_items.isEmpty {
-            let items = [["title": "Updates", "icon": "updatesTemplate"]]
-            return items
-        } else {
-            let items = [["title": "Software", "icon": "AllItemsTemplate"],
-                         ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
-                         ["title": "My Items", "icon": "MyStuffTemplate"],
-                         ["title": "Updates", "icon": "updatesTemplate"]]
-            return items
-        }
-    }
-
+    
     func appShouldTerminate() -> NSApplication.TerminateReply {
         // called by app delegate
         // when it receives applicationShouldTerminate:
@@ -130,12 +118,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        let items = populateItems()
-        if items.count == 1 {
-            return sidebar.selectedRow == 0
-        } else {
-            return sidebar.selectedRow == 3
-        }
+        return sidebar.selectedRow == 3
     }
 
     func newTranslucentWindow(screen: NSScreen) -> NSWindow {
@@ -172,20 +155,23 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // reverse all the obnoxious changes
         msc_log("msc", "end_obnoxious_mode")
         
-        let options = NSApplication.PresentationOptions([])
-        NSApp.presentationOptions = options
+        // remove obnoxious presentation options
+        NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.subtracting(
+            NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
         
         for window in self.backdropWindows {
             window.orderOut(self)
         }
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
-            window.styleMask = [.titled, .fullSizeContentView, .closable, .miniaturizable, .resizable]
+            // turn .closable, .miniaturizable, .resizable back on
+            let addedStyleMask : NSWindow.StyleMask = [.closable, .miniaturizable, .resizable]
+            window.styleMask = window.styleMask.union(addedStyleMask)
             window.level = .normal
         }
         self.forceFrontmost = false
         // enable/disable controls as needed
-        enableOrDisableSoftwareViewControls()
+        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
     }
     
     func makeUsObnoxious() {
@@ -193,24 +179,21 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         msc_log("msc", "start_obnoxious_mode")
         
         // make it very difficult to switch away from this app
-        let options = NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit])
-        NSApp.presentationOptions = options
+        NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
+            NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
         
         // alter some window properties to make the window harder to ignore
         if let window = self.window {
             window.center()
             window.collectionBehavior = .fullScreenNone
-            window.styleMask = [.titled, .fullSizeContentView, .closable]
+            window.styleMask = window.styleMask.subtracting(
+                NSWindow.StyleMask([.miniaturizable, .resizable]))
             window.level = .floating
         }
         
         // disable all of the other controls
-        searchField.isEnabled = false
-//        findMenuItem.isEnabled = false
-//        softwareMenuItem.isEnabled = false
-//        categoriesMenuItem.isEnabled = false
-//        myItemsMenuItem.isEnabled = false
-        self.sidebar.isEnabled = false
+        updatesOnlyWindowMode()
+        loadUpdatesPage(self)
         
         // set flag to cause us to always be brought to front
         self.forceFrontmost = true
@@ -236,25 +219,69 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         return false
     }
     
+    func updatesOnlyWindowMode() {
+        findMenuItem.isHidden = true
+        softwareMenuItem.isHidden = true
+        categoriesMenuItem.isHidden = true
+        myItemsMenuItem.isHidden = true
+        updatesMenuItem.isHidden = true
+        fullSidebar.isHidden = true
+        webViewContainer.frame.origin.x = -1
+        webViewContainer.frame.size.width = self.window!.frame.width
+        navigateBackButton.frame.origin.x = 90
+        // adjusts window controls on newer OSs
+        if #available(macOS 10.13, *) {
+            let customToolbar = NSToolbar()
+            self.window?.titleVisibility = .hidden
+            self.window?.toolbar = customToolbar
+        }
+        loadUpdatesPage(self)
+    }
+    
+    func updatesAndOptionalWindowMode() {
+        findMenuItem.isHidden = false
+        softwareMenuItem.isHidden = false
+        categoriesMenuItem.isHidden = false
+        myItemsMenuItem.isHidden = false
+        updatesMenuItem.isHidden = false
+        fullSidebar.isHidden = false
+        webViewContainer.frame.origin.x = 220
+        navigateBackButton.frame.origin.x = 17
+        webViewContainer.frame.size.width = self.window!.frame.width - fullSidebar.frame.width
+        // adjusts window controls on newer OSs
+        if #available(macOS 10.13, *) {
+            let customToolbar = NSToolbar()
+            self.window?.titleVisibility = .hidden
+            self.window?.toolbar = customToolbar
+        }
+    }
+    
+    func moveDirectlyToUpdatesPageIfNeeded() {
+        if getUpdateCount() > 0 || !getProblemItems().isEmpty {
+            loadUpdatesPage(self)
+        }
+    }
+    
+    func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() {
+        // if we have no optional_items set MSC to show updates only
+        // if updates available go right to update screen
+        if optionalInstallsExist() {
+            updatesAndOptionalWindowMode()
+            moveDirectlyToUpdatesPageIfNeeded()
+        } else {
+            updatesOnlyWindowMode()
+        }
+    }
+    
+    
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
-        enableOrDisableSoftwareViewControls()
-        let optional_items = getOptionalInstallItems()
-        // if we have no optional_items set MSC to show updates only
-        if optional_items.isEmpty {
-            searchField.isHidden = true
-            findMenuItem.isHidden = true
-            softwareMenuItem.isHidden = true
-            categoriesMenuItem.isHidden = true
-            myItemsMenuItem.isHidden = true
-            updatesMenuItem.isHidden = true
-            loadUpdatesPage(self)
-        } else if getUpdateCount() > 0 || !getProblemItems().isEmpty {
-            loadUpdatesPage(self)
-        } else {
+        if optionalInstallsExist() {
             loadAllSoftwarePage(self)
+        } else {
+            loadUpdatesPage(self)
         }
-        displayUpdateCount()
+        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
         cached_self_service = SelfService()
     }
 
@@ -272,8 +299,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func highlightToolbarButtons(_ nameToHighlight: String) {
-        let items = populateItems()
-        for (index, item) in items.enumerated() {
+        for (index, item) in sidebar_items.enumerated() {
             if nameToHighlight == item["title"] {
                 sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             }
@@ -284,16 +310,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         self.searchField.stringValue = ""
     }
     
-    func enableOrDisableSoftwareViewControls() {
-        // Disable or enable the controls that let us view optional items
-        let enabled_state = optionalInstallsExist()
-        //enableOrDisableToolbarItems(enabled_state)
-        searchField.isEnabled = enabled_state
-        findMenuItem.isEnabled = enabled_state
-        softwareMenuItem.isEnabled = enabled_state
-        categoriesMenuItem.isEnabled = enabled_state
-        myItemsMenuItem.isEnabled = enabled_state
-    }
     
     func munkiStatusSessionEnded(withStatus sessionResult: Int, errorMessage: String) {
         // Called by StatusController when a Munki session ends
@@ -407,7 +423,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // pending updates may have changed
         _alertedUserToOutstandingUpdates = false
         // enable/disable controls as needed
-        enableOrDisableSoftwareViewControls()
+        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
         // what page are we currently viewing?
         let page_url = webView.url
         let filename = page_url?.lastPathComponent ?? ""
@@ -798,14 +814,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         let updateCount = getUpdateCount()
         
         var cellView:MSCTableCellView?
-        
-        let items = populateItems()
 
-        if items.count == 1 {
-            if let view = self.sidebar.rowView(atRow: 0, makeIfNecessary: false) {
-                cellView = view.view(atColumn: 0) as? MSCTableCellView
-            }
-        } else if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
             cellView = view.view(atColumn: 0) as? MSCTableCellView
         }
 
@@ -1536,14 +1546,12 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 extension MainWindowController: NSOutlineViewDataSource {
     // Number of items in the sidebar
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        let items = populateItems()
-        return items.count
+        return sidebar_items.count
     }
     
     // Items to be added to sidebar
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        let items = populateItems()
-        return items[index]
+        return sidebar_items[index]
     }
     
     // Whether rows are expandable by an arrow

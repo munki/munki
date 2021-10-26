@@ -15,10 +15,11 @@ class MSCAlertController: NSObject {
     var window: NSWindow? // our parent window
     var timers: [Timer] = []
     var quitButton: NSButton?
+    var haveOpenedSysPrefsSUPane = false
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
-        if updatesRequireRestart() && verifyUser(NSUserName()) && !verifyRecoveryKeyPresent() {
+        if !haveOpenedSysPrefsSUPane && updatesRequireRestart() && verifyUser(NSUserName()) && !verifyRecoveryKeyPresent() {
             // FV is on and user is in list of FV users, so they can
             // authrestart, and we do not have a stored FV recovery
             // key/password. So we should prompt the user for a password
@@ -181,14 +182,14 @@ class MSCAlertController: NSObject {
                                               userInfo: nil,
                                               repeats: false)
             timers.append(timer2)
-            let timer3 = Timer.scheduledTimer(timeInterval: 9.5,
+            let timer3 = Timer.scheduledTimer(timeInterval: 14.5,
                                               target: self,
                                               selector: #selector(self.fadeOutBackdropWindows),
                                               userInfo: nil,
                                               repeats: false)
             timers.append(timer3)
-            // wait 10 seconds, then quit
-            let timer4 = Timer.scheduledTimer(timeInterval: 10.0,
+            // wait 15 seconds, then quit
+            let timer4 = Timer.scheduledTimer(timeInterval: 15.0,
                                               target: NSApp as Any,
                                               selector: #selector(NSApp.terminate),
                                               userInfo: self,
@@ -212,6 +213,7 @@ class MSCAlertController: NSObject {
     @objc func openSoftwareUpdate() {
         // object method to call openSoftwareUpdatePrefsPane function
         openSoftwareUpdatePrefsPane()
+        self.haveOpenedSysPrefsSUPane = true
     }
     
     @objc func closeMainWindow() {

@@ -154,12 +154,15 @@ class NotificationHandler(NSObject):
                        path: str,
                        version: str}"""
         # pylint: disable=no-self-use
+        bundle_id = ""
+        app_path = ""
+        app_version = "0"
         if app_object:
             try:
                 url = app_object.bundleURL()
                 app_path = url.path()
             except AttributeError:
-                app_path = None
+                app_path = ""
             try:
                 bundle_id = app_object.bundleIdentifier()
             except AttributeError:
@@ -167,16 +170,13 @@ class NotificationHandler(NSObject):
                 if app_path:
                     bundle_id = os.path.basename(app_path)
             if app_path:
+                # try to get the version from the bundle's plist
                 app_info_plist = NSDictionary.dictionaryWithContentsOfFile_(
-                    '%s/Contents/Info.plist' % app_path)
+                    "%s/Contents/Info.plist" % app_path)
                 if app_info_plist:
                     app_version = app_info_plist.get(
-                        'CFBundleShortVersionString',
-                        app_info_plist.get('CFBundleVersion', '0'))
-                else:
-                    app_version = '0'
-            else:
-                app_version = '0'
+                        "CFBundleShortVersionString",
+                        app_info_plist.get("CFBundleVersion", "0"))
 
         return {'bundle_id': bundle_id,
                 'path': app_path,
