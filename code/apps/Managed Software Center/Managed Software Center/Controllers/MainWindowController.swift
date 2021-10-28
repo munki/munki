@@ -51,7 +51,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var categoriesMenuItem: NSMenuItem!
     @IBOutlet weak var myItemsMenuItem: NSMenuItem!
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
-
+    @IBOutlet weak var reloadPageMenuItem: NSMenuItem!
+    
     @IBOutlet weak var webViewContainer: NSView!
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
@@ -172,6 +173,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         self.forceFrontmost = false
         // enable/disable controls as needed
         determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
+        reloadPageMenuItem.isEnabled = true
     }
     
     func makeUsObnoxious() {
@@ -193,6 +195,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         // disable all of the other controls
         updatesOnlyWindowMode()
+        reloadPageMenuItem.isEnabled = false
         loadUpdatesPage(self)
         
         // set flag to cause us to always be brought to front
