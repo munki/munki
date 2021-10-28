@@ -637,6 +637,10 @@ func buildUpdatesPage() throws {
         try buildUpdateStatusPage()
         return
     }
+    var show_additional_updates = true
+    if (NSApp.delegate! as! AppDelegate).mainWindowController.weShouldBeObnoxious() {
+        show_additional_updates = false
+    }
     let filterAppleUpdates = (NSApp.delegate! as! AppDelegate).mainWindowController.should_filter_apple_updates
     let item_list = getEffectiveUpdateList(filterAppleUpdates)
     for item in item_list {
@@ -650,27 +654,29 @@ func buildUpdatesPage() throws {
         item["added_class"] = ""
         item["hide_cancel_button"] = "hidden"
     }
-    // find any optional installs with update available
-    var other_updates = getOptionalInstallItems().filter(
-        { ($0["status"] as? String ?? "") == "update-available" }
-    )
-    // find any listed optional install updates that require a higher OS
-    // or have insufficient disk space or other blockers (because they have a
-    // note)
-    let blocked_optional_updates = getOptionalInstallItems().filter(
-        {
-            (($0["status"] as? String ?? "") == "installed" &&
-             !(($0["note"] as? String ?? "").isEmpty))
+    var other_updates = [OptionalItem]()
+    if show_additional_updates {
+        // find any optional installs with update available
+        other_updates = getOptionalInstallItems().filter(
+            { ($0["status"] as? String ?? "") == "update-available" }
+        )
+        // find any listed optional install updates that require a higher OS
+        // or have insufficient disk space or other blockers (because they have a
+        // note)
+        let blocked_optional_updates = getOptionalInstallItems().filter(
+            {
+                (($0["status"] as? String ?? "") == "installed" &&
+                 !(($0["note"] as? String ?? "").isEmpty))
+            }
+        )
+        for item in blocked_optional_updates {
+            item["hide_cancel_button"] = "hidden"
         }
-    )
-    for item in blocked_optional_updates {
-        item["hide_cancel_button"] = "hidden"
+        other_updates += blocked_optional_updates
+        for item in other_updates {
+            item["added_class"] = ""
+        }
     }
-    other_updates += blocked_optional_updates
-    for item in other_updates {
-        item["added_class"] = ""
-    }
-    
     let page = GenericItem()
     page["update_rows"] = ""
     page["hide_progress_spinner"] = "hidden"
