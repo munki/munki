@@ -50,6 +50,7 @@ from ..constants import POSTACTION_NONE, POSTACTION_RESTART, POSTACTION_SHUTDOWN
 
 from .. import display
 from .. import fetch
+from .. import info
 from .. import munkistatus
 from .. import munkihash
 from .. import munkilog
@@ -62,20 +63,6 @@ from .. import FoundationPlist
 
 
 INSTALLHISTORY_PLIST = '/Library/Receipts/InstallHistory.plist'
-
-
-def is_apple_silicon():
-    """Returns True if we're running on Apple Silicon"""
-    arch = os.uname()[4]
-    if arch == 'x86_64':
-        # we might be natively Intel64, or running under Rosetta.
-        # os.uname()[4] returns the current execution arch, which under Rosetta
-        # will be x86_64. Since what we want here is the _native_ arch, we're
-        # going to use a hack for now to see if we're natively arm64
-        uname_version = os.uname()[3]
-        if 'ARM64' in uname_version:
-            arch = 'arm64'
-    return arch == 'arm64'
 
 
 def softwareupdated_installhistory(start_date=None, end_date=None):
@@ -165,7 +152,7 @@ class AppleUpdates(object):
         msg = 'Checking for available Apple Software Updates...'
         display.display_status_major(msg)
 
-        if is_apple_silicon():
+        if info.is_apple_silicon():
             # don't actually download since this can trigger a prompt for
             # credentials
             return True
@@ -574,7 +561,7 @@ class AppleUpdates(object):
         This may filter out updates that require a restart. On Apple silicon,
         it returns an empty list since we can't use softwareupdate to install
         at all."""
-        if is_apple_silicon():
+        if info.is_apple_silicon():
             # can't install any!
             return []
         try:
@@ -604,7 +591,7 @@ class AppleUpdates(object):
           restart_action -- an integer indicating the action to take later:
                             none, logout, restart, shutdown
         """
-        if is_apple_silicon():
+        if info.is_apple_silicon():
             # can't install Apple softwareupdates on Apple Silicon
             return POSTACTION_NONE
 
