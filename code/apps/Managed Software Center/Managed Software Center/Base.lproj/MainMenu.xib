@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="18122" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097.3"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="18122"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -45,14 +45,17 @@
             <connections>
                 <outlet property="categoriesMenuItem" destination="IjL-Sm-tWj" id="Nu2-xf-MO3"/>
                 <outlet property="findMenuItem" destination="JRN-bq-1gM" id="r2S-8Y-njg"/>
+                <outlet property="fullSidebar" destination="Z53-oE-BgS" id="6Tx-qj-TLx"/>
                 <outlet property="myItemsMenuItem" destination="1bG-B4-adC" id="PCP-Ye-eRl"/>
                 <outlet property="navigateBackButton" destination="LRY-q4-rBU" id="Z08-Ex-3t6"/>
                 <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
                 <outlet property="progressSpinner" destination="Ti6-HC-kVU" id="PkK-Fh-91U"/>
+                <outlet property="reloadPageMenuItem" destination="RZb-6e-dMo" id="an6-Pg-ieO"/>
                 <outlet property="searchField" destination="0L3-LH-chu" id="yAV-Sz-rao"/>
                 <outlet property="sidebar" destination="pGV-ZA-L14" id="rl2-BU-gEi"/>
                 <outlet property="softwareMenuItem" destination="YIg-jD-AbB" id="D6s-mC-x4d"/>
                 <outlet property="updatesMenuItem" destination="HOZ-SU-4Sm" id="UdT-3I-JpJ"/>
+                <outlet property="webViewContainer" destination="DjW-0r-xfk" id="mxV-qW-x83"/>
                 <outlet property="webViewPlaceholder" destination="Wf8-HB-bc8" id="qCG-zy-8UQ"/>
                 <outlet property="window" destination="EeR-uP-dFY" id="FfQ-Q4-xUU"/>
             </connections>
@@ -165,17 +168,17 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="0W8-g5-gCj"/>
-                            <menuItem title="Software" enabled="NO" keyEquivalent="1" id="YIg-jD-AbB">
+                            <menuItem title="Software" keyEquivalent="1" id="YIg-jD-AbB">
                                 <connections>
                                     <action selector="loadAllSoftwarePage:" target="XGW-R4-ybE" id="dt1-OC-ObZ"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Categories" enabled="NO" keyEquivalent="2" id="IjL-Sm-tWj">
+                            <menuItem title="Categories" keyEquivalent="2" id="IjL-Sm-tWj">
                                 <connections>
                                     <action selector="loadCategoriesPage:" target="XGW-R4-ybE" id="Agt-cx-joI"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="My Items" enabled="NO" keyEquivalent="3" id="1bG-B4-adC">
+                            <menuItem title="My Items" keyEquivalent="3" id="1bG-B4-adC">
                                 <connections>
                                     <action selector="loadMyItemsPage:" target="XGW-R4-ybE" id="Hec-MQ-1q1"/>
                                 </connections>
@@ -243,7 +246,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenNone="YES"/>
             <rect key="contentRect" x="636" y="390" width="658" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="875"/>
             <value key="minSize" type="size" width="512" height="360"/>
             <view key="contentView" id="QRQ-UP-dFP">
                 <rect key="frame" x="0.0" y="0.0" width="658" height="360"/>
@@ -273,7 +276,7 @@
                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </tableColumn>
-                                        <tableColumn identifier="data" editable="NO" width="650" minWidth="40" maxWidth="12560" id="FhP-XS-PZp">
+                                        <tableColumn identifier="data" editable="NO" width="618" minWidth="40" maxWidth="12560" id="FhP-XS-PZp">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
@@ -327,7 +330,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES" fullSizeContentView="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="132" y="116" width="1000" height="500"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="875"/>
             <value key="minSize" type="size" width="1000" height="500"/>
             <view key="contentView" id="H4V-bM-OJY">
                 <rect key="frame" x="0.0" y="0.0" width="1000" height="500"/>
@@ -342,7 +345,7 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </customView>
                             <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LRY-q4-rBU">
-                                <rect key="frame" x="16.5" y="468" width="42" height="23"/>
+                                <rect key="frame" x="17" y="468" width="42" height="23"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSGoLeftTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="M5T-lv-26O">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -398,11 +401,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="ItemCell" id="8LW-1K-dzo" customClass="MSCTableCellView" customModule="Managed_Software_Center" customModuleProvider="target">
-                                                            <rect key="frame" x="1" y="1" width="188" height="40"/>
+                                                            <rect key="frame" x="11" y="1" width="197" height="40"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="545-FJ-GjT">
-                                                                    <rect key="frame" x="38" y="9" width="147" height="21"/>
+                                                                    <rect key="frame" x="38" y="9" width="156" height="21"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="cr5-Id-HMP">
                                                                         <font key="font" metaFont="system" size="17"/>
@@ -416,7 +419,7 @@
                                                                     <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSActionTemplate" id="LeG-M3-5ap"/>
                                                                 </imageView>
                                                                 <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LLF-TK-FyK">
-                                                                    <rect key="frame" x="156" y="10" width="27" height="17"/>
+                                                                    <rect key="frame" x="165" y="10" width="27" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                                                     <buttonCell key="cell" type="inline" title="0" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="q81-SY-K1x">
                                                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -499,7 +502,7 @@
         <userDefaultsController representsSharedInstance="YES" id="Gxl-ZZ-6oq"/>
     </objects>
     <resources>
-        <image name="NSActionTemplate" width="14" height="14"/>
-        <image name="NSGoLeftTemplate" width="9" height="12"/>
+        <image name="NSActionTemplate" width="15" height="15"/>
+        <image name="NSGoLeftTemplate" width="10" height="14"/>
     </resources>
 </document>
