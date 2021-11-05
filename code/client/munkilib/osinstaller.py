@@ -165,6 +165,7 @@ def setup_authrestart_if_applicable():
             #     OSInstallerSetupInternal
             #
             # It might go away in future versions of the macOS installer.
+            # (but it's still there in the macOS 12.0.1 installer!)
             #
             display.display_info(
                 'Configuring startosinstall to quit instead of restart...')
