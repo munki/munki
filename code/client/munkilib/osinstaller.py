@@ -44,6 +44,7 @@ from . import authrestart
 from . import bootstrapping
 from . import display
 from . import dmgutils
+from . import info
 from . import launchd
 from . import munkilog
 from . import munkistatus
@@ -104,8 +105,8 @@ def get_os_version(app_path):
         app_path, 'Contents/SharedSupport/InstallInfo.plist')
     if os.path.isfile(installinfo_plist):
         try:
-            info = FoundationPlist.readPlist(installinfo_plist)
-            return info['System Image Info']['version']
+            install_info = FoundationPlist.readPlist(installinfo_plist)
+            return install_info['System Image Info']['version']
         except (FoundationPlist.FoundationPlistException,
                 IOError, KeyError, AttributeError, TypeError):
             return ''
@@ -115,14 +116,14 @@ def get_os_version(app_path):
         # starting with macOS Big Sur
         mountpoints = dmgutils.mountdmg(sharedsupport_dmg)
         if mountpoints:
-            info_plist_path = os.path.join(
+            plist_path = os.path.join(
                 mountpoints[0],
                 "com_apple_MobileAsset_MacSoftwareUpdate",
                 "com_apple_MobileAsset_MacSoftwareUpdate.xml"
             )
             try:
-                info = FoundationPlist.readPlist(info_plist_path)
-                return info['Assets'][0]['OSVersion']
+                plist = FoundationPlist.readPlist(plist_path)
+                return plist['Assets'][0]['OSVersion']
             except FoundationPlist.FoundationPlistException:
                 return ''
             finally:
@@ -164,6 +165,7 @@ def setup_authrestart_if_applicable():
             #     OSInstallerSetupInternal
             #
             # It might go away in future versions of the macOS installer.
+            # (but it's still there in the macOS 12.0.1 installer!)
             #
             display.display_info(
                 'Configuring startosinstall to quit instead of restart...')
@@ -256,6 +258,11 @@ class StartOSInstallRunner(object):
         Will always reboot after if the setup is successful.
         Therefore this must be done at the end of all other actions that Munki
         performs during a managedsoftwareupdate run.'''
+
+        if info.is_apple_silicon():
+            raise StartOSInstallError(
+                'Skipping macOS upgrade because this is not currently '
+                'supported on Apple silicon.')
 
         if boot_volume_is_cs_converting():
             raise StartOSInstallError(
@@ -530,6 +537,7 @@ def get_catalog_info(mounted_dmgpath):
                     'minimum_munki_version': minimum_munki_version,
                     'minimum_os_version': minimum_os_version,
                     'name': name,
+                    'supported_architectures': ["x86_64"],
                     'uninstallable': False,
                     'version': vers}
     return None
