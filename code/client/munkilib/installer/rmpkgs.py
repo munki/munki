@@ -814,7 +814,7 @@ def removepackages(pkgnames, forcedeletebundles=False, listfiles=False,
         if listfiles:
             removalpaths.sort()
             for item in removalpaths:
-                print("/" + item.encode('UTF-8'))
+                print("/%s" % item)
         else:
             munkistatus.disableStopButton()
             remove_filesystem_items(removalpaths, forcedeletebundles)
