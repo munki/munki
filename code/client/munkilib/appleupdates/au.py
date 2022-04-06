@@ -217,7 +217,8 @@ class AppleUpdates(object):
                 elif item.get('Title'):
                     # new-style info first seen in Catalina
                     if (item.get('Title') == update.get('Display Name') and
-                            item.get('Version') == update.get('Display Version')
+                            item.get('Version') == update.get('Display Version') and
+                            item.get('Deferred') != "YES"
                        ):
                         item.update(update)
                         filtered_updates.append(item)
