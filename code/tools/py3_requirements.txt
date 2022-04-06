@@ -1,6 +1,6 @@
 asn1crypto
 cffi
-pyobjc==7.2
+pyobjc==8.2
 six==1.15.0
 xattr==0.9.7
 --no-binary :all:
