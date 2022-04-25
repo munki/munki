@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C07A6F802817033800755D2C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C07A6F7F2817033800755D2C /* Assets.xcassets */; };
 		C081D8B91E5F4F5E00323D9C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C081D8B81E5F4F5E00323D9C /* AppDelegate.m */; };
 		C081D8BC1E5F4F5E00323D9C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C081D8BB1E5F4F5E00323D9C /* main.m */; };
-		C081D8BE1E5F4F5E00323D9C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */; };
 		C081D8C11E5F4F5E00323D9C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */; };
 		C081D8C91E5F5F2500323D9C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C081D8C81E5F5F2500323D9C /* Cocoa.framework */; };
 		C081D8CE1E60A82600323D9C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C081D8D01E60A82600323D9C /* Localizable.strings */; };
@@ -31,11 +31,20 @@
 		C01F29521E64D1030057F5E8 /* sv */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = sv; path = sv.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		C06BD1761E60B35800CB208E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C06BD1771E60B35800CB208E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C07A6F76281604EB00755D2C /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-AU"; path = "en-AU.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C07A6F77281604EB00755D2C /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-AU"; path = "en-AU.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		C07A6F78281604EB00755D2C /* en-AU */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "en-AU"; path = "en-AU.lproj/MainMenu.xib"; sourceTree = "<group>"; };
+		C07A6F79281604F700755D2C /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C07A6F7A281604F800755D2C /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		C07A6F7B281604F800755D2C /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "en-GB"; path = "en-GB.lproj/MainMenu.xib"; sourceTree = "<group>"; };
+		C07A6F7C2816051900755D2C /* en-CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-CA"; path = "en-CA.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C07A6F7D2816051900755D2C /* en-CA */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-CA"; path = "en-CA.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		C07A6F7E2816051900755D2C /* en-CA */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "en-CA"; path = "en-CA.lproj/MainMenu.xib"; sourceTree = "<group>"; };
+		C07A6F7F2817033800755D2C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C081D8B41E5F4F5E00323D9C /* munki-notifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "munki-notifier.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C081D8B71E5F4F5E00323D9C /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		C081D8B81E5F4F5E00323D9C /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		C081D8BB1E5F4F5E00323D9C /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C081D8C81E5F5F2500323D9C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C081D8CF1E60A82600323D9C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C081D8D51E60A82600323D9C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -60,7 +69,6 @@
 		C0891DC11E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C0891DC21E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C0891DCB1E60B972001446D5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C0F2F4592548CC2700B529F1 /* munki-notifier.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "munki-notifier.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,7 +103,6 @@
 		C081D8B61E5F4F5E00323D9C /* munki-notifier */ = {
 			isa = PBXGroup;
 			children = (
-				C0F2F4592548CC2700B529F1 /* munki-notifier.entitlements */,
 				C081D8B71E5F4F5E00323D9C /* AppDelegate.h */,
 				C081D8B81E5F4F5E00323D9C /* AppDelegate.m */,
 				C081D8BA1E5F4F5E00323D9C /* Supporting Files */,
@@ -106,9 +113,9 @@
 		C081D8BA1E5F4F5E00323D9C /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C07A6F7F2817033800755D2C /* Assets.xcassets */,
 				C081D8D61E60A82600323D9C /* InfoPlist.strings */,
 				C081D8D01E60A82600323D9C /* Localizable.strings */,
-				C081D8BD1E5F4F5E00323D9C /* Assets.xcassets */,
 				C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */,
 				C0891DCB1E60B972001446D5 /* Info.plist */,
 				C081D8BB1E5F4F5E00323D9C /* main.m */,
@@ -185,6 +192,9 @@
 				sv,
 				da,
 				de,
+				"en-AU",
+				"en-GB",
+				"en-CA",
 			);
 			mainGroup = C081D8AB1E5F4F5E00323D9C;
 			productRefGroup = C081D8B51E5F4F5E00323D9C /* Products */;
@@ -201,9 +211,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C081D8BE1E5F4F5E00323D9C /* Assets.xcassets in Resources */,
 				C081D8D41E60A82600323D9C /* InfoPlist.strings in Resources */,
 				C081D8CE1E60A82600323D9C /* Localizable.strings in Resources */,
+				C07A6F802817033800755D2C /* Assets.xcassets in Resources */,
 				C081D8C11E5F4F5E00323D9C /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -255,6 +265,9 @@
 				C01F29501E64D1030057F5E8 /* nl */,
 				C01F29511E64D1030057F5E8 /* ru */,
 				C01F29521E64D1030057F5E8 /* sv */,
+				C07A6F78281604EB00755D2C /* en-AU */,
+				C07A6F7B281604F800755D2C /* en-GB */,
+				C07A6F7E2816051900755D2C /* en-CA */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -274,6 +287,9 @@
 				C0891DBA1E60B4DE001446D5 /* nl */,
 				C0891DBC1E60B4F1001446D5 /* ru */,
 				C0891DC21E60B527001446D5 /* sv */,
+				C07A6F77281604EB00755D2C /* en-AU */,
+				C07A6F7A281604F800755D2C /* en-GB */,
+				C07A6F7D2816051900755D2C /* en-CA */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -293,6 +309,9 @@
 				C0891DB91E60B4D4001446D5 /* nl */,
 				C0891DBB1E60B4F1001446D5 /* ru */,
 				C0891DC11E60B527001446D5 /* sv */,
+				C07A6F76281604EB00755D2C /* en-AU */,
+				C07A6F79281604F700755D2C /* en-GB */,
+				C07A6F7C2816051900755D2C /* en-CA */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -410,12 +429,13 @@
 		C081D8C61E5F4F5E00323D9C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "munki-notifier/munki-notifier.entitlements";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = "munki-notifier/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.munki-notifier";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -424,12 +444,13 @@
 		C081D8C71E5F4F5E00323D9C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "munki-notifier/munki-notifier.entitlements";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = "munki-notifier/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.munki-notifier";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
