@@ -1,3 +1,3 @@
-/* (No Comment) */
-"NSHumanReadableCopyright" = "Copyright © 2019-2021 The Munki Project. All rights reserved.";
-
+/* Localized versions of Info.plist keys */
+"CFBundleDisplayName" = "Managed Software Center";
+NSHumanReadableCopyright = "Copyright © 2010-2022 The Munki Project\nhttps://github.com/munki/munki";
