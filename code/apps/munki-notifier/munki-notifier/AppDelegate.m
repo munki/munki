@@ -12,6 +12,7 @@
 #import <UserNotifications/UserNotifications.h>
 
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
+NSString * const MunkiAppURL = @"munki://";
 NSString * const MunkiNotificationURL = @"munki://notify";
 long const DefaultUseNotificationCenterDays = 3;
 
@@ -113,6 +114,10 @@ long const DefaultUseNotificationCenterDays = 3;
             // to launch MSC.app
             [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         }
+        // work around a bug with multiple spaces by opening the
+        // app first, sleeping, then telling the app to notify
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiAppURL]];
+        sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
         [NSApp terminate: self];
         return;
@@ -147,16 +152,11 @@ long const DefaultUseNotificationCenterDays = 3;
         message = deadlineMessage;
     }
     
-    // Create options (userInfo) dictionary
-    NSMutableDictionary *options = [NSMutableDictionary dictionary];
-    options[@"action"]   = @"open_url";
-    options[@"value"]    = MunkiNotificationURL;
-    
     // deliver the notification
     [self deliverNotificationWithTitle:title
                               subtitle:subtitle
                                message:message
-                               options:options
+                               options:nil
                                  sound:nil];
 }
 
@@ -256,8 +256,14 @@ long const DefaultUseNotificationCenterDays = 3;
     NSLog(@"    value: %@", value);
     
     if ([action isEqualToString:@"open_url"]){
+        // this option currently unused
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:value]];
     } else {
+        // tell MSC app to notify user of updates
+        // work around a bug with multiple spaces by opening the
+        // app first, sleeping, then telling the app to notify
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiAppURL]];
+        sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
     }
     
