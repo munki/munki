@@ -180,6 +180,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // makes this app and window impossible(?)/difficult to ignore
         msc_log("msc", "start_obnoxious_mode")
         
+        // make sure we're frontmost
+        NSApp.activate(ignoringOtherApps: true)
+        
         // make it very difficult to switch away from this app
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
             NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
