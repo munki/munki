@@ -649,6 +649,7 @@ func buildUpdatesPage() throws {
             item["note"] = ""
         }
     }
+    let update_names = item_list.map({$0["name"] as? String ?? ""})
     let problem_updates = getProblemItems()
     for item in problem_updates {
         item["added_class"] = ""
@@ -657,8 +658,11 @@ func buildUpdatesPage() throws {
     var other_updates = [OptionalItem]()
     if show_additional_updates {
         // find any optional installs with update available
+        // that aren't already in our list of updates
         other_updates = getOptionalInstallItems().filter(
-            { ($0["status"] as? String ?? "") == "update-available" }
+            { ($0["status"] as? String ?? "") == "update-available" &&
+                !update_names.contains($0["name"] as? String ?? "")
+            }
         )
         // find any listed optional install updates that require a higher OS
         // or have insufficient disk space or other blockers (because they have a
