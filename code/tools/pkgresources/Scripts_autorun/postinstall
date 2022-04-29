@@ -1,0 +1,9 @@
+#!/usr/local/munki/munki-python
+
+import sys
+sys.path.append("/usr/local/munki")
+from munkilib import launchd
+
+job = launchd.Job(
+    ["/usr/local/munki/managedsoftwareupdate", "--auto"], cleanup_at_exit=False)
+job.start()
