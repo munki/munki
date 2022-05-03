@@ -14,7 +14,16 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 # Execute postinstall actions if we're installing on a live system.
 # This is useful for loading launch daemons and agents.
-if [ "$3" == "/" ]; then
+if [ "$3" = "/" ]; then
+    
+    # is a Munki launchd job already loaded? if so, exit now
+    for JOB in logouthelper managedsoftwareupdate-check managedsoftwareupdate-install managedsoftwareupdate-manualcheck
+    do
+        if launchctl list com.googlecode.munki.${JOB} >/dev/null 2>&1 ; then
+            echo "com.googlecode.munki.${JOB} is loaded: exiting postflight"
+            exit 0
+        fi
+    done
 
     # Load all launch daemons.
     launchctl load /Library/LaunchDaemons/com.googlecode.munki.logouthelper.plist
@@ -23,7 +32,7 @@ if [ "$3" == "/" ]; then
     launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-manualcheck.plist
     
     loggedInUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
-    if [ "$loggedInUser" == "" ] ; then
+    if [ "$loggedInUser" = "" ] ; then
         # no-one is logged in; I.E. we're at the loginwindow.
         # Load the loginwindow launchagents
         launchctl load -S LoginWindow /Library/LaunchAgents/com.googlecode.munki.managedsoftwareupdate-loginwindow.plist
@@ -33,9 +42,9 @@ if [ "$3" == "/" ]; then
     # Load launch agents for all currently logged in users.
     os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
     for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
-        pid=$(echo $pid_uid | cut -d, -f1)
-        uid=$(echo $pid_uid | cut -d, -f2)
-        if [[ $os_build_version -lt 14 ]] ; then
+        pid=$(echo "$pid_uid" | cut -d, -f1)
+        uid=$(echo "$pid_uid" | cut -d, -f2)
+        if [ "$os_build_version" -lt 14 ] ; then
             launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
             launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
         else
