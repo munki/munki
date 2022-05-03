@@ -568,7 +568,7 @@ if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
 fi
 
 # Create package info file.
-makeinfo launchd "$PKGTMP/info" norestart
+makeinfo launchd "$PKGTMP/info" restart
 
 
 #######################
