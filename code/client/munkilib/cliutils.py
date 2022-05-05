@@ -25,7 +25,6 @@ from __future__ import absolute_import, print_function
 import ctypes
 from ctypes.util import find_library
 import os
-import plistlib
 import readline
 import sys
 import tempfile
@@ -50,7 +49,7 @@ except ImportError:
     from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
-from munkilib.wrappers import unicode_or_str, get_input, readPlist
+from munkilib.wrappers import unicode_or_str, get_input, readPlist, writePlist
 
 FOUNDATION_SUPPORT = True
 try:
@@ -90,7 +89,7 @@ else:
             pref.cache = None
         if not pref.cache:
             try:
-                pref.cache = plistlib.readPlist(PREFSPATH)
+                pref.cache = readPlist(PREFSPATH)
             except (IOError, OSError, ExpatError):
                 pref.cache = {}
         if prefname in pref.cache:
@@ -245,14 +244,14 @@ def configure(prompt_list):
 
     else:
         try:
-            existing_prefs = plistlib.readPlist(PREFSPATH)
+            existing_prefs = readPlist(PREFSPATH)
             existing_prefs.update(edited_prefs)
             # remove repo_path if it exists since we don't use that
             # any longer (except for backwards compatibility) and we don't
             # want it getting out of sync with the repo_url
             if 'repo_path' in existing_prefs:
                 del existing_prefs['repo_path']
-            plistlib.writePlist(existing_prefs, PREFSPATH)
+            writePlist(existing_prefs, PREFSPATH)
         except (IOError, OSError, ExpatError):
             print('Could not save configuration to %s' % PREFSPATH,
                   file=sys.stderr)
