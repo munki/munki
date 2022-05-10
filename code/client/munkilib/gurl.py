@@ -84,9 +84,7 @@ objc.registerMetaDataForSelector(
     b'NSURLCredential',
     b'credentialWithIdentity:certificates:persistence:',
     {'arguments': {
-       2: {'null_accepted': False, 'type': b'@'},
-       3: {'_template': True, 'type': b'@'},
-       4: {'_template': True, 'type': b'Q'},
+       2: {'null_accepted': False, 'type': b'^{__SecIdentity=}'},
      },
      'classmethod': True,
      'hidden': False,
@@ -718,7 +716,7 @@ class Gurl(NSObject):
                     challenge.sender().cancelAuthenticationChallenge_(challenge)
 
             self.log("Will attempt to authenticate")
-            credential = NSURLCredential.alloc().initWithIdentity_certificates_persistence_(
+            credential = NSURLCredential.credentialWithIdentity_certificates_persistence_(
                 identity_ref,
                 None,
                 NSURLCredentialPersistenceForSession
