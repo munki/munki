@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2021 Greg Neagle.
+# Copyright 2009-2022 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -387,7 +387,7 @@ def writefile(stringdata, path):
     Returns the path on success, empty string on failure.'''
     try:
         fileobject = open(path, mode='wb')
-        print(stringdata.encode('UTF-8'), file=fileobject)
+        fileobject.write(stringdata.encode('UTF-8'))
         fileobject.close()
         return path
     except (OSError, IOError):
