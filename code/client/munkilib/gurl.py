@@ -19,13 +19,10 @@ gurl.py
 Created by Greg Neagle on 2013-11-21.
 Modified in Feb 2016 to add support for NSURLSession.
 Updated June 2019 for compatibility with Python 3 and PyObjC 5.1.2+
+Updated May 2022 for compatibilty with PyObjC 8.5 on macOS Mojave
 
 curl replacement using NSURLConnection and friends
 
-Tested with PyObjC 2.5.1 (inlcuded with macOS)
-and with PyObjC 5.2b1. Should also work with PyObjC 5.1.2.
-May fail with other versions of PyObjC due to issues with completion handler
-signatures.
 """
 from __future__ import absolute_import, print_function
 
@@ -75,6 +72,8 @@ from asn1crypto.x509 import Certificate, Name
 
 # patch the credentialWithIdentity:certificates:persistence: signature
 # see https://github.com/ronaldoussoren/pyobjc/issues/320#issuecomment-784278944
+# more changes May 2022 to work around some issues with PyObjC 8.5 and
+# macOS Mojave (and presumably earlier)
 import objc
 objc.registerCFSignature(
     "SecIdentityRef",
@@ -92,7 +91,8 @@ objc.registerMetaDataForSelector(
 )
 
 try:
-    from Foundation import NSURLSession, NSURLSessionConfiguration, NSURLCredentialPersistenceForSession
+    from Foundation import (NSURLSession, NSURLSessionConfiguration,
+                            NSURLCredentialPersistenceForSession)
     from CFNetwork import (kCFNetworkProxiesHTTPSEnable,
                            kCFNetworkProxiesHTTPEnable)
     NSURLSESSION_AVAILABLE = True
@@ -667,7 +667,8 @@ class Gurl(NSObject):
                 raw = dn.bytes().tobytes()
                 name = Name.load(raw)
                 expected_issuer_dicts.append(dict(name.native))
-                self.log('Accepted certificate-issuing authority: %s' % name.human_friendly)
+                self.log('Accepted certificate-issuing authority: %s'
+                         % name.human_friendly)
             if not expected_issuer_dicts:
                 self.log("The server didn't sent the list of "
                          "acceptable certificate-issuing authorities")
