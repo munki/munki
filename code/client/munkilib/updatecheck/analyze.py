@@ -552,6 +552,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = u'Download failed (%s)' % errmsg
+            iteminfo['partial_installer_item'] = download.get_url_basename(
+                item_pl['installer_item_location'])
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             for key in ['developer', 'icon_name']:
                 if key in item_pl:
@@ -565,6 +567,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
+            iteminfo['partial_installer_item'] = download.get_url_basename(
+                item_pl['installer_item_location'])
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             for key in ['developer', 'icon_name']:
                 if key in item_pl:

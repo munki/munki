@@ -420,6 +420,10 @@ def check(client_id='', localmanifestpath=None):
         cache_list.extend([item['uninstaller_item']
                            for item in installinfo.get('removals', [])
                            if item.get('uninstaller_item')])
+        # Don't delete problem item partial downloads
+        cache_list.extend([item['partial_installer_item']
+                           for item in installinfo.get('problem_items', [])
+                           if 'partial_installer_item' in item])
         # Don't delete optional installs that are designated as precache
         cache_list.extend(
             [download.get_url_basename(item['installer_item_location'])
