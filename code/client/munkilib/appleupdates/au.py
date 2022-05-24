@@ -443,7 +443,8 @@ class AppleUpdates(object):
                     su_info['RestartAction'] = 'RequireRestart'
                 apple_updates.append(su_info)
                 continue
-            elif not self.update_downloaded(product_key):
+            elif not info.is_apple_silicon() and not self.update_downloaded(product_key):
+                # only check for downloaded if Intel
                 display.display_warning(
                     'Product %s does not appear to be downloaded',
                     product_key)
