@@ -1215,6 +1215,10 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
 func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     var update_items = [[String: Any]]()
     if !munkiUpdatesContainAppleItems() {
+        // don't show any Apple updates if there are Munki items that are Apple items
+    } else if (filterAppleUpdates && isAppleSilicon()) {
+        // we can't install any Apple updates on Apple silicon, so filter them all
+    } else {
         for var item in getAppleUpdates() {
             if (filterAppleUpdates &&
                 ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
