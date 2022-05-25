@@ -1214,10 +1214,12 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
 
 func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     var update_items = [[String: Any]]()
-    if !munkiUpdatesContainAppleItems() {
+    if munkiUpdatesContainAppleItems() {
         // don't show any Apple updates if there are Munki items that are Apple items
+        NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
     } else if (filterAppleUpdates && isAppleSilicon()) {
         // we can't install any Apple updates on Apple silicon, so filter them all
+        NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
     } else {
         for var item in getAppleUpdates() {
             if (filterAppleUpdates &&
