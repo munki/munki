@@ -11,7 +11,7 @@ Munki is a set of tools that, used together with a webserver-based repository of
 
 Munki can install software packaged in the Apple package format and software distributed in "drag-and-drop" disk images.
 
-Additionally, Munki can install many Apple Software Updates on Intel Mac, and can prompt users to install pending Apple updates on both Intel and Apple silicon.
+Additionally, Munki can install many Apple Software Updates on Intel Macs, and can prompt users to install pending Apple updates on both Intel and Apple silicon.
 
 Munki is currently in use at organizations all over the world, managing software for tens of thousands -- perhaps hundreds of thousands of Macs.
 
