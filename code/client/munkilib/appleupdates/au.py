@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2021 Greg Neagle.
+# Copyright 2009-2022 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -337,12 +337,11 @@ class AppleUpdates(object):
                 display.display_warning(u'\t%s', err)
                 return -1
             return len(product_ids)
-        else:
-            # Download error, allow check again soon.
-            display.display_error(
-                'Could not download all available Apple updates.')
-            prefs.set_pref('LastAppleSoftwareUpdateCheck', None)
-            return 0
+        # Download error, allow check again soon.
+        display.display_error(
+            'Could not download all available Apple updates.')
+        prefs.set_pref('LastAppleSoftwareUpdateCheck', None)
+        return 0
 
     def update_downloaded(self, product_key):
         """Verifies that a given update appears to be downloaded.
@@ -354,13 +353,12 @@ class AppleUpdates(object):
                 'Apple Update product directory %s is missing'
                 % product_key)
             return False
-        else:
-            pkgs = glob.glob(os.path.join(product_dir, '*.pkg'))
-            if not pkgs:
-                munkilog.log(
-                    'Apple Update product directory %s contains no pkgs'
-                    % product_key)
-                return False
+        pkgs = glob.glob(os.path.join(product_dir, '*.pkg'))
+        if not pkgs:
+            munkilog.log(
+                'Apple Update product directory %s contains no pkgs'
+                % product_key)
+            return False
         return True
 
     def available_updates_downloaded(self):
@@ -443,7 +441,8 @@ class AppleUpdates(object):
                     su_info['RestartAction'] = 'RequireRestart'
                 apple_updates.append(su_info)
                 continue
-            elif not self.update_downloaded(product_key):
+            elif not info.is_apple_silicon() and not self.update_downloaded(product_key):
+                # only check for downloaded if Intel
                 display.display_warning(
                     'Product %s does not appear to be downloaded',
                     product_key)
@@ -518,12 +517,11 @@ class AppleUpdates(object):
             plist = {'AppleUpdates': apple_updates}
             FoundationPlist.writePlist(plist, self.apple_updates_plist)
             return len(apple_updates)
-        else:
-            try:
-                os.unlink(self.apple_updates_plist)
-            except (OSError, IOError):
-                pass
-            return 0
+        try:
+            os.unlink(self.apple_updates_plist)
+        except (OSError, IOError):
+            pass
+        return 0
 
     def display_apple_update_info(self):
         """Prints Apple update information and updates ManagedInstallReport."""
@@ -853,7 +851,7 @@ class AppleUpdates(object):
             # some (transient?) communications error with the su server; return
             # cached AppleInfo
             return self.cached_update_count()
-        elif updatecount == 0:
+        if updatecount == 0:
             self.clear_apple_update_info()
         else:
             _ = self.write_appleupdates_file()

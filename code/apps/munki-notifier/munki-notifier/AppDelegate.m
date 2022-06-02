@@ -3,59 +3,41 @@
 //  munki-notifier
 //
 //  Created by Greg Neagle on 2/23/17.
-//  Copyright © 2018-2021 The Munki Project. All rights reserved.
+//  Copyright © 2018-2022 The Munki Project. All rights reserved.
 //  Much code lifted and adapted from https://github.com/julienXX/terminal-notifier
 //
 
 #import "AppDelegate.h"
 #import <objc/runtime.h>
+#import <UserNotifications/UserNotifications.h>
 
-NSString * const ManagedSoftwareCenterBundleID = @"com.googlecode.munki.ManagedSoftwareCenter";
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
+NSString * const MunkiAppURL = @"munki://";
 NSString * const MunkiNotificationURL = @"munki://notify";
 long const DefaultUseNotificationCenterDays = 3;
-
-
-@implementation NSBundle (FakeBundleIdentifier)
-
-// Overriding bundleIdentifier works, but overriding NSUserNotificationAlertStyle does not work.
-
-- (NSString *)__bundleIdentifier;
-{
-    if (self == [NSBundle mainBundle]) {
-        return ManagedSoftwareCenterBundleID;
-    } else {
-        return [self __bundleIdentifier];
-    }
-}
-
-@end
-
-static BOOL
-InstallFakeBundleIdentifierHook()
-{
-    Class class = objc_getClass("NSBundle");
-    if (class) {
-        method_exchangeImplementations(class_getInstanceMethod(class, @selector(bundleIdentifier)),
-                                       class_getInstanceMethod(class, @selector(__bundleIdentifier)));
-        return YES;
-    }
-    return NO;
-}
 
 
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
+    // see if we've been directed to clear all delivered notifications
+    // if so, do that and exit
+    NSArray *args = [[NSProcessInfo processInfo] arguments];
+    //NSLog(@"Arguments: %@", args);
+    if ([args indexOfObject:@"-clear"] != NSNotFound) {
+        //NSLog(@"Removing all delivered notifications");
+        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+        sleep(1);
+        [NSApp terminate:self];
+        return;
+    }
+    
+    // notify user of available updates
     NSUserNotification *userNotification = notification.userInfo[NSApplicationLaunchUserNotificationKey];
     if (userNotification) {
         [self userActivatedNotification:userNotification];
     } else {
-        // Install the fake bundle ID hook so we can fake the sender.
-        @autoreleasepool {
-            InstallFakeBundleIdentifierHook();
-        }
         [self notifyUser];
     }
 }
@@ -65,8 +47,8 @@ InstallFakeBundleIdentifierHook()
     // Do we have a running NotificationCenter?
     NSArray *runningProcesses = [[[NSWorkspace sharedWorkspace] runningApplications]
                                  valueForKey:@"bundleIdentifier"];
-    BOOL notificationCenterAvailable = ([runningProcesses indexOfObject:NotificationCenterUIBundleID]
-                                        != NSNotFound);
+    BOOL notificationCenterAvailable = (
+            [runningProcesses indexOfObject:NotificationCenterUIBundleID] != NSNotFound);
     
     // get count of pending updates, oldest update days and any forced update due date
     // from Munki's preferences
@@ -132,6 +114,10 @@ InstallFakeBundleIdentifierHook()
             // to launch MSC.app
             [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         }
+        // work around a bug with multiple spaces by opening the
+        // app first, sleeping, then telling the app to notify
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiAppURL]];
+        sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
         [NSApp terminate: self];
         return;
@@ -166,16 +152,11 @@ InstallFakeBundleIdentifierHook()
         message = deadlineMessage;
     }
     
-    // Create options (userInfo) dictionary
-    NSMutableDictionary *options = [NSMutableDictionary dictionary];
-    options[@"action"]   = @"open_url";
-    options[@"value"]    = MunkiNotificationURL;
-    
     // deliver the notification
     [self deliverNotificationWithTitle:title
                               subtitle:subtitle
                                message:message
-                               options:options
+                               options:nil
                                  sound:nil];
 }
 
@@ -196,30 +177,68 @@ InstallFakeBundleIdentifierHook()
                              options:(NSDictionary *)options
                                sound:(NSString *)sound;
 {
-    // First remove earlier notifications from us
-    [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-    
-    NSUserNotification *userNotification = [NSUserNotification new];
-    userNotification.title = title;
-    if (! [subtitle isEqualToString:@""]) userNotification.subtitle = subtitle;
-    userNotification.informativeText = message;
-    userNotification.userInfo = options;
-    
-    if (floor(kCFCoreFoundationVersionNumber) > kCFCoreFoundationVersionNumber10_8) {
-        // We're running on 10.9 or higher
-        // Attempt to display as alert style (though user can override at any time)
-        [userNotification setValue:@YES forKey:@"_showsButtons"];
-    }
-    userNotification.hasActionButton = YES;
-    userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
-    
-    if (sound != nil) {
-        userNotification.soundName = [sound isEqualToString: @"default"] ? NSUserNotificationDefaultSoundName : sound ;
-    }
-    
-    NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
-    center.delegate = self;
-    [center scheduleNotification:userNotification];
+   /* if (@available(macOS 10.14, *)) {
+        // use newer UNUserNotifications
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        // center.delegate = self;
+        // First remove earlier notifications from us
+        [center removeAllPendingNotificationRequests];
+        // request authorization
+        [center requestAuthorizationWithOptions:(UNAuthorizationOptionProvisional + UNAuthorizationOptionAlert)
+           completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                if (error != nil) {
+                    NSLog(@"%@", error.localizedDescription);
+                }
+        }];
+        // create notification
+        NSString *identifier = @"msc_notification";
+        UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+        content.title = title;
+        if (! [subtitle isEqualToString:@""]) content.subtitle = subtitle;
+        content.body = message;
+        content.userInfo = options;
+        if (sound != nil) {
+            content.sound = [UNNotificationSound defaultSound];
+        }
+        UNNotificationRequest *request = [
+            UNNotificationRequest requestWithIdentifier:identifier
+                                  content: content
+                                  trigger:nil
+        ];
+        [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+            if (error != nil) {
+               NSLog(@"%@", error.localizedDescription);
+            }
+        }];
+        sleep(1);
+        [NSApp terminate: self];
+    } else { */
+        // pre-macOS 10.14, use NSUserNotifications
+        // First remove earlier notifications from us
+        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
+        
+        NSUserNotification *userNotification = [NSUserNotification new];
+        userNotification.title = title;
+        if (! [subtitle isEqualToString:@""]) userNotification.subtitle = subtitle;
+        userNotification.informativeText = message;
+        userNotification.userInfo = options;
+        
+        if (floor(kCFCoreFoundationVersionNumber) > kCFCoreFoundationVersionNumber10_8) {
+            // We're running on 10.9 or higher
+            // Attempt to display as alert style (though user can override at any time)
+            [userNotification setValue:@YES forKey:@"_showsButtons"];
+        }
+        userNotification.hasActionButton = YES;
+        userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
+        
+        if (sound != nil) {
+            userNotification.soundName = [sound isEqualToString: @"default"] ? NSUserNotificationDefaultSoundName : sound ;
+        }
+        
+        NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
+        center.delegate = self;
+        [center scheduleNotification:userNotification];
+   // }
 }
 
 - (void)userActivatedNotification:(NSUserNotification *)userNotification;
@@ -237,8 +256,14 @@ InstallFakeBundleIdentifierHook()
     NSLog(@"    value: %@", value);
     
     if ([action isEqualToString:@"open_url"]){
+        // this option currently unused
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:value]];
     } else {
+        // tell MSC app to notify user of updates
+        // work around a bug with multiple spaces by opening the
+        // app first, sleeping, then telling the app to notify
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiAppURL]];
+        sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
     }
     

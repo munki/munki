@@ -1,6 +1,15 @@
-asn1crypto
-cffi
-pyobjc==7.2
+asn1crypto==1.5.1
+cffi==1.15.0
+pycparser==2.21
+
+pyobjc-core==8.5
+pyobjc-framework-CFNetwork==8.5
+pyobjc-framework-LaunchServices==8.5
+pyobjc-framework-OpenDirectory==8.5
+pyobjc-framework-Quartz==8.5
+pyobjc-framework-Security==8.5
+pyobjc-framework-SystemConfiguration==8.5
+
 six==1.15.0
 xattr==0.9.7
 --no-binary :all:

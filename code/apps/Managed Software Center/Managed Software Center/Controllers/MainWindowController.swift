@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2021 The Munki Project. All rights reserved.
+//  Copyright © 2018-2022 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -179,6 +179,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func makeUsObnoxious() {
         // makes this app and window impossible(?)/difficult to ignore
         msc_log("msc", "start_obnoxious_mode")
+        
+        // make sure we're frontmost
+        NSApp.activate(ignoringOtherApps: true)
         
         // make it very difficult to switch away from this app
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
@@ -889,11 +892,25 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         webView.load(request)
         if url_fragment == "updates.html" {
             // clear all earlier update notifications
-            NSUserNotificationCenter.default.removeAllDeliveredNotifications()
+            removeAllDeliveredNotifications()
             // record that the user has been presented pending updates
             if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
                 _alertedUserToOutstandingUpdates = true
             }
+        }
+    }
+    
+    func removeAllDeliveredNotifications() {
+        // calls munki-notifier to remove all delivered notifications
+        // we can't remove them directly since we didn't actually post them
+        // so we can't use
+        // NSUserNotificationCenter.default.removeAllDeliveredNotifications()
+        let munkiNotifierPath = Bundle.main.path(forResource: "munki-notifier", ofType: "app")
+        if let munkiNotifierPath = munkiNotifierPath {
+            NSLog("munki-notifier path: %@", munkiNotifierPath as String)
+            let command = "/usr/bin/open"
+            let args = ["-a", munkiNotifierPath, "--args", "-clear"]
+            _ = exec(command, args: args)
         }
     }
     

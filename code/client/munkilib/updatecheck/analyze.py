@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2021 Greg Neagle.
+# Copyright 2009-2022 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -313,8 +313,7 @@ def process_install(manifestitem, cataloglist, installinfo,
         display.display_debug1(
             '%s has already been processed for install.', manifestitemname)
         return True
-    elif (manifestitemname_withoutversion in
-          installinfo['processed_uninstalls']):
+    if manifestitemname_withoutversion in installinfo['processed_uninstalls']:
         display.display_warning(
             'Will not process %s for install because it has already '
             'been processed for uninstall!', manifestitemname)
@@ -552,6 +551,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                 'Download of %s failed: %s', manifestitem, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = u'Download failed (%s)' % errmsg
+            iteminfo['partial_installer_item'] = download.get_url_basename(
+                item_pl['installer_item_location'])
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             for key in ['developer', 'icon_name']:
                 if key in item_pl:
@@ -565,6 +566,8 @@ def process_install(manifestitem, cataloglist, installinfo,
                 'Can\'t install %s because: %s', manifestitemname, errmsg)
             iteminfo['installed'] = False
             iteminfo['note'] = '%s' % errmsg
+            iteminfo['partial_installer_item'] = download.get_url_basename(
+                item_pl['installer_item_location'])
             iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
             for key in ['developer', 'icon_name']:
                 if key in item_pl:
@@ -751,12 +754,11 @@ def process_removal(manifestitem, cataloglist, installinfo):
             'the list of managed installs, or it is required by another'
             ' managed install.', manifestitemname)
         return False
-    elif manifestitemname in installinfo['processed_uninstalls']:
+    if manifestitemname in installinfo['processed_uninstalls']:
         display.display_debug1(
             '%s has already been processed for removal.', manifestitemname)
         return True
-    else:
-        installinfo['processed_uninstalls'].append(manifestitemname)
+    installinfo['processed_uninstalls'].append(manifestitemname)
 
     infoitems = []
     if includedversion:
@@ -777,11 +779,13 @@ def process_removal(manifestitem, cataloglist, installinfo):
         return False
 
     install_evidence = False
+    found_item = None
     for item in infoitems:
         display.display_debug2('Considering item %s-%s for removal info',
                                item['name'], item['version'])
         if installationstate.evidence_this_is_installed(item):
             install_evidence = True
+            found_item = item
             break
         else:
             display.display_debug2(
@@ -796,33 +800,33 @@ def process_removal(manifestitem, cataloglist, installinfo):
         installinfo['removals'].append(iteminfo)
         return True
 
-    # if we get here, install_evidence is true, and item
+    # if we get here, install_evidence is true, and found_item
     # holds the item we found install evidence for, so we
     # should use that item to do the removal
     uninstall_item = None
     packages_to_remove = []
     # check for uninstall info
     # and grab the first uninstall method we find.
-    if item.get('uninstallable') and 'uninstall_method' in item:
-        uninstallmethod = item['uninstall_method']
+    if found_item.get('uninstallable') and 'uninstall_method' in found_item:
+        uninstallmethod = found_item['uninstall_method']
         if uninstallmethod == 'removepackages':
-            packages_to_remove = get_receipts_to_remove(item)
+            packages_to_remove = get_receipts_to_remove(found_item)
             if packages_to_remove:
-                uninstall_item = item
+                uninstall_item = found_item
         elif uninstallmethod.startswith('Adobe'):
             # Adobe CS3/CS4/CS5/CS6/CC product
-            uninstall_item = item
+            uninstall_item = found_item
         elif uninstallmethod in ['remove_copied_items',
                                  'remove_app',
                                  'uninstall_script',
                                  'remove_profile']:
-            uninstall_item = item
+            uninstall_item = found_item
         else:
             # uninstall_method is a local script.
             # Check to see if it exists and is executable
             if os.path.exists(uninstallmethod) and \
                os.access(uninstallmethod, os.X_OK):
-                uninstall_item = item
+                uninstall_item = found_item
 
     if not uninstall_item:
         # the uninstall info for the item couldn't be matched
@@ -961,16 +965,16 @@ def process_removal(manifestitem, cataloglist, installinfo):
     iteminfo['uninstall_method'] = uninstallmethod
     if uninstallmethod.startswith('Adobe'):
         if (uninstallmethod == "AdobeCS5AAMEEPackage" and
-                'adobe_install_info' in item):
-            iteminfo['adobe_install_info'] = item['adobe_install_info']
+                'adobe_install_info' in uninstall_item):
+            iteminfo['adobe_install_info'] = uninstall_item['adobe_install_info']
         else:
-            if 'uninstaller_item_location' in item:
+            if 'uninstaller_item_location' in uninstall_item:
                 location = uninstall_item['uninstaller_item_location']
             else:
                 location = uninstall_item['installer_item_location']
             try:
                 download.download_installeritem(
-                    item, installinfo, uninstalling=True)
+                    uninstall_item, installinfo, uninstalling=True)
                 filename = os.path.split(location)[1]
                 iteminfo['uninstaller_item'] = filename
                 iteminfo['adobe_package_name'] = uninstall_item.get(
@@ -986,12 +990,12 @@ def process_removal(manifestitem, cataloglist, installinfo):
                     iteminfo['name'], errmsg)
                 return False
     elif uninstallmethod == 'remove_copied_items':
-        iteminfo['items_to_remove'] = item.get('items_to_copy', [])
+        iteminfo['items_to_remove'] = uninstall_item.get('items_to_copy', [])
     elif uninstallmethod == 'remove_app':
         if uninstall_item.get('installs', None):
             iteminfo['remove_app_info'] = uninstall_item['installs'][0]
     elif uninstallmethod == 'uninstall_script':
-        iteminfo['uninstall_script'] = item.get('uninstall_script', '')
+        iteminfo['uninstall_script'] = uninstall_item.get('uninstall_script', '')
 
     # before we add this removal to the list,
     # check for installed updates and add them to the
