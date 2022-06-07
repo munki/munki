@@ -49,7 +49,7 @@ except ImportError:
     from urllib.parse import urlparse, urljoin
 from xml.parsers.expat import ExpatError
 
-from munkilib.wrappers import unicode_or_str, get_input, readPlist, writePlist
+from munkilib.wrappers import unicode_or_str, get_input, readPlist, writePlist, PlistReadError
 
 FOUNDATION_SUPPORT = True
 try:
@@ -90,7 +90,7 @@ else:
         if not pref.cache:
             try:
                 pref.cache = readPlist(PREFSPATH)
-            except (IOError, OSError, ExpatError):
+            except (IOError, OSError, ExpatError, PlistReadError):
                 pref.cache = {}
         if prefname in pref.cache:
             return pref.cache[prefname]
