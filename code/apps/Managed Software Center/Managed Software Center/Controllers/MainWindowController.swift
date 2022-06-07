@@ -238,6 +238,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // adjusts window controls on newer OSs
         if #available(macOS 10.13, *) {
             let customToolbar = NSToolbar()
+            customToolbar.showsBaselineSeparator = false
             self.window?.titleVisibility = .hidden
             self.window?.toolbar = customToolbar
         }
@@ -257,6 +258,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // adjusts window controls on newer OSs
         if #available(macOS 10.13, *) {
             let customToolbar = NSToolbar()
+            customToolbar.showsBaselineSeparator = false
             self.window?.titleVisibility = .hidden
             self.window?.toolbar = customToolbar
         }
