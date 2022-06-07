@@ -319,7 +319,7 @@ class AppleUpdates(object):
 
         if not force_check and not self._force_check_necessary(before_hash):
             display.display_info(
-                'Skipping Apple Software Update check '
+                'Skipping full Apple Software Update check '
                 'because sucatalog is unchanged, installed Apple packages are '
                 'unchanged and we recently did a full check.')
             # return count of cached updates
