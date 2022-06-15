@@ -80,9 +80,9 @@ def check(client_id='', localmanifestpath=None):
         else:
             try:
                 mainmanifestpath = manifestutils.get_primary_manifest(client_id)
-            except manifestutils.ManifestException:
+            except manifestutils.ManifestException as err:
                 display.display_error(
-                    'Could not retrieve managed install primary manifest.')
+                    'Could not retrieve managed install primary manifest.: %s', err)
                 raise
 
         if processes.stop_requested():
