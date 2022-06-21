@@ -195,15 +195,18 @@ class AppleUpdates(object):
             # RecommendedUpdates without filtering. We never saw the issues
             # that this filtering is meant to address in 10.10 anyway!
             return recommended_updates
-        if not recommended_updates:
+        if not recommended_updates and not info.is_apple_silicon():
             # if the list is empty no need to run softwareupdate -l to filter
             # the list
             return []
-        if os_version_tuple < (11, 0):
-            # don't use --no-scan since that results in inaccurate results
+        if os_version_tuple >= (11, 0):
+            # don't use --no-scan on Big Sur and above since that results in
+            # inaccurate results
             su_results = su_tool.run(['-l'])
+            if info.is_apple_silicon():
+                recommended_updates = su_prefs.pref('RecommendedUpdates') or []
         else:
-            # use --no-scan to avoid network usage and slow check
+            # use --no-scan on 10.11-10.15 to avoid network usage and slow check
             su_results = su_tool.run(['-l', '--no-scan'])
         filtered_updates = []
         # add update to filtered_updates only if it is also listed
@@ -316,7 +319,7 @@ class AppleUpdates(object):
 
         if not force_check and not self._force_check_necessary(before_hash):
             display.display_info(
-                'Skipping Apple Software Update check '
+                'Skipping full Apple Software Update check '
                 'because sucatalog is unchanged, installed Apple packages are '
                 'unchanged and we recently did a full check.')
             # return count of cached updates
