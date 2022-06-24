@@ -395,7 +395,7 @@ fi
 
 
 # Create temporary directory
-PKGTMP=$(mktemp -d -t munkipkg)
+PKGTMP=$(mktemp -d -t munkipkg-XXXXXX)
 
 
 #########################################
@@ -417,13 +417,13 @@ mkdir -m 755 "$COREROOT/usr/local/munki/munkilib"
 # edit this if list of tools changes!
 for TOOL in authrestartd launchapp logouthelper managedsoftwareupdate supervisor precache_agent ptyexec removepackages
 do
-    cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
+    cp "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
 # Copy python libraries.
-#cp -X "$MUNKIROOT/code/client/munkilib/"*.py "$COREROOT/usr/local/munki/munkilib/"
+#cp "$MUNKIROOT/code/client/munkilib/"*.py "$COREROOT/usr/local/munki/munkilib/"
 rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/client/munkilib/" "$COREROOT/usr/local/munki/munkilib/"
 # Copy munki version.
-cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki/munkilib/"
+cp "$MUNKIROOT/code/client/munkilib/version.plist" "$COREROOT/usr/local/munki/munkilib/"
 # svnversion file was used when we were using subversion
 # we don't need this file if we have an updated get_version method in munkicommon.py
 if [ "$SVNREV" -lt "1302" ]; then
@@ -479,7 +479,7 @@ mkdir -m 755 "$ADMINROOT/usr/local/munki"
 # edit this if list of tools changes!
 for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean
 do
-	cp -X "$MUNKIROOT/code/client/$TOOL" "$ADMINROOT/usr/local/munki/" 2>&1
+	cp "$MUNKIROOT/code/client/$TOOL" "$ADMINROOT/usr/local/munki/" 2>&1
 done
 # Set permissions.
 chmod -R go-w "$ADMINROOT/usr/local/munki"
@@ -523,8 +523,10 @@ chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 # sign MSC app
 if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing Managed Software Center.app..."
-    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose \
+    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose --deep \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/Frameworks/libswiftAppKit.dylib" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/Frameworks/libswiftCoreImage.dylib" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
         "$APPROOT/Applications/Managed Software Center.app"
@@ -557,9 +559,9 @@ mkdir -m 1775 "$LAUNCHDROOT/Library"
 mkdir -m 755 "$LAUNCHDROOT/Library/LaunchAgents"
 mkdir -m 755 "$LAUNCHDROOT/Library/LaunchDaemons"
 # Copy launch daemons and launch agents.
-cp -X "$MUNKIROOT/launchd/LaunchAgents/"*.plist "$LAUNCHDROOT/Library/LaunchAgents/"
+cp "$MUNKIROOT/launchd/LaunchAgents/"*.plist "$LAUNCHDROOT/Library/LaunchAgents/"
 chmod 644 "$LAUNCHDROOT/Library/LaunchAgents/"*
-cp -X "$MUNKIROOT/launchd/LaunchDaemons/"*.plist "$LAUNCHDROOT/Library/LaunchDaemons/"
+cp "$MUNKIROOT/launchd/LaunchDaemons/"*.plist "$LAUNCHDROOT/Library/LaunchDaemons/"
 chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
 
 # copy in launchd cleanup scripts
@@ -588,16 +590,16 @@ mkdir -m 755 "$APPUSAGEROOT/usr/local"
 mkdir -m 755 "$APPUSAGEROOT/usr/local/munki"
 # Copy launch agent, launch daemon, daemon, and agent
 # LaunchAgent
-cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
+cp "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
 chmod 644 "$APPUSAGEROOT/Library/LaunchAgents/"*
 # LaunchDaemon
-cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
+cp "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library/LaunchDaemons/"
 chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
 # Copy tools.
 # edit this if list of tools changes!
 for TOOL in appusaged app_usage_monitor
 do
-	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
+	cp "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
 done
 # Set permissions.
 chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
