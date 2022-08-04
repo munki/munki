@@ -113,18 +113,18 @@ def parse_su_update_line_old_style(line):
 def parse_su_identifier(line):
     '''parses first line of softwareupdate -l item output'''
     if line.startswith('   * '):
-        update_entry = line[5:]
+        label = line[5:]
     elif line.startswith('* Label: '):
-        update_entry = line[9:]
+        label = line[9:]
     else:
         return {}
-    update_parts = update_entry.split('-')
+    update_parts = label.split('-')
     # version is the bit after the last hyphen
     # (let's hope there are no hyphens in the versions!)
     vers = update_parts[-1]
     # identifier is everything before the last hyphen
     identifier = '-'.join(update_parts[0:-1])
-    return {'full_identifier': update_entry,
+    return {'Label': label,
             'identifier': identifier,
             'version': vers}
 
