@@ -47,6 +47,7 @@ from . import display
 from . import munkilog
 from . import osutils
 from . import pkgutils
+from . import powermgr
 from . import prefs
 from . import reports
 from . import utils
@@ -675,7 +676,6 @@ def has_intel64support():
 
     return buf.value == 1
 
-
 def available_disk_space(volumepath='/'):
     """Returns available diskspace in KBytes.
 
@@ -885,7 +885,7 @@ def predicate_info_object():
     build = machine['os_build_number']
     info_object['os_build_last_component'] = pkgutils.MunkiLooseVersion(
         build).version[-1]
-    if 'Book' in machine.get('machine_model', ''):
+    if powermgr.hasInternalBattery():
         info_object['machine_type'] = 'laptop'
     else:
         info_object['machine_type'] = 'desktop'
