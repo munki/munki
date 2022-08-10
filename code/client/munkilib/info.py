@@ -892,7 +892,7 @@ def predicate_info_object():
     # Mac14,7: 2022 M2 13" MacBook Pro
     elif machine_model in ['Mac14,2', 'Mac14,7']:
         info_object['machine_type'] = 'laptop'
-    else
+    else:
         info_object['machine_type'] = 'desktop'
     return info_object
 
