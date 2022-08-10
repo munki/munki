@@ -885,9 +885,14 @@ def predicate_info_object():
     build = machine['os_build_number']
     info_object['os_build_last_component'] = pkgutils.MunkiLooseVersion(
         build).version[-1]
-    if 'Book' in machine.get('machine_model', ''):
+    machine_model = machine.get('machine_model', '')
+    if 'Book' in machine_model:
         info_object['machine_type'] = 'laptop'
-    else:
+    # Mac14,2: 2022 M2 13" MacBook Air
+    # Mac14,7: 2022 M2 13" MacBook Pro
+    elif machine_model in ['Mac14,2', 'Mac14,7']:
+        info_object['machine_type'] = 'laptop'
+    else
         info_object['machine_type'] = 'desktop'
     return info_object
 
