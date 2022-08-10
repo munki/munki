@@ -47,6 +47,7 @@ from . import display
 from . import munkilog
 from . import osutils
 from . import pkgutils
+from . import powermgr
 from . import prefs
 from . import reports
 from . import utils
@@ -675,29 +676,6 @@ def has_intel64support():
 
     return buf.value == 1
 
-def has_battery():
-    """Determine if this Mac has a power source of 'InternalBattery'"""
-    IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
-
-    functions = [
-        ("IOPMAssertionCreateWithName", b"i@i@o^i"),
-        ("IOPMAssertionRelease", b"vi"),
-        ("IOPSGetPowerSourceDescription", b"@@@"),
-        ("IOPSCopyPowerSourcesInfo", b"@"),
-        ("IOPSCopyPowerSourcesList", b"@@"),
-        ("IOPSGetProvidingPowerSourceType", b"@@"),
-    ]
-
-    objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
-
-    ps_blob = IOPSCopyPowerSourcesInfo()
-    power_sources = IOPSCopyPowerSourcesList(ps_blob)
-    for source in power_sources:
-        description = IOPSGetPowerSourceDescription(ps_blob, source)
-        if description.get('Type') == 'InternalBattery':
-            return True
-    return False
-
 def available_disk_space(volumepath='/'):
     """Returns available diskspace in KBytes.
 
@@ -907,7 +885,7 @@ def predicate_info_object():
     build = machine['os_build_number']
     info_object['os_build_last_component'] = pkgutils.MunkiLooseVersion(
         build).version[-1]
-    if has_battery():
+    if powermgr.hasInternalBattery():
         info_object['machine_type'] = 'laptop'
     else:
         info_object['machine_type'] = 'desktop'
