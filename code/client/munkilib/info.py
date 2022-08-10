@@ -754,6 +754,7 @@ def getMachineFacts():
     machine['ipv4_address'] = get_ip_addresses('IPv4')
     machine['ipv6_address'] = get_ip_addresses('IPv6')
     machine['serial_number'] = get_serial_number() or 'UNKNOWN'
+    machine['product_name'] = product_name() or 'UNKNOWN'
     ibridge_info = get_ibridge_info()
     machine['ibridge_model_name'] = ibridge_info.get(
         'ibridge_model_name', 'NO IBRIDGE CHIP')
