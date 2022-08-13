@@ -20,6 +20,11 @@ Created by Greg Neagle on 2019-03-20.
 
 wrapper for running /usr/sbin/softwareupdate
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import
 
 import os
@@ -206,22 +211,22 @@ def run(options_list, catalog_url=None, stop_allowed=False):
         if not output:
             if job.returncode() is not None:
                 break
-            else:
-                # no data, but we're still running
-                if seems_to_be_finished:
-                    # softwareupdate provided output that it was finished
-                    countdown_timer -= 1
-                    if countdown_timer == 0:
-                        # yet it's been at least a minute and it hasn't exited
-                        # just stop the job and move on.
-                        # Works around yet another softwareupdate bug.
-                        display.display_warning(
-                            'softwareupdate failed to exit: killing it')
-                        job.stop()
-                        break
-                # sleep a bit before checking for more output
-                time.sleep(1)
-                continue
+            #else:
+            # no data, but we're still running
+            if seems_to_be_finished:
+                # softwareupdate provided output that it was finished
+                countdown_timer -= 1
+                if countdown_timer == 0:
+                    # yet it's been at least a minute and it hasn't exited
+                    # just stop the job and move on.
+                    # Works around yet another softwareupdate bug.
+                    display.display_warning(
+                        'softwareupdate failed to exit: killing it')
+                    job.stop()
+                    break
+            # sleep a bit before checking for more output
+            time.sleep(1)
+            continue
 
         # got output; reset countdown_timer
         countdown_timer = 60
@@ -350,8 +355,8 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             continue
         if output == '':
             continue
-        else:
-            display.display_status_minor(output)
+        #else:
+        display.display_status_minor(output)
 
     if catalog_url and os_version_tuple == (10, 10):
         # reset CatalogURL if needed
