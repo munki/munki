@@ -20,25 +20,22 @@ Created by Greg Neagle on 2017-01-06.
 
 AppleUpdates object defined here
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
-import glob
 import hashlib
 import os
 import subprocess
 
-try:
-    # Python 2
-    from urllib2 import quote
-except ImportError:
-    # Python 3
-    from urllib.parse import quote
-
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
+# pylint: disable=E0611,E0401
 from Foundation import NSDate
-# pylint: enable=E0611
+# pylint: enable=E0611,E0401
 
 from . import dist
 from . import su_prefs
@@ -142,7 +139,6 @@ class AppleUpdates(object):
         """Returns the list of available updates
            based on the output of `softwareupdate -l`, adding additional data
            from com.apple.SoftwareUpdate RecommendedUpdates"""
-        # pylint: disable=no-self-use
         msg = 'Checking for available Apple Software Updates...'
         display.display_status_major(msg)
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
@@ -171,7 +167,7 @@ class AppleUpdates(object):
                     item.update(update)
                     processed_updates.append(item)
         return processed_updates
-    
+
     def get_apple_updates(self, suppress_scan=False):
         """Uses info from /Library/Preferences/com.apple.SoftwareUpdate.plist
         and softwareupdate -l to determine the list of available Apple updates.
@@ -214,7 +210,7 @@ class AppleUpdates(object):
                         su_info['productKey'])
                     if not localized_dist:
                         display.display_warning(
-                            'No dist file for product %s', product_key)
+                            'No dist file for product %s', su_info['productKey'])
                         continue
                     su_dist_info = dist.parse_su_dist(localized_dist)
                     su_info.update(su_dist_info)
@@ -243,7 +239,7 @@ class AppleUpdates(object):
             # don't actually download since this can trigger a prompt for
             # credentials
             return True
-        
+
         download_list = self.software_update_list()
         filtered_download_list = []
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
@@ -260,7 +256,7 @@ class AppleUpdates(object):
         if not download_list:
             display.display_info("No Apple updates we should download")
             return True
-            
+
         msg = 'Downloading available Apple Software Updates...'
         display.display_status_major(msg)
 
@@ -543,7 +539,7 @@ class AppleUpdates(object):
             if item not in munki_installable_updates:
                 display.display_info('       *Must be manually installed')
 
-    def installable_updates(self, apple_updates):
+    def installable_updates(self, apple_updates=None):
         """Returns a list of installable Apple updates.
         This may filter out updates that require a restart. On Apple silicon,
         it returns an empty list since we can't use softwareupdate to install
@@ -551,6 +547,8 @@ class AppleUpdates(object):
         if info.is_apple_silicon():
             # can't install any!
             return []
+        if not apple_updates:
+            apple_updates = self.apple_updates or []
         os_version_tuple = osutils.getOsVersion(as_tuple=True)
         if os_version_tuple >= (10, 14):
             # in Mojave and beyond, it's too risky to
@@ -634,7 +632,6 @@ class AppleUpdates(object):
         """Applies metadata to Apple update item restricted
         to keys contained in 'metadata_to_copy'.
         """
-        # pylint: disable=no-self-use
         metadata_to_copy = ['blocking_applications',
                             'description',
                             'display_name',
@@ -731,7 +728,6 @@ class AppleUpdates(object):
 
         Returns:
           Boolean. False if the checksums match, True if they differ."""
-        # pylint: disable=no-self-use
         cmd = ['/usr/sbin/pkgutil', '--regexp', '--pkg-info-plist',
                r'com\.apple\.*']
         proc = subprocess.Popen(cmd, shell=False,
@@ -767,16 +763,6 @@ class AppleUpdates(object):
 
         if self.installed_apple_pkgs_changed():
             munkilog.log('Installed Apple packages have changed.')
-            return True
-
-        os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        # since OS updates in Big Sur don't get downloaded to
-        # /Library/Updates, this will trigger false positives
-        # So only check this on Catalina and lower
-        if os_version_tuple < (11, 0):
-            if not self.available_updates_downloaded():
-                munkilog.log('Downloaded updates do not match our list of '
-                             'available updates.')
             return True
 
         return False
