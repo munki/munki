@@ -586,11 +586,12 @@ def process_install(manifestitem, cataloglist, installinfo,
     else:
         iteminfo['installed'] = True
 
-        if iteminfo.get("installer_type") == "stage_os_installer":
+        if item_pl.get("installer_type") == "stage_os_installer":
             # installer appears to be staged; make sure the info is recorded
             # so we know we can launch the installer later
             # TO-DO: maybe filter the actual info recorded
-            osinstaller.record_staged_os_installer(iteminfo)
+            display.display_info("Recording staged macOS installer")
+            osinstaller.record_staged_os_installer(item_pl)
 
         # record installed size for reporting
         iteminfo['installed_size'] = item_pl.get(
