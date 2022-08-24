@@ -744,14 +744,7 @@ def launch():
     if prefs.pref('SuppressStopButtonOnInstall'):
         munkistatus.hideStopButton()
 
-    success = False
-    stagedinstaller = osinstaller_info.get("StagedOSInstaller")
-    if not stagedinstaller:
-        display.display_error(
-            "No staged macOS installer information found in %s" % infopath)
-        return False
-    munkilog.log("### Beginning GUI launch of macOS installer ###")
-    osinstaller_path = stagedinstaller.get("osinstaller_path")
+    osinstaller_path = osinstaller_info.get("osinstaller_path")
     if not osinstaller_path:
         display.display_error(
             'stagedinstaller item is missing macOS installer path.')
@@ -762,15 +755,31 @@ def launch():
         os.unlink(infopath)
     except (OSError, IOError):
         pass
-    success = launch_installer_app(osinstaller_path)
 
+    munkilog.log("### Beginning GUI launch of macOS installer ###")
+    success = launch_installer_app(osinstaller_path)
     return success
 
 
 def verify_staged_os_installer(app_path):
     '''Attempts to trigger a "verification" process against the staged macOS
     installer. This improves the launch time.'''
-    pass
+    display.display_status_minor("Verifying macOS installer...")
+    display.display_percent_done(-1, 100)
+    startosinstall_path = os.path.join(
+        app_path, 'Contents/Resources/startosinstall')
+    try:
+        proc = subprocess.Popen([startosinstall_path, "--usage"],
+                                shell=False,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    except (OSError, IOError) as err:
+        display.display_warning(u'Error verifying macOS installer: %s', err)
+    else:
+        stderr = proc.communicate()[1]
+        if proc.returncode:
+            display.display_warning(u'Error verifying macOS installer: %s', stderr)
 
 
 def record_staged_os_installer(iteminfo):
