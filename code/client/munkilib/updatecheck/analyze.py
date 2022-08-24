@@ -19,6 +19,12 @@ updatecheck.analyze
 Created by Greg Neagle on 2017-01-10.
 
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+# pylint: disable=useless-object-inheritance
+
 from __future__ import absolute_import, print_function
 
 import datetime
@@ -35,6 +41,7 @@ from .. import display
 from .. import fetch
 from .. import info
 from .. import munkilog
+from .. import osinstaller
 from .. import prefs
 from .. import processes
 from ..wrappers import is_a_string
@@ -578,6 +585,13 @@ def process_install(manifestitem, cataloglist, installinfo,
             return False
     else:
         iteminfo['installed'] = True
+
+        if iteminfo.get("installer_type") == "stage_os_installer":
+            # installer appears to be staged; make sure the info is recorded
+            # so we know we can launch the installer later
+            # TO-DO: maybe filter the actual info recorded
+            osinstaller.record_staged_os_installer(iteminfo)
+
         # record installed size for reporting
         iteminfo['installed_size'] = item_pl.get(
             'installed_size', item_pl.get('installer_item_size', 0))
@@ -687,7 +701,7 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             display.display_warning(
                 'Missing predicate for conditional_item %s', item)
             continue
-        except BaseException:
+        except Exception:
             display.display_warning(
                 'Conditional item is malformed: %s', item)
             continue
@@ -787,9 +801,9 @@ def process_removal(manifestitem, cataloglist, installinfo):
             install_evidence = True
             found_item = item
             break
-        else:
-            display.display_debug2(
-                '%s-%s not installed.', item['name'], item['version'])
+        #else:
+        display.display_debug2(
+            '%s-%s not installed.', item['name'], item['version'])
 
     if not install_evidence:
         display.display_detail(

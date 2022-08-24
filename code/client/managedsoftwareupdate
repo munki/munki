@@ -17,6 +17,11 @@
 """
 managedsoftwareupdate
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 import optparse
@@ -35,12 +40,12 @@ import traceback
 try:
     # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
     # No name 'Foo' in module 'Bar' warnings. Disable them.
-    # pylint: disable=E0611
+    # pylint: disable=E0611,E0401
     from Foundation import NSDate
     from Foundation import NSDistributedNotificationCenter
     from Foundation import NSNotificationDeliverImmediately
     from Foundation import NSNotificationPostToAllSessions
-    # pylint: enable=E0611
+    # pylint: enable=E0611,E0401
 except ImportError:
     # Python is missing ObjC bindings. Run external report script.
     from munkilib import utils
@@ -52,8 +57,8 @@ except ImportError:
         print(_result, _stdout, _stderr, file=sys.stderr)
     except utils.ScriptNotFoundError:
         pass  # script is not required, so pass
-    except utils.RunExternalScriptError as err:
-        print(str(err), file=sys.stderr)
+    except utils.RunExternalScriptError as utils_err:
+        print(str(utils_err), file=sys.stderr)
     sys.exit(200)
 else:
     from munkilib import appleupdates
@@ -196,12 +201,12 @@ def runScript(script, display_name, runtype):
         # file is insecure too we are no worse off.
         try:
             utils.verifyFileOnlyWritableByMunkiAndRoot(__file__)
-        except utils.VerifyFilePermissionsError as err:
+        except utils.VerifyFilePermissionsError as inner_err:
             # OK, managedsoftwareupdate is insecure anyway - warn & execute.
             display.display_warning(
                 'Multiple munki executable scripts have insecure file '
                 'permissions. Executing %s anyway. Error: %s'
-                % (display_name, err))
+                % (display_name, inner_err))
         else:
             # Just the preflight/postflight is insecure. Do not execute.
             display.display_warning(
@@ -275,35 +280,47 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
             munkilog.log(traceback.format_exc())
             reports.savereport()
             raise
-        if not only_unattended and munkiUpdatesContainStartOSInstallItem():
-            reports.savereport()
-            # install macOS
-            try:
-                success = osinstaller.run(finishing_tasks=doFinishingTasks)
-            except SystemExit:
-                # we _expect_ this since startosinstall or osinstaller will
-                # initiate a restart after successfully setting up a macOS
-                # install.
-                pass
-            except Exception:
-                # some other non-system-exiting exception occurred
-                display.display_error(
-                    'Unexpected error in munkilib.osinstaller:')
-                munkilog.log(traceback.format_exc())
+        if not only_unattended:
+            if munkiUpdatesContainItemWithInstallerType("startosinstall"):
                 reports.savereport()
-                raise
-            if success:
-                # we really should not get here. If successful, either
-                # startosinstall or osinstaller.run should have initiated a
-                # restart.
-                # Print a warning, and restart anyway.
-                display.display_warning(
-                    'Restart not initiated by startosinstall; will initiate '
-                    'restart ourselves')
-                if not authrestartd.restart():
-                    authrestart.do_authorized_or_normal_restart(
-                        shutdown=osutils.bridgeos_update_staged()
-                    )
+                # install macOS
+                try:
+                    success = osinstaller.run(finishing_tasks=doFinishingTasks)
+                except SystemExit:
+                    # we _expect_ this since startosinstall or osinstaller will
+                    # initiate a restart after successfully setting up a macOS
+                    # install.
+                    pass
+                except Exception:
+                    # some other non-system-exiting exception occurred
+                    display.display_error(
+                        'Unexpected error in munkilib.osinstaller:')
+                    munkilog.log(traceback.format_exc())
+                    reports.savereport()
+                    raise
+                if success:
+                    # we really should not get here. If successful, either
+                    # startosinstall or osinstaller.run should have initiated a
+                    # restart.
+                    # Print a warning, and restart anyway.
+                    display.display_warning(
+                        'Restart not initiated by startosinstall; will initiate '
+                        'restart ourselves')
+                    if not authrestartd.restart():
+                        authrestart.do_authorized_or_normal_restart(
+                            shutdown=osutils.bridgeos_update_staged()
+                        )
+            elif munkiUpdatesContainItemWithInstallerType("launchosinstaller"):
+                do_apple_updates = False
+                try:
+                    success = osinstaller.launch()
+                except Exception:
+                    # some other non-system-exiting exception occurred
+                    display.display_error(
+                        'Unexpected error in munkilib.osinstaller:')
+                    munkilog.log(traceback.format_exc())
+                    reports.savereport()
+                    raise
 
     if do_apple_updates:
         # install Apple updates
@@ -420,7 +437,7 @@ def munkiUpdatesAvailable():
     return updatesavailable
 
 
-def munkiUpdatesContainStartOSInstallItem():
+def munkiUpdatesContainItemWithInstallerType(installer_type):
     """Return True if there is a startosinstall item in the list of updates"""
     install_info = os.path.join(
         prefs.pref('ManagedInstallDir'), 'InstallInfo.plist')
@@ -433,7 +450,7 @@ def munkiUpdatesContainStartOSInstallItem():
         else:
             # check managed_installs for startosinstall items
             for item in plist.get('managed_installs', []):
-                if item.get('installer_type') == 'startosinstall':
+                if item.get('installer_type') == installer_type:
                     return True
     return False
 
@@ -688,34 +705,34 @@ def main():
 
     if options.version:
         print(info.get_version())
-        exit(0)
+        sys.exit(0)
 
     # check to see if we're root
     if os.geteuid() != 0:
         print('You must run this as root!', file=sys.stderr)
-        exit(constants.EXIT_STATUS_ROOT_REQUIRED)
+        sys.exit(constants.EXIT_STATUS_ROOT_REQUIRED)
 
     if options.show_config:
         prefs.print_config()
-        exit(0)
+        sys.exit(0)
 
     if options.set_bootstrap_mode:
         try:
             bootstrapping.set_bootstrap_mode()
             print('Bootstrap mode is set.')
-            exit(0)
+            sys.exit(0)
         except bootstrapping.SetupError as err:
             print(err, file=sys.stderr)
-            exit(-1)
+            sys.exit(-1)
 
     if options.clear_bootstrap_mode:
         try:
             bootstrapping.clear_bootstrap_mode()
             print('Bootstrap mode cleared.')
-            exit(0)
+            sys.exit(0)
         except bootstrapping.SetupError as err:
             print(err, file=sys.stderr)
-            exit(-1)
+            sys.exit(-1)
 
     # check to see if another instance of this script is running
     myname = os.path.basename(sys.argv[0])
@@ -731,7 +748,7 @@ def main():
         print('Another instance of %s is running. Exiting.' % myname,
               file=sys.stderr)
         osutils.cleanUpTmpDir()
-        exit(0)
+        sys.exit(0)
 
     runtype = 'custom'
 
@@ -778,7 +795,7 @@ def main():
                             break
                         time.sleep(1)
                     break
-                elif filename == constants.INSTALLATSTARTUPFLAG:
+                if filename == constants.INSTALLATSTARTUPFLAG:
                     runtype = 'installatstartup'
                     break
 
@@ -795,7 +812,7 @@ def main():
         if not user_triggered:
             # no trigger file was found -- how'd we get launched?
             osutils.cleanUpTmpDir()
-            exit(0)
+            sys.exit(0)
 
     if options.installwithnologout:
         # typically invoked by Managed Software Center.app
@@ -844,7 +861,7 @@ def main():
     if options.checkonly and options.installonly:
         print('--checkonly and --installonly options are mutually exclusive!',
               file=sys.stderr)
-        exit(constants.EXIT_STATUS_INVALID_PARAMETERS)
+        sys.exit(constants.EXIT_STATUS_INVALID_PARAMETERS)
 
     # set munkicommon globals
     display.munkistatusoutput = True
@@ -896,13 +913,13 @@ def main():
         # tell status app we're done sending status
         munkistatus.quit_app()
         osutils.cleanUpTmpDir()
-        exit(result)
+        sys.exit(result)
     # Force a prefs refresh, in case preflight modified the prefs file.
     prefs.reload_prefs()
 
     # create needed directories if necessary
     if not initMunkiDirs():
-        exit(constants.EXIT_STATUS_MUNKI_DIRS_FAILURE)
+        sys.exit(constants.EXIT_STATUS_MUNKI_DIRS_FAILURE)
 
     applesoftwareupdatesonly = (prefs.pref('AppleSoftwareUpdatesOnly')
                                 or options.applesuspkgsonly)

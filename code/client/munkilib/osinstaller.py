@@ -19,7 +19,14 @@ osinstaller.py
 Created by Greg Neagle on 2017-03-29.
 
 Support for using startosinstall to install macOS.
+August 2022: added support for launching the Install macOS app
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+# pylint: disable=useless-object-inheritance
+
 from __future__ import absolute_import, print_function
 
 # stdlib imports
@@ -30,11 +37,11 @@ import time
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
+# pylint: disable=E0611,E0401
 from Foundation import CFPreferencesSetValue
 from Foundation import kCFPreferencesAnyUser
 from Foundation import kCFPreferencesCurrentHost
-# pylint: enable=E0611
+# pylint: enable=E0611,E0401
 
 # our imports
 import munkilib.authrestart.client as authrestartd
@@ -176,7 +183,7 @@ def setup_authrestart_if_applicable():
 
 class StartOSInstallError(Exception):
     '''Exception to raise if starting the macOS install fails'''
-    pass
+    #pass
 
 
 class StartOSInstallRunner(object):
@@ -244,13 +251,13 @@ class StartOSInstallRunner(object):
                 self.dmg_mountpoint = None
                 raise StartOSInstallError(
                     'Valid Install macOS.app not found on %s' % itempath)
-            else:
-                raise StartOSInstallError(
-                    u'No filesystems mounted from %s' % itempath)
-        else:
+            #else:
             raise StartOSInstallError(
-                u'%s doesn\'t appear to be an application or disk image'
-                % itempath)
+                u'No filesystems mounted from %s' % itempath)
+        #else:
+        raise StartOSInstallError(
+            u'%s doesn\'t appear to be an application or disk image'
+            % itempath)
 
     def start(self):
         '''Starts a macOS install from an Install macOS.app stored at the root
@@ -369,19 +376,19 @@ class StartOSInstallRunner(object):
             if not info_output:
                 if job.returncode() is not None:
                     break
-                else:
-                    # no data, but we're still running
-                    inactive += 1
-                    if inactive >= timeout:
-                        # no output for too long, kill the job
-                        display.display_error(
-                            "startosinstall timeout after %d seconds"
-                            % timeout)
-                        job.stop()
-                        break
-                    # sleep a bit before checking for more output
-                    time.sleep(1)
-                    continue
+                #else:
+                # no data, but we're still running
+                inactive += 1
+                if inactive >= timeout:
+                    # no output for too long, kill the job
+                    display.display_error(
+                        "startosinstall timeout after %d seconds"
+                        % timeout)
+                    job.stop()
+                    break
+                # sleep a bit before checking for more output
+                time.sleep(1)
+                continue
 
             # we got non-empty output, reset inactive timer
             inactive = 0
@@ -444,7 +451,7 @@ class StartOSInstallRunner(object):
             display.display_error("-"*78)
             raise StartOSInstallError(
                 'startosinstall failed with return code %s' % retcode)
-        elif self.got_sigusr1:
+        if self.got_sigusr1:
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
             munkilog.log('macOS install successfully set up.')
@@ -604,6 +611,204 @@ def run(finishing_tasks=None):
                     finishing_tasks=finishing_tasks, installinfo=item)
     munkilog.log("### Ending os installer session ###")
     return success
+
+
+#### support for launching Install macOS app ####
+
+def volume_owner_uuids():
+    '''Returns a list of local accounts that are volume owners for /'''
+    cryptousers = {}
+    try:
+        output = subprocess.check_output(
+            ["/usr/sbin/diskutil", "apfs", "listUsers", "/", "-plist"])
+        cryptousers = FoundationPlist.readPlistFromString(output)
+    except subprocess.CalledProcessError:
+        pass
+
+    users = cryptousers.get("Users", [])
+
+    return [
+        user.get("APFSCryptoUserUUID")
+        for user in users
+        if "APFSCryptoUserUUID" in user
+        and user.get("VolumeOwner")
+        and user.get("APFSCryptoUserType") == "LocalOpenDirectory"
+    ]
+
+
+def generateduid(username):
+    '''Returns the GeneratedUID for username, or None'''
+    record = {}
+    try:
+        output = subprocess.check_output(
+            ["dscl", "-plist", ".", "read", "/Users/" + username,
+             "GeneratedUID"])
+        record = FoundationPlist.readPlistFromString(output)
+    except subprocess.CalledProcessError:
+        pass
+    uuid_list = record.get("dsAttrTypeStandard:GeneratedUID", [])
+    if uuid_list:
+        return uuid_list[0]
+    return None
+
+
+def user_is_volume_owner(username):
+    '''Returns a boolean to indicate if the user is a volume owner of /'''
+    return generateduid(username) in volume_owner_uuids()
+
+
+def launch_installer_app(app_path):
+    '''Runs our adminopen tool to launch the Install macOS app. adminopen is run
+    via launchd so we can exit after the app is launched (and the user may or
+    may not actually complete running it.) Returns True if we run adminopen,
+    False otherwise (some reasons: can't find Install app, no GUI user)
+    '''
+    # do we have a GUI user?
+    username = osutils.getconsoleuser()
+    if not username or username == u"loginwindow":
+        # we're at the loginwindow. Bail.
+        display.display_error(
+            u'Could not launch macOS installer: No current GUI user.')
+        return False
+
+    # is the user a volume owner?
+    if not user_is_volume_owner(username):
+        display.display_error(
+            u"Could not launch macOS installer: "
+             "Current GUI user is not a volume owner.")
+        return False
+
+    # find the adminopen tool
+    parent_dir = (
+        os.path.dirname(
+            os.path.dirname(
+                os.path.abspath(__file__))))
+    adminopen_path = os.path.join(parent_dir, 'adminopen')
+    if not os.path.exists(adminopen_path):
+        # try absolute path in munki's normal install dir
+        adminopen_path = '/usr/local/munki/adminopen'
+    if not os.path.exists(adminopen_path):
+        display.display_error(
+            u'Error launching macOS installer: Can\'t find adminopen tool.')
+        return False
+
+    # make sure the Install macOS app is present
+    if not os.path.exists(app_path):
+        display.display_error(
+            u'Error launching macOS installer: Can\'t find %s.' % app_path)
+        return False
+
+    # OK, we have everything we need, let's go
+    display.display_status_major("Launching macOS installer...")
+    cmd = [adminopen_path, app_path]
+    try:
+        job = launchd.Job(cmd, cleanup_at_exit=False)
+        job.start()
+    except launchd.LaunchdJobException as err:
+        display.display_error(
+            'Error with launchd job (%s): %s', cmd, err)
+        display.display_error(
+            'Failed to launch macOS installer due to launchd error.')
+        return False
+
+    # sleep a bit, then check to see if our launchd job has exited with an error
+    time.sleep(1)
+    if job.returncode():
+        error_msg = ""
+        if job.stderr:
+            error_msg = job.stderr.read()
+        display.display_error('Unexpected error: %s', error_msg)
+
+    # if we get here we probably successfully launched the Install macOS app
+    # set Munki to run at boot after the OS upgrade is complete
+    try:
+        bootstrapping.set_bootstrap_mode()
+    except bootstrapping.SetupError as err:
+        display.display_error(
+            'Could not set up Munki to run after OS upgrade is complete: '
+            '%s', err)
+    # return True to indicate we at least launched the Install macOS app
+    return True
+
+
+def launch():
+    '''Attempt to launch a staged OS installer described in StagedOSInstaller.plist'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    infopath = os.path.join(managedinstallbase, 'StagedOSInstaller.plist')
+    try:
+        osinstaller_info = FoundationPlist.readPlist(infopath)
+    except FoundationPlist.NSPropertyListSerializationException:
+        display.display_error("Invalid %s" % infopath)
+        return False
+
+    if prefs.pref('SuppressStopButtonOnInstall'):
+        munkistatus.hideStopButton()
+
+    success = False
+    stagedinstaller = osinstaller_info.get("StagedOSInstaller")
+    if not stagedinstaller:
+        display.display_error(
+            "No staged macOS installer information found in %s" % infopath)
+        return False
+    munkilog.log("### Beginning GUI launch of macOS installer ###")
+    osinstaller_path = stagedinstaller.get("osinstaller_path")
+    if not osinstaller_path:
+        display.display_error(
+            'stagedinstaller item is missing macOS installer path.')
+        return False
+    # remove the StagedOSInstaller.plist since it won't be valid
+    # after the upgrade
+    try:
+        os.unlink(infopath)
+    except (OSError, IOError):
+        pass
+    success = launch_installer_app(osinstaller_path)
+
+    return success
+
+
+def verify_staged_os_installer(app_path):
+    '''Attempts to trigger a "verification" process against the staged macOS
+    installer. This improves the launch time.'''
+    pass
+
+
+def record_staged_os_installer(iteminfo):
+    '''Records info on a staged macOS installer. This includes info for
+    managedsoftwareupdate and Managed Software Center to display, and the
+    path to the staged installer.'''
+    managedinstallbase = prefs.pref('ManagedInstallDir')
+    infopath = os.path.join(managedinstallbase, 'StagedOSInstaller.plist')
+    # get the path to the Install macOS app
+    try:
+        copied_item = iteminfo["items_to_copy"][0]
+    except (KeyError, IndexError):
+        display.display_error("Error recording staged macOS installer: "
+            "No copied items found in item info")
+        return
+    source_itemname = copied_item.get("source_item")
+    destpath = copied_item.get('destination_path')
+    dest_itemname = copied_item.get("destination_item")
+    if not destpath:
+        destpath = copied_item.get('destination_item')
+        if destpath:
+            # split it into path and name
+            dest_itemname = os.path.basename(destpath)
+            destpath = os.path.dirname(destpath)
+    if not destpath:
+        display.display_error("Error recording staged macOS installer: "
+            "Missing destination path for item!")
+        return
+    full_destpath = os.path.join(
+        destpath, os.path.basename(dest_itemname or source_itemname))
+    staged_os_installer_info = dict(iteminfo)
+    staged_os_installer_info["osinstaller_path"] = full_destpath
+    try:
+        FoundationPlist.writePlist(staged_os_installer_info, infopath)
+    except FoundationPlist.FoundationPlistException as err:
+        display.display_error("Error recording staged macOS installer: %s" % err)
+    # finally, trigger a verification
+    verify_staged_os_installer(full_destpath)
 
 
 if __name__ == '__main__':
