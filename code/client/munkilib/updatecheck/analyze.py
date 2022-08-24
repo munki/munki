@@ -23,7 +23,6 @@ Created by Greg Neagle on 2017-01-10.
 # Python 3 style warnings
 # pylint: disable=consider-using-f-string
 # pylint: disable=redundant-u-string-prefix
-# pylint: disable=useless-object-inheritance
 
 from __future__ import absolute_import, print_function
 
@@ -583,14 +582,14 @@ def process_install(manifestitem, cataloglist, installinfo,
             #if manifestitemname in installinfo['processed_installs']:
             #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-    else:
+    else: # some version installed
         iteminfo['installed'] = True
 
-        if item_pl.get("installer_type") == "stage_os_installer":
+        if item_pl.get("installer_type") == "stage_os_installer" and installed_state == 1:
             # installer appears to be staged; make sure the info is recorded
             # so we know we can launch the installer later
             # TO-DO: maybe filter the actual info recorded
-            display.display_info("Recording staged macOS installer")
+            display.display_info("Recording staged macOS installer...")
             osinstaller.record_staged_os_installer(item_pl)
 
         # record installed size for reporting
