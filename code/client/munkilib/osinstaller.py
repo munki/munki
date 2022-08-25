@@ -682,8 +682,6 @@ def create_osinstaller_info(iteminfo):
             'description_staged',
             iteminfo.get('description', '')
         )
-        if iteminfo.get('localized_strings'):
-            osinstaller_info['localized_strings'] = iteminfo['localized_strings']
         osinstaller_info['installed_size'] = iteminfo.get(
             'installed_size',
             iteminfo.get('installer_item_size', 0)
@@ -695,7 +693,7 @@ def create_osinstaller_info(iteminfo):
         )
         osinstaller_info['developer'] = "Apple"
         # optional keys to copy if they exist
-        optional_keys = ['icon_name']
+        optional_keys = ['icon_name', 'localized_strings']
         for key in optional_keys:
             if key in iteminfo:
                 osinstaller_info[key] = iteminfo[key]
@@ -712,7 +710,8 @@ def record_staged_os_installer(iteminfo):
         try:
             FoundationPlist.writePlist(staged_os_installer_info, infopath)
         except FoundationPlist.FoundationPlistException as err:
-            display.display_error("Error recording staged macOS installer: %s" % err)
+            display.display_error(
+                "Error recording staged macOS installer: %s" % err)
         # finally, trigger a verification
         verify_staged_os_installer(staged_os_installer_info["osinstaller_path"])
     else:
