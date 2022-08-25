@@ -816,7 +816,7 @@ def main():
 
     if options.installwithnologout:
         # typically invoked by Managed Software Center.app
-        # by user who decides not to logout
+        # for installs that do not require a logout
         launchdtriggerfile = \
             '/private/tmp/.com.googlecode.munki.managedinstall.launchd'
         if os.path.exists(launchdtriggerfile):
@@ -1027,7 +1027,9 @@ def main():
     # display any available update information
     if updatecheckresult:
         installinfo.display_update_info()
-    if appleupdatesavailable:
+    if osinstaller.get_staged_os_installer_info():
+        osinstaller.display_staged_os_installer_info()
+    elif appleupdatesavailable:
         appleupdates.displayAppleUpdateInfo()
 
     # send a notification event so MSC can update its display if needed
@@ -1058,6 +1060,13 @@ def main():
                     bootstrapping.clear_bootstrap_mode()
                 except bootstrapping.SetupError as err:
                     display.display_error(err)
+
+    if options.installwithnologout and osinstaller.get_staged_os_installer_info():
+        # user choose to update from Managed Software Center and there is
+        # a cached macOS installer. We'll do that _only_.
+        updatesavailable = False
+        appleupdatesavailable = False
+        osinstaller.launch()
 
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
