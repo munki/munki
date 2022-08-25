@@ -1214,37 +1214,46 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
 
 func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     var update_items = [[String: Any]]()
-    if munkiUpdatesContainAppleItems() {
-        // don't show any Apple updates if there are Munki items that are Apple items
-        NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
-    } else if (filterAppleUpdates && isAppleSilicon()) {
-        // we can't install any Apple updates on Apple silicon, so filter them all
-        NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
+    
+    var stagedOSupdate = getStagedOSUpdate()
+    if pythonishBool(stagedOSupdate) {
+        stagedOSupdate["developer"] = "Apple"
+        stagedOSupdate["status"] = "will-be-installed"
+        stagedOSupdate["apple_update"] = true
+        update_items.append(stagedOSupdate)
     } else {
-        for var item in getAppleUpdates() {
-            if (filterAppleUpdates &&
-                ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
-                // skip this update because it requires a restart and we've been
-                // directed to filter these out
-                continue
+        if munkiUpdatesContainAppleItems() {
+            // don't show any Apple updates if there are Munki items that are Apple items
+            NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
+        } else if (filterAppleUpdates && isAppleSilicon()) {
+            // we can't install any Apple updates on Apple silicon, so filter them all
+            NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
+        } else {
+            for var item in getAppleUpdates() {
+                if (filterAppleUpdates &&
+                    ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
+                    // skip this update because it requires a restart and we've been
+                    // directed to filter these out
+                    continue
+                }
+                item["developer"] = "Apple"
+                item["status"] = "will-be-installed"
+                item["apple_update"] = true
+                update_items.append(item)
             }
-            item["developer"] = "Apple"
-            item["status"] = "will-be-installed"
-            item["apple_update"] = true
-            update_items.append(item)
         }
-    }
-    let install_info = cachedInstallInfo()
-    if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
-        for var item in managed_installs {
-            item["status"] = "will-be-installed"
-            update_items.append(item)
+        let install_info = cachedInstallInfo()
+        if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
+            for var item in managed_installs {
+                item["status"] = "will-be-installed"
+                update_items.append(item)
+            }
         }
-    }
-    if let removal_items = install_info["removals"] as? [[String: Any]] {
-        for var item in removal_items {
-            item["status"] = "will-be-removed"
-            update_items.append(item)
+        if let removal_items = install_info["removals"] as? [[String: Any]] {
+            for var item in removal_items {
+                item["status"] = "will-be-removed"
+                update_items.append(item)
+            }
         }
     }
     let update_list = update_items.map({ UpdateItem($0) })

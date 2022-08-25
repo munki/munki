@@ -217,6 +217,14 @@ func readPlistAsNSDictionary(_ filepath: String) -> PlistDict {
     }
 }
 
+func getStagedOSUpdate() -> PlistDict {
+    // Returns a dictionary describing a staged OS update (if any)
+    let managedinstallbase = pref("ManagedInstallDir") as! String
+    let info_path = NSString.path(
+            withComponents: [managedinstallbase, "StagedOSInstaller.plist"])
+    return readPlistAsNSDictionary(info_path)
+}
+
 func getInstallInfo() -> PlistDict {
     // Returns the dictionary describing the managed installs and removals
     let managedinstallbase = pref("ManagedInstallDir") as! String
