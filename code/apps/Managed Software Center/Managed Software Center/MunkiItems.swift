@@ -1219,7 +1219,7 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     if pythonishBool(stagedOSupdate) {
         stagedOSupdate["developer"] = "Apple"
         stagedOSupdate["status"] = "will-be-installed"
-        stagedOSupdate["apple_update"] = true
+        stagedOSupdate["staged_osinstaller"] = true
         update_items.append(stagedOSupdate)
     } else {
         if munkiUpdatesContainAppleItems() {
@@ -1258,6 +1258,13 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     }
     let update_list = update_items.map({ UpdateItem($0) })
     return update_list.sorted(by: { update_list_sort($0, $1) })
+}
+
+func updateListContainsStagedOSUpdate() -> Bool {
+    // Return true if the update list contains a staged macOS installer
+    return getUpdateList().filter(
+            { ($0["staged_osinstaller"] as? Bool ?? false) }
+        ).count > 0
 }
 
 func updatesRequireLogout() -> Bool {

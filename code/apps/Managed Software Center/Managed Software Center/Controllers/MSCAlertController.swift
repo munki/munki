@@ -373,6 +373,33 @@ class MSCAlertController: NSObject {
         }
     }
     
+    func alertedToNotVolumeOwner() -> Bool {
+        // Returns true if we're launching a staged OS installer and the current
+        // GUI user is not a volume owner; alerts as a side effect
+        if updateListContainsStagedOSUpdate() && !currentUserIsVolumeOwner() {
+            guard let mainWindow = window else {
+                msc_debug_log("Could not get main window in alertedToMultipleUsers")
+                return false
+            }
+            msc_log("MSC", "staged_os_installer_not_volume_owner_update_cancelled")
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Cannot upgrade macOS", comment: "Not volume owner title")
+            alert.informativeText = NSLocalizedString(
+                "Your user account is not a owner of the current startup volume.\n" +
+                "You cannot upgrade macOS at this time.\n\n" +
+                "Contact your systems administrator.",
+                comment: "Not volume owner detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+                // do nothing
+            })
+            return true
+        }
+        return false
+    }
+    
     func alertedToBlockingAppsRunning() -> Bool {
         // Returns true if blocking_apps are running; alerts as a side-effect
         guard let mainWindow = window else {

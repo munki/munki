@@ -678,6 +678,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 loadUpdatesPage(self)
                 return
             }
+            if alert_controller.alertedToNotVolumeOwner() {
+                loadUpdatesPage(self)
+                return
+            }
             managedsoftwareupdate_task = ""
             msc_log("user", "install_without_logout")
             _update_in_progress = true
