@@ -815,8 +815,8 @@ def launch_installer_app(app_path):
             u'Could not launch macOS installer: No current GUI user.')
         return False
 
-    # is the user a volume owner?
-    if not user_is_volume_owner(username):
+    # if we're on Apple silicon -- is the user a volume owner?
+    if info.is_apple_silicon() and not user_is_volume_owner(username):
         display.display_error(
             u"Could not launch macOS installer: "
              "Current GUI user is not a volume owner.")
