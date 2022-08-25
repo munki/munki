@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# This script is designed to be run as root, perhaps by a management tool
+# It takes one argument, a path to an app to be launched (or a name of an app,
+# if you don't mind LaunchServices deciding which if any app to launch)
+# 
+# If the current console user is not a member of the admin group, the user will
+# be added to to the group. The app will then be launched in the console user's
+# context.
+# When the app exits (or this script is killed via SIGINT), if we had promoted
+# the user to admin, we demote that user once again.
+#
+# Possible use: to open "Install macOS.app" with admin rights for the user so
+# they can use Apple's GUI tools to upgrade macOS
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+function fail {
+    echo "$@" 1>&2
+    exit 1
+}
+
+function demote_user {
+    # demote CONSOLEUSER from admin
+    dseditgroup -o edit -d ${CONSOLEUSER} -t user admin
+}
+
+if [ $EUID -ne 0 ]; then
+   fail "This script must be run as root." 
+fi
+
+
+CONSOLEUSER=$(stat -f %Su /dev/console)
+if [ "${CONSOLEUSER}" == "root" ] ; then
+    fail "The console user may not be root!"
+fi
+
+USER_UID=$(id -u ${CONSOLEUSER})
+if [ $? -ne 0 ] ; then
+    # failed to get UID, bail
+    fail "Could not get UID for ${CONSOLEUSER}"
+fi
+
+APP=$1
+if [ "${APP}" == "" ] ; then
+    # no application specified
+    fail "Need to specify an application!"
+fi
+
+# check if CONSOLEUSER is admin
+dseditgroup -o checkmember -m ${CONSOLEUSER} admin > /dev/null
+if [ $? -ne 0 ] ; then
+    # not currently admin, so promote to admin
+    dseditgroup -o edit -a ${CONSOLEUSER} -t user admin
+    # make sure we demote the user at the end or if we are interrupted
+    trap demote_user EXIT SIGINT SIGTERM
+fi
+
+# launch $APP as $USER_UID and wait until it exits
+launchctl asuser ${USER_UID} open -W "${APP}"
