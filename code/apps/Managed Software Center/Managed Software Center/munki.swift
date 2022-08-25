@@ -461,13 +461,14 @@ func justUpdate() throws {
     /* Trigger managedinstaller via launchd KeepAlive path trigger
      We touch a file that launchd is is watching
      launchd, in turn,
-     launches managedsoftwareupdate --installwithnologout as root */
-    if FileManager.default.fileExists(atPath: INSTALLWITHOUTLOGOUTFILE) {
-        return
-    }
-    let success = FileManager.default.createFile(
-            atPath: INSTALLWITHOUTLOGOUTFILE, contents: nil, attributes: nil)
-    if !success {
+     launches managedsoftwareupdate --installwithnologout as root
+     We write specific contents to the file to tell managedsoftwareupdate
+     to launch a staged macOS installer if applicable */
+    let plist = ["LaunchStagedOSInstaller": updateListContainsStagedOSUpdate()]
+    do {
+        try writePlist(plist, toFile: INSTALLWITHOUTLOGOUTFILE)
+    } catch {
+        msc_log("MSC", "cant_write_file", msg: "Couldn't write \(INSTALLWITHOUTLOGOUTFILE) -- \(error)")
         throw ProcessStartError.error(
             description: "Could not create file \(INSTALLWITHOUTLOGOUTFILE)")
     }

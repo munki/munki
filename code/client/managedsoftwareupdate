@@ -688,6 +688,9 @@ def main():
         help='Used by Managed Software Center.app when user triggers an '
         'install without logging out. Not for general use.')
     other_options.add_option(
+        '--launchosinstaller', action='store_true',
+        help='Used interally. Not for general use.')
+    other_options.add_option(
         '--manualcheck', action='store_true',
         help='Used by launchd LaunchAgent when checking manually. Not for '
         'general use.')
@@ -824,6 +827,12 @@ def main():
                 "managedsoftwareupdate run triggered by %s"
                 % launchdtriggerfile
             )
+            try:
+                launch_options = FoundationPlist.readPlist(launchdtriggerfile)
+                options.launchosinstaller = launch_options.get(
+                    'LaunchStagedOSInstaller')
+            except FoundationPlist.FoundationPlistException:
+                pass
             # remove it so we aren't automatically relaunched
             os.unlink(launchdtriggerfile)
         runtype = 'installwithnologout'
@@ -1061,12 +1070,18 @@ def main():
                 except bootstrapping.SetupError as err:
                     display.display_error(err)
 
-    if options.installwithnologout and osinstaller.get_staged_os_installer_info():
-        # user choose to update from Managed Software Center and there is
+    if options.launchosinstaller:
+        # user chose to update from Managed Software Center and there is
         # a cached macOS installer. We'll do that _only_.
         updatesavailable = False
         appleupdatesavailable = False
-        osinstaller.launch()
+        if osinstaller.get_staged_os_installer_info():
+            osinstaller.launch()
+        else:
+            # staged OS installer is missing
+            display.display_error(
+                'Requsted to launch staged OS installer, but no info on a '
+                'staged installer was found.')
 
     if updatesavailable or appleupdatesavailable:
         if options.installonly or options.logoutinstall:
