@@ -31,6 +31,7 @@
 		C0546BD820FDAD82003FE5A6 /* power.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD720FDAD82003FE5A6 /* power.swift */; };
 		C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */; };
 		C05F87932105587A000DB8D8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C05F87952105587A000DB8D8 /* Localizable.strings */; };
+		C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C094C26B28B7E17800CFB0D8 /* osinstaller.swift */; };
 		C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */; };
 		C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */; };
 		C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */; };
@@ -108,6 +109,7 @@
 		C05F87A821055EF1000DB8D8 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A921055F04000DB8D8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87AA21055F10000DB8D8 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C094C26B28B7E17800CFB0D8 /* osinstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstaller.swift; sourceTree = "<group>"; };
 		C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCWebView.swift; sourceTree = "<group>"; };
 		C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appleupdates.swift; sourceTree = "<group>"; };
 		C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCStatusController.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				C0546BD720FDAD82003FE5A6 /* power.swift */,
 				C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */,
 				56C33E802174D7A200D727DC /* MSCTableCellView.swift */,
+				C094C26B28B7E17800CFB0D8 /* osinstaller.swift */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -435,6 +438,7 @@
 				C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */,
 				56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */,
 				C03107C520C8F220007FE337 /* msclog.swift in Sources */,
+				C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */,
 				C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */,
 				C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */,
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
