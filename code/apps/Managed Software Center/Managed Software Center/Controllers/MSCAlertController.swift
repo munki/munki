@@ -376,9 +376,9 @@ class MSCAlertController: NSObject {
     func alertedToNotVolumeOwner() -> Bool {
         // Returns true if we're launching a staged OS installer and the current
         // GUI user is not a volume owner; alerts as a side effect
-        if updateListContainsStagedOSUpdate() && !currentUserIsVolumeOwner() {
+        if updateListContainsStagedOSUpdate() && isAppleSilicon() && !currentUserIsVolumeOwner() {
             guard let mainWindow = window else {
-                msc_debug_log("Could not get main window in alertedToMultipleUsers")
+                msc_debug_log("Could not get main window in alertedToNotVolumeOwner")
                 return false
             }
             msc_log("MSC", "staged_os_installer_not_volume_owner_update_cancelled")
