@@ -59,6 +59,7 @@ from . import osutils
 from . import pkgutils
 from . import prefs
 from . import processes
+from . import reports
 from . import scriptutils
 
 
@@ -645,18 +646,12 @@ def staged_os_installer_info_path():
     return os.path.join(managedinstallbase, 'StagedOSInstaller.plist')
 
 
-def record_staged_os_installer(iteminfo):
-    '''Records info on a staged macOS installer. This includes info for
-    managedsoftwareupdate and Managed Software Center to display, and the
-    path to the staged installer.'''
-    infopath = staged_os_installer_info_path()
-    # get the path to the Install macOS app
+def get_osinstaller_path(iteminfo):
+    '''Returns the expected path to the locally staged macOS installer'''
     try:
         copied_item = iteminfo["items_to_copy"][0]
     except (KeyError, IndexError):
-        display.display_error("Error recording staged macOS installer: "
-            "No copied items found in item info")
-        return
+        return None
     source_itemname = copied_item.get("source_item")
     destpath = copied_item.get('destination_path')
     dest_itemname = copied_item.get("destination_item")
@@ -667,19 +662,62 @@ def record_staged_os_installer(iteminfo):
             dest_itemname = os.path.basename(destpath)
             destpath = os.path.dirname(destpath)
     if not destpath:
-        display.display_error("Error recording staged macOS installer: "
-            "Missing destination path for item!")
-        return
-    full_destpath = os.path.join(
+        return None
+    return os.path.join(
         destpath, os.path.basename(dest_itemname or source_itemname))
-    staged_os_installer_info = dict(iteminfo)
-    staged_os_installer_info["osinstaller_path"] = full_destpath
-    try:
-        FoundationPlist.writePlist(staged_os_installer_info, infopath)
-    except FoundationPlist.FoundationPlistException as err:
-        display.display_error("Error recording staged macOS installer: %s" % err)
-    # finally, trigger a verification
-    verify_staged_os_installer(full_destpath)
+
+
+def create_osinstaller_info(iteminfo):
+    '''Creates a dict describing a staged OS installer'''
+    osinstaller_info = {}
+    osinstaller_path = get_osinstaller_path(iteminfo)
+    if osinstaller_path:
+        osinstaller_info['osinstaller_path'] = osinstaller_path
+        osinstaller_info['name'] = iteminfo.get('name', '')
+        osinstaller_info['display_name'] = iteminfo.get(
+            'display_name_staged',
+            iteminfo.get('display_name', iteminfo['name'])
+        )
+        osinstaller_info['description'] = iteminfo.get(
+            'description_staged',
+            iteminfo.get('description', '')
+        )
+        if iteminfo.get('localized_strings'):
+            osinstaller_info['localized_strings'] = iteminfo['localized_strings']
+        osinstaller_info['installed_size'] = iteminfo.get(
+            'installed_size',
+            iteminfo.get('installer_item_size', 0)
+        )
+        osinstaller_info['installed'] = False
+        osinstaller_info['version_to_install'] = iteminfo.get(
+            'version_to_install',
+            iteminfo.get('version', 'UNKNOWN')
+        )
+        osinstaller_info['developer'] = "Apple"
+        # optional keys to copy if they exist
+        optional_keys = ['icon_name']
+        for key in optional_keys:
+            if key in iteminfo:
+                osinstaller_info[key] = iteminfo[key]
+    return osinstaller_info
+
+
+def record_staged_os_installer(iteminfo):
+    '''Records info on a staged macOS installer. This includes info for
+    managedsoftwareupdate and Managed Software Center to display, and the
+    path to the staged installer.'''
+    infopath = staged_os_installer_info_path()
+    staged_os_installer_info = create_osinstaller_info(iteminfo)
+    if staged_os_installer_info:
+        try:
+            FoundationPlist.writePlist(staged_os_installer_info, infopath)
+        except FoundationPlist.FoundationPlistException as err:
+            display.display_error("Error recording staged macOS installer: %s" % err)
+        # finally, trigger a verification
+        verify_staged_os_installer(staged_os_installer_info["osinstaller_path"])
+    else:
+        display.display_error("Error recording staged macOS installer: "
+            "could not get osinstaller_path")
 
 
 def get_staged_os_installer_info():
@@ -700,6 +738,22 @@ def remove_staged_os_installer_info():
         os.unlink(infopath)
     except (OSError, IOError):
         pass
+
+
+def display_staged_os_installer_info():
+    """Prints staged macOS installer info and updates ManagedInstallReport."""
+    item = get_staged_os_installer_info()
+    if not item:
+        return
+    display.display_info('')
+    reports.report['StagedOSInstaller'] = item
+    display.display_info(
+        'The following macOS upgrade is available to install:')
+    display.display_info(
+        '    + %s-%s' % (
+        item.get('display_name', item.get('name', '')),
+        item.get('version_to_install', '')))
+    display.display_info('       *Must be manually installed')
 
 
 ##### functions for determining if a user is a volume owner #####
