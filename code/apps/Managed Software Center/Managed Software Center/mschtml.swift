@@ -641,8 +641,11 @@ func buildUpdatesPage() throws {
     if (NSApp.delegate! as! AppDelegate).mainWindowController.weShouldBeObnoxious() {
         show_additional_updates = false
     }
-    let filterAppleUpdates = (NSApp.delegate! as! AppDelegate).mainWindowController.should_filter_apple_updates
-    let item_list = getEffectiveUpdateList(filterAppleUpdates)
+    /*if updateListContainsStagedOSUpdate() {
+        show_additional_updates = false
+    }*/
+
+    let item_list = getEffectiveUpdateList()
     for item in item_list {
         item["added_class"] = ""
         if item["note"] == nil {
@@ -710,7 +713,7 @@ func buildUpdatesPage() throws {
     // in Python was count = len([item for item in item_list if item['status'] != 'problem-item'])
     page["update_count"] = updateCountMessage(count)
     page["install_btn_label"] = getInstallAllButtonTextForCount(count)
-    page["warning_text"] = getWarningText(filterAppleUpdates)
+    page["warning_text"] = getWarningText(shouldFilterAppleUpdates())
     
     // build problem updates table
     page["problem_updates_header_message"] = NSLocalizedString(
