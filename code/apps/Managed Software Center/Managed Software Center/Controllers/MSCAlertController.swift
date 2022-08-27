@@ -199,6 +199,7 @@ class MSCAlertController: NSObject {
             // cancelled
             msc_log("user", "deferred_apple_updates")
             alert.window.orderOut(self)
+            setFilterAppleUpdates(true)
             clearMunkiItemsCache()
             if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
                 mainWindowController.load_page("updates.html")
@@ -396,6 +397,39 @@ class MSCAlertController: NSObject {
                 // do nothing
             })
             return true
+        }
+        return false
+    }
+    
+    func alertedToStagedOSUpgradeAndCancelled() -> Bool {
+        // Returns true if there is staged macOS upgrade and the user
+        // declines to install it
+        
+        if (!shouldFilterStagedOSUpdate() && updateListContainsStagedOSUpdate()) {
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "macOS Install Pending",
+                comment: "macOS Install Pending text")
+            alert.informativeText = NSLocalizedString(
+                "A macOS Install is pending. This install may take some " +
+                "time. Other pending items will be installed later.\n\n" +
+                "Continue with the install?",
+                comment:"macOS Install Pending detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Continue", comment: "Continue button text"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            // making UI consistent with Apple Software Update...
+            // set Cancel button to be activated by return key
+            alert.buttons[1].keyEquivalent = "\r"
+            // set Continue button to be activated by Escape key
+            alert.buttons[0].keyEquivalent = "\u{1B}"
+            msc_log("MSC", "alert_to_macos_install")
+            let response = alert.runModal()
+            if response == .alertSecondButtonReturn {
+                // user clicked Cancel
+                return true
+            }
         }
         return false
     }

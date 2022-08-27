@@ -6,7 +6,11 @@
 //  Copyright © 2018-2022 The Munki Project. All rights reserved.
 //
 
+import AppKit
 import Foundation
+
+private var filterAppleUpdates = false
+private var filterStagedOSUpdate = false
 
 class Cache {
     // A class to cache key/value pairs
@@ -1183,9 +1187,9 @@ func display_name(_ item_name: String) -> String {
     return item_name
 }
 
-func getUpdateList(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
+func getUpdateList() -> [UpdateItem] {
     if !Cache.shared.keys.contains("update_list") {
-        Cache.shared["update_list"] = _build_update_list(filterAppleUpdates)
+        Cache.shared["update_list"] = _build_update_list()
     }
     return Cache.shared["update_list"] as? [UpdateItem] ?? [UpdateItem]()
 }
@@ -1212,11 +1216,11 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
     }
 }
 
-func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
+func _build_update_list() -> [UpdateItem] {
     var update_items = [[String: Any]]()
     
     var stagedOSupdate = getStagedOSUpdate()
-    if pythonishBool(stagedOSupdate) {
+    if !shouldFilterStagedOSUpdate() && pythonishBool(stagedOSupdate) {
         stagedOSupdate["developer"] = "Apple"
         stagedOSupdate["status"] = "will-be-installed"
         stagedOSupdate["staged_osinstaller"] = true
@@ -1225,12 +1229,12 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
         if munkiUpdatesContainAppleItems() {
             // don't show any Apple updates if there are Munki items that are Apple items
             NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
-        } else if (filterAppleUpdates && isAppleSilicon()) {
+        } else if (shouldFilterAppleUpdates() && isAppleSilicon()) {
             // we can't install any Apple updates on Apple silicon, so filter them all
             NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
         } else {
             for var item in getAppleUpdates() {
-                if (filterAppleUpdates &&
+                if (shouldFilterAppleUpdates() &&
                     ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
                     // skip this update because it requires a restart and we've been
                     // directed to filter these out
@@ -1242,18 +1246,18 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
                 update_items.append(item)
             }
         }
-        let install_info = cachedInstallInfo()
-        if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
-            for var item in managed_installs {
-                item["status"] = "will-be-installed"
-                update_items.append(item)
-            }
+    }
+    let install_info = cachedInstallInfo()
+    if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
+        for var item in managed_installs {
+            item["status"] = "will-be-installed"
+            update_items.append(item)
         }
-        if let removal_items = install_info["removals"] as? [[String: Any]] {
-            for var item in removal_items {
-                item["status"] = "will-be-removed"
-                update_items.append(item)
-            }
+    }
+    if let removal_items = install_info["removals"] as? [[String: Any]] {
+        for var item in removal_items {
+            item["status"] = "will-be-removed"
+            update_items.append(item)
         }
     }
     let update_list = update_items.map({ UpdateItem($0) })
@@ -1262,6 +1266,9 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
 
 func updateListContainsStagedOSUpdate() -> Bool {
     // Return true if the update list contains a staged macOS installer
+    if shouldFilterStagedOSUpdate() {
+        return false
+    }
     return getUpdateList().filter(
             { ($0["staged_osinstaller"] as? Bool ?? false) }
         ).count > 0
@@ -1333,7 +1340,7 @@ func updatesContainNonUserSelectedItems() -> Bool {
     return false
 }
 
-func getEffectiveUpdateList(_ filterAppleUpdates: Bool = false) -> [GenericItem] {
+func getEffectiveUpdateList() -> [GenericItem] {
     // Combine the updates Munki has found with any optional choices to
     // make the effective list of updates
     let optional_installs = getOptionalWillBeInstalledItems() as [GenericItem]
@@ -1343,7 +1350,7 @@ func getEffectiveUpdateList(_ filterAppleUpdates: Bool = false) -> [GenericItem]
     )
     // filter out pending optional items from the list of all pending updates
     // so we can add in the items with additional optional detail
-    let mandatory_updates = getUpdateList(filterAppleUpdates).filter(
+    let mandatory_updates = getUpdateList().filter(
         { !optional_item_names.contains($0["name"] as? String ?? "") }
     ) as [GenericItem]
     return mandatory_updates + optional_installs + optional_removals
@@ -1394,4 +1401,28 @@ func dependentItems(_ item_name: String) -> [String] {
         }
     }
     return dependent_items
+}
+
+func setFilterAppleUpdates(_ state: Bool) {
+    // record our state
+    //Cache.shared["filterAppleUpdates"] = state
+    filterAppleUpdates = state
+}
+
+func setFilterStagedOSUpdate(_ state: Bool) {
+    // record our state
+    //Cache.shared["filterStagedOSUpdate"] = state
+    filterStagedOSUpdate = state
+}
+
+func shouldFilterAppleUpdates() -> Bool {
+    // should we filter out Apple updates?
+    //return pythonishBool(Cache.shared["filterAppleUpdates"])
+    return filterAppleUpdates
+}
+
+func shouldFilterStagedOSUpdate() -> Bool {
+    // should we filter out a staged OS update?
+    //return pythonishBool(Cache.shared["filterStagedOSUpdate"])
+    return filterStagedOSUpdate
 }
