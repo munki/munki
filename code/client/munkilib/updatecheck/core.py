@@ -115,6 +115,10 @@ def check(client_id='', localmanifestpath=None):
         # record info object for conditional item comparisons
         reports.report['Conditions'] = info.predicate_info_object()
 
+        # remove any staged os installer info we have; we'll check and
+        # recreate if still valid
+        osinstaller.remove_staged_os_installer_info()
+
         display.display_detail('**Checking for installs**')
         analyze.process_manifest_for_key(
             mainmanifestpath, 'managed_installs', installinfo)
