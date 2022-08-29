@@ -791,6 +791,8 @@ def record_staged_os_installer(iteminfo):
 def get_staged_os_installer_info():
     '''Returns any info we may have on a staged OS installer'''
     infopath = staged_os_installer_info_path()
+    if not os.path.exists(infopath):
+        return None
     try:
         osinstaller_info = FoundationPlist.readPlist(infopath)
     except FoundationPlist.NSPropertyListSerializationException:
