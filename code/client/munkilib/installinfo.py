@@ -20,6 +20,11 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for getting data from the InstallInfo.plist, etc
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 # standard libs
@@ -28,13 +33,14 @@ import os
 # Apple's libs
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
+# pylint: disable=E0611,E0401
 from Foundation import NSDate
-# pylint: enable=E0611
+# pylint: enable=E0611,E0401
 
 # our libs
 from . import display
 from . import info
+from . import osinstaller
 from . import prefs
 from . import reports
 from . import FoundationPlist
@@ -190,11 +196,16 @@ def save_pending_update_times():
     removal_names = [item['name']
                      for item in installinfo.get('removals', [])]
     apple_updates = get_appleupdates_with_history()
+    staged_os_update_names = []
+    staged_os_update = osinstaller.get_staged_os_installer_info()
+    if staged_os_update and "name" in staged_os_update:
+        staged_os_update_names = [staged_os_update["name"]]
 
     update_names = {
         'managed_installs': install_names,
         'removals': removal_names,
-        'AppleUpdates': apple_updates.keys()
+        'AppleUpdates': apple_updates.keys(),
+        'StagedOSUpdates': staged_os_update_names
     }
 
     try:
