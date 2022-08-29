@@ -1,5 +1,10 @@
 # encoding: utf-8
 '''Defines FileRepo plugin. See docstring for FileRepo class'''
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 import errno
@@ -64,12 +69,12 @@ except (ImportError, KeyError):
 
 class ShareMountException(Exception):
     '''An exception raised if share mounting failed'''
-    pass
+    #pass
 
 
 class ShareAuthenticationNeededException(ShareMountException):
     '''An exception raised if authentication is needed'''
-    pass
+    #pass
 
 
 def unicodeize(path):
@@ -78,9 +83,12 @@ def unicodeize(path):
     # Python 3 all paths are unicode!
     if sys.version_info.major > 2:
         return path
+    # below executes only under Python 2
+    # by pylint3 flags "unicode" as undefined
+    # pylint: disable=undefined-variable
     if isinstance(path, str):
         return unicode(path, 'utf-8')
-    elif not isinstance(path, unicode):
+    if not isinstance(path, unicode):
         return unicode(path)
     return path
 
@@ -194,14 +202,14 @@ class FileRepo(Repo):
                 try:
                     self.root = mount_share_url(self.baseurl)
                 except ShareMountException as err:
-                    raise RepoError(err)
+                    raise RepoError(err) from err
                 else:
                     self.we_mounted_repo = True
             else:
                 try:
                     os.mkdir(self.root)
                 except (OSError, IOError) as err:
-                    raise RepoError(u'Could not make repo mountpoint: %s' % err)
+                    raise RepoError(u'Could not make repo mountpoint: %s' % err) from err
                 if self.baseurl.startswith('afp:'):
                     cmd = ['/sbin/mount_afp', '-i', self.baseurl, self.root]
                 elif self.baseurl.startswith('smb:'):
@@ -242,7 +250,7 @@ class FileRepo(Repo):
                     file_list.append(rel_path)
             return file_list
         except (OSError, IOError) as err:
-            raise RepoError(err)
+            raise RepoError(err) from err
 
     def get(self, resource_identifier):
         '''Returns the content of item with given resource_identifier.
@@ -259,7 +267,7 @@ class FileRepo(Repo):
             fileref.close()
             return data
         except (OSError, IOError) as err:
-            raise RepoError(err)
+            raise RepoError(err) from err
 
     def get_to_local_file(self, resource_identifier, local_file_path):
         '''Gets the contents of item with given resource_identifier and saves
@@ -274,7 +282,7 @@ class FileRepo(Repo):
         try:
             shutil.copyfile(repo_filepath, local_file_path)
         except (OSError, IOError) as err:
-            raise RepoError(err)
+            raise RepoError(err) from err
 
     def put(self, resource_identifier, content):
         '''Stores content on the repo based on resource_identifier.
@@ -291,7 +299,7 @@ class FileRepo(Repo):
             fileref.write(content)
             fileref.close()
         except (OSError, IOError) as err:
-            raise RepoError(err)
+            raise RepoError(err) from err
 
     def put_from_local_file(self, resource_identifier, local_file_path):
         '''Copies the content of local_file_path to the repo based on
@@ -301,7 +309,7 @@ class FileRepo(Repo):
         resource_identifier = unicodeize(resource_identifier)
         repo_filepath = os.path.join(self.root, resource_identifier)
         local_file_path = unicodeize(local_file_path)
-        if local_file_path == repo_filepath:
+        if os.path.normpath(local_file_path) == os.path.normpath(repo_filepath):
             # nothing to do!
             return
         dir_path = os.path.dirname(repo_filepath)
@@ -310,7 +318,12 @@ class FileRepo(Repo):
         try:
             shutil.copyfile(local_file_path, repo_filepath)
         except (OSError, IOError) as err:
-            raise RepoError(err)
+            raise RepoError(err) from err
+
+    def local_path(self, resource_identifier):
+        '''Returns the local file path for resource_identifier'''
+        resource_identifier = unicodeize(resource_identifier)
+        return os.path.join(self.root, resource_identifier)
 
     def delete(self, resource_identifier):
         '''Deletes a repo object located by resource_identifier.
@@ -322,4 +335,4 @@ class FileRepo(Repo):
         try:
             os.remove(repo_filepath)
         except (OSError, IOError) as err:
-            raise RepoError(err)
+            raise RepoError(err) from err

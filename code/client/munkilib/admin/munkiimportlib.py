@@ -19,6 +19,11 @@ munkiimportlib
 Created by Greg Neagle on 2017-11-18.
 Routines used by munkimport to import items into Munki repo
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 # std lib imports
@@ -40,7 +45,7 @@ from ..cliutils import pref
 
 class RepoCopyError(Exception):
     '''Exception raised when copying a file to the repo fails'''
-    pass
+    #pass
 
 
 def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
@@ -53,6 +58,15 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     item_name = os.path.basename(itempath)
     destination_path_name = os.path.join(destination_path, item_name)
 
+    # don't copy if the file is already in the repo
+    try:
+        if os.path.normpath(repo.local_path(destination_path_name)) == os.path.normpath(itempath):
+            # source item is a repo item!
+            return destination_path_name
+    except AttributeError:
+        # no guarantee all repo plugins have the local_path method
+        pass
+
     name, ext = os.path.splitext(item_name)
     if vers:
         if not name.endswith(vers):
@@ -64,7 +78,7 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     try:
         pkgs_list = list_items_of_kind(repo, 'pkgs')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current pkgs: %s' % err)
+        raise RepoCopyError(u'Unable to get list of current pkgs: %s' % err) from err
     while destination_path_name in pkgs_list:
         #print 'File %s already exists...' % destination_path_name
         # try appending numbers until we have a unique name
@@ -76,7 +90,7 @@ def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
         repo.put_from_local_file(destination_path_name, itempath)
     except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to copy %s to %s: %s'
-                            % (itempath, destination_path_name, err))
+                            % (itempath, destination_path_name, err)) from err
     else:
         return destination_path_name
 
@@ -96,7 +110,7 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
     try:
         pkgsinfo_list = list_items_of_kind(repo, 'pkgsinfo')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s' % err)
+        raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s' % err) from err
     while pkginfo_path in pkgsinfo_list:
         index += 1
         pkginfo_name = '%s-%s__%s%s' % (pkginfo['name'], pkginfo['version'],
@@ -105,29 +119,29 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
 
     try:
         pkginfo_str = FoundationPlist.writePlistToString(pkginfo)
-    except FoundationPlist.NSPropertyListWriteException as errmsg:
-        raise RepoCopyError(errmsg)
+    except FoundationPlist.NSPropertyListWriteException as err:
+        raise RepoCopyError(err) from err
     try:
         repo.put(pkginfo_path, pkginfo_str)
         return pkginfo_path
     except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to save pkginfo to %s: %s'
-                            % (pkginfo_path, err))
+                            % (pkginfo_path, err)) from err
 
 
 class CatalogDBException(Exception):
     '''Exception to throw if we can't make a pkginfo DB'''
-    pass
+    #pass
 
 
 class CatalogReadException(CatalogDBException):
     '''Exception to throw if we can't read the all catalog'''
-    pass
+    #pass
 
 
 class CatalogDecodeException(CatalogDBException):
     '''Exception to throw if we can't decode the all catalog'''
-    pass
+    #pass
 
 
 def make_catalog_db(repo):
@@ -136,12 +150,12 @@ def make_catalog_db(repo):
     try:
         plist = repo.get('catalogs/all')
     except munkirepo.RepoError as err:
-        raise CatalogReadException(err)
+        raise CatalogReadException(err) from err
 
     try:
         catalogitems = FoundationPlist.readPlistFromString(plist)
     except FoundationPlist.NSPropertyListSerializationException as err:
-        raise CatalogDecodeException(err)
+        raise CatalogDecodeException(err) from err
 
     pkgid_table = {}
     app_table = {}
@@ -325,7 +339,7 @@ def icon_exists_in_repo(repo, pkginfo):
     try:
         icon_list = list_items_of_kind(repo, 'icons')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current icons: %s' % err)
+        raise RepoCopyError(u'Unable to get list of current icons: %s' % err) from err
     if icon_path in icon_list:
         return True
     return False
@@ -415,7 +429,7 @@ def generate_pngs_from_pkg(repo, item_path, pkginfo, import_multiple=True):
 
     if len(icon_paths) == 1:
         return convert_and_install_icon(repo, pkginfo, icon_paths[0])
-    elif len(icon_paths) > 1 and import_multiple:
+    if len(icon_paths) > 1 and import_multiple:
         index = 1
         imported_paths = []
         for icon_path in icon_paths:
@@ -447,7 +461,7 @@ def convert_and_install_icon(repo, pkginfo, icon_path, index=None):
             return repo_png_path
         except munkirepo.RepoError as err:
             raise RepoCopyError(u'Error uploading icon to %s: %s'
-                                % (repo_png_path, err))
+                                % (repo_png_path, err)) from err
     else:
         raise RepoCopyError(u'Error converting %s to png.' % icon_path)
 
@@ -461,21 +475,21 @@ def copy_icon_to_repo(repo, iconpath):
     try:
         icon_list = list_items_of_kind(repo, 'icons')
     except munkirepo.RepoError as err:
-        raise RepoCopyError(u'Unable to get list of current icons: %s' % err)
+        raise RepoCopyError(u'Unable to get list of current icons: %s' % err) from err
     if destination_path_name in icon_list:
         # remove any existing icon in the repo
         try:
             repo.delete(destination_path_name)
         except munkirepo.RepoError as err:
             raise RepoCopyError(u'Could not remove existing %s: %s'
-                                % (destination_path_name, err))
+                                % (destination_path_name, err)) from err
     print(u'Copying %s to %s...' % (icon_name, destination_path_name))
     try:
         repo.put_from_local_file(destination_path_name, iconpath)
         return destination_path_name
     except munkirepo.RepoError as err:
         raise RepoCopyError(u'Unable to copy %s to %s: %s'
-                            % (iconpath, destination_path_name, err))
+                            % (iconpath, destination_path_name, err)) from err
 
 
 def extract_and_copy_icon(repo, installer_item, pkginfo, import_multiple=True):
@@ -484,10 +498,10 @@ def extract_and_copy_icon(repo, installer_item, pkginfo, import_multiple=True):
     installer_type = pkginfo.get('installer_type')
     if installer_type == 'copy_from_dmg':
         return generate_png_from_dmg_item(repo, installer_item, pkginfo)
-    elif installer_type == 'startosinstall':
+    if installer_type == 'startosinstall':
         return generate_png_from_startosinstall_item(
             repo, installer_item, pkginfo)
-    elif installer_type in [None, '']:
+    if installer_type in [None, '']:
         return generate_pngs_from_pkg(
             repo, installer_item, pkginfo, import_multiple=import_multiple)
     raise RepoCopyError(
