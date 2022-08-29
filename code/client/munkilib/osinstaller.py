@@ -363,7 +363,7 @@ class StartOSInstallRunner(object):
             display.display_error(
                 'Error with launchd job (%s): %s', cmd, err)
             display.display_error('Aborting startosinstall run.')
-            raise StartOSInstallError(err)
+            raise StartOSInstallError(err) from err
 
         startosinstall_output = []
         timeout = 2 * 60 * 60
@@ -482,9 +482,9 @@ class StartOSInstallRunner(object):
                 'See /var/log/install.log for details.')
 
 
-def get_catalog_info(mounted_dmgpath):
+def get_startosinstall_catalog_info(mounted_dmgpath):
     '''Returns catalog info (pkginfo) for a macOS installer on a disk
-    image'''
+    image, using the startosinstall installation method'''
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
         vers = get_os_version(app_path)
@@ -518,7 +518,7 @@ def get_catalog_info(mounted_dmgpath):
                 installed_size = int(18.5 * 1024 * 1024)
                 minimum_munki_version = '3.6.3'
                 minimum_os_version = '10.9'
-            elif vers.startswith('11.0'):
+            elif vers.startswith('11.'):
                 # Big Sur
                 # If upgrading from macOS Sierra or later, macOS Big Sur
                 # requires 35.5GB of available storage to upgrade. If upgrading
@@ -529,10 +529,20 @@ def get_catalog_info(mounted_dmgpath):
                 # but we really need Munki 5.1 in place before we install
                 minimum_munki_version = '5.1.0'
                 minimum_os_version = '10.9'
+            elif vers.startswith('12.'):
+                # Monterey
+                # If upgrading from macOS Sierra or later, macOS Monterey
+                # requires 26GB of available storage to upgrade. If upgrading
+                # from an earlier release, macOS Monterey requires up to 44GB
+                # of available storage.
+                # https://support.apple.com/en-us/HT212551
+                installed_size = int(26 * 1024 * 1024)
+                minimum_munki_version = '5.1.0'
+                minimum_os_version = '10.9'
             else:
                 # will need to modify for future macOS releases, but should
                 # never be less than the highest version we know about
-                installed_size = int(35.5 * 1024 * 1024)
+                installed_size = int(26 * 1024 * 1024)
                 minimum_munki_version = '5.1.0'
                 minimum_os_version = '10.9'
 
@@ -618,6 +628,64 @@ def run(finishing_tasks=None):
 
 ##### functions for working with info about a staged macOS installer #####
 
+def get_stage_os_installer_catalog_info(app_path):
+    '''Returns additional catalog info from macOS installer at app_path,
+    describing a stage_os_installer item'''
+
+    # calculate the size of the installer app
+    appsize = 0
+    for (path, dummy_dirs, files) in os.walk(app_path):
+        for name in files:
+            filename = os.path.join(path, name)
+            # use os.lstat so we don't follow symlinks
+            appsize += int(os.lstat(filename).st_size)
+    # convert to kbytes
+    appsize = int(appsize/1024)
+
+    vers = get_os_version(app_path)
+    minimum_munki_version = '6.0.0'
+    minimum_os_version = '10.9'
+    if vers:
+        display_name_staged = os.path.splitext(os.path.basename(app_path))[0]
+        name = display_name_staged.replace(' ', '_')
+        display_name =  display_name_staged.replace('Install', 'Download')
+        description = 'Downloads macOS version %s installer' % vers
+        description_staged = 'Installs macOS version %s' % vers
+        if vers.startswith('11.'):
+            # Big Sur
+            # If upgrading from macOS Sierra or later, macOS Big Sur
+            # requires 35.5GB of available storage to upgrade. If upgrading
+            # from an earlier release, macOS Big Sur requires up to 44.5GB
+            # of available storage.
+            # https://support.apple.com/en-us/HT211238
+            installed_size = int(35.5 * 1024 * 1024) - appsize
+        elif vers.startswith('12.'):
+            # Monterey
+            # If upgrading from macOS Sierra or later, macOS Monterey requires
+            # 26GB of available storage to upgrade. If upgrading from an
+            # earlier release, macOS Monterey requires up to 44GB of available
+            # storage.
+            # https://support.apple.com/en-us/HT212551
+            installed_size = int(26 * 1024 * 1024) - appsize
+        else:
+            # will need to modify for future macOS releases, but should
+            # never be less than the highest version we know about
+            installed_size = int(26 * 1024 * 1024) - appsize
+
+        return {'description': description,
+                'description_staged': description_staged,
+                'display_name': display_name,
+                'display_name_staged': display_name_staged,
+                'installed_size_staged': installed_size,
+                'installer_type': 'stage_os_installer',
+                'minimum_munki_version': minimum_munki_version,
+                'minimum_os_version': minimum_os_version,
+                'name': name,
+                'uninstallable': True,
+                'version': vers}
+    return {}
+
+
 def verify_staged_os_installer(app_path):
     '''Attempts to trigger a "verification" process against the staged macOS
     installer. This improves the launch time.'''
@@ -683,8 +751,9 @@ def create_osinstaller_info(iteminfo):
             iteminfo.get('description', '')
         )
         osinstaller_info['installed_size'] = iteminfo.get(
-            'installed_size',
-            iteminfo.get('installer_item_size', 0)
+            'installed_size_staged',
+            iteminfo.get('installed_size',
+                         iteminfo.get('installer_item_size', 0))
         )
         osinstaller_info['installed'] = False
         osinstaller_info['version_to_install'] = iteminfo.get(
