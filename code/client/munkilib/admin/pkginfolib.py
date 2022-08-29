@@ -1018,7 +1018,7 @@ def add_option_groups(parser):
         '--installer-type', '--installer_type',
         metavar='TYPE', dest='installer_type_requested',
         help=('Specify an intended installer_type when the installeritem could '
-              'be one of several types. Currently supported only  to specify '
+              'be one of multiple types. Currently supported only to specify '
               'the intended type for a macOS installer (startosinstall or '
               'staged_os_installer).')
     )
