@@ -147,44 +147,29 @@ def setup_authrestart_if_applicable():
             authrestart.can_attempt_auth_restart()):
         display.display_info(
             'FileVault is active and we can do an authrestart')
-        #os_version_tuple = osutils.getOsVersion(as_tuple=True)
-        if False: # was: os_version_tuple >= (10, 12):
-            # setup delayed auth restart so that when startosinstall does a
-            # restart, it completes without user credentials
-            display.display_info('Setting up delayed authrestart...')
-            authrestartd.setup_delayed_authrestart()
-            # make sure the special secret InstallAssistant preference is not
-            # set
-            CFPreferencesSetValue(
-                'IAQuitInsteadOfReboot', None, '.GlobalPreferences',
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
-        else:
-            #
-            # set an undocumented  preference to tell the osinstaller
-            # process to exit instead of restart
-            # this is the equivalent of:
-            # `defaults write /Library/Preferences/.GlobalPreferences
-            #                 IAQuitInsteadOfReboot -bool YES`
-            #
-            # This preference is referred to in a framework inside the
-            # Install macOS.app:
-            # Contents/Frameworks/OSInstallerSetup.framework/Versions/A/
-            #     Frameworks/OSInstallerSetupInternal.framework/Versions/A/
-            #     OSInstallerSetupInternal
-            #
-            # It might go away in future versions of the macOS installer.
-            # (but it's still there in the macOS 12.0.1 installer!)
-            #
-            display.display_info(
-                'Configuring startosinstall to quit instead of restart...')
-            CFPreferencesSetValue(
-                'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+        # set an undocumented  preference to tell the osinstaller
+        # process to exit instead of restart
+        # this is the equivalent of:
+        # `defaults write /Library/Preferences/.GlobalPreferences
+        #                 IAQuitInsteadOfReboot -bool YES`
+        #
+        # This preference is referred to in a framework inside the
+        # Install macOS.app:
+        # Contents/Frameworks/OSInstallerSetup.framework/Versions/A/
+        #     Frameworks/OSInstallerSetupInternal.framework/Versions/A/
+        #     OSInstallerSetupInternal
+        #
+        # It might go away in future versions of the macOS installer.
+        # (but it's still there in the macOS 13 installer!)
+        display.display_info(
+            'Configuring startosinstall to quit instead of restart...')
+        CFPreferencesSetValue(
+            'IAQuitInsteadOfReboot', True, '.GlobalPreferences',
+            kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
 
 
 class StartOSInstallError(Exception):
     '''Exception to raise if starting the macOS install fails'''
-    #pass
 
 
 class StartOSInstallRunner(object):
@@ -435,10 +420,6 @@ class StartOSInstallRunner(object):
         # startosinstall exited
         munkistatus.percent(100)
         retcode = job.returncode()
-        # previously we unmounted the disk image, but since we're going to
-        # restart very very soon, don't bother
-        #if self.dmg_mountpoint:
-        #    dmgutils.unmountdmg(self.dmg_mountpoint)
 
         if retcode and not (retcode == 255 and self.got_sigusr1):
             # append stderr to our startosinstall_output
@@ -506,24 +487,16 @@ def get_startosinstall_catalog_info(mounted_dmgpath):
                 installed_size = int(14.3 * 1024 * 1024)
             elif vers.startswith('10.14'):
                 # Mojave:
-                # "12.5GB of available storage space, or up to 18.5GB of
-                # storage space when upgrading from OS X Yosemite or earlier."
                 # https://support.apple.com/en-us/HT210190
                 installed_size = int(18.5 * 1024 * 1024)
             elif vers.startswith('10.15'):
                 # Catalina:
-                # "12.5GB of available storage space, or up to 18.5GB of
-                # storage space when upgrading from OS X Yosemite or earlier."
                 # https://support.apple.com/en-us/HT201475
                 installed_size = int(18.5 * 1024 * 1024)
                 minimum_munki_version = '3.6.3'
                 minimum_os_version = '10.9'
             elif vers.startswith('11.'):
                 # Big Sur
-                # If upgrading from macOS Sierra or later, macOS Big Sur
-                # requires 35.5GB of available storage to upgrade. If upgrading
-                # from an earlier release, macOS Big Sur requires up to 44.5GB
-                # of available storage.
                 # https://support.apple.com/en-us/HT211238
                 installed_size = int(35.5 * 1024 * 1024)
                 # but we really need Munki 5.1 in place before we install
@@ -531,10 +504,6 @@ def get_startosinstall_catalog_info(mounted_dmgpath):
                 minimum_os_version = '10.9'
             elif vers.startswith('12.'):
                 # Monterey
-                # If upgrading from macOS Sierra or later, macOS Monterey
-                # requires 26GB of available storage to upgrade. If upgrading
-                # from an earlier release, macOS Monterey requires up to 44GB
-                # of available storage.
                 # https://support.apple.com/en-us/HT212551
                 installed_size = int(26 * 1024 * 1024)
                 minimum_munki_version = '5.1.0'
@@ -652,19 +621,11 @@ def get_stage_os_installer_catalog_info(app_path):
         description = 'Downloads macOS version %s installer' % vers
         description_staged = 'Installs macOS version %s' % vers
         if vers.startswith('11.'):
-            # Big Sur
-            # If upgrading from macOS Sierra or later, macOS Big Sur
-            # requires 35.5GB of available storage to upgrade. If upgrading
-            # from an earlier release, macOS Big Sur requires up to 44.5GB
-            # of available storage.
+            # Big Sur requires 35.5GB of available storage to upgrade.
             # https://support.apple.com/en-us/HT211238
             installed_size = int(35.5 * 1024 * 1024) - appsize
         elif vers.startswith('12.'):
-            # Monterey
-            # If upgrading from macOS Sierra or later, macOS Monterey requires
-            # 26GB of available storage to upgrade. If upgrading from an
-            # earlier release, macOS Monterey requires up to 44GB of available
-            # storage.
+            # Monterey requires 26GB of available storage to upgrade.
             # https://support.apple.com/en-us/HT212551
             installed_size = int(26 * 1024 * 1024) - appsize
         else:
@@ -872,6 +833,77 @@ def user_is_volume_owner(username):
 
 ##### functions for launching staged macOS installer #####
 
+def get_adminopen_path():
+    '''Writes out adminopen script to a temp file. Returns the path'''
+    script = """#!/bin/bash
+
+# This script is designed to be run as root.
+# It takes one argument, a path to an app to be launched
+# 
+# If the current console user is not a member of the admin group, the user will
+# be added to to the group. The app will then be launched in the console user's
+# context.
+# When the app exits (or this script is killed via SIGINT), if we had promoted
+# the user to admin, we demote that user once again.
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+function fail {
+    echo "$@" 1>&2
+    exit 1
+}
+
+function demote_user {
+    # demote CONSOLEUSER from admin
+    dseditgroup -o edit -d ${CONSOLEUSER} -t user admin
+}
+
+if [ $EUID -ne 0 ]; then
+   fail "This script must be run as root." 
+fi
+
+
+CONSOLEUSER=$(stat -f %Su /dev/console)
+if [ "${CONSOLEUSER}" == "root" ] ; then
+    fail "The console user may not be root!"
+fi
+
+USER_UID=$(id -u ${CONSOLEUSER})
+if [ $? -ne 0 ] ; then
+    # failed to get UID, bail
+    fail "Could not get UID for ${CONSOLEUSER}"
+fi
+
+APP=$1
+if [ "${APP}" == "" ] ; then
+    # no application specified
+    fail "Need to specify an application!"
+fi
+
+# check if CONSOLEUSER is admin
+dseditgroup -o checkmember -m ${CONSOLEUSER} admin > /dev/null
+if [ $? -ne 0 ] ; then
+    # not currently admin, so promote to admin
+    dseditgroup -o edit -a ${CONSOLEUSER} -t user admin
+    # make sure we demote the user at the end or if we are interrupted
+    trap demote_user EXIT SIGINT SIGTERM
+fi
+
+# launch $APP as $USER_UID and wait until it exits
+launchctl asuser ${USER_UID} open -W "${APP}"
+"""
+    scriptpath = os.path.join(osutils.tmpdir(), "adminopen")
+    try:
+        with open(scriptpath, mode='wb') as fileobject:
+            fileobject.write(script.encode('UTF-8'))
+        os.chown(scriptpath, 0, 0)
+        os.chmod(scriptpath, int('744', 8))
+    except (OSError, IOError) as err:
+        display.display_error("Couldn't create adminopen tool: %s" % err)
+        return ""
+    return scriptpath
+
+
 def launch_installer_app(app_path):
     '''Runs our adminopen tool to launch the Install macOS app. adminopen is run
     via launchd so we can exit after the app is launched (and the user may or
@@ -893,18 +925,11 @@ def launch_installer_app(app_path):
              "Current GUI user is not a volume owner.")
         return False
 
-    # find the adminopen tool
-    parent_dir = (
-        os.path.dirname(
-            os.path.dirname(
-                os.path.abspath(__file__))))
-    adminopen_path = os.path.join(parent_dir, 'adminopen')
-    if not os.path.exists(adminopen_path):
-        # try absolute path in munki's normal install dir
-        adminopen_path = '/usr/local/munki/adminopen'
-    if not os.path.exists(adminopen_path):
+    # create the adminopen tool and get its path
+    adminopen_path = get_adminopen_path()
+    if not adminopen_path:
         display.display_error(
-            u'Error launching macOS installer: Can\'t find adminopen tool.')
+            u'Error launching macOS installer: Can\'t create adminopen tool.')
         return False
 
     # make sure the Install macOS app is present
