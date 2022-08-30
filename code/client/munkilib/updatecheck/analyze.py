@@ -459,34 +459,39 @@ def process_install(manifestitem, cataloglist, installinfo,
                     iteminfo['unattended_install'] = True
 
             # optional keys to copy if they exist
-            optional_keys = ['additional_startosinstall_options',
-                             'allow_untrusted',
-                             'suppress_bundle_relocation',
-                             'installer_choices_xml',
-                             'installer_environment',
-                             'adobe_install_info',
-                             'RestartAction',
-                             'installer_type',
-                             'adobe_package_name',
-                             'package_path',
-                             'blocking_applications',
-                             'installs',
-                             'requires',
-                             'update_for',
-                             'payloads',
-                             'preinstall_script',
-                             'postinstall_script',
-                             'items_to_copy',  # used w/ copy_from_dmg
-                             'copy_local',     # used w/ AdobeCS5 Updaters
-                             'force_install_after_date',
-                             'apple_item',
-                             'category',
-                             'developer',
-                             'icon_name',
-                             'PayloadIdentifier',
-                             'icon_hash',
-                             'OnDemand',
-                             'precache']
+            optional_keys = [
+                'additional_startosinstall_options',
+                'allow_untrusted',
+                'suppress_bundle_relocation',
+                'installer_choices_xml',
+                'installer_environment',
+                'adobe_install_info',
+                'RestartAction',
+                'installer_type',
+                'adobe_package_name',
+                'package_path',
+                'blocking_applications',
+                'installs',
+                'requires',
+                'update_for',
+                'payloads',
+                'preinstall_script',
+                'postinstall_script',
+                'items_to_copy',  # used w/ copy_from_dmg
+                'copy_local',     # used w/ AdobeCS5 Updaters
+                'force_install_after_date',
+                'apple_item',
+                'category',
+                'developer',
+                'icon_name',
+                'PayloadIdentifier',
+                'icon_hash',
+                'OnDemand',
+                'precache',
+                'display_name_staged', # used w/ stage_os_installer
+                'description_staged',
+                'installed_size_staged'
+            ]
 
             if (is_optional_install and
                     not installationstate.some_version_installed(item_pl)):
