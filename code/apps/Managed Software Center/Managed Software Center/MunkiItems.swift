@@ -1405,24 +1405,20 @@ func dependentItems(_ item_name: String) -> [String] {
 
 func setFilterAppleUpdates(_ state: Bool) {
     // record our state
-    //Cache.shared["filterAppleUpdates"] = state
     filterAppleUpdates = state
 }
 
 func setFilterStagedOSUpdate(_ state: Bool) {
     // record our state
-    //Cache.shared["filterStagedOSUpdate"] = state
     filterStagedOSUpdate = state
 }
 
 func shouldFilterAppleUpdates() -> Bool {
     // should we filter out Apple updates?
-    //return pythonishBool(Cache.shared["filterAppleUpdates"])
     return filterAppleUpdates
 }
 
 func shouldFilterStagedOSUpdate() -> Bool {
     // should we filter out a staged OS update?
-    //return pythonishBool(Cache.shared["filterStagedOSUpdate"])
     return filterStagedOSUpdate
 }

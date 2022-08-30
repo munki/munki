@@ -641,9 +641,6 @@ func buildUpdatesPage() throws {
     if (NSApp.delegate! as! AppDelegate).mainWindowController.weShouldBeObnoxious() {
         show_additional_updates = false
     }
-    /*if updateListContainsStagedOSUpdate() {
-        show_additional_updates = false
-    }*/
 
     let item_list = getEffectiveUpdateList()
     for item in item_list {
