@@ -603,7 +603,7 @@ def get_stage_os_installer_catalog_info(app_path):
 
     # calculate the size of the installer app
     appsize = 0
-    for (path, dummy_dirs, files) in os.walk(app_path):
+    for (path, _, files) in os.walk(app_path):
         for name in files:
             filename = os.path.join(path, name)
             # use os.lstat so we don't follow symlinks
@@ -616,10 +616,10 @@ def get_stage_os_installer_catalog_info(app_path):
     minimum_os_version = '10.9'
     if vers:
         display_name_staged = os.path.splitext(os.path.basename(app_path))[0]
-        name = display_name_staged.replace(' ', '_')
-        display_name =  display_name_staged.replace('Install', 'Download')
-        description = 'Downloads macOS version %s installer' % vers
-        description_staged = 'Installs macOS version %s' % vers
+        macos_name = display_name_staged.replace('Install ', '')
+        display_name = '%s Installer' % macos_name
+        description = 'Downloads %s installer' % macos_name
+        description_staged = 'Installs %s, version %s' % (macos_name, vers)
         if vers.startswith('11.'):
             # Big Sur requires 35.5GB of available storage to upgrade.
             # https://support.apple.com/en-us/HT211238
@@ -641,7 +641,7 @@ def get_stage_os_installer_catalog_info(app_path):
                 'installer_type': 'stage_os_installer',
                 'minimum_munki_version': minimum_munki_version,
                 'minimum_os_version': minimum_os_version,
-                'name': name,
+                'name': display_name_staged.replace(' ', '_'),
                 'uninstallable': True,
                 'version': vers}
     return {}
