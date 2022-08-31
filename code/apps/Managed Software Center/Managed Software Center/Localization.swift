@@ -87,4 +87,11 @@ func morelocalizedstrings() {
     _ = NSLocalizedString(
         "System will restart and begin upgrade of macOS.",
         comment: "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        "Verifying macOS installer...",
+        comment: "managedsoftwareupdate message")
+    _ = NSLocalizedString(
+        "Launching macOS installer...",
+        comment: "managedsoftwareupdate message")
+
 }
