@@ -1016,6 +1016,7 @@ def add_option_groups(parser):
     installer_type_options = optparse.OptionGroup(parser, 'Installer Types')
     installer_type_options.add_option(
         '--installer-type', '--installer_type',
+        choices=['copy_from_dmg', 'stage_os_installer', 'startosinstall'],
         metavar='TYPE', dest='installer_type_requested',
         help=('Specify an intended installer_type when the installeritem could '
               'be one of multiple types. Currently supported only to specify '
