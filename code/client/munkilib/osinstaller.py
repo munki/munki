@@ -986,7 +986,7 @@ def launch():
 
     # remove the StagedOSInstaller.plist since it won't be valid
     # after the upgrade
-    remove_staged_os_installer_info()
+    #remove_staged_os_installer_info()
 
     munkilog.log("### Beginning GUI launch of macOS installer ###")
     success = launch_installer_app(osinstaller_path)
