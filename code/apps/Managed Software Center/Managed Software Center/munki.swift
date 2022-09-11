@@ -222,7 +222,14 @@ func getStagedOSUpdate() -> PlistDict {
     let managedinstallbase = pref("ManagedInstallDir") as! String
     let info_path = NSString.path(
             withComponents: [managedinstallbase, "StagedOSInstaller.plist"])
-    return readPlistAsNSDictionary(info_path)
+    let info = readPlistAsNSDictionary(info_path)
+    // ensure something exists at the osinstaller_path
+    if let app_path = info["osinstaller_path"] as? String {
+        if FileManager.default.fileExists(atPath: app_path) {
+            return info
+        }
+    }
+    return PlistDict()
 }
 
 func getInstallInfo() -> PlistDict {

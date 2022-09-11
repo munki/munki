@@ -759,6 +759,13 @@ def get_staged_os_installer_info():
     except FoundationPlist.NSPropertyListSerializationException:
         display.display_error("Invalid %s" % infopath)
         return None
+    app_path = osinstaller_info.get("osinstaller_path")
+    if not app_path or not os.path.exists(app_path):
+        try:
+            os.unlink(infopath)
+        except (OSError, IOError):
+            pass
+        return None
     return osinstaller_info
 
 
@@ -838,13 +845,13 @@ def get_adminopen_path():
     script = """#!/bin/bash
 
 # This script is designed to be run as root.
-# It takes one argument, a path to an app to be launched
+# It takes one argument, a path to an app to be launched.
 # 
 # If the current console user is not a member of the admin group, the user will
-# be added to to the group. The app will then be launched in the console user's
-# context.
-# When the app exits (or this script is killed via SIGINT), if we had promoted
-# the user to admin, we demote that user once again.
+# be added to to the group.
+# The app will then be launched in the console user's context.
+# When the app exits (or this script is killed via SIGINT or SIGTERM),
+# if we had promoted the user to admin, we demote that user once again.
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
@@ -959,7 +966,6 @@ def launch_installer_app(app_path):
             error_msg = job.stderr.read()
         display.display_error('Unexpected error: %s', error_msg)
 
-    # if we get here we probably successfully launched the Install macOS app
     # set Munki to run at boot after the OS upgrade is complete
     try:
         bootstrapping.set_bootstrap_mode()
@@ -967,7 +973,7 @@ def launch_installer_app(app_path):
         display.display_error(
             'Could not set up Munki to run after OS upgrade is complete: '
             '%s', err)
-    # return True to indicate we at least launched the Install macOS app
+    # return True to indicate we launched the Install macOS app
     return True
 
 
@@ -983,10 +989,6 @@ def launch():
 
     if prefs.pref('SuppressStopButtonOnInstall'):
         munkistatus.hideStopButton()
-
-    # remove the StagedOSInstaller.plist since it won't be valid
-    # after the upgrade
-    remove_staged_os_installer_info()
 
     munkilog.log("### Beginning GUI launch of macOS installer ###")
     success = launch_installer_app(osinstaller_path)
