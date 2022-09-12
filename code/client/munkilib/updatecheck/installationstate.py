@@ -210,7 +210,7 @@ def some_version_installed(item_pl):
         # that an install is not needed. We hope it's the latter.
         return True
 
-    if item_pl.get('installer_type') == 'startosinstall':
+    if item_pl.get('installer_type') in ['startosinstall', 'stage_os_installer']:
         # Some version of macOS is always installed!
         return True
 

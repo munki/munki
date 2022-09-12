@@ -209,7 +209,13 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             # therefore we would not be here!)
             #
             # TL;DR: only check installed_state if no installcheck_script
-            needs_update = installationstate.installed_state(item_pl) == 0
+            installation_state = installationstate.installed_state(item_pl)
+            if item_pl.get('installer_type') == 'stage_os_installer':
+                # 1 means installer is staged, but not _installed_
+                needs_update = installation_state != 2
+            else:
+                needs_update = installation_state == 0
+
 
         if (not needs_update and
                 prefs.pref('ShowOptionalInstallsForHigherOSVersions')):
