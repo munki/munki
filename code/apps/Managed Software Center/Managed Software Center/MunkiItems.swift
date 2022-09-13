@@ -310,6 +310,9 @@ class GenericItem: BaseItem {
             "downloading":
                 NSLocalizedString("Downloading",
                                   comment: "Downloading status text"),
+            "staged-os-installer":
+                NSLocalizedString("Will be installed",
+                                  comment: "Will Be Installed status text"),
             "will-be-installed":
                 NSLocalizedString("Will be installed",
                                   comment: "Will Be Installed status text"),
@@ -369,6 +372,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Cancel",
                                   comment: "Cancel button title/short action text"),
             "downloading":
+                NSLocalizedString("Cancel",
+                                  comment: "Cancel button title/short action text"),
+            "staged-os-installer":
                 NSLocalizedString("Cancel",
                                   comment: "Cancel button title/short action text"),
             "will-be-installed":
@@ -431,6 +437,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "downloading":
+                NSLocalizedString("Cancel install",
+                                  comment: "Cancel Install long action text"),
+            "staged-os-installer":
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "will-be-installed":
@@ -510,6 +519,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "downloading":
+                NSLocalizedString("Cancel install",
+                                  comment: "Cancel Install long action text"),
+            "staged-os-installer":
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "will-be-installed":
@@ -874,7 +886,7 @@ class OptionalItem: GenericItem {
             if original_status == "removal-requested" {
                 my["updatecheck_needed"] = false
             }
-        case "will-be-installed", "install-requested", "downloading", "install-error":
+        case "staged-os-installer", "will-be-installed", "install-requested", "downloading", "install-error":
             // cancel install request
             if needs_update {
                 my["status"] = "update-available"
@@ -1104,7 +1116,7 @@ func getOptionalInstallItems() -> [OptionalItem] {
                 if (staged_os_installer_name != "" && staged_os_installer_name == name) {
                     // replace the item with its staged version
                     optional_install_items[index] = OptionalItem(staged_os_installer)
-                    optional_install_items[index]["status"] = "will-be-installed"
+                    optional_install_items[index]["status"] = "staged-os-installer"
                     optional_install_items[index]["updatecheck_needed"] = false
                 }
                 if featured_items.contains(name) {
@@ -1149,12 +1161,20 @@ func getOptionalWillBeInstalledItems() -> [OptionalItem] {
     let problem_item_names = getProblemItems().map(
         { return $0["name"] as? String ?? "" }
     )
+    var will_be_installed_statuses = [
+        "install-requested",
+        "will-be-installed",
+        "update-will-be-installed",
+        "install-error"
+    ]
+    if !shouldFilterStagedOSUpdate() {
+        will_be_installed_statuses.append("staged-os-installer")
+    }
     return getOptionalInstallItems().filter(
         {
             let status = $0["status"] as? String ?? ""
             let name = $0["name"] as? String ?? ""
-            return (["install-requested", "will-be-installed",
-                     "update-will-be-installed", "install-error"].contains(status) &&
+            return (will_be_installed_statuses.contains(status) &&
                     !problem_item_names.contains(name))
         }
     )
@@ -1222,7 +1242,7 @@ func _build_update_list() -> [UpdateItem] {
     if !shouldFilterStagedOSUpdate() && pythonishBool(stagedOSupdate) {
         stagedOSupdate["developer"] = "Apple"
         stagedOSupdate["status"] = "will-be-installed"
-        stagedOSupdate["staged_osinstaller"] = true
+        stagedOSupdate["staged_os_installer"] = true
         update_items.append(stagedOSupdate)
         // don't show Apple updates if we have a pending staged OS upgrade
         setFilterAppleUpdates(true)
@@ -1271,7 +1291,7 @@ func updateListContainsStagedOSUpdate() -> Bool {
         return false
     }
     return getUpdateList().filter(
-            { ($0["staged_osinstaller"] as? Bool ?? false) }
+            { ($0["staged_os_installer"] as? Bool ?? false) }
         ).count > 0
 }
 
