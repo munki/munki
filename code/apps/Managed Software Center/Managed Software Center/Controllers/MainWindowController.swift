@@ -689,12 +689,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             if alert_controller.alertedToNotVolumeOwner() {
                 clearMunkiItemsCache()
                 setFilterStagedOSUpdate(true)
+                setFilterAppleUpdates(false)
                 loadUpdatesPage(self)
                 return
             }
             if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
                 clearMunkiItemsCache()
                 setFilterStagedOSUpdate(true)
+                setFilterAppleUpdates(false)
                 loadUpdatesPage(self)
                 return
             }
