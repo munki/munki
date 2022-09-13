@@ -1095,10 +1095,18 @@ func getOptionalInstallItems() -> [OptionalItem] {
     }
     if !Cache.shared.keys.contains("optional_install_items") {
         let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
-        let optional_install_items = optional_items.map({ OptionalItem($0) })
+        var optional_install_items = optional_items.map({ OptionalItem($0) })
         let featured_items = cachedInstallInfo()["featured_items"] as? [String] ?? [String]()
+        let staged_os_installer = getStagedOSUpdate()
+        let staged_os_installer_name = staged_os_installer["name"] as? String ?? ""
         for index in 0..<optional_install_items.count {
             if let name = optional_install_items[index]["name"] as? String {
+                if (staged_os_installer_name != "" && staged_os_installer_name == name) {
+                    // replace the item with its staged version
+                    optional_install_items[index] = OptionalItem(staged_os_installer)
+                    optional_install_items[index]["status"] = "will-be-installed"
+                    optional_install_items[index]["updatecheck_needed"] = false
+                }
                 if featured_items.contains(name) {
                     optional_install_items[index]["featured"] = true
                 }
@@ -1216,6 +1224,8 @@ func _build_update_list() -> [UpdateItem] {
         stagedOSupdate["status"] = "will-be-installed"
         stagedOSupdate["staged_osinstaller"] = true
         update_items.append(stagedOSupdate)
+        // don't show Apple updates if we have a pending staged OS upgrade
+        setFilterAppleUpdates(true)
     } else {
         if munkiUpdatesContainAppleItems() {
             // don't show any Apple updates if there are Munki items that are Apple items
@@ -1352,7 +1362,8 @@ func getMyItemsList() -> [OptionalItem] {
     // to install or to remove
     let self_service = SelfService()
     let install_list = getOptionalInstallItems().filter(
-    { self_service.installs.contains($0["name"] as? String ?? "") })
+        { self_service.installs.contains($0["name"] as? String ?? "") }
+    )
     let uninstall_list = getOptionalInstallItems().filter(
         {
             (self_service.uninstalls.contains($0["name"] as? String ?? "") &&

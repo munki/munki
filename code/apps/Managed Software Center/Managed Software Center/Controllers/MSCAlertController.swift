@@ -405,7 +405,10 @@ class MSCAlertController: NSObject {
         // Returns true if there is staged macOS upgrade and the user
         // declines to install it
         
-        if (!shouldFilterStagedOSUpdate() && updateListContainsStagedOSUpdate() && getEffectiveUpdateList().count > 1 ) {
+        if (shouldFilterStagedOSUpdate() || !updateListContainsStagedOSUpdate()) {
+            return false
+        }
+        if (getEffectiveUpdateList().count > 1 || getAppleUpdates().count > 0) {
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
                 "macOS Install Pending",
