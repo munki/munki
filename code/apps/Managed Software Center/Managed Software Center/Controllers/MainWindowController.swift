@@ -1263,7 +1263,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             if !_update_in_progress {
                 updateNow()
             }
-        } else if ["will-be-installed", "update-will-be-installed",
+        } else if ["staged-os-installer",
+                   "will-be-installed",
+                   "update-will-be-installed",
                    "will-be-removed"].contains(prior_status) {
             // cancelled a pending install or removal; should run an updatecheck
             checkForUpdates(suppress_apple_update_check: true)
@@ -1361,7 +1363,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if !_update_in_progress {
                     updateNow()
                 }
-            } else if ["will-be-installed", "update-will-be-installed",
+            } else if ["staged-os-installer",
+                       "will-be-installed",
+                       "update-will-be-installed",
                        "will-be-removed"].contains(prior_status) {
                 // cancelled a pending install or removal; should run an updatecheck
                 checkForUpdates(suppress_apple_update_check: true)
