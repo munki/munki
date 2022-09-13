@@ -721,9 +721,9 @@ def create_osinstaller_info(iteminfo):
             'version_to_install',
             iteminfo.get('version', 'UNKNOWN')
         )
-        osinstaller_info['developer'] = "Apple"
+        osinstaller_info['developer'] = iteminfo.get('developer', 'Apple')
         # optional keys to copy if they exist
-        optional_keys = ['icon_name', 'localized_strings']
+        optional_keys = ['category', 'icon_name', 'localized_strings']
         for key in optional_keys:
             if key in iteminfo:
                 osinstaller_info[key] = iteminfo[key]
