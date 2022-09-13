@@ -144,7 +144,7 @@ def parse_su_update_lines(line1, line2):
     return info
 
 
-def run(options_list, catalog_url=None, stop_allowed=False):
+def run(options_list, catalog_url=None, stop_allowed=False, timeout=0):
     """Runs /usr/sbin/softwareupdate with options.
 
     Provides user feedback via command line or MunkiStatus.
@@ -161,7 +161,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
     results = {}
     # some things to track to work around a softwareupdate bug
     seems_to_be_finished = False
-    countdown_timer = 60
+    countdown_timer = timeout or 60
 
     cmd = find_ptty_tool()
     cmd.extend(['/usr/sbin/softwareupdate', '--verbose'])
@@ -213,7 +213,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
                 break
             #else:
             # no data, but we're still running
-            if seems_to_be_finished:
+            if seems_to_be_finished or timeout:
                 # softwareupdate provided output that it was finished
                 countdown_timer -= 1
                 if countdown_timer == 0:
@@ -229,7 +229,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             continue
 
         # got output; reset countdown_timer
-        countdown_timer = 60
+        countdown_timer = timeout or 60
         # Don't bother parsing the stdout output if it hasn't changed since
         # the last loop iteration.
         if last_output == output:

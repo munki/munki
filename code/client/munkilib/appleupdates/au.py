@@ -153,7 +153,9 @@ class AppleUpdates(object):
             # to actually show all the recommended updates more reliably
             # (at the cost of also showing config-data updates)
             su_options.append("--include-config-data")
-        su_results = su_tool.run(su_options)
+        # should not take more than five minutes to get a list of
+        # available updates
+        su_results = su_tool.run(su_options, timeout=60*5)
         recommended_updates = su_prefs.pref('RecommendedUpdates') or []
         processed_updates = []
         for item in su_results.get('updates', []):
