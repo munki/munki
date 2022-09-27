@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Se va a forzar el cierre de sesión en menos de un minuto.\nTodas las actualizaciones pendientes serán instaladas. Se perderá cualquier cambio no guardado.";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Una instalación de macOS esta pendiente. Esta instalación podria tomar algo de tiempo. Otras aplicaciones pendientes se instalarán después.\n\n¿Continuar con la instalación?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Una desinstalación ha fallado. Se volverá a intentar.\nSi esta situación continua, contacta con el administrador de sistemas.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "No se puede mostar el ítem solicitado.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "No se ha podido actualizar macOS";
 
 /* Categories label */
 "Categories" = "Categorías";
@@ -187,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Instalando actualizaciones de Apple disponibles...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Iniciando el instalador de macOS...";
+
 /* Log out and Update button text */
 "Log out and update" = "Cerrar sesión y actualizar";
 
@@ -195,6 +204,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Es necesario cerrar sesión";
+
+/* macOS Install Pending text */
+"macOS install pending" = "Instalación de macOS pendiente";
 
 /* macOS update required text */
 "macOS update required" = "Actualización de macOS requerida";
@@ -391,12 +403,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "No hay ítems en esta categoria.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Debes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Tu administrador de sistemas ha restringido la instalación de estas actualizaciones. Contacta con tu administrador para recibir asistencia.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Hay otros usuarios con sesiones abiertas en este equipo.\nActualizar ahora puede causar perdidas en su trabajo.\n\nPor favor prueba más tarde cuando los otros usuarios hayan cerrado sus sesiones.";
 
@@ -479,6 +485,9 @@
 "Updating..." = "Actualizando...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Verificando el instalador de macOS...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Comprobando la integridad del paquete...";
 
 /* Sidebar Version label */
@@ -499,11 +508,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "No has seleccionado ninguna aplicación.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "Debes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Tienes que actualizar a macOS %@ o superior para poder instalar esta actualización.";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Tu administrador de sistemas ha restringido la instalación de estas actualizaciones. Contacta con tu administrador para recibir asistencia.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "El equipo no está conectado a una fuente de alimentación.";
@@ -514,20 +529,5 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Tus aplicaciones están actualizadas.";
 
-/* macOS Install Pending text */
-"macOS install pending" = "Instalación de macOS pendiente";
-
-/* macOS Install Pending detail */
-"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Una instalación de macOS esta pendiente. Esta instalación podria tomar algo de tiempo. Otras aplicaciones pendientes se instalarán después.\n\n¿Continuar con la instalación?";
-
-/* Not volume owner title */
-"Cannot upgrade macOS" = "No se ha podido actualizar macOS";
-
 /* Not volume owner detail */
 "Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Tu cuenta de usuario no es propietaria del volumen de inicio.\nNo puedes actualizar macOS en este momento.\n\nContacta con tu administrador de sistemas";
-
-/* managedsoftwareupdate message */
-"Launching macOS installer..." = "Iniciando el instalador de macOS...";
-
-/* managedsoftwareupdate message */
-"Verifying macOS installer..." = "Verificando el instalador de macOS...";
