@@ -513,3 +513,21 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Tus aplicaciones están actualizadas.";
+
+/* macOS Install Pending text */
+"macOS install pending" = "Instalación de macOS pendiente";
+
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Una instalación de macOS esta pendiente. Esta instalación podria tomar algo de tiempo. Otras aplicaciones pendientes se instalarán después.\n\n¿Continuar con la instalación?";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "No se ha podido actualizar macOS";
+
+/* Not volume owner detail */
+"Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Tu cuenta de usuario no es propietaria del volumen de inicio.\nNo puedes actualizar macOS en este momento.\n\nContacta con tu administrador de sistemas";
+
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Iniciando el instalador de macOS...";
+
+/* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Verificando el instalador de macOS...";
