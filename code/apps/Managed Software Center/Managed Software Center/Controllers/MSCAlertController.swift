@@ -411,10 +411,10 @@ class MSCAlertController: NSObject {
         if (getEffectiveUpdateList().count > 1 || getAppleUpdates().count > 0) {
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
-                "macOS Install Pending",
+                "macOS install pending",
                 comment: "macOS Install Pending text")
             alert.informativeText = NSLocalizedString(
-                "A macOS Install is pending. This install may take some " +
+                "A macOS install is pending. This install may take some " +
                 "time. Other pending items will be installed later.\n\n" +
                 "Continue with the install?",
                 comment:"macOS Install Pending detail")
