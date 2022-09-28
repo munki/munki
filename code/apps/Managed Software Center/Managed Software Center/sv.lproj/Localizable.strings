@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En automatisk utloggning kommer att ske om mindre än en minut.\nAlla väntande uppdateringar kommer att installereras. Ej sparat arbete kommer att förloras!";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "En installation av macOS väntar. Installationen kan ta en stund. Andra väntande uppdateringar installeras senare.\n\nVill du fortsätta med installationen?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Avinstallationen misslyckades. Ytterligare försök att avinstallera kommer att göras.\nKontakta din datoradministratör om problemet återkommer.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan inte visa de objekt du begärt.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "Kan inte uppgradera macOS";
 
 /* Categories label */
 "Categories" = "Kategorier";
@@ -187,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installerar tillgängliga Apple-uppdateringar...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Startar macOS-installation...";
+
 /* Log out and Update button text */
 "Log out and update" = "Logga ut och uppdatera";
 
@@ -195,6 +204,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Utloggning krävs";
+
+/* macOS Install Pending text */
+"macOS install pending" = "macOS-installation väntar";
 
 /* macOS update required text */
 "macOS update required" = "macOS-uppdatering krävs";
@@ -391,12 +403,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Det finns inget i den här kategorin.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Du måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Adminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din adminstratör för hjälp.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Det finns andra användare inloggade på datorn.\nOm du uppdaterar nu riskerar dom att förlora ej sparat arbete.\n\nProva igen när de andra användarna har loggat ut.";
 
@@ -479,6 +485,9 @@
 "Updating..." = "Uppdateringar...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Verifierar macOS-installation...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Verifierar paket...";
 
 /* Sidebar Version label */
@@ -499,11 +508,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Du har inte valt någon programvara.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "Du måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du behöver uppgradera till macOS version %@ för att kunna installera.";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Adminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din adminstratör för hjälp.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Datorn är inte ansluten till en strömkälla.";
@@ -513,3 +528,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ditt användarkonto är inte volymägare för startskivan.\nDu kan inte uppgradera macOS just nu.\n\nKontakta din systemadministratör.";
