@@ -530,4 +530,4 @@
 "Your software is up to date." = "Votre logiciel est à jour.";
 
 /* Not volume owner detail */
-"Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Votre compte d'utilisateur n'est pas propriétaire de l'actuel disque de démarrage.\nVous ne pouvez pas mettre à jour macOS pour l'instant.\n\nContactez votre administrateur système.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Votre compte d'utilisateur n'est pas propriétaire de l'actuel disque de démarrage.\nVous ne pouvez pas mettre à jour macOS pour l'instant.\n\nContactez votre administrateur système.";
