@@ -74,7 +74,7 @@
 "Cannot display the requested item." = "Kan ikke vise ønsket objekt.";
 
 /* Not volume owner title */
-"Cannot upgrade macOS" = " Kan ikke oppgradere macOS";
+"Cannot upgrade macOS" = "Kan ikke oppgradere macOS";
 
 /* Categories label */
 "Categories" = "Kategorier";
@@ -194,7 +194,7 @@
 "Installing available Apple Software Updates..." = "Installerer tilgjengelige Apple-programvareopdateringer...";
 
 /* managedsoftwareupdate message */
-"Launching macOS installer..." = " Starter macOS-installasjon...";
+"Launching macOS installer..." = "Starter macOS-installasjon...";
 
 /* Log out and Update button text */
 "Log out and update" = "Logg ut og oppdater";
@@ -206,7 +206,7 @@
 "Logout Required" = "Utlogging påkrevd";
 
 /* macOS Install Pending text */
-"macOS install pending" = " macOS-installasjon venter";
+"macOS install pending" = "macOS-installasjon venter";
 
 /* macOS update required text */
 "macOS update required" = "macOS-oppdatering nødvendig";
@@ -485,7 +485,7 @@
 "Updating..." = "Oppdaterer...";
 
 /* managedsoftwareupdate message */
-"Verifying macOS installer..." = " Verifiserer macOS-installasjon …";
+"Verifying macOS installer..." = "Verifiserer macOS-installasjon...";
 
 /* managedsoftwareupdate message */
 "Verifying package integrity..." = "Verifiserer integriteten til programvarepakken...";
@@ -530,4 +530,4 @@
 "Your software is up to date." = "Din programvare er oppdatert.";
 
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = " Brukerkontoen din er ikke eier av det gjeldende oppstartsvolumet.\nDu kan for øyeblikket ikke oppgradere macOS.\n\nKontakt systemadministratoren din.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Brukerkontoen din er ikke eier av det gjeldende oppstartsvolumet.\nDu kan for øyeblikket ikke oppgradere macOS.\n\nKontakt systemadministratoren din.";
