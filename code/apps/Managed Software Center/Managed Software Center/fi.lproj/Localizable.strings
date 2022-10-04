@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Uloskirjautuminen suoritetaan alle minuutin kuluttua pakotetusti.\nKaikki odottamassa olevat päivitykset asennetaan. Tallentamattomat muutokset menetetään avoimista ohjelmista.";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "macOS-asennus on odottamassa. Tämä asennus saattaa kestää pitkään. Muut odottavat kohteet asennetaan myöhemmin.\n\nJatketaanko asennusta?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Poistaminen epäonnistui mutta sitä yritetään uudelleen.\nJos ongelma jatkuu, ota yhteyttä järjestelmän ylläpitäjään.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Pyydettyä kohdetta ei voida näyttää.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "macOS-päivitys ei onnistu";
 
 /* Categories label */
 "Categories" = "Kategoriat";
@@ -187,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Asennetaan Applen ohjelmistopäivityksiä...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Käynnistetään macOS-asentajaa...";
+
 /* Log out and Update button text */
 "Log out and update" = "Kirjaudu ulos ja päivitä";
 
@@ -195,6 +204,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Vaatii uloskirjautumisen";
+
+/* macOS Install Pending text */
+"macOS install pending" = "macOS-asennus odottaa";
 
 /* macOS update required text */
 "macOS update required" = "macOS-päivitys vaaditaan";
@@ -391,12 +403,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Ei kohteita tässä kategoriassa.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Päivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Ylläpitäjä on rajoittanut näiden päivitysten asentamista. Ota yhteyttä ylläpitäjään.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Tietokoneelle on kirjautuneena muita käyttäjiä.\nMuut käyttäjät saattavat menettää tallentamattomia muutoksia jos päivitys tehdään nyt.\n\nYritä uudelleen kun muut käyttäjät ovat kirjautuneet ulos.";
 
@@ -479,6 +485,9 @@
 "Updating..." = "Päivitetään...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Varmistetaan macOS-asentajaa...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Tarkistetaan paketin eheyttä...";
 
 /* Sidebar Version label */
@@ -499,11 +508,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Sinulla ei ole valittuja ohjelmistoja.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "Päivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Päivityksen asentamiseen tarvitaan macOS %@.";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Ylläpitäjä on rajoittanut näiden päivitysten asentamista. Ota yhteyttä ylläpitäjään.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Tietokonetta ei ole liitetty virtalähteeseen.";
@@ -513,3 +528,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ohjelmisto on ajan tasalla.";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Käyttäjätililläsi ei ole käynnistyslevyn omistusoikeutta.\nmacOS-päivitys ei onnistu nyt.\n\nOta yhteyttä järjestelmän ylläpitäjään.";
