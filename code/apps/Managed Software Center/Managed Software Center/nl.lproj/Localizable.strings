@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "U wordt binnen een minuut automatisch uitgelogd.\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Er staat een macOS installatie in de wachtrij. Deze installatie kan enige tijd in beslag nemen. Overige installaties zullen op een later moment worden geïnstalleerd.\n\nDe installatie voortzetten?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan het gevraagde item niet tonen.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "macOS kon niet worden geüpgrade";
 
 /* Categories label */
 "Categories" = "Categorieën";
@@ -187,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Beschikbare Apple Software-updates installeren...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "macOS installatie opstarten...";
+
 /* Log out and Update button text */
 "Log out and update" = "Uitloggen en bijwerken";
 
@@ -195,6 +204,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Uitloggen Benodigd";
+
+/* macOS Install Pending text */
+"macOS install pending" = "macOS installatie in afwachting";
 
 /* macOS update required text */
 "macOS update required" = "macOS update vereist";
@@ -391,12 +403,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Er zijn geen items in deze categorie.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Installeer deze updates door gebruik te maken Software-update in Systeemvoorkeuren.";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "De beheerder van deze machine staat de installatie van deze updates niet toe. Neem contact op met de beheerder voor assistentie.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls U nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer opnieuw nadat de andere gebruikers zijn uitgelogd.";
 
@@ -479,6 +485,9 @@
 "Updating..." = "Aan het updaten...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "macOS installatie wordt geverifieerd...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Integriteit van het pakket controleren...";
 
 /* Sidebar Version label */
@@ -499,11 +508,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "U heeft geen software geselecteerd.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "Installeer deze updates door gebruik te maken Software-update in Systeemvoorkeuren.";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "De volgende applicaties dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Upgrade eerst naar macOS versie %@ of hoger zodat dit onderdeel geïnstalleerd kan worden.";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "De beheerder van deze machine staat de installatie van deze updates niet toe. Neem contact op met de beheerder voor assistentie.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Uw computer is niet aangesloten op het lichtnet.";
@@ -513,3 +528,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is up to date.";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Uw gebruikersaccount is geen 'eigenaar' van de huidige opstart volume.\nOp dit moment kunt u de macOS niet upgraden.\n\nNeem contact op met uw systeem beheerder.";
