@@ -387,7 +387,7 @@ class MSCAlertController: NSObject {
             alert.messageText = NSLocalizedString(
                 "Cannot upgrade macOS", comment: "Not volume owner title")
             alert.informativeText = NSLocalizedString(
-                "Your user account is not a owner of the current startup volume.\n" +
+                "Your user account is not an owner of the current startup volume.\n" +
                 "You cannot upgrade macOS at this time.\n\n" +
                 "Contact your systems administrator.",
                 comment: "Not volume owner detail")
