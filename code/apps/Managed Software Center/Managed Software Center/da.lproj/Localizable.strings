@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle uarkiverede oplysninger vil gå tabt.";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Afventer macOS installering. Installering kan tage et stykke tid. Andre installeringer vil fortsætte senere.\n\nFortsæt med installeringen?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Forsøg på fjernelse mislykkedes. Fjernelse bliver forsøgt igen.\nHvis problemet består, skal du kontakte systemadministratoren.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan ikke vise det ønskede emne.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "macOS kan ikke opdateres";
 
 /* Categories label */
 "Categories" = "Kategorier";
@@ -195,6 +201,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Log ud krævet";
+
+/* macOS Install Pending text */
+"macOS install pending" = "Afventer macOS installering";
 
 /* macOS update required text */
 "macOS update required" = "Kræver macOS-opdatering";
@@ -391,12 +400,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Der er ingen emner i kategorien.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Administratoren har begrænset installationen af disse opdateringer. Kontakt din administrator for mere information.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Der er andre brugere logget ind på computeren.\nHvis du opdaterer nu, risikerer du, at de mister deres åbne dokumenter.\n\nPrøv igen senere når de andre brugere er logget ud.";
 
@@ -479,6 +482,9 @@
 "Updating..." = "Opdaterer...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Verificere macOS installer...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Kontrollerer integritet af software...";
 
 /* Sidebar Version label */
@@ -499,11 +505,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Du har ikke valgt nogen software.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Administratoren har begrænset installationen af disse opdateringer. Kontakt din administrator for mere information.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Computeren er ikke sluttet til strømforsyningen.";
@@ -513,3 +525,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto har ikke ejerskab af det nuværende startup volume.\nDu kan ikke opdatere macOS i øjeblikket.\n\nKontakt din systems administrator.";
