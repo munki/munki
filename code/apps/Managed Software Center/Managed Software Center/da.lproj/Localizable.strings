@@ -17,7 +17,7 @@
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle uarkiverede oplysninger vil gå tabt.";
 
 /* macOS Install Pending detail */
-"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Afventer macOS installering. Installering kan tage et stykke tid. Andre installeringer vil fortsætte senere.\n\nFortsæt med installeringen?";
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Der venter en macOS-installation, som kan tage noget tid at gennemføre. Andre ventende emner vil blive installeret senere.\n\nFortsæt med denne installation?";
 
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Forsøg på fjernelse mislykkedes. Fjernelse bliver forsøgt igen.\nHvis problemet består, skal du kontakte systemadministratoren.";
@@ -74,7 +74,7 @@
 "Cannot display the requested item." = "Kan ikke vise det ønskede emne.";
 
 /* Not volume owner title */
-"Cannot upgrade macOS" = "macOS kan ikke opdateres";
+"Cannot upgrade macOS" = "Kan ikke opgradere macOS";
 
 /* Categories label */
 "Categories" = "Kategorier";
@@ -193,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installerer tilgængelige Apple-softwareopdateringer...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Starter macOS-installation...";
+
 /* Log out and Update button text */
 "Log out and update" = "Log ud og opdater";
 
@@ -203,7 +206,7 @@
 "Logout Required" = "Log ud krævet";
 
 /* macOS Install Pending text */
-"macOS install pending" = "Afventer macOS installering";
+"macOS install pending" = "Ventende macOS-installation";
 
 /* macOS update required text */
 "macOS update required" = "Kræver macOS-opdatering";
@@ -482,7 +485,7 @@
 "Updating..." = "Opdaterer...";
 
 /* managedsoftwareupdate message */
-"Verifying macOS installer..." = "Verificere macOS installer...";
+"Verifying macOS installer..." = "Kontrollerer macOS-installation...";
 
 /* managedsoftwareupdate message */
 "Verifying package integrity..." = "Kontrollerer integritet af software...";
@@ -527,4 +530,4 @@
 "Your software is up to date." = "Softwaren er opdateret.";
 
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto har ikke ejerskab af det nuværende startup volume.\nDu kan ikke opdatere macOS i øjeblikket.\n\nKontakt din systems administrator.";
+"Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";
