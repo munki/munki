@@ -22,13 +22,8 @@
 	<string>2</string>
 	<key>GitRevision</key>
 	<string></string>
-<<<<<<< HEAD
-	<key>LSApplicationCategoryType</key>
-	<string>public.app-category.utilities</string>
-=======
 	<key>LSHasLocalizedDisplayName</key>
 	<true/>
->>>>>>> 78db0cc5be25255acc6d1e6b01a5f29b6fb81e0a
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
