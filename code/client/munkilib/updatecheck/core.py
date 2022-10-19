@@ -19,6 +19,11 @@ updatecheck.core
 Created by Greg Neagle on 2008-11-13.
 
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 # standard libs
@@ -38,6 +43,7 @@ from .. import keychain
 from .. import munkilog
 from .. import munkistatus
 from .. import osutils
+from .. import osinstaller
 from .. import powermgr
 from .. import prefs
 from .. import processes
@@ -47,7 +53,7 @@ from .. import FoundationPlist
 
 class UpdateCheckAbortedError(Exception):
     '''Exception used to break out of checking for updates'''
-    pass
+    #pass
 
 
 def check(client_id='', localmanifestpath=None):
@@ -80,9 +86,9 @@ def check(client_id='', localmanifestpath=None):
         else:
             try:
                 mainmanifestpath = manifestutils.get_primary_manifest(client_id)
-            except manifestutils.ManifestException:
+            except manifestutils.ManifestException as err:
                 display.display_error(
-                    'Could not retrieve managed install primary manifest.')
+                    'Could not retrieve managed install primary manifest.: %s', err)
                 raise
 
         if processes.stop_requested():
@@ -108,6 +114,10 @@ def check(client_id='', localmanifestpath=None):
 
         # record info object for conditional item comparisons
         reports.report['Conditions'] = info.predicate_info_object()
+
+        # remove any staged os installer info we have; we'll check and
+        # recreate if still valid
+        osinstaller.remove_staged_os_installer_info()
 
         display.display_detail('**Checking for installs**')
         analyze.process_manifest_for_key(
@@ -393,6 +403,9 @@ def check(client_id='', localmanifestpath=None):
         item_list.extend(installinfo['managed_installs'])
         item_list.extend(installinfo['removals'])
         item_list.extend(installinfo['problem_items'])
+        staged_os_installer_info = osinstaller.get_staged_os_installer_info()
+        if staged_os_installer_info:
+            item_list.append(staged_os_installer_info)
         download.download_icons(item_list)
 
         # get any custom client resources

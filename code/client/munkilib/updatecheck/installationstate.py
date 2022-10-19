@@ -20,6 +20,11 @@ Created by Greg Neagle on 2017-01-01.
 
 Utilities for determining installation status for Munki items.
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 import os
@@ -98,6 +103,36 @@ def installed_state(item_pl):
         # version is the same
         return 1
 
+    if item_pl.get('installer_type') == 'stage_os_installer':
+        # we return 2 if the installed macOS is the same version or higher than
+        # the version of this item
+        # we return 1 if the OS installer has already been staged
+        # otherwise return 0
+        current_os_vers = osutils.getOsVersion()
+        item_os_vers = item_pl.get('version')
+        if int(item_os_vers.split('.')[0]) > 10:
+            # if we're running Big Sur+, we just want the major (11)
+            item_os_vers = item_os_vers.split('.')[0]
+        else:
+            # need just major.minor part of the version -- 10.12 and not 10.12.4
+            item_os_vers = '.'.join(item_os_vers.split('.')[0:2])
+        comparison = compare.compare_versions(current_os_vers, item_os_vers)
+        if comparison in (compare.VERSION_IS_THE_SAME, compare.VERSION_IS_HIGHER):
+            return 2
+        # installed OS version is lower; check to see if we've staged the installer
+        for item in item_pl.get("installs", []):
+            try:
+                comparison = compare.compare_item_version(item)
+                if comparison == compare.VERSION_IS_THE_SAME:
+                    return 1
+                #else
+                return 0
+            except utils.Error as err:
+                # some problem with the installs data
+                display.display_error(unicode_or_str(err))
+                # return 1 so we're marked as not needing to be installed
+                return 1
+
     if item_pl.get('installer_type') == 'profile':
         identifier = item_pl.get('PayloadIdentifier')
         hash_value = item_pl.get('installer_item_hash')
@@ -106,7 +141,7 @@ def installed_state(item_pl):
         # does not need to be installed
         return 1
 
-     # does 'installs' exist and is it non-empty?
+    # does 'installs' exist and is it non-empty?
     if item_pl.get('installs', None):
         installitems = item_pl['installs']
         for item in installitems:
@@ -114,7 +149,7 @@ def installed_state(item_pl):
                 comparison = compare.compare_item_version(item)
                 if comparison in (-1, 0):
                     return 0
-                elif comparison == 2:
+                if comparison == 2:
                     # this item is newer
                     foundnewer = True
             except utils.Error as err:
@@ -133,7 +168,7 @@ def installed_state(item_pl):
                 if comparison in (-1, 0):
                     # not there or older
                     return 0
-                elif comparison == 2:
+                if comparison == 2:
                     foundnewer = True
             except utils.Error as err:
                 # some problem with the receipts data
@@ -175,7 +210,7 @@ def some_version_installed(item_pl):
         # that an install is not needed. We hope it's the latter.
         return True
 
-    if item_pl.get('installer_type') == 'startosinstall':
+    if item_pl.get('installer_type') in ['startosinstall', 'stage_os_installer']:
         # Some version of macOS is always installed!
         return True
 
@@ -290,8 +325,8 @@ def evidence_this_is_installed(item_pl):
         pkgdata = catalogs.analyze_installed_pkgs()
         if item_pl['name'] in pkgdata['installed_names']:
             return True
-        else:
-            display.display_debug2("Installed receipts don't match.")
+        #else:
+        display.display_debug2("Installed receipts don't match.")
 
     # if we got this far, we failed all the tests, so the item
     # must not be installed (or we don't have the right info...)

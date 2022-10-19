@@ -20,6 +20,11 @@ Created by Greg Neagle on 2019-03-20.
 
 wrapper for running /usr/sbin/softwareupdate
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import
 
 import os
@@ -113,18 +118,18 @@ def parse_su_update_line_old_style(line):
 def parse_su_identifier(line):
     '''parses first line of softwareupdate -l item output'''
     if line.startswith('   * '):
-        update_entry = line[5:]
+        label = line[5:]
     elif line.startswith('* Label: '):
-        update_entry = line[9:]
+        label = line[9:]
     else:
         return {}
-    update_parts = update_entry.split('-')
+    update_parts = label.split('-')
     # version is the bit after the last hyphen
     # (let's hope there are no hyphens in the versions!)
     vers = update_parts[-1]
     # identifier is everything before the last hyphen
     identifier = '-'.join(update_parts[0:-1])
-    return {'full_identifier': update_entry,
+    return {'Label': label,
             'identifier': identifier,
             'version': vers}
 
@@ -139,7 +144,7 @@ def parse_su_update_lines(line1, line2):
     return info
 
 
-def run(options_list, catalog_url=None, stop_allowed=False):
+def run(options_list, catalog_url=None, stop_allowed=False, timeout=0):
     """Runs /usr/sbin/softwareupdate with options.
 
     Provides user feedback via command line or MunkiStatus.
@@ -156,7 +161,7 @@ def run(options_list, catalog_url=None, stop_allowed=False):
     results = {}
     # some things to track to work around a softwareupdate bug
     seems_to_be_finished = False
-    countdown_timer = 60
+    countdown_timer = timeout or 60
 
     cmd = find_ptty_tool()
     cmd.extend(['/usr/sbin/softwareupdate', '--verbose'])
@@ -206,25 +211,25 @@ def run(options_list, catalog_url=None, stop_allowed=False):
         if not output:
             if job.returncode() is not None:
                 break
-            else:
-                # no data, but we're still running
-                if seems_to_be_finished:
-                    # softwareupdate provided output that it was finished
-                    countdown_timer -= 1
-                    if countdown_timer == 0:
-                        # yet it's been at least a minute and it hasn't exited
-                        # just stop the job and move on.
-                        # Works around yet another softwareupdate bug.
-                        display.display_warning(
-                            'softwareupdate failed to exit: killing it')
-                        job.stop()
-                        break
-                # sleep a bit before checking for more output
-                time.sleep(1)
-                continue
+            #else:
+            # no data, but we're still running
+            if seems_to_be_finished or timeout:
+                # softwareupdate provided output that it was finished
+                countdown_timer -= 1
+                if countdown_timer == 0:
+                    # yet it's been at least a minute and it hasn't exited
+                    # just stop the job and move on.
+                    # Works around yet another softwareupdate bug.
+                    display.display_warning(
+                        'softwareupdate failed to exit: killing it')
+                    job.stop()
+                    break
+            # sleep a bit before checking for more output
+            time.sleep(1)
+            continue
 
         # got output; reset countdown_timer
-        countdown_timer = 60
+        countdown_timer = timeout or 60
         # Don't bother parsing the stdout output if it hasn't changed since
         # the last loop iteration.
         if last_output == output:
@@ -350,8 +355,8 @@ def run(options_list, catalog_url=None, stop_allowed=False):
             continue
         if output == '':
             continue
-        else:
-            display.display_status_minor(output)
+        #else:
+        display.display_status_minor(output)
 
     if catalog_url and os_version_tuple == (10, 10):
         # reset CatalogURL if needed

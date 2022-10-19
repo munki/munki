@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Работа будет принудительно завершена менее чем через минуту.\nБудут установлены все отложенные обновления. Все несохраненные данные будут потеряны.";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Установка macOS в ожидании. Установка может занять некоторое время. Другие компоненты будут установлены позже.\n\nПродолжить установку?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Попытка удаления не удалась. Попытка будет предпринята снова.\nЕсли эта ситуация продолжится, обратитесь к системному администратору.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Невозможно отобразить запрашиваемый элемент.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "Не удалось обновить macOS";
 
 /* Categories label */
 "Categories" = "Категории";
@@ -187,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Установка доступных Обновлений ПО Apple...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Запуск установщика macOS...";
+
 /* Log out and Update button text */
 "Log out and update" = "Выйти из системы и обновить";
 
@@ -195,6 +204,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Необходимо выйти из системы";
+
+/* macOS Install Pending text */
+"macOS install pending" = "Ожидание установки macOS";
 
 /* macOS update required text */
 "macOS update required" = "требуется обновление macOS";
@@ -394,9 +406,6 @@
 /* Apple Software Updates Pending detail */
 "There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Вам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
 
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Администратор запретил установку этих обновлений. Обратитесь за помощью к администратору.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другие пользователи сейчас в системе.\nОбновление может привести к потере их несохраненных документов.\n\nПовторите попытку после выхода других пользователей из системы.";
 
@@ -479,6 +488,9 @@
 "Updating..." = "Обновление...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Проверка установщика macOS...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Проверка целостности пакета...";
 
 /* Sidebar Version label */
@@ -505,6 +517,9 @@
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Вы должны перейти на версию macOS %@  чтобы иметь возможность установить этот элемент.";
 
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Администратор запретил установку этих обновлений. Обратитесь за помощью к администратору.";
+
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Ваш компьютер не подключен к постоянному источнику питания.";
 
@@ -513,3 +528,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "У Вас самое новое ПО.";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nОбновление macOS в настоящий момент невозможно.\n\nОбратитесь к администратору системы.";

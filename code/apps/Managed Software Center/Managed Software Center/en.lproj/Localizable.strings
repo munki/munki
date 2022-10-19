@@ -16,6 +16,9 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost.";
 
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?";
+
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator.";
 
@@ -69,6 +72,9 @@
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Cannot display the requested item.";
+
+/* Not volume owner title */
+"Cannot upgrade macOS" = "Cannot upgrade macOS";
 
 /* Categories label */
 "Categories" = "Categories";
@@ -187,6 +193,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "Installing available Apple Software Updates...";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "Launching macOS installer...";
+
 /* Log out and Update button text */
 "Log out and update" = "Log out and update";
 
@@ -195,6 +204,9 @@
 
 /* Logout Required title */
 "Logout Required" = "Logout Required";
+
+/* macOS Install Pending text */
+"macOS install pending" = "macOS install pending";
 
 /* macOS update required text */
 "macOS update required" = "macOS update required";
@@ -391,12 +403,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "There are no items in this category.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "You must install these updates using Software Update in System Preferences.";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Your administrator has restricted installation of these updates. Contact your administrator for assistance.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out.";
 
@@ -479,6 +485,9 @@
 "Updating..." = "Updating...";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "Verifying macOS installer...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "Verifying package integrity...";
 
 /* Sidebar Version label */
@@ -499,11 +508,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "You have no selected software.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "You must install these updates using Software Update in System Preferences.";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "You must quit the following applications before proceeding with installation or removal:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "You must upgrade to macOS version %@ to be able to install this item.";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Your administrator has restricted installation of these updates. Contact your administrator for assistance.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Your computer is not connected to a power source.";
@@ -513,3 +528,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Your software is up to date.";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator.";

@@ -217,6 +217,21 @@ func readPlistAsNSDictionary(_ filepath: String) -> PlistDict {
     }
 }
 
+func getStagedOSUpdate() -> PlistDict {
+    // Returns a dictionary describing a staged OS update (if any)
+    let managedinstallbase = pref("ManagedInstallDir") as! String
+    let info_path = NSString.path(
+            withComponents: [managedinstallbase, "StagedOSInstaller.plist"])
+    let info = readPlistAsNSDictionary(info_path)
+    // ensure something exists at the osinstaller_path
+    if let app_path = info["osinstaller_path"] as? String {
+        if FileManager.default.fileExists(atPath: app_path) {
+            return info
+        }
+    }
+    return PlistDict()
+}
+
 func getInstallInfo() -> PlistDict {
     // Returns the dictionary describing the managed installs and removals
     let managedinstallbase = pref("ManagedInstallDir") as! String
@@ -453,13 +468,14 @@ func justUpdate() throws {
     /* Trigger managedinstaller via launchd KeepAlive path trigger
      We touch a file that launchd is is watching
      launchd, in turn,
-     launches managedsoftwareupdate --installwithnologout as root */
-    if FileManager.default.fileExists(atPath: INSTALLWITHOUTLOGOUTFILE) {
-        return
-    }
-    let success = FileManager.default.createFile(
-            atPath: INSTALLWITHOUTLOGOUTFILE, contents: nil, attributes: nil)
-    if !success {
+     launches managedsoftwareupdate --installwithnologout as root
+     We write specific contents to the file to tell managedsoftwareupdate
+     to launch a staged macOS installer if applicable */
+    let plist = ["LaunchStagedOSInstaller": updateListContainsStagedOSUpdate()]
+    do {
+        try writePlist(plist, toFile: INSTALLWITHOUTLOGOUTFILE)
+    } catch {
+        msc_log("MSC", "cant_write_file", msg: "Couldn't write \(INSTALLWITHOUTLOGOUTFILE) -- \(error)")
         throw ProcessStartError.error(
             description: "Could not create file \(INSTALLWITHOUTLOGOUTFILE)")
     }

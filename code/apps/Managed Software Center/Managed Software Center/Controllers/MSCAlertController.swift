@@ -199,6 +199,7 @@ class MSCAlertController: NSObject {
             // cancelled
             msc_log("user", "deferred_apple_updates")
             alert.window.orderOut(self)
+            setFilterAppleUpdates(true)
             clearMunkiItemsCache()
             if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
                 mainWindowController.load_page("updates.html")
@@ -371,6 +372,69 @@ class MSCAlertController: NSObject {
         } else {
             return false
         }
+    }
+    
+    func alertedToNotVolumeOwner() -> Bool {
+        // Returns true if we're launching a staged OS installer and the current
+        // GUI user is not a volume owner; alerts as a side effect
+        if updateListContainsStagedOSUpdate() && isAppleSilicon() && !currentUserIsVolumeOwner() {
+            guard let mainWindow = window else {
+                msc_debug_log("Could not get main window in alertedToNotVolumeOwner")
+                return false
+            }
+            msc_log("MSC", "staged_os_installer_not_volume_owner_update_cancelled")
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Cannot upgrade macOS", comment: "Not volume owner title")
+            alert.informativeText = NSLocalizedString(
+                "Your user account is not an owner of the current startup volume.\n" +
+                "You cannot upgrade macOS at this time.\n\n" +
+                "Contact your systems administrator.",
+                comment: "Not volume owner detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+                // do nothing
+            })
+            return true
+        }
+        return false
+    }
+    
+    func alertedToStagedOSUpgradeAndCancelled() -> Bool {
+        // Returns true if there is staged macOS upgrade and the user
+        // declines to install it
+        
+        if (shouldFilterStagedOSUpdate() || !updateListContainsStagedOSUpdate()) {
+            return false
+        }
+        if (getEffectiveUpdateList().count > 1 || getAppleUpdates().count > 0) {
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "macOS install pending",
+                comment: "macOS Install Pending text")
+            alert.informativeText = NSLocalizedString(
+                "A macOS install is pending. This install may take some " +
+                "time. Other pending items will be installed later.\n\n" +
+                "Continue with the install?",
+                comment:"macOS Install Pending detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Continue", comment: "Continue button text"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            // making UI consistent with Apple Software Update...
+            // set Cancel button to be activated by return key
+            alert.buttons[1].keyEquivalent = "\r"
+            // set Continue button to be activated by Escape key
+            alert.buttons[0].keyEquivalent = "\u{1B}"
+            msc_log("MSC", "alert_to_macos_install")
+            let response = alert.runModal()
+            if response == .alertSecondButtonReturn {
+                // user clicked Cancel
+                return true
+            }
+        }
+        return false
     }
     
     func alertedToBlockingAppsRunning() -> Bool {

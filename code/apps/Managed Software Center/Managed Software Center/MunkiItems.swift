@@ -6,7 +6,11 @@
 //  Copyright © 2018-2022 The Munki Project. All rights reserved.
 //
 
+import AppKit
 import Foundation
+
+private var filterAppleUpdates = false
+private var filterStagedOSUpdate = false
 
 class Cache {
     // A class to cache key/value pairs
@@ -306,6 +310,9 @@ class GenericItem: BaseItem {
             "downloading":
                 NSLocalizedString("Downloading",
                                   comment: "Downloading status text"),
+            "staged-os-installer":
+                NSLocalizedString("Will be installed",
+                                  comment: "Will Be Installed status text"),
             "will-be-installed":
                 NSLocalizedString("Will be installed",
                                   comment: "Will Be Installed status text"),
@@ -365,6 +372,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Cancel",
                                   comment: "Cancel button title/short action text"),
             "downloading":
+                NSLocalizedString("Cancel",
+                                  comment: "Cancel button title/short action text"),
+            "staged-os-installer":
                 NSLocalizedString("Cancel",
                                   comment: "Cancel button title/short action text"),
             "will-be-installed":
@@ -427,6 +437,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "downloading":
+                NSLocalizedString("Cancel install",
+                                  comment: "Cancel Install long action text"),
+            "staged-os-installer":
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "will-be-installed":
@@ -506,6 +519,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "downloading":
+                NSLocalizedString("Cancel install",
+                                  comment: "Cancel Install long action text"),
+            "staged-os-installer":
                 NSLocalizedString("Cancel install",
                                   comment: "Cancel Install long action text"),
             "will-be-installed":
@@ -870,7 +886,7 @@ class OptionalItem: GenericItem {
             if original_status == "removal-requested" {
                 my["updatecheck_needed"] = false
             }
-        case "will-be-installed", "install-requested", "downloading", "install-error":
+        case "staged-os-installer", "will-be-installed", "install-requested", "downloading", "install-error":
             // cancel install request
             if needs_update {
                 my["status"] = "update-available"
@@ -1008,8 +1024,8 @@ func updateTrackingInfo() -> [String : Any] {
 }
 
 func getDateFirstAvailable(_ itemname: String) -> Date? {
-    // Uses UpdateNotificationTracking.plist data to determine when an item was first
-    // "discovered"/presented as available
+    // Uses UpdateNotificationTracking.plist data to determine when an item
+    // was first "discovered"/presented as available
     let trackingInfo = updateTrackingInfo()
     for category in trackingInfo.keys {
         if let items = (trackingInfo[category] as? [String : Any]) {
@@ -1036,34 +1052,25 @@ func getDaysPending(_ itemname: String) -> Int {
 
 func shouldAggressivelyNotifyAboutMunkiUpdates(days: Int = -1) -> Bool {
     // Do we have any Munki updates that have been pending a long time?
-    var maxPendingDays = 0
-    if let trackingInfo = updateTrackingInfo()["managed_installs"] as? [String: Any?] {
-        for name in trackingInfo.keys {
-            if let dateAvailable = trackingInfo[name] as? Date {
-                let secondsInDay = 60 * 60 * 24
-                let timeAvailable = dateAvailable.timeIntervalSinceNow * -1
-                let daysAvailable = Int(timeAvailable as Double)/secondsInDay
-                if daysAvailable > maxPendingDays {
-                    maxPendingDays = daysAvailable
+    let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+    if aggressiveNotificationDays == 0 {
+        return false
+    }
+    for category in ["StagedOSUpdates", "managed_installs"] {
+        if let trackingInfo = updateTrackingInfo()[category] as? [String: Any?] {
+            for name in trackingInfo.keys {
+                if getDaysPending(name) > aggressiveNotificationDays {
+                    return true
                 }
             }
         }
     }
-    if days == -1 {
-        let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
-        if aggressiveNotificationDays == 0 {
-            // never get aggressive
-            return false
-        }
-        return maxPendingDays > aggressiveNotificationDays
-    } else {
-        return maxPendingDays > days
-    }
+    return false
 }
 
 func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
-    // Do we have any Apple updates that require a restart that have been pending
-    // a long time?
+    // Do we have any Apple updates that require a restart that have been
+    // pending a long time?
     var maxPendingDays = 0
     let requiresRestartItems = getAppleUpdates().filter(
             { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
@@ -1100,10 +1107,18 @@ func getOptionalInstallItems() -> [OptionalItem] {
     }
     if !Cache.shared.keys.contains("optional_install_items") {
         let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
-        let optional_install_items = optional_items.map({ OptionalItem($0) })
+        var optional_install_items = optional_items.map({ OptionalItem($0) })
         let featured_items = cachedInstallInfo()["featured_items"] as? [String] ?? [String]()
+        let staged_os_installer = getStagedOSUpdate()
+        let staged_os_installer_name = staged_os_installer["name"] as? String ?? ""
         for index in 0..<optional_install_items.count {
             if let name = optional_install_items[index]["name"] as? String {
+                if (staged_os_installer_name != "" && staged_os_installer_name == name) {
+                    // replace the item with its staged version
+                    optional_install_items[index] = OptionalItem(staged_os_installer)
+                    optional_install_items[index]["status"] = "staged-os-installer"
+                    optional_install_items[index]["updatecheck_needed"] = false
+                }
                 if featured_items.contains(name) {
                     optional_install_items[index]["featured"] = true
                 }
@@ -1146,12 +1161,20 @@ func getOptionalWillBeInstalledItems() -> [OptionalItem] {
     let problem_item_names = getProblemItems().map(
         { return $0["name"] as? String ?? "" }
     )
+    var will_be_installed_statuses = [
+        "install-requested",
+        "will-be-installed",
+        "update-will-be-installed",
+        "install-error"
+    ]
+    if !shouldFilterStagedOSUpdate() {
+        will_be_installed_statuses.append("staged-os-installer")
+    }
     return getOptionalInstallItems().filter(
         {
             let status = $0["status"] as? String ?? ""
             let name = $0["name"] as? String ?? ""
-            return (["install-requested", "will-be-installed",
-                     "update-will-be-installed", "install-error"].contains(status) &&
+            return (will_be_installed_statuses.contains(status) &&
                     !problem_item_names.contains(name))
         }
     )
@@ -1183,9 +1206,9 @@ func display_name(_ item_name: String) -> String {
     return item_name
 }
 
-func getUpdateList(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
+func getUpdateList() -> [UpdateItem] {
     if !Cache.shared.keys.contains("update_list") {
-        Cache.shared["update_list"] = _build_update_list(filterAppleUpdates)
+        Cache.shared["update_list"] = _build_update_list()
     }
     return Cache.shared["update_list"] as? [UpdateItem] ?? [UpdateItem]()
 }
@@ -1212,26 +1235,37 @@ func update_list_sort(_ lh: UpdateItem, _ rh: UpdateItem) -> Bool {
     }
 }
 
-func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
+func _build_update_list() -> [UpdateItem] {
     var update_items = [[String: Any]]()
-    if munkiUpdatesContainAppleItems() {
-        // don't show any Apple updates if there are Munki items that are Apple items
-        NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
-    } else if (filterAppleUpdates && isAppleSilicon()) {
-        // we can't install any Apple updates on Apple silicon, so filter them all
-        NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
+    
+    var stagedOSupdate = getStagedOSUpdate()
+    if !shouldFilterStagedOSUpdate() && pythonishBool(stagedOSupdate) {
+        stagedOSupdate["developer"] = "Apple"
+        stagedOSupdate["status"] = "will-be-installed"
+        stagedOSupdate["staged_os_installer"] = true
+        update_items.append(stagedOSupdate)
+        // don't show Apple updates if we have a pending staged OS upgrade
+        setFilterAppleUpdates(true)
     } else {
-        for var item in getAppleUpdates() {
-            if (filterAppleUpdates &&
-                ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
-                // skip this update because it requires a restart and we've been
-                // directed to filter these out
-                continue
+        if munkiUpdatesContainAppleItems() {
+            // don't show any Apple updates if there are Munki items that are Apple items
+            NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
+        } else if (shouldFilterAppleUpdates() && isAppleSilicon()) {
+            // we can't install any Apple updates on Apple silicon, so filter them all
+            NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
+        } else {
+            for var item in getAppleUpdates() {
+                if (shouldFilterAppleUpdates() &&
+                    ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
+                    // skip this update because it requires a restart and we've been
+                    // directed to filter these out
+                    continue
+                }
+                item["developer"] = "Apple"
+                item["status"] = "will-be-installed"
+                item["apple_update"] = true
+                update_items.append(item)
             }
-            item["developer"] = "Apple"
-            item["status"] = "will-be-installed"
-            item["apple_update"] = true
-            update_items.append(item)
         }
     }
     let install_info = cachedInstallInfo()
@@ -1249,6 +1283,16 @@ func _build_update_list(_ filterAppleUpdates: Bool = false) -> [UpdateItem] {
     }
     let update_list = update_items.map({ UpdateItem($0) })
     return update_list.sorted(by: { update_list_sort($0, $1) })
+}
+
+func updateListContainsStagedOSUpdate() -> Bool {
+    // Return true if the update list contains a staged macOS installer
+    if shouldFilterStagedOSUpdate() {
+        return false
+    }
+    return getUpdateList().filter(
+            { ($0["staged_os_installer"] as? Bool ?? false) }
+        ).count > 0
 }
 
 func updatesRequireLogout() -> Bool {
@@ -1317,7 +1361,7 @@ func updatesContainNonUserSelectedItems() -> Bool {
     return false
 }
 
-func getEffectiveUpdateList(_ filterAppleUpdates: Bool = false) -> [GenericItem] {
+func getEffectiveUpdateList() -> [GenericItem] {
     // Combine the updates Munki has found with any optional choices to
     // make the effective list of updates
     let optional_installs = getOptionalWillBeInstalledItems() as [GenericItem]
@@ -1327,7 +1371,7 @@ func getEffectiveUpdateList(_ filterAppleUpdates: Bool = false) -> [GenericItem]
     )
     // filter out pending optional items from the list of all pending updates
     // so we can add in the items with additional optional detail
-    let mandatory_updates = getUpdateList(filterAppleUpdates).filter(
+    let mandatory_updates = getUpdateList().filter(
         { !optional_item_names.contains($0["name"] as? String ?? "") }
     ) as [GenericItem]
     return mandatory_updates + optional_installs + optional_removals
@@ -1338,7 +1382,8 @@ func getMyItemsList() -> [OptionalItem] {
     // to install or to remove
     let self_service = SelfService()
     let install_list = getOptionalInstallItems().filter(
-    { self_service.installs.contains($0["name"] as? String ?? "") })
+        { self_service.installs.contains($0["name"] as? String ?? "") }
+    )
     let uninstall_list = getOptionalInstallItems().filter(
         {
             (self_service.uninstalls.contains($0["name"] as? String ?? "") &&
@@ -1378,4 +1423,24 @@ func dependentItems(_ item_name: String) -> [String] {
         }
     }
     return dependent_items
+}
+
+func setFilterAppleUpdates(_ state: Bool) {
+    // record our state
+    filterAppleUpdates = state
+}
+
+func setFilterStagedOSUpdate(_ state: Bool) {
+    // record our state
+    filterStagedOSUpdate = state
+}
+
+func shouldFilterAppleUpdates() -> Bool {
+    // should we filter out Apple updates?
+    return filterAppleUpdates
+}
+
+func shouldFilterStagedOSUpdate() -> Bool {
+    // should we filter out a staged OS update?
+    return filterStagedOSUpdate
 }

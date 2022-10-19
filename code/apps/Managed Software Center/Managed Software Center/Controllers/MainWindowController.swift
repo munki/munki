@@ -20,16 +20,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
-    let sidebar_items = [["title": "Software", "icon": "AllItemsTemplate"],
-                 ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
-                 ["title": "My Items", "icon": "MyStuffTemplate"],
-                 ["title": "Updates", "icon": "updatesTemplate"]]
+    let sidebar_items = [
+        ["title": "Software", "icon": "AllItemsTemplate"],
+        ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
+        ["title": "My Items", "icon": "MyStuffTemplate"],
+        ["title": "Updates", "icon": "updatesTemplate"]
+    ]
     
     // status properties
     var _status_title = ""
     var stop_requested = false
     var user_warned_about_extra_updates = false
-    var should_filter_apple_updates = false
     var forceFrontmost = false
     
     var backdropWindows: [NSWindow] = []
@@ -86,13 +87,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // no pending updates
             return .terminateNow
         }
-        if !should_filter_apple_updates && appleUpdatesMustBeDoneWithSystemPreferences() {
+        if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
             if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
                 alert_controller.alertToAppleUpdates()
-                should_filter_apple_updates = true
+                setFilterAppleUpdates(true)
                 return .terminateCancel
             }
         }
@@ -636,7 +637,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             return
         }
         _update_in_progress = true
-        should_filter_apple_updates = false
+        //setFilterAppleUpdates(false)
+        //setFilterStagedOSUpdate(false)
         displayUpdateCount()
         managedsoftwareupdate_task = "manualcheck"
         if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
@@ -645,9 +647,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         markRequestedItemsAsProcessing()
     }
     
+    @objc func checkForUpdatesSkippingAppleUpdates() {
+        checkForUpdates(suppress_apple_update_check: true)
+    }
+    
     @IBAction func reloadPage(_ sender: Any) {
         // User selected Reload page menu item. Reload the page and kick off an updatecheck
         msc_log("user", "reload_page_menu_item_selected")
+        setFilterAppleUpdates(false)
+        setFilterStagedOSUpdate(false)
         checkForUpdates()
         URLCache.shared.removeAllCachedResponses()
         webView.reload(sender)
@@ -675,6 +683,20 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 return
             }
             if alert_controller.alertedToRunningOnBatteryAndCancelled() {
+                loadUpdatesPage(self)
+                return
+            }
+            if alert_controller.alertedToNotVolumeOwner() {
+                clearMunkiItemsCache()
+                setFilterStagedOSUpdate(true)
+                setFilterAppleUpdates(false)
+                loadUpdatesPage(self)
+                return
+            }
+            if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
+                clearMunkiItemsCache()
+                setFilterStagedOSUpdate(true)
+                setFilterAppleUpdates(false)
                 loadUpdatesPage(self)
                 return
             }
@@ -813,7 +835,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if _update_in_progress {
             return 0
         }
-        return getEffectiveUpdateList(should_filter_apple_updates).count
+        return getEffectiveUpdateList().count
     }
     
     func displayUpdateCount() {
@@ -1162,11 +1184,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            if !should_filter_apple_updates && appleUpdatesMustBeDoneWithSystemPreferences() {
+            if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
                 // if there are pending Apple updates, alert the user to
                 // install via System Preferences
                 alert_controller.alertToAppleUpdates()
-                should_filter_apple_updates = true
+                setFilterAppleUpdates(true)
             } else {
                 updateNow()
             }
@@ -1241,7 +1263,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             if !_update_in_progress {
                 updateNow()
             }
-        } else if ["will-be-installed", "update-will-be-installed",
+        } else if ["staged-os-installer",
+                   "will-be-installed",
+                   "update-will-be-installed",
                    "will-be-removed"].contains(prior_status) {
             // cancelled a pending install or removal; should run an updatecheck
             checkForUpdates(suppress_apple_update_check: true)
@@ -1339,7 +1363,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if !_update_in_progress {
                     updateNow()
                 }
-            } else if ["will-be-installed", "update-will-be-installed",
+            } else if ["staged-os-installer",
+                       "will-be-installed",
+                       "update-will-be-installed",
                        "will-be-removed"].contains(prior_status) {
                 // cancelled a pending install or removal; should run an updatecheck
                 checkForUpdates(suppress_apple_update_check: true)
@@ -1431,7 +1457,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // update the updates-to-install header to reflect the new list of
         // updates to install
         setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
-        setInnerText(getWarningText(should_filter_apple_updates), elementID: "update-warning-text")
+        setInnerText(getWarningText(shouldFilterAppleUpdates()), elementID: "update-warning-text")
     
         // update text of Install All button
         setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
@@ -1442,7 +1468,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         if updateCheckNeeded() {
             // check for updates after a short delay so UI changes visually
             // complete first
-            self.perform(#selector(self.checkForUpdates), with: true, afterDelay: 1.0)
+            self.perform(#selector(self.checkForUpdatesSkippingAppleUpdates), with: nil, afterDelay: 1.0)
         }
     }
 

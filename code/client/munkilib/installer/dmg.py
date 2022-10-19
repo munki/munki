@@ -260,6 +260,11 @@ def copy_items_from_mountpoint(mountpoint, itemlist):
                 os.unlink(destination_path)
             elif os.path.isdir(destination_path):
                 shutil.rmtree(destination_path)
+        except (OSError, IOError) as err:
+            display.display_error(
+                "Error removing existing item at destination: %s" % err)
+            return -1
+        try:
             os.rename(temp_destination_path, destination_path)
         except (OSError, IOError) as err:
             display.display_error("Error moving item to destination: %s" % err)

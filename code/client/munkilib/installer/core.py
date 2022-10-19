@@ -19,6 +19,12 @@ installer.core
 munki module to automatically install pkgs, mpkgs, and dmgs
 (containing pkgs and mpkgs) from a defined folder.
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+# pylint: disable=useless-object-inheritance
+
 from __future__ import absolute_import, print_function
 
 import datetime
@@ -27,9 +33,9 @@ import subprocess
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
+# pylint: disable=E0611,E0401
 from Foundation import NSDate
-# pylint: enable=E0611
+# pylint: enable=E0611,E0401
 
 from . import dmg
 from . import pkg
@@ -41,6 +47,7 @@ from .. import display
 from .. import dmgutils
 from .. import munkistatus
 from .. import munkilog
+from .. import osinstaller
 from .. import pkgutils
 from .. import powermgr
 from .. import prefs
@@ -169,7 +176,7 @@ def handle_apple_package_install(item, itempath):
         # modify the package to suppress bundle relocation
         mountpoints = dmgutils.mountdmg(
             itempath, use_shadow=mount_with_shadow, skip_verification=True)
-        if mountpoints == []:
+        if not mountpoints:
             display.display_error(
                 "No filesystems mounted from %s", item["installer_item"])
             return (-99, False)
@@ -232,7 +239,7 @@ def install_with_info(
                     'Skipping install of %s because it\'s not unattended.'
                     % item['name'])
                 continue
-            elif processes.blocking_applications_running(item):
+            if processes.blocking_applications_running(item):
                 skipped_installs.append(item)
                 display.display_detail(
                     'Skipping unattended install of %s because blocking '
@@ -286,6 +293,11 @@ def install_with_info(
                     # Adobe Setup says restart needed.
                     restartflag = True
                     retcode = 0
+            # stage_os_installer install
+            elif installer_type == "stage_os_installer":
+                retcode = dmg.copy_from_dmg(itempath, item.get('items_to_copy'))
+                if retcode == 0:
+                    osinstaller.record_staged_os_installer(item)
             # copy_from_dmg install
             elif installer_type == "copy_from_dmg":
                 retcode = dmg.copy_from_dmg(itempath, item.get('items_to_copy'))
@@ -480,7 +492,7 @@ def process_removals(removallist, only_unattended=False):
                     ('Skipping removal of %s because it\'s not unattended.'
                      % item['name']))
                 continue
-            elif processes.blocking_applications_running(item):
+            if processes.blocking_applications_running(item):
                 skipped_removals.append(item)
                 display.display_detail(
                     'Skipping unattended removal of %s because '

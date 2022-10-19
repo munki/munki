@@ -19,6 +19,11 @@ pkginfolib
 Created by Greg Neagle on 2017-11-18.
 Routines used by makepkginfo to create pkginfo files
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, division, print_function
 
 # standard libs
@@ -31,9 +36,9 @@ import time
 # Apple frameworks via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
+# pylint: disable=E0611,E0401
 from Foundation import NSDate, NSUserName
-# pylint: enable=E0611
+# pylint: enable=E0611,E0401
 
 # our libs
 from .common import AttributeDict
@@ -56,7 +61,7 @@ os.environ['__CFPREFERENCES_AVOID_DAEMON'] = "1"
 
 class PkgInfoGenerationError(Exception):
     '''Error to raise if there is a fatal error when generating pkginfo'''
-    pass
+    #pass
 
 
 def make_pkginfo_metadata():
@@ -125,7 +130,7 @@ def get_catalog_info_from_path(pkgpath, options):
 
 class ProfileMetadataGenerationError(PkgInfoGenerationError):
     '''Error to raise when we can't generate config profile metadata'''
-    pass
+    #pass
 
 
 def get_catalog_info_for_profile(profile_path):
@@ -198,7 +203,14 @@ def get_catalog_info_from_dmg(dmgpath, options):
                   'it does not contain Contents/SharedSupport/InstallESD.dmg '
                   'or Contents/SharedSupport/SharedSupport.dmg'
                   % os.path.basename(install_macos_app), file=sys.stderr)
-        cataloginfo = osinstaller.get_catalog_info(mountpoints[0])
+        if options.installer_type_requested in ["stage_os_installer", "copy_from_dmg"]:
+            # admin wants a stage_os_installer item
+            # or maybe just copy the app to /Applications
+            # fall through so we can process as a drag-n-drop app
+            options.item = os.path.relpath(install_macos_app, mountpoints[0])
+        else:
+            # assume startosinstall item
+            cataloginfo = osinstaller.get_startosinstall_catalog_info(mountpoints[0])
 
     if not cataloginfo:
         # maybe this is a drag-n-drop dmg
@@ -283,6 +295,12 @@ def get_catalog_info_from_dmg(dmgpath, options):
             cataloginfo['uninstallable'] = True
             cataloginfo['uninstall_method'] = "remove_copied_items"
 
+            if options.installer_type_requested == "stage_os_installer":
+                # transform this copy_from_dmg item
+                # into a staged_os_installer item
+                morecataloginfo = osinstaller.get_stage_os_installer_catalog_info(itempath)
+                cataloginfo.update(morecataloginfo)
+
     #eject the dmg
     if not was_already_mounted:
         dmgutils.unmountdmg(mountpoints[0])
@@ -293,7 +311,7 @@ def get_catalog_info_from_dmg(dmgpath, options):
 def readfile(path):
     '''Reads file at path. Returns a string.'''
     try:
-        fileobject = open(os.path.expanduser(path), mode='r')
+        fileobject = open(os.path.expanduser(path), mode='r', encoding="utf-8")
         data = fileobject.read()
         fileobject.close()
         return data
@@ -409,11 +427,11 @@ def makepkginfo(installeritem, options):
         itemsize = 0
         itemhash = "N/A"
         if os.path.isfile(installeritem):
-            itemsize = int(os.path.getsize(installeritem))
+            itemsize = int(os.path.getsize(installeritem)/1024)
             try:
                 itemhash = munkihash.getsha256hash(installeritem)
             except OSError as err:
-                raise PkgInfoGenerationError(err)
+                raise PkgInfoGenerationError(err) from err
 
         if pkgutils.hasValidDiskImageExt(installeritem):
             if dmgutils.DMGisWritable(installeritem) and options.print_warnings:
@@ -438,6 +456,10 @@ def makepkginfo(installeritem, options):
                     % installeritem)
 
         elif pkgutils.hasValidPackageExt(installeritem):
+            # we should generate pkginfo for an Apple installer
+            if options.installer_type_requested and options.print_warnings:
+                print("WARNING: installer_type requested is %s. Provided "
+                      "installer item appears to be an Apple pkg.")
             pkginfo = get_catalog_info_from_path(installeritem, options)
             if not pkginfo:
                 raise PkgInfoGenerationError(
@@ -457,18 +479,23 @@ def makepkginfo(installeritem, options):
                 itemsize = int(itemsize/1024)
 
         elif pkgutils.hasValidConfigProfileExt(installeritem):
+            if (options.installer_type_requested and
+                    options.installer_type_requested != 'profile' and
+                    options.print_warnings):
+                print("WARNING: installer_type requested is %s. Provided "
+                      "installer item appears to be a configuration profile.")
             try:
                 pkginfo = get_catalog_info_for_profile(installeritem)
             except ProfileMetadataGenerationError as err:
                 print(err, file=sys.stderr)
                 raise PkgInfoGenerationError(
                     "%s doesn't appear to be a supported configuration "
-                    "profile!" % installeritem)
+                    "profile!" % installeritem) from err
         else:
             raise PkgInfoGenerationError(
                 "%s is not a valid installer item!" % installeritem)
 
-        pkginfo['installer_item_size'] = int(itemsize/1024)
+        pkginfo['installer_item_size'] = itemsize
         if itemhash != "N/A":
             pkginfo['installer_item_hash'] = itemhash
 
@@ -479,8 +506,8 @@ def makepkginfo(installeritem, options):
             if temppath.endswith('/pkgs'):
                 location = installeritem[len(temppath)+1:]
                 break
-            else:
-                temppath = os.path.dirname(temppath)
+            #else:
+            temppath = os.path.dirname(temppath)
 
         if not location:
             #just the filename
@@ -508,8 +535,8 @@ def makepkginfo(installeritem, options):
                     if temppath.endswith('/pkgs'):
                         location = uninstallerpath[len(temppath)+1:]
                         break
-                    else:
-                        temppath = os.path.dirname(temppath)
+                    #else:
+                    temppath = os.path.dirname(temppath)
 
                 if not location:
                     #just the filename
@@ -587,7 +614,7 @@ def makepkginfo(installeritem, options):
         pkginfo['installs'] = installs
 
     # determine minimum_os_version from identified apps in the installs array
-    if 'installs' in pkginfo:
+    if pkginfo.get('installer_type') != 'stage_os_installer' and 'installs' in pkginfo:
         # build a list of minosversions using a list comprehension
         item_minosversions = [
             pkgutils.MunkiLooseVersion(item['minosversion'])
@@ -985,6 +1012,25 @@ def add_option_groups(parser):
         )
     parser.add_option_group(apple_update_metadata_options)
 
+    # installer type options
+    installer_type_options = optparse.OptionGroup(parser, 'Installer Types')
+    installer_type_options.add_option(
+        '--installer-type', '--installer_type',
+        choices=['copy_from_dmg', 'stage_os_installer', 'startosinstall'],
+        metavar='TYPE', dest='installer_type_requested',
+        help=('Specify an intended installer_type when the installeritem could '
+              'be one of multiple types. Currently supported only to specify '
+              'the intended type for a macOS installer (startosinstall or '
+              'stage_os_installer).')
+    )
+    installer_type_options.add_option(
+        '--nopkg',
+        action='store_true',
+        help=('Indicates this pkginfo should have an \'installer_type\' of '
+              '\'nopkg\'. Ignored if a package or dmg argument is supplied.')
+    )
+    parser.add_option_group(installer_type_options)
+
     # Additional options - misc. options that don't fit into other categories,
     # and don't necessarily warrant the creation of their own option group
     additional_options = optparse.OptionGroup(parser, 'Additional Options')
@@ -1020,6 +1066,7 @@ def add_option_groups(parser):
     additional_options.add_option(
         '--arch', '--supported_architecture', '--supported-architecture',
         action="append",
+        choices=['i386', 'x86_64', 'arm64'],
         metavar='ARCH',
         help=('Declares a supported architecture for the item. '
               'Can be specified multiple times to declare multiple '
@@ -1076,12 +1123,6 @@ def add_option_groups(parser):
         metavar='STRING|PATH',
         help=('Specifies administrator provided notes to be embedded into the '
               'pkginfo. Can be a PATH to a file.')
-        )
-    additional_options.add_option(
-        '--nopkg',
-        action='store_true',
-        help=('Indicates this pkginfo should have an \'installer_type\' of '
-              '\'nopkg\'. Ignored if a package or dmg argument is supplied.')
         )
     # secret option!
     additional_options.add_option(

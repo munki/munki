@@ -19,6 +19,11 @@ updatecheck.analyze
 Created by Greg Neagle on 2017-01-10.
 
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 import datetime
@@ -35,6 +40,7 @@ from .. import display
 from .. import fetch
 from .. import info
 from .. import munkilog
+from .. import osinstaller
 from .. import prefs
 from .. import processes
 from ..wrappers import is_a_string
@@ -203,7 +209,13 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
             # therefore we would not be here!)
             #
             # TL;DR: only check installed_state if no installcheck_script
-            needs_update = installationstate.installed_state(item_pl) == 0
+            installation_state = installationstate.installed_state(item_pl)
+            if item_pl.get('installer_type') == 'stage_os_installer':
+                # 1 means installer is staged, but not _installed_
+                needs_update = installation_state != 2
+            else:
+                needs_update = installation_state == 0
+
 
         if (not needs_update and
                 prefs.pref('ShowOptionalInstallsForHigherOSVersions')):
@@ -453,34 +465,39 @@ def process_install(manifestitem, cataloglist, installinfo,
                     iteminfo['unattended_install'] = True
 
             # optional keys to copy if they exist
-            optional_keys = ['additional_startosinstall_options',
-                             'allow_untrusted',
-                             'suppress_bundle_relocation',
-                             'installer_choices_xml',
-                             'installer_environment',
-                             'adobe_install_info',
-                             'RestartAction',
-                             'installer_type',
-                             'adobe_package_name',
-                             'package_path',
-                             'blocking_applications',
-                             'installs',
-                             'requires',
-                             'update_for',
-                             'payloads',
-                             'preinstall_script',
-                             'postinstall_script',
-                             'items_to_copy',  # used w/ copy_from_dmg
-                             'copy_local',     # used w/ AdobeCS5 Updaters
-                             'force_install_after_date',
-                             'apple_item',
-                             'category',
-                             'developer',
-                             'icon_name',
-                             'PayloadIdentifier',
-                             'icon_hash',
-                             'OnDemand',
-                             'precache']
+            optional_keys = [
+                'additional_startosinstall_options',
+                'allow_untrusted',
+                'suppress_bundle_relocation',
+                'installer_choices_xml',
+                'installer_environment',
+                'adobe_install_info',
+                'RestartAction',
+                'installer_type',
+                'adobe_package_name',
+                'package_path',
+                'blocking_applications',
+                'installs',
+                'requires',
+                'update_for',
+                'payloads',
+                'preinstall_script',
+                'postinstall_script',
+                'items_to_copy',  # used w/ copy_from_dmg
+                'copy_local',     # used w/ AdobeCS5 Updaters
+                'force_install_after_date',
+                'apple_item',
+                'category',
+                'developer',
+                'icon_name',
+                'PayloadIdentifier',
+                'icon_hash',
+                'OnDemand',
+                'precache',
+                'display_name_staged', # used w/ stage_os_installer
+                'description_staged',
+                'installed_size_staged'
+            ]
 
             if (is_optional_install and
                     not installationstate.some_version_installed(item_pl)):
@@ -576,8 +593,16 @@ def process_install(manifestitem, cataloglist, installinfo,
             #if manifestitemname in installinfo['processed_installs']:
             #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-    else:
+    else: # some version installed
         iteminfo['installed'] = True
+
+        if item_pl.get("installer_type") == "stage_os_installer" and installed_state == 1:
+            # installer appears to be staged; make sure the info is recorded
+            # so we know we can launch the installer later
+            # TO-DO: maybe filter the actual info recorded
+            display.display_info("Recording staged macOS installer...")
+            osinstaller.record_staged_os_installer(item_pl)
+
         # record installed size for reporting
         iteminfo['installed_size'] = item_pl.get(
             'installed_size', item_pl.get('installer_item_size', 0))
@@ -687,7 +712,7 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             display.display_warning(
                 'Missing predicate for conditional_item %s', item)
             continue
-        except BaseException:
+        except Exception:
             display.display_warning(
                 'Conditional item is malformed: %s', item)
             continue
@@ -787,9 +812,9 @@ def process_removal(manifestitem, cataloglist, installinfo):
             install_evidence = True
             found_item = item
             break
-        else:
-            display.display_debug2(
-                '%s-%s not installed.', item['name'], item['version'])
+        #else:
+        display.display_debug2(
+            '%s-%s not installed.', item['name'], item['version'])
 
     if not install_evidence:
         display.display_detail(

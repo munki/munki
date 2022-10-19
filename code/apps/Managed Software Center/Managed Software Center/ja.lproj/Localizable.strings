@@ -70,6 +70,9 @@
 /* Item Not Found message */
 "Cannot display the requested item." = "リクエストされたアイテムを表示できません";
 
+/* Not volume owner title */
+"Cannot upgrade macOS" = "MacOS をアップグレードできません";
+
 /* Categories label */
 "Categories" = "カテゴリ";
 
@@ -187,6 +190,9 @@
 /* managedsoftwareupdate message */
 "Installing available Apple Software Updates..." = "入手可能なアップルソフトウェアアップデートをインストール中…";
 
+/* managedsoftwareupdate message */
+"Launching macOS installer..." = "MacOS インストーラーの起動中...";
+
 /* Log out and Update button text */
 "Log out and update" = "ログアウトし、アップデートする";
 
@@ -195,6 +201,9 @@
 
 /* Logout Required title */
 "Logout Required" = "ログアウトが必要です";
+
+/* macOS Install Pending text */
+"macOS install pending" = "MacOS のインストール保留中";
 
 /* macOS update required text */
 "macOS update required" = "macOSアップデートが必要";
@@ -391,12 +400,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "このカテゴリにアイテムはありません";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "このアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
-
-/* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "このアップデートのインストールは制限されています。システム管理者にお問い合わせください。";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "他のユーザーがこのコンピューターにログインしています。\n今アップデートを実行すると、他のユーザーのワークが失われる原因になります。\n\n他のユーザーがログアウトしたのち、もう一度アップデートを実行してください。";
 
@@ -479,6 +482,9 @@
 "Updating..." = "アップデート中…";
 
 /* managedsoftwareupdate message */
+"Verifying macOS installer..." = "MacOS インストーラーの検証中...";
+
+/* managedsoftwareupdate message */
 "Verifying package integrity..." = "パッケージの完全性を検証中…";
 
 /* Sidebar Version label */
@@ -499,11 +505,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "ソフトウェアが選択されていません";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using Software Update in System Preferences." = "このアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
+
 /* Blocking Apps Running detail */
 "You must quit the following applications before proceeding with installation or removal:\n\n%@" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "このアイテムをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
+
+/* Apple Software Updates Unable detail */
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "このアップデートのインストールは制限されています。システム管理者にお問い合わせください。";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "このコンピューターは電源に接続されていません";
@@ -513,3 +525,6 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "ソフトウェアは最新です";
+
+/* Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では MacOS をアップグレードできません。\n\nシステム管理者にお問い合わせください。";

@@ -79,6 +79,15 @@ def getBatteryPercentage():
             return description.get('Current Capacity', 0)
     return 0
 
+def hasInternalBattery():
+    """Determine if this Mac has a power source of 'InternalBattery'"""
+    ps_blob = IOPSCopyPowerSourcesInfo()
+    power_sources = IOPSCopyPowerSourcesList(ps_blob)
+    for source in power_sources:
+        description = IOPSGetPowerSourceDescription(ps_blob, source)
+        if description.get('Type') == 'InternalBattery':
+            return True
+    return False
 
 def assertNoIdleSleep(reason=None):
     """Uses IOKit functions to prevent idle sleep."""
