@@ -21,6 +21,7 @@ Incorporating work and ideas from Michael Lynn here:
     https://gist.github.com/pudquick/7704254
 and here:
     https://gist.github.com/pudquick/836a19b5ff17c5b7640d#file-cert_tricks-py
+Updated October 2022 for compatibilty with macOS Ventura
 """
 from __future__ import absolute_import, print_function
 
@@ -30,6 +31,7 @@ import os
 import subprocess
 
 from . import display
+from . import munkilog
 from . import osutils
 from . import prefs
 from .wrappers import unicode_or_str
@@ -187,6 +189,7 @@ def add_ca_certs_to_system_keychain(cert_info=None):
         display.display_warning('%s not found.', system_keychain)
         return
 
+    # Deprecated in macOS Big Sur
     # Add CA certs. security add-trusted-cert does the right thing even if
     # the cert is already added, so we just do it; checking to see if the
     # cert is already added is hard.
@@ -208,6 +211,12 @@ def add_ca_certs_to_system_keychain(cert_info=None):
         except SecurityError as err:
             display.display_error(
                 'Could not add CA cert %s into System keychain: %s', cert, err)
+            os_version_tuple = osutils.getOsVersion(as_tuple=True)
+            if os_version_tuple >= (11, 0):
+                display.display_error(
+                    "Munki can't add a trusted cert to the system keychain in "
+                    "macOS Big Sur or later. Use MDM to install the cert "
+                    "or use a server cert from an issuer trusted by macOS.")
 
     display.display_detail('System.keychain updated.')
 
@@ -304,62 +313,9 @@ def make_client_keychain(cert_info=None):
         except (OSError, IOError):
             pass
 
-    id_hash = pem_cert_sha1_digest(client_cert_path)
-    if not id_hash:
-        display.display_error(
-            'Cannot create keychain identity preference.')
-    else:
-        # set up identity preference(s) linking the identity (cert and key)
-        # to the various urls
-
-        display.display_debug1('Creating identity preferences...')
-        try:
-            output = security('default-keychain')
-            if output:
-                display.display_debug2('Default keychain is %s', output)
-            # One is defined, remember the path
-            default_keychain = [
-                x.strip().strip('"')
-                for x in output.split('\n') if x.strip()][0]
-        except SecurityError as err:
-            # error raised if there is no default
-            default_keychain = None
-        # Temporarily assign the default keychain to ours
-        try:
-            output = security(
-                'default-keychain', '-s', abs_keychain_path)
-            if output:
-                display.display_debug2(
-                    'Attempting to set default keychain to %s resulted in: %s',
-                    abs_keychain_path, output)
-        except SecurityError as err:
-            display.display_error(
-                'Could not set default keychain to %s failed: %s'
-                % (abs_keychain_path, err))
-            default_keychain = None
-        # Create the identity preferences
-        for url in site_urls:
-            try:
-                display.display_debug2(
-                    'Adding identity preference for %s...' % url)
-                output = security(
-                    'set-identity-preference',
-                    '-s', url, '-Z', id_hash, abs_keychain_path)
-                if output:
-                    display.display_debug2(
-                        'security set-identity-preference output: ' + output)
-            except SecurityError as err:
-                display.display_error(
-                    'Setting identity preference for %s failed: %s'
-                    % (url, err))
-        if default_keychain:
-            # We originally had a different default, set it back
-            output = security(
-                'default-keychain', '-s', default_keychain)
-            if output:
-                display.display_debug2(
-                    'Attempting to set default keychain to %s resulted in: %s',
-                    default_keychain, output)
+    # removed identity preferences code that was here which set up
+    # identity preference(s) linking the identity (cert and key) to the
+    # various urls. Not necessary with new method for clients certs in Munki 5.5
 
     # we're done, clean up.
     if added_keychain:
@@ -376,7 +332,8 @@ def add_to_keychain_list(keychain_path):
     added the keychain to the list.'''
 
     added_keychain = False
-    output = security('list-keychains', '-d', 'user')
+    # macOS Ventura fix, use common domain for keychain search list
+    output = security('list-keychains', '-d', 'common')
     # Split the output and strip it of whitespace and leading/trailing
     # quotes, the result are absolute paths to keychains
     # Preserve the order in case we need to append to them
@@ -388,7 +345,7 @@ def add_to_keychain_list(keychain_path):
         search_keychains.append(keychain_path)
         try:
             output = security(
-                'list-keychains', '-d', 'user', '-s', *search_keychains)
+                'list-keychains', '-d', 'common', '-s', *search_keychains)
             if output:
                 display.display_debug2(output)
             added_keychain = True
@@ -397,13 +354,16 @@ def add_to_keychain_list(keychain_path):
                 'Could not add keychain %s to keychain list: %s',
                 keychain_path, err)
             added_keychain = False
+    if munkilog.logging_level() > 2:
+        debug_output()
     return added_keychain
 
 
 def remove_from_keychain_list(keychain_path):
     '''Remove keychain from the list of keychains'''
 
-    output = security('list-keychains', '-d', 'user')
+    # macOS Ventura fix, use common domain for keychain search list
+    output = security('list-keychains', '-d', 'common')
     # Split the output and strip it of whitespace and leading/trailing
     # quotes, the result are absolute paths to keychains
     # Preserve the order in case we need to append to them
@@ -417,12 +377,14 @@ def remove_from_keychain_list(keychain_path):
                               if keychain != keychain_path]
         try:
             output = security(
-                'list-keychains', '-d', 'user', '-s', *filtered_keychains)
+                'list-keychains', '-d', 'common', '-s', *filtered_keychains)
             if output:
                 display.display_debug2(output)
         except SecurityError as err:
             display.display_error(
                 'Could not set new keychain list: %s', err)
+        if munkilog.logging_level() > 2:
+            debug_output()
 
 
 def unlock_and_set_nonlocking(keychain_path):
@@ -489,14 +451,14 @@ def client_certs_newer_than_keychain():
 def debug_output():
     '''Debugging output for keychain'''
     try:
-        display.display_debug1('***Keychain list***')
-        display.display_debug1(security('list-keychains', '-d', 'user'))
-        display.display_debug1('***Default keychain info***')
-        display.display_debug1(security('default-keychain', '-d', 'user'))
+        display.display_debug2('***Keychain list***')
+        display.display_debug2(security('list-keychains', '-d', 'common'))
+        display.display_debug2('***Default keychain info***')
+        display.display_debug2(security('default-keychain', '-d', 'common'))
         keychainfile = get_keychain_path()
         if os.path.exists(keychainfile):
-            display.display_debug1('***Info for %s***' % keychainfile)
-            display.display_debug1(
+            display.display_debug2('***Info for %s***' % keychainfile)
+            display.display_debug2(
                 security('show-keychain-info', keychainfile))
     except SecurityError as err:
         display.display_error(unicode_or_str(err))
