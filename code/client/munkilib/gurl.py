@@ -641,6 +641,8 @@ class Gurl(NSObject):
                     None)
             else:
                 challenge.sender().cancelAuthenticationChallenge_(challenge)
+
+        # Handle HTTP Basic and Digest challenge
         if self.username and self.password and authenticationMethod in [
                 'NSURLAuthenticationMethodDefault',
                 'NSURLAuthenticationMethodHTTPBasic',
@@ -658,6 +660,8 @@ class Gurl(NSObject):
             else:
                 challenge.sender().useCredential_forAuthenticationChallenge_(
                     credential, challenge)
+
+        # Handle Client Certificate challenge
         elif authenticationMethod == 'NSURLAuthenticationMethodClientCertificate':
             self.log('Client certificate required')
 
@@ -680,7 +684,7 @@ class Gurl(NSObject):
                 else:
                     challenge.sender().cancelAuthenticationChallenge_(challenge)
 
-            # search for a matching identity
+            # search for a matching identity (cert paired with private key)
             status, identity_refs = SecItemCopyMatching(
                 {kSecClass: kSecClassIdentity,
                  kSecReturnRef: kCFBooleanTrue,
@@ -688,7 +692,7 @@ class Gurl(NSObject):
                 None
             )
             if status != errSecSuccess:
-                self.log('Could not list keychain certificates')
+                self.log('Could not list keychain certificates %s' % status)
                 if completionHandler:
                     completionHandler(
                         NSURLSessionAuthChallengeCancelAuthenticationChallenge,
@@ -696,6 +700,11 @@ class Gurl(NSObject):
                     )
                 else:
                     challenge.sender().cancelAuthenticationChallenge_(challenge)
+                # return since error getting certs from keychain
+                # (identity_refs is None, crashes if we fall through to loop)
+                return
+
+            # loop through results to find cert that matches issuer
             for identity_ref in identity_refs:
                 status, cert_ref = SecIdentityCopyCertificate(identity_ref, None)
                 if status != errSecSuccess:
@@ -715,6 +724,8 @@ class Gurl(NSObject):
                     )
                 else:
                     challenge.sender().cancelAuthenticationChallenge_(challenge)
+                # return since didn't find matching identity
+                return
 
             self.log("Will attempt to authenticate")
             credential = NSURLCredential.credentialWithIdentity_certificates_persistence_(
