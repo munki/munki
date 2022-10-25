@@ -371,7 +371,7 @@ def remove_from_keychain_list(keychain_path):
                         for x in output.split('\n') if x.strip()]
     if keychain_path in search_keychains:
         # Keychain is in the search path
-        display.display_debug1(
+        display.display_debug2(
             'Removing %s from search path...', keychain_path)
         filtered_keychains = [keychain for keychain in search_keychains
                               if keychain != keychain_path]
@@ -451,7 +451,7 @@ def client_certs_newer_than_keychain():
 def debug_output():
     '''Debugging output for keychain'''
     try:
-        display.display_debug2('***Keychain list***')
+        display.display_debug2('***Keychain search list for common domain***')
         display.display_debug2(security('list-keychains', '-d', 'common'))
         display.display_debug2('***Default keychain info***')
         display.display_debug2(security('default-keychain', '-d', 'common'))
