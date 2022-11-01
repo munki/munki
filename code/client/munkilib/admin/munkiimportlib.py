@@ -217,7 +217,7 @@ def make_catalog_db(repo):
                         if not vers in app_table[install['path']]:
                             app_table[install['path']][vers] = []
                         app_table[install['path']][vers].append(itemindex)
-            except TypeError:
+            except (TypeError, AttributeError):
                 print('Bad install data for %s-%s: %s' % (name, vers, install),
                       file=sys.stderr)
 
