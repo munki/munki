@@ -40,6 +40,7 @@ import LaunchServices
 # pylint: disable=E0611
 from Foundation import NSMetadataQuery, NSPredicate, NSRunLoop
 from Foundation import NSBundle, NSDate, NSTimeZone
+from Foundation import NSString, NSUTF8StringEncoding
 # pylint: enable=E0611
 
 # our libs
@@ -647,6 +648,31 @@ def get_serial_number():
 
     return serial
 
+def product_name():
+    """Returns the product name from IORegistry"""
+    IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
+
+    functions = [
+        ("IOServiceGetMatchingService", b"II@"),
+        ("IOServiceNameMatching", b"@*"),
+        ("IORegistryEntryCreateCFProperty", b"@I@@I"),
+    ]
+    objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
+
+    kIOMasterPortDefault = 0
+    kCFAllocatorDefault = None
+
+    product = IOServiceGetMatchingService(
+        kIOMasterPortDefault, IOServiceNameMatching(b"product")
+    )
+    product_name_data = IORegistryEntryCreateCFProperty(
+        product, "product-name", kCFAllocatorDefault, 0
+    )
+
+    if product_name_data:
+        return NSString.alloc().initWithData_encoding_(product_name_data[0:-1], NSUTF8StringEncoding)
+    else:
+        return None
 
 def hardware_model():
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -730,6 +756,7 @@ def getMachineFacts():
     machine['ipv4_address'] = get_ip_addresses('IPv4')
     machine['ipv6_address'] = get_ip_addresses('IPv6')
     machine['serial_number'] = get_serial_number() or 'UNKNOWN'
+    machine['product_name'] = product_name() or 'Intel Mac'
     ibridge_info = get_ibridge_info()
     machine['ibridge_model_name'] = ibridge_info.get(
         'ibridge_model_name', 'NO IBRIDGE CHIP')
