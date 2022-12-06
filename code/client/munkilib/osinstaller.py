@@ -280,6 +280,9 @@ class StartOSInstallRunner(object):
             app_path, 'Contents/Resources/startosinstall')
 
         os_vers_to_install = get_os_version(app_path)
+        if not os_vers_to_install:
+            display.display_warning(
+                'Could not get OS version to install from application bundle.')
 
         # run startosinstall via subprocess
 
@@ -312,7 +315,7 @@ class StartOSInstallRunner(object):
                     '--rebootdelay', '300',
                     '--pidtosignal', str(os.getpid())])
 
-        if pkgutils.MunkiLooseVersion(
+        if os_vers_to_install and pkgutils.MunkiLooseVersion(
                 os_vers_to_install) < pkgutils.MunkiLooseVersion('10.14'):
             # --applicationpath option is _required_ in Sierra and early
             # releases of High Sierra. It became optional (or is ignored?) in
@@ -320,13 +323,13 @@ class StartOSInstallRunner(object):
             # so don't add this option when installing Mojave
             cmd.extend(['--applicationpath', app_path])
 
-        if pkgutils.MunkiLooseVersion(
+        if os_vers_to_install and pkgutils.MunkiLooseVersion(
                 os_vers_to_install) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
             # and must _not_ be included in 10.12.4+ installer's startosinstall
             cmd.extend(['--volume', '/'])
 
-        if pkgutils.MunkiLooseVersion(
+        if os_vers_to_install and pkgutils.MunkiLooseVersion(
                 os_vers_to_install) < pkgutils.MunkiLooseVersion('10.13.5'):
             # --nointeraction is an undocumented option that appears to be
             # not only no longer needed/useful but seems to trigger some issues
