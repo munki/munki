@@ -34,6 +34,7 @@ from . import compare
 from . import download
 from . import installationstate
 from . import manifestutils
+from . import selfservice
 from . import unused_software
 
 from .. import display
@@ -722,19 +723,22 @@ def process_manifest_for_key(manifest, manifest_key, installinfo,
             process_manifest_for_key(
                 conditionalmanifest, manifest_key, installinfo, cataloglist)
 
-    for item in manifestdata.get(manifest_key, []):
-        if processes.stop_requested():
-            return
-        if manifest_key == 'managed_installs':
-            dummy_result = process_install(item, cataloglist, installinfo)
-        elif manifest_key == 'managed_updates':
-            process_managed_update(item, cataloglist, installinfo)
-        elif manifest_key == 'optional_installs':
-            process_optional_install(item, cataloglist, installinfo)
-        elif manifest_key == 'managed_uninstalls':
-            dummy_result = process_removal(item, cataloglist, installinfo)
-        elif manifest_key == 'featured_items':
-            installinfo['featured_items'].append(item)
+    if manifest_key == 'default_installs':
+        selfservice.process_default_installs(manifestdata.get(manifest_key, []))
+    else:
+        for item in manifestdata.get(manifest_key, []):
+            if processes.stop_requested():
+                return
+            if manifest_key == 'managed_installs':
+                dummy_result = process_install(item, cataloglist, installinfo)
+            elif manifest_key == 'managed_updates':
+                process_managed_update(item, cataloglist, installinfo)
+            elif manifest_key == 'optional_installs':
+                process_optional_install(item, cataloglist, installinfo)
+            elif manifest_key == 'managed_uninstalls':
+                dummy_result = process_removal(item, cataloglist, installinfo)
+            elif manifest_key == 'featured_items':
+                installinfo['featured_items'].append(item)
 
 
 def process_removal(manifestitem, cataloglist, installinfo):
