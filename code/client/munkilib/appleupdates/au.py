@@ -159,15 +159,15 @@ class AppleUpdates(object):
         recommended_updates = su_prefs.pref('RecommendedUpdates') or []
         processed_updates = []
         for item in su_results.get('updates', []):
-            for update in recommended_updates:
-                # if we find a matching update, update the item info and
-                # add it to the list of recommended updates
-                if (item.get('Title') == update.get('Display Name') and
-                        item.get('Version') == update.get('Display Version') and
-                        item.get('Deferred') != "YES"
-                    ):
-                    item.update(update)
-                    processed_updates.append(item)
+            if item.get('Deferred') != "YES":
+                for update in recommended_updates:
+                    # if we find a matching update, update the item info and
+                    # add it to the list of recommended updates
+                    if (item.get('Title') == update.get('Display Name') and
+                            item.get('Version') == update.get('Display Version')
+                        ):
+                        item.update(update)
+                        processed_updates.append(item)
         return processed_updates
 
     def get_apple_updates(self, suppress_scan=False):
