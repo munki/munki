@@ -332,6 +332,17 @@ def getBundleVersion(bundlepath, key=None):
     return '0.0.0.0.0'
 
 
+def getProductVersionFromDist(filename):
+    """Extracts product version from a Distribution file"""
+    dom = minidom.parse(filename)
+    product = dom.getElementsByTagName('product')
+    if product:
+        keys = list(product[0].attributes.keys())
+        if "version" in keys:
+            return product[0].attributes["version"].value
+    return None
+
+
 def parsePkgRefs(filename, path_to_pkg=None):
     """Parses a .dist or PackageInfo file looking for pkg-ref or pkg-info tags
     to get info on included sub-packages"""
@@ -412,8 +423,7 @@ def getFlatPackageInfo(pkgpath):
     returns array of dictionaries with info on subpackages
     contained in the flat package
     """
-
-    infoarray = []
+    receiptarray = []
     # get the absolute path to the pkg because we need to do a chdir later
     abspkgpath = os.path.abspath(pkgpath)
     # make a tmp dir to expand the flat package into
@@ -432,13 +442,13 @@ def getFlatPackageInfo(pkgpath):
         # Walk trough the TOC entries
         for toc_entry in toc:
             # If the TOC entry is a top-level PackageInfo, extract it
-            if toc_entry.startswith('PackageInfo') and not infoarray:
+            if toc_entry.startswith('PackageInfo') and not receiptarray:
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
                 result = subprocess.call(cmd_extract)
                 if result == 0:
                     packageinfoabspath = os.path.abspath(
                         os.path.join(pkgtmp, toc_entry))
-                    infoarray = parsePkgRefs(packageinfoabspath)
+                    receiptarray = parsePkgRefs(packageinfoabspath)
                     break
                 else:
                     display.display_warning(
@@ -451,12 +461,12 @@ def getFlatPackageInfo(pkgpath):
                 if result == 0:
                     packageinfoabspath = os.path.abspath(
                         os.path.join(pkgtmp, toc_entry))
-                    infoarray.extend(parsePkgRefs(packageinfoabspath))
+                    receiptarray.extend(parsePkgRefs(packageinfoabspath))
                 else:
                     display.display_warning(
                         u"An error occurred while extracting %s: %s",
                         toc_entry, err)
-        if not infoarray:
+        if not receiptarray:
             for toc_entry in [item for item in toc
                               if item.startswith('Distribution')]:
                 # Extract the Distribution file
@@ -465,7 +475,7 @@ def getFlatPackageInfo(pkgpath):
                 if result == 0:
                     distributionabspath = os.path.abspath(
                         os.path.join(pkgtmp, toc_entry))
-                    infoarray = parsePkgRefs(distributionabspath,
+                    receiptarray = parsePkgRefs(distributionabspath,
                                              path_to_pkg=pkgpath)
                     break
                 else:
@@ -473,16 +483,32 @@ def getFlatPackageInfo(pkgpath):
                         u"An error occurred while extracting %s: %s",
                         toc_entry, err)
 
-        if not infoarray:
+        if not receiptarray:
             display.display_warning(
                 'No valid Distribution or PackageInfo found.')
+
+        productversion = None
+        for toc_entry in [item for item in toc
+                          if item.startswith('Distribution')]:
+            # Extract the Distribution file
+            cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
+            result = subprocess.call(cmd_extract)
+            if result == 0:
+                distributionabspath = os.path.abspath(
+                    os.path.join(pkgtmp, toc_entry))
+                productversion = getProductVersionFromDist(distributionabspath)
+
     else:
         display.display_warning(err.decode('UTF-8'))
 
     # change back to original working dir
     os.chdir(cwd)
     shutil.rmtree(pkgtmp)
-    return infoarray
+    info = {
+        "receipts": receiptarray,
+        "product_version": productversion
+    }
+    return info
 
 
 def getBomList(pkgpath):
@@ -561,13 +587,13 @@ def getOnePackageInfo(pkgpath):
 
 def getBundlePackageInfo(pkgpath):
     """Get metadata from a bundle-style package"""
-    infoarray = []
+    receiptarray = []
 
     if pkgpath.endswith('.pkg'):
         pkginfo = getOnePackageInfo(pkgpath)
         if pkginfo:
-            infoarray.append(pkginfo)
-            return infoarray
+            receiptarray.append(pkginfo)
+            return {"receipts": receiptarray}
 
     bundlecontents = os.path.join(pkgpath, 'Contents')
     if os.path.exists(bundlecontents):
@@ -598,17 +624,17 @@ def getBundlePackageInfo(pkgpath):
                         if itempath.endswith('.pkg'):
                             pkginfo = getOnePackageInfo(itempath)
                             if pkginfo:
-                                infoarray.append(pkginfo)
+                                receiptarray.append(pkginfo)
                         elif itempath.endswith('.mpkg'):
                             pkginfo = getBundlePackageInfo(itempath)
                             if pkginfo:
-                                infoarray.extend(pkginfo)
+                                receiptarray.extend(pkginfo.get("receipts"))
 
-    return infoarray
+    return {"receipts": receiptarray}
 
 
 def getReceiptInfo(pkgname):
-    """Get receipt info from a package"""
+    """Get receipt info (a dict) from a package"""
     info = []
     if hasValidPackageExt(pkgname):
         display.display_debug2('Examining %s' % pkgname)
@@ -814,18 +840,18 @@ def getPackageMetaData(pkgitem):
 
     # first query /usr/sbin/installer for restartAction
     installerinfo = getPkgRestartInfo(pkgitem)
-    # now look for receipt/subpkg info
+    # now look for receipt and product version info
     receiptinfo = getReceiptInfo(pkgitem)
 
     name = os.path.split(pkgitem)[1]
     shortname = os.path.splitext(name)[0]
     metaversion = getBundleVersion(pkgitem)
     if metaversion == '0.0.0.0.0':
-        metaversion = nameAndVersion(shortname)[1]
+        metaversion = nameAndVersion(shortname)[1] or '0.0.0.0.0'
 
     highestpkgversion = '0.0'
     installedsize = 0
-    for infoitem in receiptinfo:
+    for infoitem in receiptinfo['receipts']:
         if (MunkiLooseVersion(infoitem['version']) >
                 MunkiLooseVersion(highestpkgversion)):
             highestpkgversion = infoitem['version']
@@ -835,7 +861,7 @@ def getPackageMetaData(pkgitem):
 
     if metaversion == '0.0.0.0.0':
         metaversion = highestpkgversion
-    elif len(receiptinfo) == 1:
+    elif len(receiptinfo['receipts']) == 1:
         # there is only one package in this item
         metaversion = highestpkgversion
     elif highestpkgversion.startswith(metaversion):
@@ -845,7 +871,7 @@ def getPackageMetaData(pkgitem):
 
     cataloginfo = {}
     cataloginfo['name'] = nameAndVersion(shortname)[0]
-    cataloginfo['version'] = metaversion
+    cataloginfo['version'] = receiptinfo.get("product_version", metaversion)
     for key in ('display_name', 'RestartAction', 'description'):
         if key in installerinfo:
             cataloginfo[key] = installerinfo[key]
@@ -856,7 +882,7 @@ def getPackageMetaData(pkgitem):
     elif installedsize:
         cataloginfo['installed_size'] = installedsize
 
-    cataloginfo['receipts'] = receiptinfo
+    cataloginfo['receipts'] = receiptinfo['receipts']
 
     if os.path.isfile(pkgitem) and not pkgitem.endswith('.dist'):
         # flat packages require 10.5.0+

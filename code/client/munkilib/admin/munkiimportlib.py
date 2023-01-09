@@ -203,7 +203,7 @@ def make_catalog_db(repo):
                     if not pkgvers in pkgid_table[pkgid]:
                         pkgid_table[pkgid][pkgvers] = []
                     pkgid_table[pkgid][pkgvers].append(itemindex)
-            except TypeError:
+            except (TypeError, AttributeError):
                 print('Bad receipt data for %s-%s: %s' % (name, vers, receipt),
                       file=sys.stderr)
 
@@ -217,7 +217,7 @@ def make_catalog_db(repo):
                         if not vers in app_table[install['path']]:
                             app_table[install['path']][vers] = []
                         app_table[install['path']][vers].append(itemindex)
-            except TypeError:
+            except (TypeError, AttributeError):
                 print('Bad install data for %s-%s: %s' % (name, vers, install),
                       file=sys.stderr)
 
