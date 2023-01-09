@@ -135,6 +135,28 @@ class AppleUpdates(object):
         except (OSError, IOError):
             pass
 
+    def filter_out_major_os_updates(self, update_list):
+        """Filters out any updates whose Label starts with 'macOS ' and
+        whose major version is higher than the major version of the current
+        OS"""
+        current_major_version = osutils.getOsVersion().split(".", maxsplit=1)[0]
+        filtered_updates = []
+        for update in update_list:
+            if update.get("Label", "").startswith("macOS "):
+                this_major_version = update.get(
+                    "Version", "0").split(".", maxsplit=1)[0]
+                try:
+                    if int(this_major_version) > int(current_major_version):
+                        display.display_debug1(
+                            "Filtering out %s-%s from available Apple updates",
+                            update.get("Label"), update.get("Version"))
+                        continue
+                except ValueError:
+                    # something wasn't an integer!
+                    pass
+            filtered_updates.append(update)
+        return filtered_updates
+
     def get_recommended_updates(self, suppress_scan=False):
         """Returns the list of available updates
            based on the output of `softwareupdate -l`, adding additional data
@@ -168,6 +190,8 @@ class AppleUpdates(object):
                         ):
                         item.update(update)
                         processed_updates.append(item)
+        if not prefs.pref('AppleSoftwareUpdatesIncludeMajorOSUpdates'):
+            processed_updates = self.filter_out_major_os_updates(processed_updates)
         return processed_updates
 
     def get_apple_updates(self, suppress_scan=False):
