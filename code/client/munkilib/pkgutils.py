@@ -871,7 +871,7 @@ def getPackageMetaData(pkgitem):
 
     cataloginfo = {}
     cataloginfo['name'] = nameAndVersion(shortname)[0]
-    cataloginfo['version'] = receiptinfo.get("product_version", metaversion)
+    cataloginfo['version'] = receiptinfo.get("product_version") or metaversion
     for key in ('display_name', 'RestartAction', 'description'):
         if key in installerinfo:
             cataloginfo[key] = installerinfo[key]
