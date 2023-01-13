@@ -424,18 +424,6 @@ class StartOSInstallRunner(object):
         munkistatus.percent(100)
         retcode = job.returncode()
 
-        if retcode and not (retcode == 255 and self.got_sigusr1):
-            # append stderr to our startosinstall_output
-            if job.stderr:
-                startosinstall_output.extend(job.stderr.read().splitlines())
-            display.display_status_minor(
-                "Starting macOS install failed with return code %s" % retcode)
-            display.display_error("-"*78)
-            for line in startosinstall_output:
-                display.display_error(line.rstrip("\n"))
-            display.display_error("-"*78)
-            raise StartOSInstallError(
-                'startosinstall failed with return code %s' % retcode)
         if self.got_sigusr1:
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
@@ -443,11 +431,7 @@ class StartOSInstallRunner(object):
             munkilog.log(
                 'Starting macOS install of %s: SUCCESSFUL' % os_vers_to_install,
                 'Install.log')
-            # previously we checked if retcode == 255:
-            # that may have been something specific to 10.12's startosinstall
-            # if startosinstall exited after sending us sigusr1 we should
-            # handle the restart.
-            if retcode not in (0, 255):
+            if retcode:
                 # some logging for possible investigation in the future
                 munkilog.log('startosinstall exited %s' % retcode)
             munkilog.log('startosinstall quit instead of rebooted; we will '
@@ -460,7 +444,22 @@ class StartOSInstallRunner(object):
             if not authrestartd.restart():
                 authrestart.do_authorized_or_normal_restart(
                     shutdown=osutils.bridgeos_update_staged())
+        elif retcode:
+            # did not get SIGUR1 and exited non-zero
+            # append stderr to our startosinstall_output
+            if job.stderr:
+                startosinstall_output.extend(job.stderr.read().splitlines())
+            display.display_status_minor(
+                "Starting macOS install failed with return code %s" % retcode)
+            display.display_error("-"*78)
+            for line in startosinstall_output:
+                display.display_error(line.rstrip("\n"))
+            display.display_error("-"*78)
+            raise StartOSInstallError(
+                'startosinstall failed with return code %s. '
+                'See /var/log/install.log for details.' % retcode)
         else:
+            # retcode == 0 but we got no SIGUSR1
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
                 'See /var/log/install.log for details.')
