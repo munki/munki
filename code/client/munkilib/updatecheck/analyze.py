@@ -848,7 +848,8 @@ def process_removal(manifestitem, cataloglist, installinfo):
         elif uninstallmethod in ['remove_copied_items',
                                  'remove_app',
                                  'uninstall_script',
-                                 'remove_profile']:
+                                 'remove_profile',
+                                 'uninstall_package']:
             uninstall_item = found_item
         else:
             # uninstall_method is a local script.
@@ -1025,7 +1026,28 @@ def process_removal(manifestitem, cataloglist, installinfo):
             iteminfo['remove_app_info'] = uninstall_item['installs'][0]
     elif uninstallmethod == 'uninstall_script':
         iteminfo['uninstall_script'] = uninstall_item.get('uninstall_script', '')
-
+    elif uninstallmethod == "uninstall_package":
+        location = uninstall_item.get('uninstaller_item_location')
+        if not location:
+            display.display_warning(
+                'Can\'t uninstall %s because there is no URL for the uninstall '
+                'package.', iteminfo['name'])
+            return False
+        try:
+            download.download_installeritem(
+                uninstall_item, installinfo, uninstalling=True)
+            filename = os.path.split(location)[1]
+            iteminfo['uninstaller_item'] = filename
+        except fetch.PackageVerificationError:
+            display.display_warning(
+                'Can\'t uninstall %s because the integrity check '
+                'failed.', iteminfo['name'])
+            return False
+        except fetch.Error as errmsg:
+            display.display_warning(
+                'Failed to download the uninstaller for %s because %s',
+                iteminfo['name'], errmsg)
+            return False
     # before we add this removal to the list,
     # check for installed updates and add them to the
     # removal list as well:

@@ -170,7 +170,7 @@ def handle_apple_package_install(item, itempath):
         "suppress_bundle_relocation: %s", suppress_bundle_relocation)
     if pkgutils.hasValidDiskImageExt(itempath):
         display.display_status_minor(
-            "Mounting disk image %s" % item["installer_item"])
+            "Mounting disk image %s" % os.path.basename(itempath))
         mount_with_shadow = suppress_bundle_relocation
         # we need to mount the diskimage as read/write to be able to
         # modify the package to suppress bundle relocation
@@ -544,6 +544,26 @@ def process_removals(removallist, only_unattended=False):
                     else:
                         munkilog.log(
                             "Uninstall of %s was successful." % display_name)
+
+            elif uninstallmethod == "uninstall_package":
+                # install a package to remove the software
+                if "uninstaller_item" in item:
+                    managedinstallbase = prefs.pref('ManagedInstallDir')
+                    itempath = os.path.join(managedinstallbase, 'Cache',
+                                            item["uninstaller_item"])
+                    if not os.path.exists(itempath):
+                        display.display_error(
+                            "%s package for %s was missing from the cache."
+                            % (uninstallmethod, item['name']))
+                        continue
+                    (retcode, need_to_restart) = handle_apple_package_install(
+                        item, itempath)
+                    if need_to_restart:
+                        restart_flag = True
+                else:
+                    display.display_error(
+                        "No uninstall item specified for %s" % item['name'])
+                    continue
 
             elif uninstallmethod.startswith("Adobe"):
                 retcode = adobeutils.do_adobe_removal(item)
