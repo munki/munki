@@ -125,7 +125,7 @@ def get_catalog_info_from_path(pkgpath, options):
                     # copy some metadata not available directly from the pkg
                     for key in ('display_name', 'version'):
                         if key in abobe_metadata:
-                            cataloginfo = abobe_metadata[key]
+                            cataloginfo[key] = abobe_metadata[key]
 
     if not cataloginfo:
         # maybe an Adobe installer/updater/patcher?
