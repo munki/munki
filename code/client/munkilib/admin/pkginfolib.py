@@ -533,8 +533,13 @@ def makepkginfo(installeritem, options):
 
         if options.uninstalleritem:
             if not pkginfo.get('installer_type', '').startswith('Adobe'):
+                # new in Munki 6.2
                 pkginfo['uninstallable'] = True
                 pkginfo['uninstall_method'] = "uninstall_package"
+                minimum_munki_version = pkginfo.get("minimum_munki_version", "0")
+                if (pkgutils.MunkiLooseVersion(minimum_munki_version) <
+                        pkgutils.MunkiLooseVersion("6.2")):
+                    pkginfo["minimum_munki_version"] = "6.2"
             uninstallerpath = options.uninstalleritem
             if os.path.exists(uninstallerpath):
                 # try to generate the correct item location
