@@ -166,9 +166,12 @@ func writeSelfServiceManifest(_ optional_install_choices: PlistDict) -> Bool {
     /* Write out our self-serve manifest
      so managedsoftwareupdate can use it. Returns True on success,
      False otherwise. */
+    var manifest_contents = readSelfServiceManifest()
+    manifest_contents["managed_installs"] = (optional_install_choices["managed_installs"] as? [String] ?? [String]())
+    manifest_contents["managed_uninstalls"] = (optional_install_choices["managed_uninstalls"] as? [String] ?? [String]())
     do {
         try writePlist(
-            optional_install_choices,
+            manifest_contents,
             toFile: WRITEABLE_SELF_SERVICE_MANIFEST_PATH)
         return true
     } catch {

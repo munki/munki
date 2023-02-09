@@ -36,6 +36,7 @@ from . import catalogs
 from . import download
 from . import licensing
 from . import manifestutils
+from . import selfservice
 
 from .. import display
 from .. import info
@@ -244,42 +245,13 @@ def check(client_id='', localmanifestpath=None):
             licensing.update_available_license_seats(installinfo)
 
         # now process any self-serve choices
-        usermanifest = '/Users/Shared/.SelfServeManifest'
-        selfservemanifest = os.path.join(
-            managed_install_dir, 'manifests', 'SelfServeManifest')
-
-        if os.path.islink(usermanifest):
-            # not allowed as it could link to things not normally
-            # readable by unprivileged users
-            try:
-                os.unlink(usermanifest)
-            except OSError:
-                pass
-            display.display_warning(
-                "Found symlink at %s. Ignoring and removing."
-                % selfservemanifest)
-
-        if os.path.exists(usermanifest):
-            # copy user-generated SelfServeManifest to our
-            # managed_install_dir
-            try:
-                plist = FoundationPlist.readPlist(usermanifest)
-                if plist:
-                    FoundationPlist.writePlist(plist, selfservemanifest)
-                    # now remove the user-generated manifest
-                    try:
-                        os.unlink(usermanifest)
-                    except OSError:
-                        pass
-            except FoundationPlist.FoundationPlistException:
-                # problem reading the usermanifest
-                # better remove it
-                display.display_error('Could not read %s', usermanifest)
-                try:
-                    os.unlink(usermanifest)
-                except OSError:
-                    pass
-
+        # copy user-writable selfservice manifest
+        selfservice.update_manifest()
+        # process any default installs (adding to selfservice as needed)
+        analyze.process_manifest_for_key(
+            mainmanifestpath, 'default_installs', installinfo)
+        # now process managed_installs and managed_uninstalls
+        selfservemanifest = selfservice.manifest_path()
         if os.path.exists(selfservemanifest):
             # use catalogs from main manifest for self-serve manifest
             cataloglist = manifestutils.get_manifest_value_for_key(
@@ -340,22 +312,8 @@ def check(client_id='', localmanifestpath=None):
                          for item in installinfo['removals']
                          if item.get('installed') is False]
 
-        if os.path.exists(selfservemanifest):
-            # for any item in the managed_uninstalls in the self-serve
-            # manifest that is not installed, we should remove it from
-            # the list
-            try:
-                plist = FoundationPlist.readPlist(selfservemanifest)
-            except FoundationPlist.FoundationPlistException:
-                pass
-            else:
-                plist['managed_uninstalls'] = [
-                    item for item in plist.get('managed_uninstalls', [])
-                    if item not in removed_items]
-                try:
-                    FoundationPlist.writePlist(plist, selfservemanifest)
-                except FoundationPlist.FoundationPlistException:
-                    pass
+        # clean up any old managed_uninstalls in the SelfServeManifest
+        selfservice.clean_up_managed_uninstalls(installinfo['removals'])
 
         # sort startosinstall items to the end of managed_installs
         installinfo['managed_installs'].sort(

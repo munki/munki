@@ -280,6 +280,9 @@ class StartOSInstallRunner(object):
             app_path, 'Contents/Resources/startosinstall')
 
         os_vers_to_install = get_os_version(app_path)
+        if not os_vers_to_install:
+            display.display_warning(
+                'Could not get OS version to install from application bundle.')
 
         # run startosinstall via subprocess
 
@@ -312,7 +315,7 @@ class StartOSInstallRunner(object):
                     '--rebootdelay', '300',
                     '--pidtosignal', str(os.getpid())])
 
-        if pkgutils.MunkiLooseVersion(
+        if os_vers_to_install and pkgutils.MunkiLooseVersion(
                 os_vers_to_install) < pkgutils.MunkiLooseVersion('10.14'):
             # --applicationpath option is _required_ in Sierra and early
             # releases of High Sierra. It became optional (or is ignored?) in
@@ -320,13 +323,13 @@ class StartOSInstallRunner(object):
             # so don't add this option when installing Mojave
             cmd.extend(['--applicationpath', app_path])
 
-        if pkgutils.MunkiLooseVersion(
+        if os_vers_to_install and pkgutils.MunkiLooseVersion(
                 os_vers_to_install) < pkgutils.MunkiLooseVersion('10.12.4'):
             # --volume option is _required_ prior to 10.12.4 installer
             # and must _not_ be included in 10.12.4+ installer's startosinstall
             cmd.extend(['--volume', '/'])
 
-        if pkgutils.MunkiLooseVersion(
+        if os_vers_to_install and pkgutils.MunkiLooseVersion(
                 os_vers_to_install) < pkgutils.MunkiLooseVersion('10.13.5'):
             # --nointeraction is an undocumented option that appears to be
             # not only no longer needed/useful but seems to trigger some issues
@@ -421,18 +424,6 @@ class StartOSInstallRunner(object):
         munkistatus.percent(100)
         retcode = job.returncode()
 
-        if retcode and not (retcode == 255 and self.got_sigusr1):
-            # append stderr to our startosinstall_output
-            if job.stderr:
-                startosinstall_output.extend(job.stderr.read().splitlines())
-            display.display_status_minor(
-                "Starting macOS install failed with return code %s" % retcode)
-            display.display_error("-"*78)
-            for line in startosinstall_output:
-                display.display_error(line.rstrip("\n"))
-            display.display_error("-"*78)
-            raise StartOSInstallError(
-                'startosinstall failed with return code %s' % retcode)
         if self.got_sigusr1:
             # startosinstall got far enough along to signal us it was ready
             # to finish and reboot, so we can believe it was successful
@@ -440,11 +431,7 @@ class StartOSInstallRunner(object):
             munkilog.log(
                 'Starting macOS install of %s: SUCCESSFUL' % os_vers_to_install,
                 'Install.log')
-            # previously we checked if retcode == 255:
-            # that may have been something specific to 10.12's startosinstall
-            # if startosinstall exited after sending us sigusr1 we should
-            # handle the restart.
-            if retcode not in (0, 255):
+            if retcode:
                 # some logging for possible investigation in the future
                 munkilog.log('startosinstall exited %s' % retcode)
             munkilog.log('startosinstall quit instead of rebooted; we will '
@@ -457,7 +444,22 @@ class StartOSInstallRunner(object):
             if not authrestartd.restart():
                 authrestart.do_authorized_or_normal_restart(
                     shutdown=osutils.bridgeos_update_staged())
+        elif retcode:
+            # did not get SIGUR1 and exited non-zero
+            # append stderr to our startosinstall_output
+            if job.stderr:
+                startosinstall_output.extend(job.stderr.read().splitlines())
+            display.display_status_minor(
+                "Starting macOS install failed with return code %s" % retcode)
+            display.display_error("-"*78)
+            for line in startosinstall_output:
+                display.display_error(line.rstrip("\n"))
+            display.display_error("-"*78)
+            raise StartOSInstallError(
+                'startosinstall failed with return code %s. '
+                'See /var/log/install.log for details.' % retcode)
         else:
+            # retcode == 0 but we got no SIGUSR1
             raise StartOSInstallError(
                 'startosinstall did not complete successfully. '
                 'See /var/log/install.log for details.')

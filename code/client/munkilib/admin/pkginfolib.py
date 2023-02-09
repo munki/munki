@@ -108,7 +108,7 @@ def get_catalog_info_from_path(pkgpath, options):
 
     if cataloginfo:
         # we found a package, but let's see if it's an Adobe CS5 install
-        # (AAMEE) package
+        # (AAMEE) or Adobe Creative Cloud Packager package
         if 'receipts' in cataloginfo:
             try:
                 pkgid = cataloginfo['receipts'][0].get('packageid')
@@ -117,11 +117,17 @@ def get_catalog_info_from_path(pkgpath, options):
             if pkgid.startswith("com.adobe.Enterprise.install"):
                 # we have an Adobe CS5 install package, process
                 # as Adobe install
-                #adobepkgname = cataloginfo['receipts'][0].get('filename')
-                cataloginfo = adobeinfo.getAdobeCatalogInfo(pkgpath)
-                                            #mountpoints[0], adobepkgname)
+                abobe_metadata = adobeinfo.getAdobeCatalogInfo(pkgpath)
+                if options.adobe:
+                    # use legacy Adobe install methods
+                    cataloginfo = abobe_metadata
+                else:
+                    # copy some metadata not available directly from the pkg
+                    for key in ('display_name', 'version'):
+                        if key in abobe_metadata:
+                            cataloginfo[key] = abobe_metadata[key]
 
-    else:
+    if not cataloginfo:
         # maybe an Adobe installer/updater/patcher?
         cataloginfo = adobeinfo.getAdobeCatalogInfo(pkgpath,
                                                     options.pkgname or '')
@@ -526,6 +532,14 @@ def makepkginfo(installeritem, options):
                 del pkginfo['uninstall_method']
 
         if options.uninstalleritem:
+            if not pkginfo.get('installer_type', '').startswith('Adobe'):
+                # new in Munki 6.2
+                pkginfo['uninstallable'] = True
+                pkginfo['uninstall_method'] = "uninstall_package"
+                minimum_munki_version = pkginfo.get("minimum_munki_version", "0")
+                if (pkgutils.MunkiLooseVersion(minimum_munki_version) <
+                        pkgutils.MunkiLooseVersion("6.2")):
+                    pkginfo["minimum_munki_version"] = "6.2"
             uninstallerpath = options.uninstalleritem
             if os.path.exists(uninstallerpath):
                 # try to generate the correct item location
@@ -550,10 +564,12 @@ def makepkginfo(installeritem, options):
                 raise PkgInfoGenerationError(
                     "No uninstaller item at %s" % uninstallerpath)
 
+        # No uninstall method yet?
         # if we have receipts, assume we can uninstall using them
-        if pkginfo.get('receipts', None):
-            pkginfo['uninstallable'] = True
-            pkginfo['uninstall_method'] = "removepackages"
+        if not pkginfo.get('uninstall_method'):
+            if pkginfo.get('receipts'):
+                pkginfo['uninstallable'] = True
+                pkginfo['uninstall_method'] = "removepackages"
     else:
         if options.nopkg:
             pkginfo['installer_type'] = "nopkg"
@@ -915,20 +931,34 @@ def add_option_groups(parser):
     parser.add_option_group(dragdrop_options)
 
     # Apple package specific options
-    apple_options = optparse.OptionGroup(parser, 'Apple Package Options')
+    apple_options = optparse.OptionGroup(parser, 'Package Options')
     apple_options.add_option(
         '--pkgname', '-p',
         help=('If the installer item is a disk image containing multiple '
               'packages, or the package to be installed is not at the root '
               'of the mounted disk image, PKGNAME is a relative path from '
               'the root of the mounted disk image to the specific package to '
-              'be installed.'
+              'be installed.\n'
               'If the installer item is a disk image containing an Adobe '
               'CS4 Deployment Toolkit installation, PKGNAME is the name of '
               'an Adobe CS4 Deployment Toolkit installer package folder at '
-              'the top level of the mounted dmg.'
+              'the top level of the mounted dmg.\n'
               'If this flag is missing, the AdobeUber* files should be at '
               'the top level of the mounted dmg.')
+        )
+    apple_options.add_option(
+        '--uninstallerdmg', '--uninstallerpkg', '--uninstallpkg', '-U',
+        metavar='UNINSTALLERITEM', dest='uninstalleritem',
+        help=('If the uninstaller item is an Apple package or a disk image '
+              'containing an Apple package, UNINSTALLERITEM is a path to the '
+              'uninstall package or disk image containing an uninstall package.\n'
+              'Include the --adobe option if the uninstaller item is a '
+              'Creative Cloud Packager uninstall package and you want to use '
+              'the legacy Adobe CCP uninstall methods (not recommended).\n'
+              'If the installer item is a disk image containing an Adobe CS4 '
+              'Deployment Toolkit installation package or Adobe CS3 deployment '
+              'package, UNINSTALLERITEM is a path to a disk image '
+              'containing an AdobeUberUninstaller for this item.')
         )
     apple_options.add_option(
         '--installer_choices_xml', '--installer-choices-xml',
@@ -950,15 +980,11 @@ def add_option_groups(parser):
     # Adobe package specific options
     adobe_options = optparse.OptionGroup(parser, 'Adobe-specific Options')
     adobe_options.add_option(
-        '--uninstallerdmg', '--uninstallerpkg', '--uninstallpkg', '-U',
-        metavar='UNINSTALLERITEM', dest='uninstalleritem',
-        help=('If the installer item is a disk image containing an Adobe CS4 '
-              'Deployment Toolkit installation package or Adobe CS3 deployment '
-              'package, UNINSTALLERITEM is a path to a disk image containing '
-              'an AdobeUberUninstaller for this item.\n'
-              'If the installer item is a Creative Cloud Packager install '
-              'package, UNINSTALLERITEM is a path to the matching Creative '
-              'Cloud Packager uninstall package.')
+        '--adobe',
+        action='store_true',
+        help=('Tell makepkginfo/munkiimport to use legacy Adobe install '
+              'and uninstall methods with a package item. Not recommended, '
+              'but forces legacy Munki behavior with recent Adobe installers.')
         )
     parser.add_option_group(adobe_options)
 
