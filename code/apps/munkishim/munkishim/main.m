@@ -71,8 +71,8 @@ int execPython(NSArray<NSString *> *args) {
 
     // copy args and replace ".../{cmd} --shimmed" with ".../munki-python .../{cmd}.py"
     NSMutableArray *newArgs = [args mutableCopy];
-    [newArgs removeObjectAtIndex:0];
-    [newArgs replaceObjectAtIndex:0 withObject:[
+    [newArgs replaceObjectAtIndex:0 withObject: munkiPythonPath];
+    [newArgs replaceObjectAtIndex:1 withObject:[
         NSString stringWithFormat:@"%@/.%@.py", munkiBinDir, cmd]];
 
     char **new_argv = [newArgs getCArray];
