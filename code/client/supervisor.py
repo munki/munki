@@ -1,4 +1,3 @@
-#!/usr/local/munki/munki-python
 # encoding: utf-8
 #
 # Copyright 2011-2013 Google Inc. All Rights Reserved.
