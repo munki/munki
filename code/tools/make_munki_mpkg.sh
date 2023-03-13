@@ -428,16 +428,16 @@ mkdir -m 755 "$COREROOT/usr/local/munki"
 mkdir -m 755 "$COREROOT/usr/local/munki/munkilib"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper precache_agent ptyexec removepackages
+for TOOL in authrestartd launchapp logouthelper precache_agent ptyexec removepackages supervisor
 do
     cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
 done
-for TOOL in managedsoftwareupdate.py supervisor.py
+# shim some tools
+for TOOL in managedsoftwareupdate
 do
-    cp -X "$MUNKIROOT/code/client/$TOOL" "$COREROOT/usr/local/munki/.$TOOL" 2>&1
+    cp -X "$MUNKIROOT/code/client/$TOOL.py" "$COREROOT/usr/local/munki/.$TOOL.py" 2>&1
+    cp -X "$MUNKISHIM" "$COREROOT/usr/local/munki/$TOOL"
 done
-cp -X "$MUNKISHIM" "$COREROOT/usr/local/munki/managedsoftwareupdate"
-cp -X "$MUNKISHIM" "$COREROOT/usr/local/munki/supervisor"
 # Copy python libraries.
 #cp -X "$MUNKIROOT/code/client/munkilib/"*.py "$COREROOT/usr/local/munki/munkilib/"
 rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/client/munkilib/" "$COREROOT/usr/local/munki/munkilib/"
