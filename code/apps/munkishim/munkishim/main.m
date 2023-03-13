@@ -59,8 +59,7 @@ NSString *munkiPythonPath = @"/usr/local/munki/munki-python";
 // runs a Python script implementing our command
 int execPython(NSArray<NSString *> *args) {
     NSArray *allowedCmds = @[
-        @"managedsoftwareupdate",
-        @"supervisor"
+        @"managedsoftwareupdate"
     ];
     
     NSString *cmd = [args[0] lastPathComponent];
