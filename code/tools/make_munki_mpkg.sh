@@ -383,6 +383,17 @@ if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
 fi
 MUNKISHIM="$MUNKIROOT/code/apps/munkishim/build/Release/munkishim"
 
+# sign munkishim
+if [ "$APPSIGNINGCERT" != "" ]; then
+    echo "Signing munkishim"
+    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose $MUNKISHIM
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing munkishim: $SIGNING_RESULT"
+        exit 2
+    fi
+fi
+
 # Create a PackageInfo file.
 makeinfo() {
     pkg="$1"
