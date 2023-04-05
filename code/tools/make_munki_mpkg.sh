@@ -386,7 +386,7 @@ MUNKISHIM="$MUNKIROOT/code/apps/munkishim/build/Release/munkishim"
 # sign munkishim
 if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing munkishim"
-    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose $MUNKISHIM
+    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose $MUNKISHIM
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
         echo "Error signing munkishim: $SIGNING_RESULT"
@@ -552,11 +552,34 @@ chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 
 # sign MSC app
 if [ "$APPSIGNINGCERT" != "" ]; then
-    echo "Signing Managed Software Center.app..."
-    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --verbose \
+    echo "Signing Managed Software Center.app Bundles..."
+    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app"
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
+        exit 2
+    fi
+
+    echo "Signing MunkiStatus.app Frameworks..."
+    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
+        exit 2
+    fi
+    echo "Signing Managed Software Center.app Frameworks..."
+    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+    SIGNING_RESULT="$?"
+    if [ "$SIGNING_RESULT" -ne 0 ]; then
+        echo "Error signing Managed Software Center.app Frameworks: $SIGNING_RESULT"
+        exit 2
+    fi
+
+    echo "Signing Managed Software Center.app..."
+    /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
-        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app" \
         "$APPROOT/Applications/Managed Software Center.app"
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
@@ -656,6 +679,15 @@ mkdir -m 755 "$PYTHONROOT/usr/local"
 mkdir -m 755 "$PYTHONROOT/usr/local/munki"
 # Copy framework
 cp -R "$MUNKIROOT/Python.framework" "$PYTHONROOT/usr/local/munki/"
+
+# Sign Python
+if [ "$APPSIGNINGCERT" != "" ]; then
+    /usr/bin/find "$PYTHONROOT/usr/local/munki/Python.framework/Versions/Current/bin" -type f -perm -u=x -exec /usr/bin/codesign --sign "$APPSIGNINGCERT" --timestamp --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+    /usr/bin/find "$PYTHONROOT/usr/local/munki/Python.framework/Versions/Current/lib" -type f -perm -u=x -exec /usr/bin/codesign --sign "$APPSIGNINGCERT" --timestamp --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+    /usr/bin/find "$PYTHONROOT/usr/local/munki/Python.framework/Versions/Current/lib" -type f -name "*dylib" -exec /usr/bin/codesign --sign "$APPSIGNINGCERT" --timestamp --preserve-metadata=identifier,entitlements,flags,runtime -f {} \;
+    /usr/bin/codesign --sign "$APPSIGNINGCERT" --timestamp --deep --force --preserve-metadata=identifier,entitlements,flags,runtime "$PYTHONROOT/usr/local/munki/Python.framework/Versions/Current/Resources/Python.app"
+    /usr/bin/codesign --sign "$APPSIGNINGCERT" --timestamp --force --preserve-metadata=identifier,entitlements,flags,runtime "$PYTHONROOT/usr/local/munki/Python.framework/Versions/Current/Python"
+fi
 # Create symlink
 ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki/munki-python"
 
