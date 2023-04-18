@@ -8,6 +8,7 @@
 
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/base.css" />
     <link charset="utf-8" rel="stylesheet" type="text/css" href="static/updates.css" />
+    <link charset="utf-8" rel="stylesheet" type="text/css" href="static/progress-spinner.css" />
     
     <script type="text/javascript" charset="utf-8" src="static/updates.js"></script>
     <script type="text/javascript" charset="utf-8" src="static/integration.js"></script>
@@ -34,7 +35,16 @@
                                             <span class="warning" id="update-warning-text">
                                                 ${warning_text}
                                             </span>
-                                            <div class='progress-spinner ${hide_progress_spinner}' id="updates-progress-spinner"></div>
+                                            <div class="spinner updates ${hide_progress_spinner}">
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                                <div class="spinner-blade"></div>
+                                            </div>
                                             <div class="msc-button install-updates in-header">
                                                 <button class="button-area uppercase"
                                                         onClick="window.webkit.messageHandlers.installButtonClicked.postMessage('');">

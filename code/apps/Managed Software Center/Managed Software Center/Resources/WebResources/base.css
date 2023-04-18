@@ -117,104 +117,6 @@ body, button, input {
     color: var(--text-color-normal);
 }
 
-@-webkit-keyframes generic-loading-spinner-animation {
-    0% {
-        -webkit-transform: rotate(0deg)
-    }
-
-    8.32% {
-        -webkit-transform: rotate(0deg)
-    }
-
-    8.33% {
-        -webkit-transform: rotate(30deg)
-    }
-
-    16.65% {
-        -webkit-transform: rotate(30deg)
-    }
-
-    16.66% {
-        -webkit-transform: rotate(60deg)
-    }
-
-    24.99% {
-        -webkit-transform: rotate(60deg)
-    }
-
-    25% {
-        -webkit-transform: rotate(90deg)
-    }
-
-    33.32% {
-        -webkit-transform: rotate(90deg)
-    }
-
-    33.33% {
-        -webkit-transform: rotate(120deg)
-    }
-
-    41.65% {
-        -webkit-transform: rotate(120deg)
-    }
-
-    41.66% {
-        -webkit-transform: rotate(150deg)
-    }
-
-    49.99% {
-        -webkit-transform: rotate(150deg)
-    }
-
-    50% {
-        -webkit-transform: rotate(180deg)
-    }
-
-    58.32% {
-        -webkit-transform: rotate(180deg)
-    }
-
-    58.33% {
-        -webkit-transform: rotate(210deg)
-    }
-
-    66.65% {
-        -webkit-transform: rotate(210deg)
-    }
-
-    66.66% {
-        -webkit-transform: rotate(240deg)
-    }
-
-    74.99% {
-        -webkit-transform: rotate(240deg)
-    }
-
-    75% {
-        -webkit-transform: rotate(270deg)
-    }
-
-    83.32% {
-        -webkit-transform: rotate(270deg)
-    }
-
-    83.33% {
-        -webkit-transform: rotate(300deg)
-    }
-
-    91.65% {
-        -webkit-transform: rotate(300deg)
-    }
-
-    91.66% {
-        -webkit-transform: rotate(330deg)
-    }
-
-    100% {
-        -webkit-transform: rotate(330deg)
-    }
-}
-
 a.anchor[name] {
     height: 0;
     width: 0
@@ -993,22 +895,6 @@ div.msc-button-inner.install-updates:not(.installed-not-removable):active:hover 
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAaCAIAAACsB0LYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAmZJREFUeNpiPHbsGAsLy38kwMDAACT//fsH4UIYEEFOTk7iFT/8pQBR8h8V/EMXBClnARJGRkb/MQDExH9gABe8desW8Yofnv6oq8DzFyz4FwT+/QERUDaEhOgAQiYGmgJGMIKxGRkZUeUQgMbuIBqMumNwuoMFmXPl6tUL5y/8B7MhaV5XV0dDXR2rzpWrVi9YsJABnvT+/4+JiQ4M8Icr+P7tKwMDNyM4RR7et33vtrXIii0dvY0sHEEijMBMjBoeujo6AoICLDAgKCior6eHyweREeEKigocMKCkrBQbE42SV2C2Ail37yBpWYRiKVkFOxdvnPHCxMRkamrKBAZAUyzMzYG5G2dIsrBkZ2UxMzMDGUCyIC/vz58/qJkWkTN//PwZHJUMV+wfnvjjx0/kvIviDmDJIiUpKS8nC4wRJSVFMTFRoAgud/z69cvI0MDO1hqo2MXZSVtbCyiC4iuoO0BlCDDoxaXl9U0sgYqNzG35BMUg5SjcKejpFOgnAwMDLi5OQwMDNHMxwc+fPxMTEoSFhRIT4r98+YJRiIEcAo8coGIXzxA+AUF714DfIJNRSjUs+YWLi8vTw4OdnZ2YdC4sLDxpQj8vLy+WshSUBlGLTybmnNKW33/+wiKNESGDqR8YJEBHEAwMaMT/+AF0xNevX/GV6lD3MAIrla/ffwBrE6TCnhFLvoWD379/E5/1v3//jlWclZUVWrv++w+pzoDsP9DK7T8YQcT+j5ano+4YdQf59S11wc8f3xkZeUClOxOwXGf6D6plGZjBTWQGcDsZEgr/Gf4x/mMcjZdRd+ADAAEGAE4tsrGq30G3AAAAAElFTkSuQmCC)
 }
 
-div.progress-spinner {
-    background: url(progress-spinner.png) 0 0 no-repeat;
-    -webkit-background-size: 20px 20px;
-    opacity: 1;
-    width: 20px;
-    height: 20px;
-    -webkit-animation-name: 'generic-loading-spinner-animation';
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-duration: 1s;
-    float: left;
-    position: relative;
-    top: 6px;
-    left: -14px;
-}
-
 p[data-text-truncate-lines] {
     height: auto;
     display: -webkit-box;
@@ -1263,36 +1149,6 @@ span.update-available,
 span.warning {
     visibility: visible !important;
     color: var(--text-color-warning) !important;
-}
-
-span.downloading>span.progress-spinner,
-span.preparing-removal>span.progress-spinner,
-span.installing>span.progress-spinner,
-span.removing>span.progress-spinner,
-div.lockup li.downloading span.progress-spinner,
-div.lockup li.preparing-removal span.progress-spinner,
-div.lockup li.installing span.progress-spinner,
-div.lockup li.removing span.progress-spinner {
-    visibility: visible !important;
-    float: right;
-    background: url(progress-spinner.png) 0 0 no-repeat;
-    -webkit-background-size: 20px 20px;
-    opacity: 1;
-    width: 20px;
-    height: 20px;
-    -webkit-animation-name: 'generic-loading-spinner-animation';
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -webkit-animation-duration: 1s;
-}
-
-div.lockup li.downloading span.progress-spinner,
-div.lockup li.preparing-removal span.progress-spinner,
-div.lockup li.installing span.progress-spinner,
-div.lockup li.removing span.progress-spinner {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
 }
 
 div.lockup li.not-installed,
