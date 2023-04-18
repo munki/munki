@@ -549,7 +549,7 @@ def process_install(manifestitem, cataloglist, installinfo,
                 dummy_result = process_install(
                     update_item, cataloglist, installinfo,
                     is_managed_update=is_managed_update)
-            return True
+
         except fetch.PackageVerificationError:
             display.display_warning(
                 'Can\'t install %s because the integrity check failed.',
@@ -649,15 +649,15 @@ def process_install(manifestitem, cataloglist, installinfo,
                 update_item, cataloglist, installinfo,
                 is_managed_update=is_managed_update)
 
-        # done successfully processing this install; add it to our list
-        # of processed installs so we don't process it again in the future
-        # (unless it is a managed_update)
-        if not is_managed_update:
-            display.display_debug2(
-                'Adding %s to list of processed installs' % manifestitemname)
-            installinfo['processed_installs'].append(manifestitemname)
+    # done successfully processing this install; add it to our list
+    # of processed installs so we don't process it again in the future
+    # (unless it is a managed_update)
+    if not is_managed_update:
+        display.display_debug2(
+            'Adding %s to list of processed installs' % manifestitemname)
+        installinfo['processed_installs'].append(manifestitemname)
 
-        return True
+    return True
 
 
 def process_manifest_for_key(manifest, manifest_key, installinfo,
