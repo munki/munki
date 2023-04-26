@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2022 Greg Neagle.
+# Copyright 2009-2023 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -138,11 +138,15 @@ class AppleUpdates(object):
     def filter_out_major_os_updates(self, update_list):
         """Filters out any updates whose Label starts with 'macOS ' and
         whose major version is higher than the major version of the current
-        OS"""
+        OS
+        Labels can be in the format:
+            'macOS Ventura 13.2.1-22D68' or
+            'macOS\xa0Ventura\xa013.2.1-22D68'
+        """
         current_major_version = osutils.getOsVersion().split(".", maxsplit=1)[0]
         filtered_updates = []
         for update in update_list:
-            if update.get("Label", "").startswith("macOS "):
+            if update.get("Label", "").split()[0] == "macOS":
                 this_major_version = update.get(
                     "Version", "0").split(".", maxsplit=1)[0]
                 try:

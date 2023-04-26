@@ -4,7 +4,8 @@
 
 TOOLSDIR=$(dirname "$0")
 REQUIREMENTS="${TOOLSDIR}/py3_requirements.txt"
-PYTHON_VERSION=3.9.13
+PYTHON_FRAMEWORK_VERSION=3.10
+PYTHON_VERSION=3.10.10
 PYTHON_PRERELEASE_VERSION=
 PYTHON_BASEURL="https://www.python.org/ftp/python/%s/python-%s${PYTHON_PRERELEASE_VERSION}-macos%s.pkg"
 MACOS_VERSION=11
@@ -71,9 +72,9 @@ if [ "$LIB_COUNT" != "$UNIVERSAL_COUNT" ] ; then
 fi
 
 # test some more files in the framework
-MORE_FILES="Python.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python
+MORE_FILES="Python.framework/Versions/${PYTHON_FRAMEWORK_VERSION}/Resources/Python.app/Contents/MacOS/Python
 Python.framework/Versions/Current/Python
-Python.framework/Versions/Current/bin/python3.9"
+Python.framework/Versions/Current/bin/python${PYTHON_FRAMEWORK_VERSION}"
 
 for TESTFILE in $MORE_FILES ; do
     ARCH_TEST=$(file "${MUNKIROOT}/$TESTFILE" | grep "2 architectures")

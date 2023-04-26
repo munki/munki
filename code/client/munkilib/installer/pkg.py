@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2022 Greg Neagle.
+# Copyright 2009-2023 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,16 +20,23 @@ Created by Greg Neagle on 2017-01-03.
 
 Routines for installing Apple pkgs
 """
+
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
+
 from __future__ import absolute_import, print_function
 
 import os
 import pwd
+import signal
 import subprocess
 import time
 
 from .. import display
 from .. import dmgutils
-from .. import launchd
+from .. import info
 from .. import munkilog
 from .. import munkistatus
 from .. import osutils
@@ -90,8 +97,7 @@ def pkg_needs_restart(pkgpath, options):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = proc.communicate()[0].decode('UTF-8')
     restartaction = output.rstrip('\n')
-    return (restartaction == 'RequireRestart' or
-            restartaction == 'RecommendRestart')
+    return restartaction in ['RequireRestart', 'RecommendRestart']
 
 
 def get_installer_env(custom_env):
@@ -147,39 +153,22 @@ def _run_installer(cmd, env_vars, packagename):
     '''Runs /usr/sbin/installer, parses and displays the output, and returns
     the process exit code'''
     installeroutput = []
-    try:
-        job = launchd.Job(cmd, environment_vars=env_vars)
-        job.start()
-    except launchd.LaunchdJobException as err:
-        display.display_error(
-            'Error with launchd job (%s): %s', cmd, str(err))
-        display.display_error('Can\'t run installer.')
-        return -3 # arbitrary non-zero exit
+
+    job = subprocess.Popen(
+        cmd,
+        env=env_vars,
+        shell=False,
+        bufsize=-1,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
     timeout = 2 * 60 * 60
-    inactive = 0
     last_output = None
     while True:
         installinfo = job.stdout.readline()
-        if not installinfo:
-            if job.returncode() is not None:
-                break
-            else:
-                # no data, but we're still running
-                inactive += 1
-                if inactive >= timeout:
-                    # no output for too long, kill this installer session
-                    display.display_error(
-                        "/usr/sbin/installer timeout after %d seconds"
-                        % timeout)
-                    job.stop()
-                    break
-                # sleep a bit before checking for more output
-                time.sleep(1)
-                continue
-
-        # we got non-empty output, reset inactive timer
-        inactive = 0
+        if not installinfo and job.poll() is not None:
+            break
 
         # Don't bother parsing the stdout output if it hasn't changed since
         # the last loop iteration.
@@ -194,8 +183,15 @@ def _run_installer(cmd, env_vars, packagename):
             installeroutput.append(installinfo)
             _display_installer_output(installinfo)
 
-    # installer exited
-    retcode = job.returncode()
+    # installer exited or was killed
+    # try for a little bit to catch return code from exiting process...
+    retcode = job.poll()
+    i = 0
+    while retcode is None and i < 5:
+        time.sleep(1)
+        i += 1
+        retcode = job.poll()
+
     if retcode != 0:
         # append stdout to our installer output
         installeroutput.extend(job.stderr.read().decode("UTF-8").splitlines())
@@ -279,7 +275,7 @@ def installall(dirpath, options=None):
             display.display_info("Mounting disk image %s" % item)
             mountpoints = dmgutils.mountdmg(
                 itempath, use_shadow=True, skip_verification=True)
-            if mountpoints == []:
+            if not mountpoints:
                 display.display_error("No filesystems mounted from %s", item)
                 return (retcode, restartflag)
             if processes.stop_requested():

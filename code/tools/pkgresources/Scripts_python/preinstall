@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# we're going to install version 3.10
+# prevent installer from removing a version currently in use
+# (must update this script when we move to a new Python version)
+for OLDVERS in 3.7 3.8 3.9 ; do
+    if [ -d "/usr/local/munki/Python.framework/Versions/$OLDVERS" ] ; then
+        /usr/bin/chflags -fR schg,uchg /usr/local/munki/Python.framework/Versions/$OLDVERS
+    fi
+done

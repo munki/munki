@@ -1,7 +1,6 @@
-#!/usr/local/munki/munki-python
 # encoding: utf-8
 #
-# Copyright 2009-2022 Greg Neagle.
+# Copyright 2009-2023 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -900,7 +899,7 @@ def main():
     munkilog.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print('Managed Software Update Tool')
-        print('Copyright 2010-2022 The Munki Project')
+        print('Copyright 2010-2023 The Munki Project')
         print('https://github.com/munki/munki\n')
 
     display.display_status_major('Starting...')
