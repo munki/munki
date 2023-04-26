@@ -615,6 +615,8 @@ def remove_launchd_logout_jobs_and_exit():
 
 def main():
     """Main"""
+    progname = "managedsoftwareupdate"
+    
     # install handler for SIGTERM
     signal.signal(signal.SIGTERM, signal_handler)
 
@@ -622,7 +624,7 @@ def main():
     scriptdir = os.path.realpath(os.path.dirname(sys.argv[0]))
 
     parser = optparse.OptionParser()
-    parser.set_usage('Usage: %prog [options]')
+    parser.set_usage('Usage: %s [options]' % progname)
     parser.add_option('--version', '-V', action='store_true',
                       help='Print the version of the munki tools and exit.')
 
@@ -742,12 +744,12 @@ def main():
     if other_managedsoftwareupdate_pid:
         # another instance of this script is running, so we should quit
         munkilog.log('*' * 60)
-        munkilog.log('%s launched as pid %s' % (myname, os.getpid()))
+        munkilog.log('%s launched as pid %s' % (progname, os.getpid()))
         munkilog.log('Another instance of %s is running as pid %s.'
-                     % (myname, other_managedsoftwareupdate_pid))
+                     % (progname, other_managedsoftwareupdate_pid))
         munkilog.log('pid %s exiting.' % os.getpid())
         munkilog.log('*' * 60)
-        print('Another instance of %s is running. Exiting.' % myname,
+        print('Another instance of %s is running. Exiting.' % progname,
               file=sys.stderr)
         osutils.cleanUpTmpDir()
         sys.exit(0)
@@ -1185,7 +1187,7 @@ def main():
 
         elif not options.quiet:
             print ('\nRun %s --installonly to install the downloaded '
-                   'updates.' % myname)
+                   'updates.' % progname)
     else:
         # no updates available
         if options.installonly and not options.quiet:
