@@ -539,6 +539,8 @@ class AppleUpdates(object):
 
     def display_apple_update_info(self):
         """Prints Apple update information and updates ManagedInstallReport."""
+        if not os.path.exists(self.apple_updates_plist):
+            return
         try:
             pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.FoundationPlistException:
@@ -727,6 +729,8 @@ class AppleUpdates(object):
         of product_ids which are eligible for unattended installation.
         """
         product_ids = []
+        if not os.path.exists(self.apple_updates_plist):
+            return product_ids
         try:
             pl_dict = FoundationPlist.readPlist(self.apple_updates_plist)
         except FoundationPlist.FoundationPlistException:
