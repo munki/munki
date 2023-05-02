@@ -569,7 +569,8 @@ class AppleUpdates(object):
                 display.display_info('       *Logout required')
                 reports.report['LogoutRequired'] = True
             if item not in munki_installable_updates:
-                display.display_info('       *Must be manually installed')
+                display.display_info(
+                    "       *Must be manually installed with Apple's tools")
 
     def installable_updates(self, apple_updates=None):
         """Returns a list of installable Apple updates.
