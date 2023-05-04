@@ -29,9 +29,8 @@ import sys
 import os
 import optparse
 
-from distutils.version import LooseVersion
-
 from munkilib.cliutils import get_version, pref, path2url
+from munkilib.pkgutils import MunkiLooseVersion
 from munkilib import munkirepo
 from munkilib.wrappers import (is_a_string, get_input, readPlistFromString,
                                unicode_or_str, PlistReadError)
@@ -302,7 +301,7 @@ class RepoCleaner(object):
                 print("versions:")
             index = 0
             for version in sorted(list(self.pkginfodb[key].keys()),
-                                  key=LooseVersion, reverse=True):
+                                  key=MunkiLooseVersion, reverse=True):
                 line_info = ''
                 index += 1
                 item_list = self.pkginfodb[key][version]
