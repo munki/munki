@@ -44,7 +44,7 @@ div.installations table:not(.no-header):before {
 div.installations thead {
     border-radius: 5px 5px 0 0;
     height: 42px;
-    border-bottom: 1px solid #d7d7d7;
+    border-bottom: 1px solid var(--line-color);
 }
 div.installations th {
     color: var(--text-color-normal);
@@ -67,12 +67,6 @@ div.non-scan-progress {
 #update-count-string, #update-warning-text {
     /*margin-left: -10px*/
     font-size: 16px;
-}
-
-#updates-progress-spinner {
-    margin-right: 4px;
-    position: relative;
-    left: 0px;
 }
 
 div.installations th:first-child {
