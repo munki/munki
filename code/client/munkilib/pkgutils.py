@@ -217,9 +217,8 @@ def padVersionString(versString, tupleCount):
 def getVersionString(plist, key=None):
     """Gets a version string from the plist.
 
-    If a key is explicitly specified, the value of that key is
-    returned without modification, or an empty string if the
-    key does not exist.
+    If a key is explicitly specified, the value of that key is returned without
+    modification, or an empty string if the key does not exist.
 
     If key is not specified:
     if there's a valid CFBundleShortVersionString, returns that.
@@ -273,10 +272,7 @@ def getVersionString(plist, key=None):
 
 
 def getBundleInfo(path):
-    """
-    Returns Info.plist data if available
-    for bundle at path
-    """
+    """Returns Info.plist data if available for bundle at path"""
     infopath = os.path.join(path, "Contents", "Info.plist")
     if not os.path.exists(infopath):
         infopath = os.path.join(path, "Resources", "Info.plist")
@@ -339,8 +335,7 @@ def getBundleVersion(bundlepath, key=None):
     Returns version number from a bundle.
     Some extra code to deal with very old-style bundle packages
 
-    Specify key to use a specific key in the Info.plist for
-    the version string.
+    Specify key to use a specific key in the Info.plist for the version string.
     """
     plist = getBundleInfo(bundlepath)
     if plist:
@@ -682,10 +677,10 @@ def getReceiptInfo(pkgname):
 
 def getInstalledPackageVersion(pkgid):
     """
-    Checks a package id against the receipts to
-    determine if a package is already installed.
-    Returns the version string of the installed pkg
-    if it exists, or an empty string if it does not
+    Checks a package id against the receipts to determine if a package is
+    already installed.
+    Returns the version string of the installed pkg if it exists, or an empty
+    string if it does not
     """
 
     # First check (Leopard and later) package database
@@ -966,7 +961,6 @@ def getInstalledPackages():
                                 MunkiLooseVersion(storedversion)):
                             installedpkgs[pkgid] = thisversion
     return installedpkgs
-
 
 
 # This function doesn't really have anything to do with packages or receipts
