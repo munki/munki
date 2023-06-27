@@ -437,7 +437,9 @@ def parsePkgRefs(filename, path_to_pkg=None):
             for (key, pkgref) in pkgref_dict.items():
                 if 'file' in pkgref:
                     if os.path.exists(pkgref['file']):
-                        info.extend(getReceiptInfo(pkgref['file']))
+                        receipts = getReceiptInfo(
+                            pkgref['file']).get("receipts", [])
+                        info.extend(receipts)
                         continue
                 if 'version' in pkgref:
                     if 'file' in pkgref:
@@ -512,7 +514,8 @@ def getFlatPackageInfo(pkgpath):
 
         if not receiptarray:
             display.display_warning(
-                'No valid Distribution or PackageInfo found.')
+                'No receipts found in Distribution or PackageInfo files within '
+                'the package.')
 
         productversion = None
         for toc_entry in [item for item in toc
