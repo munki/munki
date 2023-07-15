@@ -49,9 +49,9 @@ def getconsoleuser():
 def main():
     '''Pass arguments to /usr/bin/open only if we are the current
     console user or no user and we're at the login window'''
-    consoleuser = getconsoleuser()
+    consoleuser = getconsoleuser().lower()
     try:
-        thisuser = os.environ['USER']
+        thisuser = os.environ['USER'].lower()
     except KeyError:
         # when run via launchd at loginwindow context, os.environ['USER']
         # is undefined, so we'll return root (the effective user)
