@@ -43,6 +43,7 @@ try:
     from Foundation import NSDistributedNotificationCenter
     from Foundation import NSObject
     from Foundation import NSRunLoop
+    from objc import super
 except ImportError:
     logging.critical("PyObjC wrappers for Apple frameworks are missing.")
     sys.exit(-1)
@@ -114,7 +115,7 @@ class NotificationHandler(NSObject):
 
     def init(self):
         """NSObject-compatible initializer"""
-        self = super(NotificationHandler, self).init()
+        self = super().init()
         if self is None:
             return None
 
