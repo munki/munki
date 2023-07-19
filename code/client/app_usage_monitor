@@ -35,6 +35,11 @@ import select
 import socket
 import sys
 
+# builtin super doesn't work with Cocoa classes in recent PyObjC releases.
+# pylint: disable=redefined-builtin,no-name-in-module
+from objc import super
+# pylint: enable=redefined-builtin,no-name-in-module
+
 try:
     # Apple frameworks
     from AppKit import NSWorkspace
@@ -43,7 +48,6 @@ try:
     from Foundation import NSDistributedNotificationCenter
     from Foundation import NSObject
     from Foundation import NSRunLoop
-    from objc import super
 except ImportError:
     logging.critical("PyObjC wrappers for Apple frameworks are missing.")
     sys.exit(-1)
