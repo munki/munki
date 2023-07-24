@@ -112,7 +112,7 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
         pkginfo_ext = '.' + pkginfo_ext
     arch = determine_arch(pkginfo)
     if arch:
-        arch = f"-{arch}"
+        arch = "-%s" % arch
     pkginfo_name = '%s-%s%s%s' % (pkginfo['name'], pkginfo['version'],
                             arch, pkginfo_ext)
     pkginfo_path = os.path.join(destination_path, pkginfo_name)
