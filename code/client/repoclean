@@ -249,6 +249,10 @@ class RepoCleaner(object):
                     if key == 'receipts':
                         value = ', '.join(sorted(
                             [item.get('packageid', '') for item in value]))
+                    if key == "minimum_os_version" and self.options.ignore_min_version_change_less_than > 0:
+                        major_version = value.split('.')[0]
+                        if int(major_version) < self.options.ignore_min_version_change_less_than:
+                            value = self.options.ignore_min_version_change_less_than - 1
                     metakey += u"%s: %s\n" % (key, value)
             metakey = metakey.rstrip('\n')
             if metakey not in self.pkginfodb:
@@ -352,7 +356,7 @@ class RepoCleaner(object):
                 print("\t%s" % pkg)
         if print_this:
             print()
-            
+
 
         print("Total pkginfo items:     %s" % self.pkginfo_count)
         print("Item variants:           %s" % len(list(self.pkginfodb.keys())))
@@ -407,7 +411,7 @@ class RepoCleaner(object):
                 self.repo.delete(pkg_to_remove)
             except munkirepo.RepoError as err:
                 print(unicode_or_str(err), file=sys.stderr)
-            
+
 
     def make_catalogs(self):
         """Calls makecatalogs to rebuild our catalogs"""
@@ -491,6 +495,10 @@ def main():
     parser.add_option('--auto', '-a', action='store_true', default=False,
                       help='Do not prompt for confirmation before deleting '
                            'repo items. Use with caution.')
+    parser.add_option('--ignore_min_version_change_less_than', default=0, type=int, 
+                      help='when considering the key "minimum_os_version" it '
+                        'will treat all values the same if the major version is '
+                        'less than the provided value the same')
 
     options, arguments = parser.parse_args()
 
