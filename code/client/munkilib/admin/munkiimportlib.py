@@ -111,7 +111,9 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
     if pkginfo_ext and not pkginfo_ext.startswith('.'):
         pkginfo_ext = '.' + pkginfo_ext
     arch = determine_arch(pkginfo)
-    pkginfo_name = '%s-%s-%s%s' % (pkginfo['name'], pkginfo['version'],
+    if arch:
+        arch = f"-{arch}"
+    pkginfo_name = '%s-%s%s%s' % (pkginfo['name'], pkginfo['version'],
                             arch, pkginfo_ext)
     pkginfo_path = os.path.join(destination_path, pkginfo_name)
     index = 0
@@ -121,7 +123,7 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
         raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s' % err) from err
     while pkginfo_path in pkgsinfo_list:
         index += 1
-        pkginfo_name = '%s-%s-%s__%s%s' % (pkginfo['name'], pkginfo['version'],
+        pkginfo_name = '%s-%s%s__%s%s' % (pkginfo['name'], pkginfo['version'],
                                         arch, index, pkginfo_ext)
         pkginfo_path = os.path.join(destination_path, pkginfo_name)
 
