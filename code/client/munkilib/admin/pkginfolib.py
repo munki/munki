@@ -1101,17 +1101,17 @@ def add_option_groups(parser):
     additional_options.add_option(
         '--update_for', '--update-for', '-u',
         action="append",
-        metavar='PKG_NAME',
-        help=('Specifies a package for which the current package is an update. '
-              'Can be specified multiple times to build an array of packages.')
+        metavar='ITEM_NAME',
+        help=('Specifies a Munki item for which the current package is an update. '
+              'Can be specified multiple times to build an array of items.')
         )
     additional_options.add_option(
         '--requires', '-r',
         action="append",
-        metavar='PKG_NAME',
-        help=('Specifies a package required by the current package. Can be '
+        metavar='ITEM_NAME',
+        help=('Specifies a Munki item required by the current item. Can be '
               'specified multiple times to build an array of required '
-              'packages.')
+              'item.')
         )
     additional_options.add_option(
         '--blocking_application', '--blocking-application', '-b',
