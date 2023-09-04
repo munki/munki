@@ -35,8 +35,6 @@ except ImportError:
     # Python 3
     from urllib.parse import unquote
 
-
-from distutils import version
 from xml.dom import minidom
 
 from . import display
@@ -48,6 +46,10 @@ from . import FoundationPlist
 # we use lots of camelCase-style names. Deal with it.
 # pylint: disable=C0103
 
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+# pylint: disable=redundant-u-string-prefix
 
 #####################################################
 # Apple package utilities
@@ -78,6 +80,12 @@ def getPkgRestartInfo(filename):
     return installerinfo
 
 
+#####################################################
+# version comparison classes and utilities
+# much of this lifted from and adapted from the Python distutils.version code
+# which was deprecated with Python 3.10
+#####################################################
+
 def _cmp(x, y):
     """
     Replacement for built-in function cmp that was removed in Python 3
@@ -89,13 +97,37 @@ def _cmp(x, y):
     return (x > y) - (x < y)
 
 
-class MunkiLooseVersion(version.LooseVersion):
-    '''Subclass version.LooseVersion to compare things like
+class MunkiLooseVersion():
+    '''Class based on distutils.version.LooseVersion to compare things like
     "10.6" and "10.6.0" as equal'''
+
+    component_re = re.compile(r'(\d+ | [a-z]+ | \.)', re.VERBOSE)
+
+    def parse(self, vstring):
+        """parse function from distutils.version.LooseVersion"""
+        # I've given up on thinking I can reconstruct the version string
+        # from the parsed tuple -- so I just store the string here for
+        # use by __str__
+        self.vstring = vstring
+        components = [x for x in self.component_re.split(vstring) if x and x != '.']
+        for i, obj in enumerate(components):
+            try:
+                components[i] = int(obj)
+            except ValueError:
+                pass
+
+        self.version = components
+
+    def __str__(self):
+        """__str__ function from distutils.version.LooseVersion"""
+        return self.vstring
+
+    def __repr__(self):
+        """__repr__ function adapted from distutils.version.LooseVersion"""
+        return "MunkiLooseVersion ('%s')" % str(self)
 
     def __init__(self, vstring=None):
         """init method"""
-        # pylint: disable=unicode-builtin
         if vstring is None:
             # treat None like an empty string
             self.parse('')
@@ -111,8 +143,8 @@ class MunkiLooseVersion(version.LooseVersion):
             self.parse(str(vstring))
 
     def _pad(self, version_list, max_length):
-        """Pad a version list by adding extra 0
-        components to the end if needed"""
+        """Pad a version list by adding extra 0 components to the end
+        if needed"""
         # copy the version_list so we don't modify it
         cmp_list = list(version_list)
         while len(cmp_list) < max_length:
@@ -120,9 +152,8 @@ class MunkiLooseVersion(version.LooseVersion):
         return cmp_list
 
     def _compare(self, other):
-        """Complete comparison mechanism since LooseVersion's is broken
-        in Python 3"""
-        if not isinstance(other, version.LooseVersion):
+        """Compare MunkiLooseVersions"""
+        if not isinstance(other, MunkiLooseVersion):
             other = MunkiLooseVersion(other)
 
         max_length = max(len(self.version), len(other.version))
@@ -137,9 +168,8 @@ class MunkiLooseVersion(version.LooseVersion):
                 if isinstance(value, int):
                     return -1
                 return 1
-            else:
-                if cmp_result:
-                    return cmp_result
+            if cmp_result:
+                return cmp_result
         return cmp_result
 
     def __hash__(self):
@@ -187,9 +217,8 @@ def padVersionString(versString, tupleCount):
 def getVersionString(plist, key=None):
     """Gets a version string from the plist.
 
-    If a key is explicitly specified, the value of that key is
-    returned without modification, or an empty string if the
-    key does not exist.
+    If a key is explicitly specified, the value of that key is returned without
+    modification, or an empty string if the key does not exist.
 
     If key is not specified:
     if there's a valid CFBundleShortVersionString, returns that.
@@ -243,10 +272,7 @@ def getVersionString(plist, key=None):
 
 
 def getBundleInfo(path):
-    """
-    Returns Info.plist data if available
-    for bundle at path
-    """
+    """Returns Info.plist data if available for bundle at path"""
     infopath = os.path.join(path, "Contents", "Info.plist")
     if not os.path.exists(infopath):
         infopath = os.path.join(path, "Resources", "Info.plist")
@@ -309,8 +335,7 @@ def getBundleVersion(bundlepath, key=None):
     Returns version number from a bundle.
     Some extra code to deal with very old-style bundle packages
 
-    Specify key to use a specific key in the Info.plist for
-    the version string.
+    Specify key to use a specific key in the Info.plist for the version string.
     """
     plist = getBundleInfo(bundlepath)
     if plist:
@@ -404,11 +429,12 @@ def parsePkgRefs(filename, path_to_pkg=None):
                                 pkgref_dict[pkgid]['file'] = os.path.join(
                                     thisdir, relativepath)
 
-            for key in pkgref_dict:
-                pkgref = pkgref_dict[key]
+            for (key, pkgref) in pkgref_dict.items():
                 if 'file' in pkgref:
                     if os.path.exists(pkgref['file']):
-                        info.extend(getReceiptInfo(pkgref['file']))
+                        receipts = getReceiptInfo(
+                            pkgref['file']).get("receipts", [])
+                        info.extend(receipts)
                         continue
                 if 'version' in pkgref:
                     if 'file' in pkgref:
@@ -450,10 +476,9 @@ def getFlatPackageInfo(pkgpath):
                         os.path.join(pkgtmp, toc_entry))
                     receiptarray = parsePkgRefs(packageinfoabspath)
                     break
-                else:
-                    display.display_warning(
-                        u"An error occurred while extracting %s: %s",
-                        toc_entry, err)
+                display.display_warning(
+                    "An error occurred while extracting %s: %s",
+                    toc_entry, err)
             # If there are PackageInfo files elsewhere, gather them up
             elif toc_entry.endswith('.pkg/PackageInfo'):
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
@@ -464,7 +489,7 @@ def getFlatPackageInfo(pkgpath):
                     receiptarray.extend(parsePkgRefs(packageinfoabspath))
                 else:
                     display.display_warning(
-                        u"An error occurred while extracting %s: %s",
+                        "An error occurred while extracting %s: %s",
                         toc_entry, err)
         if not receiptarray:
             for toc_entry in [item for item in toc
@@ -478,14 +503,14 @@ def getFlatPackageInfo(pkgpath):
                     receiptarray = parsePkgRefs(distributionabspath,
                                              path_to_pkg=pkgpath)
                     break
-                else:
-                    display.display_warning(
-                        u"An error occurred while extracting %s: %s",
-                        toc_entry, err)
+                display.display_warning(
+                    "An error occurred while extracting %s: %s",
+                    toc_entry, err)
 
         if not receiptarray:
             display.display_warning(
-                'No valid Distribution or PackageInfo found.')
+                'No receipts found in Distribution or PackageInfo files within '
+                'the package.')
 
         productversion = None
         for toc_entry in [item for item in toc
@@ -611,7 +636,7 @@ def getBundlePackageInfo(pkgpath):
                 componentdir = plist['IFPkgFlagComponentDirectory']
                 dirsToSearch.append(componentdir)
 
-        if dirsToSearch == []:
+        if not dirsToSearch:
             dirsToSearch = ['', 'Contents', 'Contents/Installers',
                             'Contents/Packages', 'Contents/Resources',
                             'Contents/Resources/Packages']
@@ -652,10 +677,10 @@ def getReceiptInfo(pkgname):
 
 def getInstalledPackageVersion(pkgid):
     """
-    Checks a package id against the receipts to
-    determine if a package is already installed.
-    Returns the version string of the installed pkg
-    if it exists, or an empty string if it does not
+    Checks a package id against the receipts to determine if a package is
+    already installed.
+    Returns the version string of the installed pkg if it exists, or an empty
+    string if it does not
     """
 
     # First check (Leopard and later) package database
@@ -749,8 +774,7 @@ def nameAndVersion(aString):
             if set(partialVersion).intersection(set('abdv')):
                 # only one of 'abdv' allowed in the version
                 break
-            else:
-                index -= 1
+            index -= 1
         else:
             break
 
@@ -810,7 +834,7 @@ def getChoiceChangesXML(pkgitem):
             # whose 'choiceAttribute' value is 'selected'
             choices = [item for item in plist
                        if 'selected' in item['choiceAttribute']]
-    except BaseException:
+    except Exception:
         # No choices found or something went wrong
         pass
     return choices
@@ -937,7 +961,6 @@ def getInstalledPackages():
                                 MunkiLooseVersion(storedversion)):
                             installedpkgs[pkgid] = thisversion
     return installedpkgs
-
 
 
 # This function doesn't really have anything to do with packages or receipts

@@ -48,6 +48,13 @@ class RepoCopyError(Exception):
     #pass
 
 
+def determine_arch(pkginfo) -> str:
+    """Determine a supported architecture string"""
+    # If there is exactly one supported architecture, return a string with it
+    if len(pkginfo.get("supported_architectures", [])) == 1:
+        return pkginfo["supported_architectures"][0]
+    return ""
+
 def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     """Copies an item to the appropriate place in the repo.
     If itempath is a path within the repo/pkgs directory, copies nothing.
@@ -103,8 +110,11 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
     pkginfo_ext = pref('pkginfo_extension') or ''
     if pkginfo_ext and not pkginfo_ext.startswith('.'):
         pkginfo_ext = '.' + pkginfo_ext
-    pkginfo_name = '%s-%s%s' % (pkginfo['name'], pkginfo['version'],
-                                pkginfo_ext)
+    arch = determine_arch(pkginfo)
+    if arch:
+        arch = "-%s" % arch
+    pkginfo_name = '%s-%s%s%s' % (pkginfo['name'], pkginfo['version'],
+                            arch, pkginfo_ext)
     pkginfo_path = os.path.join(destination_path, pkginfo_name)
     index = 0
     try:
@@ -113,8 +123,8 @@ def copy_pkginfo_to_repo(repo, pkginfo, subdirectory=''):
         raise RepoCopyError(u'Unable to get list of current pkgsinfo: %s' % err) from err
     while pkginfo_path in pkgsinfo_list:
         index += 1
-        pkginfo_name = '%s-%s__%s%s' % (pkginfo['name'], pkginfo['version'],
-                                        index, pkginfo_ext)
+        pkginfo_name = '%s-%s%s__%s%s' % (pkginfo['name'], pkginfo['version'],
+                                        arch, index, pkginfo_ext)
         pkginfo_path = os.path.join(destination_path, pkginfo_name)
 
     try:
