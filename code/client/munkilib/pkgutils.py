@@ -859,7 +859,7 @@ def getPackageMetaData(pkgitem):
               (some may not be installed on some machines)
     """
 
-    if not hasValidInstallerItemExt(pkgitem):
+    if not hasValidPackageExt(pkgitem):
         return {}
 
     # first query /usr/sbin/installer for restartAction
