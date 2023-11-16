@@ -571,9 +571,13 @@ def notifyUserOfUpdates(force=False):
         # notify user of available updates using LaunchAgent to launch
         # munki-notifier.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.munki-notifier'
-        f = open(launchfile, 'w')
+        f = open(launchfile, 'wb')
         f.close()
-        time.sleep(5)
+        # this is a long time to sleep, but we've seen munki-notifier fail
+        # to activate when it's set much shorter
+        time.sleep(12)
+        # clear the trigger file. We have to do it because we're root,
+        # and the munki-notifier process is running as the user
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
