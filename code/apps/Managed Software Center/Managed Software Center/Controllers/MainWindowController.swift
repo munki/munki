@@ -146,16 +146,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func displayBackdropWindows() {
-        for screen in NSScreen.screens {
-            let newWindow = newTranslucentWindow(screen: screen)
-            // add to our backdropWindows array so a reference stays around
-            backdropWindows.append(newWindow)
+        if backdropWindows.count == 0 {
+            for screen in NSScreen.screens {
+                let newWindow = newTranslucentWindow(screen: screen)
+                // add to our backdropWindows array so a reference stays around
+                backdropWindows.append(newWindow)
+            }
         }
     }
     
     func makeUsUnobnoxious() {
         // reverse all the obnoxious changes
-        msc_log("msc", "end_obnoxious_mode")
+        msc_log("MSC", "end_obnoxious_mode")
         
         // remove obnoxious presentation options
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.subtracting(
@@ -179,7 +181,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func makeUsObnoxious() {
         // makes this app and window impossible(?)/difficult to ignore
-        msc_log("msc", "start_obnoxious_mode")
+        msc_log("MSC", "start_obnoxious_mode")
         
         // make sure we're frontmost
         NSApp.activate(ignoringOtherApps: true)
