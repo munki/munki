@@ -112,7 +112,7 @@ def alert_user_of_forced_logout(info_dict=None):
         # Use our LaunchAgent to start
         # Managed Software Center.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.ManagedSoftwareCenter'
-        fileref = open(launchfile, 'w')
+        fileref = open(launchfile, 'wb')
         fileref.close()
         # now wait a bit for it to launch before proceeding
         # because if we don't, sending the logoutwarn notification
