@@ -573,9 +573,7 @@ def notifyUserOfUpdates(force=False):
         launchfile = '/var/run/com.googlecode.munki.munki-notifier'
         f = open(launchfile, 'wb')
         f.close()
-        # this is a long time to sleep, but we've seen munki-notifier fail
-        # to activate when it's set much shorter
-        time.sleep(12)
+        time.sleep(5)
         # clear the trigger file. We have to do it because we're root,
         # and the munki-notifier process is running as the user
         if os.path.exists(launchfile):
