@@ -917,8 +917,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                                  timeoutInterval: TimeInterval(10.0))
         webView.load(request)
         if url_fragment == "updates.html" {
-            // clear all earlier update notifications
-            removeAllDeliveredNotifications()
+            if !_update_in_progress && NSApp.isActive {
+                // clear all earlier update notifications
+                removeAllDeliveredNotifications()
+            }
             // record that the user has been presented pending updates
             if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
                 _alertedUserToOutstandingUpdates = true
@@ -934,6 +936,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         let munkiNotifierPath = Bundle.main.path(forResource: "munki-notifier", ofType: "app")
         if let munkiNotifierPath = munkiNotifierPath {
             NSLog("munki-notifier path: %@", munkiNotifierPath as String)
+            // now make sure it's not already running
+            let executablePath = munkiNotifierPath + "/Contents/MacOS/munki-notifier"
+            let procs = getRunningProcessesWithUsers()
+            for proc in procs {
+                if proc["pathname"] == executablePath && proc["user"] == NSUserName() {
+                    // munki-notifier is already running as this user
+                    return
+                }
+            }
             let command = "/usr/bin/open"
             let args = ["-a", munkiNotifierPath, "--args", "-clear"]
             _ = exec(command, args: args)
