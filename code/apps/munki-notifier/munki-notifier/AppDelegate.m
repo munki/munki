@@ -16,8 +16,12 @@ NSString * const MunkiAppURL = @"munki://";
 NSString * const MunkiNotificationURL = @"munki://notify";
 long const DefaultUseNotificationCenterDays = 3;
 
-
 @implementation AppDelegate
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+{
+    return NSTerminateNow;
+}
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
@@ -266,7 +270,6 @@ long const DefaultUseNotificationCenterDays = 3;
         sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
     }
-    
     [NSApp terminate: self];
 }
 
