@@ -55,6 +55,7 @@ def determine_arch(pkginfo) -> str:
         return pkginfo["supported_architectures"][0]
     return ""
 
+
 def copy_item_to_repo(repo, itempath, vers, subdirectory=''):
     """Copies an item to the appropriate place in the repo.
     If itempath is a path within the repo/pkgs directory, copies nothing.
