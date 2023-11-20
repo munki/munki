@@ -339,9 +339,21 @@ def process_install(manifestitem, cataloglist, installinfo,
             'catalogs: %s ', manifestitem, ', '.join(cataloglist))
         return False
 
-    if item_in_installinfo(item_pl, installinfo['managed_installs'],
+    if item_in_installinfo(item_pl,
+                           installinfo['managed_installs'],
                            vers=item_pl.get('version')):
-        # has this item already been added to the list of things to install?
+        # item has been processed for install; now check to see if there
+        # was a problem when it was processed
+        problem_item_names = [item['name']
+                             for item in installinfo['managed_installs']
+                             if item.get('installed') is False and
+                             not item.get('installer_item')]
+        if item_pl.get('name') in problem_item_names:
+            # item was processed, but not successfully downloaded
+            display.display_debug1(
+                '%s was processed earlier, but download failed.', manifestitemname)
+            return False
+        # item was processed successfully
         display.display_debug1(
             '%s is or will be installed.', manifestitemname)
         return True
@@ -561,8 +573,6 @@ def process_install(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            #if manifestitemname in installinfo['processed_installs']:
-            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except (fetch.GurlError, fetch.GurlDownloadError) as errmsg:
             display.display_warning(
@@ -576,8 +586,6 @@ def process_install(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            #if manifestitemname in installinfo['processed_installs']:
-            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.Error as errmsg:
             display.display_warning(
@@ -591,8 +599,6 @@ def process_install(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            #if manifestitemname in installinfo['processed_installs']:
-            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
     else: # some version installed
         iteminfo['installed'] = True
