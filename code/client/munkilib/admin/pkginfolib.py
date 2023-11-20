@@ -683,6 +683,7 @@ def makepkginfo(installeritem, options):
         if scriptstring:
             pkginfo['uninstall_script'] = scriptstring
             pkginfo['uninstall_method'] = 'uninstall_script'
+            pkginfo['uninstallable'] = True
     if options.autoremove:
         pkginfo['autoremove'] = True
     if options.minimum_munki_version:
@@ -724,6 +725,7 @@ def makepkginfo(installeritem, options):
         pkginfo['blocking_applications'] = options.blocking_application
     if options.uninstall_method:
         pkginfo['uninstall_method'] = options.uninstall_method
+        pkginfo['uninstallable'] = True
     if options.installer_environment:
         try:
             installer_environment_dict = dict(
