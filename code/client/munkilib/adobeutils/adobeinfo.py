@@ -200,7 +200,7 @@ def get_adobe_setup_info(installroot):
                     payloads.append(payloadinfo)
                     if ((driverfolder and item == driverfolder) or
                             (media_signature and
-                             payloadinfo['AdobeCode'] == media_signature)):
+                             payloadinfo.get('AdobeCode') == media_signature)):
                         info['display_name'] = payloadinfo['display_name']
                         info['version'] = payloadinfo['version']
                         info['AdobeSetupType'] = 'ProductInstall'
