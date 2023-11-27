@@ -587,12 +587,6 @@ def getOnePackageInfo(pkgpath):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
                                     os.path.basename(pkgpath)
             pkginfo['version'] = '0.0'
-        ## now look for applications to suggest for blocking_applications
-        #bomlist = getBomList(pkgpath)
-        #if bomlist:
-        #    pkginfo['apps'] = [os.path.basename(item) for item in bomlist
-        #                        if item.endswith('.app')]
-
     else:
         # look for old-style .info files!
         infopath = os.path.join(
@@ -626,7 +620,8 @@ def getBundlePackageInfo(pkgpath):
             if item.endswith('.dist'):
                 filename = os.path.join(bundlecontents, item)
                 # return info using the distribution file
-                return parsePkgRefs(filename, path_to_pkg=bundlecontents)
+                receiptarray = parsePkgRefs(filename, path_to_pkg=bundlecontents)
+                return {"receipts": receiptarray}
 
         # no .dist file found, look for packages in subdirs
         dirsToSearch = []
@@ -670,7 +665,8 @@ def getReceiptInfo(pkgname):
             info = getBundlePackageInfo(pkgname)
 
     elif pkgname.endswith('.dist'):
-        info = parsePkgRefs(pkgname)
+        receiptarray = parsePkgRefs(pkgname)
+        info = {"receipts": receiptarray}
 
     return info
 
