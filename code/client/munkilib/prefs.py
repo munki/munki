@@ -65,6 +65,7 @@ DEFAULT_PREFS = {
     'FollowHTTPRedirects': 'none',
     'HelpURL': None,
     'IconURL': None,
+    'IgnoreMiddleware': False,
     'IgnoreSystemProxies': False,
     'InstallRequiresLogout': False,
     'InstallAppleSoftwareUpdates': False,
