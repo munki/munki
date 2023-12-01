@@ -14,6 +14,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
+    var _obnoxiousNotificationMode = false
     var managedsoftwareupdate_task = ""
     var cached_self_service = SelfService()
     var alert_controller = MSCAlertController()
@@ -166,6 +167,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         for window in self.backdropWindows {
             window.orderOut(self)
         }
+        backdropWindows = []
+
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
             // turn .closable, .miniaturizable, .resizable back on
@@ -458,6 +461,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             load_page("updates.html")
             if !shouldAggressivelyNotifyAboutMunkiUpdates() {
                 _alertedUserToOutstandingUpdates = true
+            }
+            if _obnoxiousNotificationMode {
+                if weShouldBeObnoxious() {
+                    makeUsObnoxious()
+                } else {
+                    _obnoxiousNotificationMode = false
+                    makeUsUnobnoxious()
+                }
             }
         default:
             // should never get here
@@ -828,6 +839,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 "Update in progress.",
                 comment: "Update In Progress primary text") + ".."
             kickOffInstallSession()
+            _obnoxiousNotificationMode = false
             makeUsUnobnoxious()
         }
     }
@@ -987,6 +999,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if weShouldBeObnoxious() {
                     NSLog("%@", "Entering obnoxious mode")
                     makeUsObnoxious()
+                    _obnoxiousNotificationMode = true
                 }
             }
         } else {
