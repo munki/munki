@@ -151,7 +151,7 @@ def generate_installable_condition(models):
     board_ids = ['"' + item + '"' for item in models if item.startswith('Mac-')]
     if board_ids:
         board_id_list = ", ".join(board_ids)
-        board_id_predicate = "board_id IN {%s}" % board_id_list
+        board_id_predicate = "board-id IN {%s}" % board_id_list
     else:
         board_id_predicate = ""
 
@@ -159,7 +159,7 @@ def generate_installable_condition(models):
                   if not item.startswith('Mac-')]
     if device_ids:
         device_id_list = ", ".join(device_ids)
-        device_id_predicate = "device_id IN {%s}" % device_id_list
+        device_id_predicate = "device-id IN {%s}" % device_id_list
     else:
         device_id_predicate = ""
 
