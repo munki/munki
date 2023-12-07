@@ -149,12 +149,27 @@ def generate_installable_condition(models):
     """Generates an NSPredicate expression to be used as an installable
     condition limiting the hardware models this item is applicable for"""
     board_ids = ['"' + item + '"' for item in models if item.startswith('Mac-')]
+    if board_ids:
+        board_id_list = ", ".join(board_ids)
+        board_id_predicate = "board_id IN {%s}" % board_id_list
+    else:
+        board_id_predicate = ""
+
     device_ids = ['"' + item + '"' for item in models
                   if not item.startswith('Mac-')]
-    board_id_list = ", ".join(board_ids)
-    device_id_list = ", ".join(device_ids)
-    predicate = "board_id IN {%s} OR device_id IN {%s}" % (board_id_list,
-                                                           device_id_list)
+    if device_ids:
+        device_id_list = ", ".join(device_ids)
+        device_id_predicate = "device_id IN {%s}" % device_id_list
+    else:
+        device_id_predicate = ""
+
+    predicate = ""
+    if board_id_predicate and device_id_predicate:
+        predicate = board_id_predicate + " OR " + device_id_predicate
+    elif board_id_predicate:
+        predicate = board_id_predicate
+    elif device_id_predicate:
+        predicate = device_id_predicate
     return predicate
 
 
