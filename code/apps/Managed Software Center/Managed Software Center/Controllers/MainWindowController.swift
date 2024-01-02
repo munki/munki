@@ -241,6 +241,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         webViewContainer.frame.origin.x = -1
         webViewContainer.frame.size.width = self.window!.frame.width
         navigateBackButton.frame.origin.x = 90
+        navigateBackButton.showsBorderOnlyWhileMouseInside = true
         // adjusts window controls on newer OSs
         if #available(macOS 10.13, *) {
             let customToolbar = NSToolbar()
@@ -259,7 +260,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         updatesMenuItem.isHidden = false
         fullSidebar.isHidden = false
         webViewContainer.frame.origin.x = 220
-        navigateBackButton.frame.origin.x = 17
+        navigateBackButton.frame.origin.x = 12
+        navigateBackButton.showsBorderOnlyWhileMouseInside = true
         webViewContainer.frame.size.width = self.window!.frame.width - fullSidebar.frame.width
         // adjusts window controls on newer OSs
         if #available(macOS 10.13, *) {
