@@ -80,6 +80,7 @@ def check(client_id='', localmanifestpath=None):
     munkistatus.detail('')
 
     installinfo = {}
+    success = True
 
     try:
         if localmanifestpath:
@@ -449,6 +450,7 @@ def check(client_id='', localmanifestpath=None):
     except (manifestutils.ManifestException, UpdateCheckAbortedError):
         # Update check aborted. Check to see if we have a valid
         # install/remove list from an earlier run.
+        success = False
         installinfopath = os.path.join(managed_install_dir, 'InstallInfo.plist')
         if os.path.exists(installinfopath):
             try:
@@ -470,6 +472,9 @@ def check(client_id='', localmanifestpath=None):
     # note -- this must happen _after_ InstallInfo.plist gets written to disk.
     download.run_precaching_agent()
 
+    if not success:
+        # error in getting manifests, or other check error
+        return -1
     if installcount or removalcount:
         return 1
     # installcount and removalcount are 0
