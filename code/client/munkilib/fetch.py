@@ -118,7 +118,11 @@ def import_middleware():
 
 
 middleware = None
-import_middleware()
+ignore_middleware = prefs.pref('IgnoreMiddleware')
+if not ignore_middleware:
+    # If we haven't explicitly said to ignore middleware,
+    # the preference decides
+    import_middleware()
 
 
 class Error(Exception):
