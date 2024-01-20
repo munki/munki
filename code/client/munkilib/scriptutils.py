@@ -53,6 +53,7 @@ def run_embedded_script(scriptname, pkginfo_item, suppress_error=False):
 
     # get the script text from the pkginfo
     script_text = pkginfo_item.get(scriptname)
+    productversion=pkginfo_item.get('version')
     itemname = pkginfo_item.get('name')
     if not script_text:
         display.display_error(
@@ -76,11 +77,12 @@ def run_embedded_script(scriptname, pkginfo_item, suppress_error=False):
 
     # now run the script
     return run_script(
-        itemname, scriptpath, scriptname, suppress_error=suppress_error)
+        itemname, scriptpath, scriptname, productversion, suppress_error=suppress_error)
 
 
-def run_script(itemname, path, scriptname, suppress_error=False):
+def run_script(itemname, path, scriptname, productversion, suppress_error=False):
     '''Runs a script, Returns return code.'''
+    path = [path, str(productversion)]
     if suppress_error:
         display.display_detail(
             'Running %s for %s ' % (scriptname, itemname))
