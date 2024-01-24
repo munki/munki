@@ -958,13 +958,12 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
         info_object.update(additional_info)
     try:
         predicate = NSPredicate.predicateWithFormat_(predicate_string)
-    except BaseException as err:
-        display.display_warning('%s', err)
-        # can't parse predicate, so return False
-        return False
-
-    result = predicate.evaluateWithObject_(info_object)
-    display.display_debug1('Predicate %s is %s', predicate_string, result)
+        result = predicate.evaluateWithObject_(info_object)
+        display.display_debug1('Predicate %s is %s', predicate_string, result)
+    except Exception as err:
+        display.display_warning(
+            'Predicate %s evaluation error: %s', predicate_string, err)
+        result = False
     return result
 
 
