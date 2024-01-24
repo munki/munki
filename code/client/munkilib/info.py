@@ -793,8 +793,8 @@ def getMachineFacts():
         machine['x86_64_capable'] = True
     elif machine['arch'] == 'i386':
         machine['x86_64_capable'] = has_intel64support()
-    machine['board-id'] = board_id()
-    machine['device-id'] = device_id()
+    machine['board_id'] = board_id()
+    machine['device_id'] = device_id()
     return machine
 
 
