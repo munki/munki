@@ -147,7 +147,7 @@ def display_status_minor(msg, *args):
         munkistatus.detail(msg)
     if verbose:
         if msg.endswith('.') or msg.endswith(u'…'):
-            print('    %s' % msg)
+            print('    %s' % msg.encode('utf-8'))
         else:
             print('    %s...' % msg)
         sys.stdout.flush()
