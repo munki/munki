@@ -2,4 +2,4 @@
 
 "CFBundleName" = "Geführte Softwareaktualisierung";
 "CFBundleDisplayName" = "Geführte Softwareaktualisierung";
-NSHumanReadableCopyright = "Copyright © 2010-2023 The Munki Project\nhttps://github.com/munki/munki";
+NSHumanReadableCopyright = "Copyright © 2010-2024 The Munki Project\nhttps://github.com/munki/munki";
