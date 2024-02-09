@@ -875,6 +875,20 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
     }
     
+    func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
+        //
+        var cellView:MSCTableCellView?
+        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+            cellView = view.view(atColumn: 0) as? MSCTableCellView
+        }
+        if shouldDisplay {
+            cellView?.badge.isHidden = true
+            cellView?.spinner.startAnimation(self)
+        } else {
+            cellView?.spinner.stopAnimation(self)
+        }
+    }
+    
     func updateMyItemsPage() {
         // Update the "My Items" page with current data.
         // Modifies the DOM to avoid ugly browser refresh
