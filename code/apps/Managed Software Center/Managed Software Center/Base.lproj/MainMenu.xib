@@ -405,6 +405,10 @@
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                     <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSActionTemplate" id="LeG-M3-5ap"/>
                                                                 </imageView>
+                                                                <progressIndicator fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="KDY-7K-4X8">
+                                                                    <rect key="frame" x="170" y="10" width="16" height="16"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                </progressIndicator>
                                                                 <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LLF-TK-FyK">
                                                                     <rect key="frame" x="165" y="10" width="27" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
@@ -417,6 +421,7 @@
                                                             <connections>
                                                                 <outlet property="badge" destination="LLF-TK-FyK" id="y1n-3x-gCj"/>
                                                                 <outlet property="imgView" destination="fiC-hB-HCN" id="8XJ-3j-uBh"/>
+                                                                <outlet property="spinner" destination="KDY-7K-4X8" id="wjp-fm-sWs"/>
                                                                 <outlet property="title" destination="545-FJ-GjT" id="0Bw-er-nlQ"/>
                                                             </connections>
                                                         </tableCellView>
