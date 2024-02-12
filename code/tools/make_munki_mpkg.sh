@@ -544,10 +544,12 @@ mkdir -m 1775 "$APPROOT"
 mkdir -m 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
+# Create Helper directory
+mkdir -m -m 775 "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # Copy MunkiStatus helper app
-cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # Copy notifier helper app
-cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 
@@ -556,7 +558,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing Managed Software Center.app Bundles..."
     /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
-        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app"
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/munki-notifier.app"
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
         echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
@@ -564,7 +566,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
     fi
 
     echo "Signing MunkiStatus.app Frameworks..."
-    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
         echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
@@ -580,7 +582,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
 
     echo "Signing Managed Software Center.app..."
     /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose \
-        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app" \
         "$APPROOT/Applications/Managed Software Center.app"
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
