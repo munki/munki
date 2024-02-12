@@ -947,7 +947,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // we can't remove them directly since we didn't actually post them
         // so we can't use
         // NSUserNotificationCenter.default.removeAllDeliveredNotifications()
-        let munkiNotifierPath = Bundle.main.path(forResource: "munki-notifier", ofType: "app")
+        let munkiNotifierPath = Bundle.main.path(forResource: "munki-notifier", ofType: "app", inDirectory: "Helpers")
         if let munkiNotifierPath = munkiNotifierPath {
             NSLog("munki-notifier path: %@", munkiNotifierPath as String)
             // now make sure it's not already running
