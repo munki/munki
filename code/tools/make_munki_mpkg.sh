@@ -545,7 +545,7 @@ mkdir -m 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
 # Create Helper directory
-mkdir -m -m 775 "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
+mkdir -m 775 "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # Copy MunkiStatus helper app
 cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # Copy notifier helper app
