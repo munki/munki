@@ -1,7 +1,7 @@
 '''Base bits for repo plugins'''
 from __future__ import absolute_import, print_function
 
-import imp
+import importlib.util
 import os
 import sys
 
@@ -32,9 +32,12 @@ def import_plugins(dirpath=None):
         plugin_filename = os.path.join(dirpath, name + ".py")
         try:
             # attempt to import the module
-            _tmp = imp.load_source(name, plugin_filename)
+            spec = importlib.util.spec_from_file_location(name, plugin_filename)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
             # look for an attribute with the plugin name
-            plugin = getattr(_tmp, name)
+            plugin = getattr(module, name)
             # add the processor to munkirepo's namespace
             globals()[name] = plugin
             plugin_names.append(name)
