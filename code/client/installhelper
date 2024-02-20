@@ -1,0 +1,178 @@
+#!/usr/local/munki/munki-python
+# encoding: utf-8
+#
+# Copyright 2011-2024 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+installhelper
+
+Created 2024-02-20.
+
+A helper tool for handling launchd items etc when installing Munki
+
+"""
+from __future__ import absolute_import
+
+# standard libs
+import glob
+import subprocess
+import time
+import sys
+
+# our libs
+from munkilib import munkilog
+from munkilib import osutils
+from munkilib import prefs
+from munkilib import FoundationPlist
+
+
+# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
+# No name 'Foo' in module 'Bar' warnings. Disable them.
+# pylint: disable=E0401
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
+# pylint: enable=E0401
+
+
+CHECK_TIME = 10
+LAUNCHD_PREFIX = 'com.googlecode.munki.'
+PROCESS_ID = 'com.googlecode.munki.installhelper'
+PROG_NAME = 'managedsoftwareupdate.py'
+
+def log(msg):
+    '''Logs messages from this tool with an identifier'''
+
+    munkilog.log('%s: %s' % (PROCESS_ID, msg))
+
+def is_managedsoftwareupdate_py_running():
+    '''If managedsoftwareupdate.py is running, check again in x seconds'''
+
+    managedsoftwareupdate_pid = osutils.pythonScriptRunning(PROG_NAME)
+
+    while managedsoftwareupdate_pid:
+        # an instance of managedsoftwareupdate.py is running, so we need to try again later
+        log('*' * 60)
+        log('%s is running as pid %s.' % (PROCESS_ID, managedsoftwareupdate_pid))
+        log('checking again in %s seconds' % CHECK_TIME)
+        log('*' * 60)
+        time.sleep(CHECK_TIME)
+
+    # if managedsoftwareupdate.py is not running.. return from function to proceed
+    log('%s is not running, proceeding...' % (PROG_NAME))
+
+def reload_launch_agents():
+    '''Reloads Munki's Launch Agents'''
+
+    # returns a list of launch agents prefixed with LAUNCHD_PREFIX
+    launch_agents = glob.glob("/Library/LaunchAgents/" + LAUNCHD_PREFIX + "*")
+
+    # The username of the logged in user
+    username, userid, _ = SCDynamicStoreCopyConsoleUser(None, None, None)
+
+    if userid != 0:
+        # If we're not logged in, reload the launch agents that are limited to the login window
+        log('At the Login Window')
+        for launch_agent in launch_agents:
+            try:
+                # Make sure content is valid, before proceeding to reload
+                agent_content = FoundationPlist.readPlist(launch_agent)
+            except FoundationPlist.NSPropertyListSerializationException:
+                break
+            if agent_content.get('LimitLoadToSessionType'):
+                # If the launch agent includes LimitLoadToSessionType, and it contains LoginWindow
+                if 'LoginWindow' in agent_content.get('LimitLoadToSessionType'):
+                    # If the launch agent is to be loaded at the login window, get the Label
+                    agent_label = agent_content.get('Label')
+                    if agent_label:
+                        # Stop the launch agent at the login window
+                        log("Stopping: %s" % launch_agent)
+                        cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + agent_label]
+                        subprocess.call(cmd)
+                        # Load the launch agent at the login window
+                        log("Loading: %s" % launch_agent)
+                        cmd = ['/bin/launchctl', 'bootstrap', 'loginwindow', launch_agent]
+                        subprocess.call(cmd)
+    else:
+        # If we're logged in, reload the launch agents that are not limited to the login window
+        log('Logged in as: %s' % username)
+        for launch_agent in launch_agents:
+            try:
+                # Make sure content is valid, before proceeding to reload
+                agent_content = FoundationPlist.readPlist(launch_agent)
+            except FoundationPlist.NSPropertyListSerializationException:
+                break
+            # If the launch agent doesn't contain LimitLoadToSessionType or
+            # LimitLoadToSessionType exists and it contains Aqua
+            if (not agent_content.get('LimitLoadToSessionType') or 'Aqua' in
+                agent_content.get('LimitLoadToSessionType')):
+                # If the launch agent is to be loaded at the login window, get the Label
+                agent_label = agent_content.get('Label')
+                if agent_label:
+                    # Stop the launch agent
+                    log("Stopping: %s" % launch_agent)
+                    cmd = ['/bin/launchctl', 'asuser', userid, '/bin/launchctl', 'bootout',
+                           'gui/' + userid + '/' + agent_label]
+                    subprocess.call(cmd)
+                    # Load the launch agent
+                    log("Loading: %s" % launch_agent)
+                    cmd = ['/bin/launchctl', 'asuser', userid, '/bin/launchctl', 'bootstrap',
+                           'gui/' + userid, launch_agent]
+                    subprocess.call(cmd)
+
+def reload_launch_daemons():
+    '''Reloads Munki's Launch Daemons'''
+
+    # returns a list of launch daemons prefixed with LAUNCHD_PREFIX
+    launch_daemons = glob.glob("/Library/LaunchDaemons/" + LAUNCHD_PREFIX + "*")
+
+    for launch_daemon in launch_daemons:
+        try:
+            # Make sure content is valid, before proceeding to reload
+            FoundationPlist.readPlist(launch_daemon)
+        except FoundationPlist.NSPropertyListSerializationException:
+            break
+        # Stop the launch daemon
+        log("Stopping: %s" % launch_daemon)
+        cmd = ['/bin/launchctl', 'bootout', 'system', launch_daemon]
+        subprocess.call(cmd)
+        # Load the launch daemon
+        log("Loading: %s" % launch_daemon)
+        cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
+        subprocess.call(cmd)
+
+def main():
+    '''Main function'''
+
+    # Add munki's path to import munki's modules
+    sys.path.append("/usr/local/munki")
+
+    if prefs.pref('LogToSyslog'):
+        munkilog.configure_syslog()
+
+    log('launched')
+
+    # only proceed if PROG_NAME isn't running, looping until it's not running
+    is_managedsoftwareupdate_py_running()
+
+    # reload launch daemons as needed
+    reload_launch_daemons()
+
+    # reload launchagents as needed
+    reload_launch_agents()
+
+    log('exited')
+
+    sys.exit(0)
+
+if __name__ == '__main__':
+    main()
