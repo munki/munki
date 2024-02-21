@@ -42,7 +42,7 @@ CHECK_TIME = '10'
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
 PROCESS_ID = 'com.googlecode.munki.installhelper'
 PROG_NAME = 'managedsoftwareupdate'
-VERSION = '1.0'
+VERSION = '0.1'
 
 
 def main():
@@ -87,7 +87,7 @@ def main():
         # Log that we've skipped the above as no one is logged in
         log('At the login window and no one is logged in')
 
-    log('exited')
+    log('completed tasks, exiting')
 
     sys.exit(0)
 
@@ -155,16 +155,19 @@ def reload_launch_daemons(launch_daemons):
             if daemon_label in launchd_labels:
                 # Stop the launch daemon at the login window
                 log("Stopping: %s" % launch_daemon)
-                cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + daemon_label]
+                cmd = ['/bin/launchctl', 'bootout', 'system/' + daemon_label]
                 subprocess.call(cmd)
             # Load the launch daemon at the login window
             log("Loading: %s" % launch_daemon)
-            cmd = ['/bin/launchctl', 'bootstrap', 'loginwindow', launch_daemon]
+            cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
             subprocess.call(cmd)
 
 
 def reload_loginwindow_launch_agents(launch_agents):
     '''Reloads Munki's loginwindow Launch Agents'''
+
+    # Log what we're upto
+    log('Reloading Launch Daemons')
 
     # Retrieve all running launch agents at the login window
     cmd = ['/bin/launchctl', 'list']
