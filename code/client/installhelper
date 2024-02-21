@@ -26,6 +26,7 @@ from __future__ import absolute_import
 
 # standard libs
 import glob
+import os
 import subprocess
 import time
 import sys
@@ -43,8 +44,14 @@ PROCESS_ID = 'com.googlecode.munki.installhelper'
 PROG_NAME = 'managedsoftwareupdate'
 VERSION = '1.0'
 
+
 def main():
     '''Main function'''
+
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print('You must run this as root!', file=sys.stderr)
+        sys.exit(1)
 
     # Add munki's path to import munki's modules
     sys.path.append("/usr/local/munki")
@@ -88,7 +95,7 @@ def main():
 def get_logged_in_users():
     '''Returns a dict containing any logged in users uid and username'''
 
-    user_details = []
+    user_details = {}
 
     # Retrieve details of all running processes
     cmd = ['/bin/ps', '-axo', 'uid,login,args']
