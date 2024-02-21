@@ -137,6 +137,9 @@ def is_managedsoftwareupdate_running():
 def reload_launch_daemons(launch_daemons):
     '''Reloads Munki's Launch Daemons'''
 
+    # Log what we're upto
+    log('Reloading Launch Daemons')
+
     # Retrieve all running launch daemons
     cmd = ['/bin/launchctl', 'list']
     cmd_out = subprocess.run(cmd, capture_output = True, check = False)
@@ -167,7 +170,7 @@ def reload_loginwindow_launch_agents(launch_agents):
     '''Reloads Munki's loginwindow Launch Agents'''
 
     # Log what we're upto
-    log('Reloading Launch Daemons')
+    log('Reloading LoginWindow Launch Agents')
 
     # Retrieve all running launch agents at the login window
     cmd = ['/bin/launchctl', 'list']
