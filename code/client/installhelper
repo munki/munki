@@ -47,15 +47,15 @@ from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 CHECK_TIME = 10
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
 PROCESS_ID = 'com.googlecode.munki.installhelper'
-PROG_NAME = 'managedsoftwareupdate.py'
+PROG_NAME = 'managedsoftwareupdate'
 
 def log(msg):
     '''Logs messages from this tool with an identifier'''
 
     munkilog.log('%s: %s' % (PROCESS_ID, msg))
 
-def is_managedsoftwareupdate_py_running():
-    '''If managedsoftwareupdate.py is running, check again in x seconds'''
+def is_managedsoftwareupdate_running():
+    '''If managedsoftwareupdate is running, check again in x seconds'''
 
     managedsoftwareupdate_pid = osutils.pythonScriptRunning(PROG_NAME)
 
@@ -69,6 +69,7 @@ def is_managedsoftwareupdate_py_running():
 
     # if managedsoftwareupdate.py is not running.. return from function to proceed
     log('%s is not running, proceeding...' % (PROG_NAME))
+
 
 def reload_launch_agents():
     '''Reloads Munki's Launch Agents'''
@@ -129,6 +130,7 @@ def reload_launch_agents():
                            'gui/' + userid, launch_agent]
                     subprocess.call(cmd)
 
+
 def reload_launch_daemons():
     '''Reloads Munki's Launch Daemons'''
 
@@ -150,6 +152,7 @@ def reload_launch_daemons():
         cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
         subprocess.call(cmd)
 
+
 def main():
     '''Main function'''
 
@@ -162,7 +165,7 @@ def main():
     log('launched')
 
     # only proceed if PROG_NAME isn't running, looping until it's not running
-    is_managedsoftwareupdate_py_running()
+    is_managedsoftwareupdate_running()
 
     # reload launch daemons as needed
     reload_launch_daemons()
@@ -173,6 +176,7 @@ def main():
     log('exited')
 
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()
