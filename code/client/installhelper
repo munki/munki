@@ -83,6 +83,10 @@ def reload_launch_agents():
     if userid != 0:
         # If we're not logged in, reload the launch agents that are limited to the login window
         log('At the Login Window')
+        # Retrieve all running launch agents at the login window
+        cmd = ['/bin/launchctl', 'list']
+        cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+        launchd_labels = split_launchctl_list(cmd_out)
         for launch_agent in launch_agents:
             try:
                 # Make sure content is valid, before proceeding to reload
@@ -95,10 +99,12 @@ def reload_launch_agents():
                     # If the launch agent is to be loaded at the login window, get the Label
                     agent_label = agent_content.get('Label')
                     if agent_label:
-                        # Stop the launch agent at the login window
-                        log("Stopping: %s" % launch_agent)
-                        cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + agent_label]
-                        subprocess.call(cmd)
+                        # Check to see if the launch agent is loaded, before stopping
+                        if agent_label in launchd_labels:
+                            # Stop the launch agent at the login window
+                            log("Stopping: %s" % launch_agent)
+                            cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + agent_label]
+                            subprocess.call(cmd)
                         # Load the launch agent at the login window
                         log("Loading: %s" % launch_agent)
                         cmd = ['/bin/launchctl', 'bootstrap', 'loginwindow', launch_agent]
@@ -106,6 +112,10 @@ def reload_launch_agents():
     else:
         # If we're logged in, reload the launch agents that are not limited to the login window
         log('Logged in as: %s' % username)
+        # Retrieve all running launch agents for the user
+        cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'list']
+        cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+        launchd_labels = split_launchctl_list(cmd_out)
         for launch_agent in launch_agents:
             try:
                 # Make sure content is valid, before proceeding to reload
@@ -119,15 +129,17 @@ def reload_launch_agents():
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
                 if agent_label:
-                    # Stop the launch agent
-                    log("Stopping: %s" % launch_agent)
-                    cmd = ['/bin/launchctl', 'asuser', userid, '/bin/launchctl', 'bootout',
-                           'gui/' + userid + '/' + agent_label]
-                    subprocess.call(cmd)
+                    # Check to see if the launch agent is loaded, before stopping
+                    if agent_label in launchd_labels:
+                        # Stop the launch agent
+                        log("Stopping: %s" % launch_agent)
+                        cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
+                               'gui/' + str(userid) + '/' + agent_label]
+                        subprocess.call(cmd)
                     # Load the launch agent
                     log("Loading: %s" % launch_agent)
-                    cmd = ['/bin/launchctl', 'asuser', userid, '/bin/launchctl', 'bootstrap',
-                           'gui/' + userid, launch_agent]
+                    cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootstrap',
+                           'gui/' + str(userid), launch_agent]
                     subprocess.call(cmd)
 
 
@@ -137,20 +149,42 @@ def reload_launch_daemons():
     # returns a list of launch daemons prefixed with LAUNCHD_PREFIX
     launch_daemons = glob.glob("/Library/LaunchDaemons/" + LAUNCHD_PREFIX + "*")
 
+    # Retrieve all running launch daemons
+    cmd = ['/bin/launchctl', 'list']
+    cmd_out = subprocess.run(cmd, capture_output = True)
+    launchd_labels = split_launchctl_list(cmd_out)
     for launch_daemon in launch_daemons:
         try:
             # Make sure content is valid, before proceeding to reload
-            FoundationPlist.readPlist(launch_daemon)
+            daemon_content = FoundationPlist.readPlist(launch_daemon)
         except FoundationPlist.NSPropertyListSerializationException:
             break
-        # Stop the launch daemon
-        log("Stopping: %s" % launch_daemon)
-        cmd = ['/bin/launchctl', 'bootout', 'system', launch_daemon]
-        subprocess.call(cmd)
-        # Load the launch daemon
-        log("Loading: %s" % launch_daemon)
-        cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
-        subprocess.call(cmd)
+        # Get the Label
+        daemon_label = daemon_content.get('Label')
+        if daemon_label:
+            # Check to see if the launch daemon is loaded, before stopping
+            if daemon_label in launchd_labels:
+                # Stop the launch daemon at the login window
+                log("Stopping: %s" % launch_daemon)
+                cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + daemon_label]
+                subprocess.call(cmd)
+            # Load the launch daemon at the login window
+            log("Loading: %s" % launch_daemon)
+            cmd = ['/bin/launchctl', 'bootstrap', 'loginwindow', launch_daemon]
+            subprocess.call(cmd)
+
+
+def split_launchctl_list(cmd_out):
+    '''Takes launchctl list output and returns a list with just the labels'''
+
+    launchd_labels = []
+
+    # Strip cmd_out to just the labels of the running launch agents
+    for launchd_item in cmd_out.stdout.decode().splitlines():
+        launchd_labels.append(launchd_item.split('\t')[2])
+
+    # Returns a list of launchd labels
+    return launchd_labels
 
 
 def main():
