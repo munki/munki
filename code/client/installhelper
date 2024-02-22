@@ -50,25 +50,69 @@ VERSION = '0.1'
 def main():
     '''Main function'''
 
-    # Add munki's path to import munki's modules
+    # add munki's path to import munki's modules
     sys.path.append('/usr/local/munki')
 
+    # Configure logging to syslog
     if prefs.pref('LogToSyslog'):
         munkilog.configure_syslog()
 
-    log('v%s launched - %s' % (VERSION, sys.argv[1].lower()))
+    # If not launched via launchd
+    if not os.environ.get('INSTALLHELPER_RUN_TYPE'):
+        # Launched manually
+        log("v%s launched manually - arg - %s" % (VERSION, PASSED_ARG))
+        create_launch_daemon()
+    # If launched via launchd
+    else:
+        # Launched via launchd
+        log("v%s launched via launchd - arg - %s" % (VERSION, PASSED_ARG))
+        reload_munki_launchd()
+
+
+def create_launch_daemon():
+    '''Creates and loads the launch daemon'''
+
+    # Log what we're upto
+    log("Creating launch daemon")
+
+    # Set name and path based on the value of PASSED_ARGS
+    launch_daemon_name = 'com.googlecode.munki.installhelper-' + PASSED_ARG
+    launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
+
+    # Populate launch deamon dict
+    launch_daemon = {}
+    launch_daemon['EnvironmentVariables'] = {'INSTALLHELPER_RUN_TYPE': PASSED_ARG}
+    launch_daemon['Label'] = launch_daemon_name
+    launch_daemon['ProgramArguments'] = ['/usr/local/munki/installhelper']
+    launch_daemon['RunAtLoad'] = True
+
+    # Create the launch daemon
+    FoundationPlist.writePlist(launch_daemon, launch_daemon_path)
+
+    # Set the launch daemons owner and perms
+    os.chown(launch_daemon_path, 0, 0)
+    os.chmod(launch_daemon_path, int('644', 8))
+
+    # Load the launch daemon
+    log("Starting: %s" % launch_daemon_name)
+    cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon_name]
+    subprocess.call(cmd)
+
+
+def reload_munki_launchd():
+    '''Reload Munki's launchd'''
 
     launch_agents = []
     launch_daemons = []
 
-    # if we're to interact only with the appusage launchd items
+    # If we're to interact only with the appusage launchd items
     if sys.argv[1].lower() == 'appusage':
         # returns a list containing just the path to the app_usage_monitor launch agent
         launch_agents = [APPUSAGE_LAUNCH_AGENT]
         # returns a list containing just the path to the appusaged launch daemon
         launch_daemons = [APPUSAGE_LAUNCH_DAEMON]
 
-    # if we're to interact with all non-appusage launchd items
+    # If we're to interact with all non-appusage launchd items
     if sys.argv[1].lower() == 'launchd':
         # returns a list of launch agents prefixed with LAUNCHD_PREFIX
         launch_agents = glob.glob("/Library/LaunchAgents/" + LAUNCHD_PREFIX + "*")
@@ -79,10 +123,10 @@ def main():
         # remove the appusage launch agent
         launch_daemons.remove(APPUSAGE_LAUNCH_DAEMON)
 
-    # only proceed if PROG_NAME isn't running, looping until it's not running
+    # Only proceed if PROG_NAME isn't running, looping until it's not running
     is_managedsoftwareupdate_running()
 
-    # reload launch daemons as needed
+    # Reload launch daemons as needed
     reload_launch_daemons(launch_daemons)
 
     # If we're not only looking to reload the appusage launchd's
@@ -93,14 +137,23 @@ def main():
     # Get the userid and username of any logged in users
     user_details = get_logged_in_users()
 
-    # reload launchagents as needed
+    # Reload launchagents as needed
     if user_details:
         # If users are logged in, reload the required launch agents as them
         reload_user_launch_agents(launch_agents, user_details)
 
-    log('Completed tasks, exiting')
+    # Set name and path based on the value of PASSED_ARGS
+    launch_daemon_name = 'com.googlecode.munki.installhelper-' + PASSED_ARG
+    launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
 
-    sys.exit(0)
+    # Delete the launch daemon
+    log("Deleting: %s" % launch_daemon_path)
+    os.unlink(launch_daemon_path)
+
+    # Unload the launch daemon
+    log("Unloading: %s" % launch_daemon_name)
+    cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
+    subprocess.call(cmd)
 
 
 def get_logged_in_users():
@@ -125,7 +178,7 @@ def get_logged_in_users():
 def log(msg):
     '''Logs messages from this tool with an identifier'''
 
-    munkilog.log('%s - %s: %s' % (PROCESS_ID, PASSED_ARG, msg))
+    munkilog.log("%s - %s: %s" % (PROCESS_ID, PASSED_ARG, msg))
 
 
 def is_managedsoftwareupdate_running():
@@ -133,23 +186,23 @@ def is_managedsoftwareupdate_running():
 
     managedsoftwareupdate_pid = osutils.pythonScriptRunning(PROG_NAME)
 
+    # An instance of managedsoftwareupdate is running, so we need to try again later
     while managedsoftwareupdate_pid:
-        # an instance of managedsoftwareupdate is running, so we need to try again later
-        log('*' * 60)
-        log('%s is running as pid %s.' % (PROCESS_ID, managedsoftwareupdate_pid))
-        log('checking again in %s seconds' % CHECK_TIME)
-        log('*' * 60)
+        log("*" * 60)
+        log("%s is running as pid %s." % (PROCESS_ID, managedsoftwareupdate_pid))
+        log("checking again in %s seconds" % CHECK_TIME)
+        log("*" * 60)
         time.sleep(CHECK_TIME)
 
-    # if managedsoftwareupdate is not running.. return from function to proceed
-    log('%s is not running, proceeding...' % (PROG_NAME))
+    # If managedsoftwareupdate is not running.. return from function to proceed
+    log("%s is not running, proceeding..." % (PROG_NAME))
 
 
 def reload_launch_daemons(launch_daemons):
     '''Reloads Munki's Launch Daemons'''
 
     # Log what we're upto
-    log('Reloading Launch Daemons')
+    log("Reloading Launch Daemons")
 
     # Retrieve all running launch daemons
     cmd = ['/bin/launchctl', 'list']
@@ -181,7 +234,7 @@ def reload_loginwindow_launch_agents(launch_agents):
     '''Reloads Munki's loginwindow Launch Agents'''
 
     # Log what we're upto
-    log('Reloading LoginWindow Launch Agents')
+    log("Reloading LoginWindow Launch Agents")
 
     # Retrieve all running launch agents at the login window
     cmd = ['/bin/launchctl', 'list']
@@ -218,7 +271,7 @@ def reload_user_launch_agents(launch_agents, user_details):
     # For each logged in user
     for userid, username in user_details.items():
         # Log who we're reloading the Launch Agents as
-        log('Reloading Launch Agents for: %s' % username)
+        log("Reloading Launch Agents for: %s" % username)
         # Retrieve all running launch agents for the user
         cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'list']
         cmd_out = subprocess.run(cmd, capture_output = True, check = False)
@@ -266,17 +319,32 @@ def split_launchctl_list(cmd_out):
 
 if __name__ == '__main__':
 
-    # check to see if we're root
+    # Check to see if we're root
     if os.geteuid() != 0:
         print("You must run this as root!", file=sys.stderr)
         sys.exit(1)
 
-    # check that we have arguments passed and that they are what we're expecting
-    if len(sys.argv) == 1 or not (sys.argv[1].lower() == 'appusage' or
-                                    sys.argv[1].lower() == 'launchd'):
+    # If INSTALLHELPER_RUN_TYPE isn't set and we have no arguments passed or the arguments
+    # passed are not expected.. exit
+    if (not os.environ.get('INSTALLHELPER_RUN_TYPE') and len(sys.argv) == 1 or
+        not (sys.argv[1].lower() == 'appusage' or sys.argv[1].lower() == 'launchd')):
         print("Requires either \'appusage\' or \'launchd\' arguments to be passed.")
         sys.exit(1)
+    # Else if we have INSTALLHELPER_RUN_TYPE defined, and it's not what's expected.. exit
+    elif not (os.environ.get('INSTALLHELPER_RUN_TYPE') != 'appusage' or
+               os.environ.get('INSTALLHELPER_RUN_TYPE') != 'launchd'):
+        # Set PASSED_ARG to the value of INSTALLHELPER_RUN_TYPE
+        print("Requires INSTALLHELPER_RUN_TYPE to be set to either \'appusage\' or \'launchd\'")
+        sys.exit(1)
+    # If INSTALLHELPER_RUN_TYPE is set and we have a valid value passed
+    elif (os.environ.get('INSTALLHELPER_RUN_TYPE') == 'appusage' or
+               os.environ.get('INSTALLHELPER_RUN_TYPE') == 'launchd'):
+        # Set PASSED_ARG to the value of INSTALLHELPER_RUN_TYPE
+        PASSED_ARG = os.environ.get('INSTALLHELPER_RUN_TYPE')
+    # If INSTALLHELPER_RUN_TYPE isn't set and we have a valid value passed
     else:
+        # Set PASSED_ARG to the value passed
         PASSED_ARG = sys.argv[1].lower()
 
+    # Proceed to run main
     main()
