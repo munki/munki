@@ -916,18 +916,6 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.13"/>
         </allowed-os-versions>
     </volume-check>
-    <script>
-    <![CDATA[
-    function launchdRestartAction() {
-      var launchd_choice = choices.launchd.packageUpgradeAction
-      if (launchd_choice == "upgrade" || launchd_choice == "downgrade") {
-          return "RequireRestart";
-      } else {
-          return "None";
-      }
-    }
-    ]]>
-    </script>
     <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
@@ -970,9 +958,9 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.launchd" auth="Root" onConclusionScript="launchdRestartAction()">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     $BOOTSTRAPREF
     $CONFREF
     $CLIENTCERTREF
