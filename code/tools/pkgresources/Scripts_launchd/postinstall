@@ -12,7 +12,7 @@ then
     if [ -f  "${installHelper}" ]
     then
         /bin/echo "Loading ${installHelper}..."
-        "${installHelper}" &
+        "${installHelper}" launchd &
     else
         /bin/echo "Cannot locate: ${installHelper}..."
     fi
