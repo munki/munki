@@ -1,29 +1,19 @@
-#!/bin/bash
+#!/bin/sh
 
-# Lovingly lifted from Per Olofsson
-# https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
+#
+# this postinstall should run installhelper in the background, with it then waiting until
+# managedsoftwareupdate isn't running and then (re)load Munki's appusage launchditems items as needed
+#
 
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin
-
-# Execute postinstall actions if we're installing on a live system.
-# This is useful for loading launch daemons and agents.
-if [ "$3" == "/" ]; then
-
-    # Run postinstall actions for root.
-    launchctl load /Library/LaunchDaemons/com.googlecode.munki.appusaged.plist
-
-    # Run postinstall actions for all logged in users.
-    os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
-    for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
-        pid=$(echo $pid_uid | cut -d, -f1)
-        uid=$(echo $pid_uid | cut -d, -f2)
-        if [[ $os_build_version -lt 14 ]] ; then
-            launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
-        else
-            launchctl asuser "$uid" launchctl load /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
-        fi
-    done
-
+# Only execute postinstall actions if we're installing on a live system.
+if [ "$3" = "/" ]
+then
+    installHelper='/usr/local/munki/installhelper'
+    if [ -f  "${installHelper}" ]
+    then
+        /bin/echo "Loading ${installHelper}..."
+        "${installHelper}" appusage &
+    else
+        /bin/echo "Cannot locate: ${installHelper}..."
+    fi
 fi
-
-exit 0
