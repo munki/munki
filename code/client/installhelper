@@ -38,6 +38,8 @@ from munkilib import prefs
 from munkilib import FoundationPlist
 
 
+APPUSAGE_LAUNCH_AGENT = '/Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist'
+APPUSAGE_LAUNCH_DAEMON = '/Library/LaunchDaemons/com.googlecode.munki.appusaged.plist'
 CHECK_TIME = '10'
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
 PROCESS_ID = 'com.googlecode.munki.installhelper'
@@ -48,33 +50,45 @@ VERSION = '0.1'
 def main():
     '''Main function'''
 
-    # check to see if we're root
-    if os.geteuid() != 0:
-        print('You must run this as root!', file=sys.stderr)
-        sys.exit(1)
-
     # Add munki's path to import munki's modules
-    sys.path.append("/usr/local/munki")
+    sys.path.append('/usr/local/munki')
 
     if prefs.pref('LogToSyslog'):
         munkilog.configure_syslog()
 
-    log('v%s launched' % VERSION)
+    log('v%s launched - %s' % (VERSION, sys.argv[1].lower()))
+
+    launch_agents = []
+    launch_daemons = []
+
+    # if we're to interact only with the appusage launchd items
+    if sys.argv[1].lower() == 'appusage':
+        # returns a list containing just the path to the app_usage_monitor launch agent
+        launch_agents = [APPUSAGE_LAUNCH_AGENT]
+        # returns a list containing just the path to the appusaged launch daemon
+        launch_daemons = [APPUSAGE_LAUNCH_DAEMON]
+
+    # if we're to interact with all non-appusage launchd items
+    if sys.argv[1].lower() == 'launchd':
+        # returns a list of launch agents prefixed with LAUNCHD_PREFIX
+        launch_agents = glob.glob("/Library/LaunchAgents/" + LAUNCHD_PREFIX + "*")
+        # remove the appusage launch agent
+        launch_agents.remove(APPUSAGE_LAUNCH_AGENT)
+        # returns a list of launch daemons prefixed with LAUNCHD_PREFIX
+        launch_daemons = glob.glob("/Library/LaunchDaemons/" + LAUNCHD_PREFIX + "*")
+        # remove the appusage launch agent
+        launch_daemons.remove(APPUSAGE_LAUNCH_DAEMON)
 
     # only proceed if PROG_NAME isn't running, looping until it's not running
     is_managedsoftwareupdate_running()
 
-    # returns a list of launch daemons prefixed with LAUNCHD_PREFIX
-    launch_daemons = glob.glob("/Library/LaunchDaemons/" + LAUNCHD_PREFIX + "*")
-
     # reload launch daemons as needed
     reload_launch_daemons(launch_daemons)
 
-    # returns a list of launch agents prefixed with LAUNCHD_PREFIX
-    launch_agents = glob.glob("/Library/LaunchAgents/" + LAUNCHD_PREFIX + "*")
-
-    # reload munki's loginwindow launch agents
-    reload_loginwindow_launch_agents(launch_agents)
+    # If we're not only looking to reload the appusage launchd's
+    if PASSED_ARG != 'appusage':
+        # reload munki's loginwindow launch agents
+        reload_loginwindow_launch_agents(launch_agents)
 
     # Get the userid and username of any logged in users
     user_details = get_logged_in_users()
@@ -83,11 +97,8 @@ def main():
     if user_details:
         # If users are logged in, reload the required launch agents as them
         reload_user_launch_agents(launch_agents, user_details)
-    else:
-        # Log that we've skipped the above as no one is logged in
-        log('At the login window and no one is logged in')
 
-    log('completed tasks, exiting')
+    log('Completed tasks, exiting')
 
     sys.exit(0)
 
@@ -114,7 +125,7 @@ def get_logged_in_users():
 def log(msg):
     '''Logs messages from this tool with an identifier'''
 
-    munkilog.log('%s: %s' % (PROCESS_ID, msg))
+    munkilog.log('%s - %s: %s' % (PROCESS_ID, PASSED_ARG, msg))
 
 
 def is_managedsoftwareupdate_running():
@@ -161,7 +172,7 @@ def reload_launch_daemons(launch_daemons):
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + daemon_label]
                 subprocess.call(cmd)
             # Load the launch daemon at the login window
-            log("Loading: %s" % launch_daemon)
+            log("Starting: %s" % launch_daemon)
             cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
             subprocess.call(cmd)
 
@@ -196,7 +207,7 @@ def reload_loginwindow_launch_agents(launch_agents):
                         cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + agent_label]
                         subprocess.call(cmd)
                     # Load the launch agent at the login window
-                    log("Loading: %s" % launch_agent)
+                    log("Starting: %s" % launch_agent)
                     cmd = ['/bin/launchctl', 'bootstrap', 'loginwindow', launch_agent]
                     subprocess.call(cmd)
 
@@ -234,7 +245,7 @@ def reload_user_launch_agents(launch_agents, user_details):
                                'gui/' + str(userid) + '/' + agent_label]
                         subprocess.call(cmd)
                     # Load the launch agent
-                    log("Loading: %s" % launch_agent)
+                    log("Starting: %s" % launch_agent)
                     cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootstrap',
                            'gui/' + str(userid), launch_agent]
                     subprocess.call(cmd)
@@ -254,4 +265,18 @@ def split_launchctl_list(cmd_out):
 
 
 if __name__ == '__main__':
+
+    # check to see if we're root
+    if os.geteuid() != 0:
+        print("You must run this as root!", file=sys.stderr)
+        sys.exit(1)
+
+    # check that we have arguments passed and that they are what we're expecting
+    if len(sys.argv) == 1 or not (sys.argv[1].lower() == 'appusage' or
+                                    sys.argv[1].lower() == 'launchd'):
+        print("Requires either \'appusage\' or \'launchd\' arguments to be passed.")
+        sys.exit(1)
+    else:
+        PASSED_ARG = sys.argv[1].lower()
+
     main()
