@@ -1,4 +1,4 @@
-#!/usr/local/munki/Python.framework/Versions/Current/bin/python3
+#!/usr/local/munki/munki-python
 # -*- python -*-
 # encoding: utf-8
 #
