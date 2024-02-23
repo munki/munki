@@ -1,4 +1,4 @@
-#!/usr/local/munki/munki-python
+#!/usr/local/munki/Python.framework/Versions/Current/bin/python3
 
 import sys
 sys.path.append("/usr/local/munki")
