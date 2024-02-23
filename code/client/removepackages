@@ -1,4 +1,4 @@
-#!/usr/local/munki/munki-python
+#!/usr/local/munki/Python.framework/Versions/Current/bin/python3
 # encoding: utf-8
 #
 # Copyright 2009-2024 Greg Neagle.
