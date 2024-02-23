@@ -690,7 +690,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
     /usr/bin/codesign --sign "$APPSIGNINGCERT" --timestamp --force --preserve-metadata=identifier,entitlements,flags,runtime "$PYTHONROOT/usr/local/munki/Python.framework/Versions/Current/Python"
 fi
 # Create symlink
-ln -s Python.framework/Versions/Current/bin/python3 "$PYTHONROOT/usr/local/munki/munki-python"
+ln -s Python.framework/Versions/Current/Resources/Python.app/Contents/MacOS/Python "$PYTHONROOT/usr/local/munki/munki-python"
 
 # Set permissions.
 chmod -R go-w "$PYTHONROOT/usr/local/munki"
