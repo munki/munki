@@ -18,7 +18,7 @@ if [ "$3" == "/" ]; then
     fi
 
     # Run preinstall actions for all logged in users.
-    for uid in $(ps -axo uid,args | grep -i "[l]oginwindow.app" | awk '{print $1}'); do
+    for uid in $(ps -axo uid,args | grep "/[F]inder.app/" | awk '{print $1}'); do
         if launchctl print gui/"$uid"/com.googlecode.munki.app_usage_monitor > /dev/null 2>&1 ; then
             launchctl bootout gui/"$uid"/com.googlecode.munki.app_usage_monitor
         fi

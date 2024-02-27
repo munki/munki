@@ -13,7 +13,7 @@ if [ "$3" == "/" ]; then
     launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.appusaged.plist
 
     # Run postinstall actions for all logged in users.
-    for uid in $(ps -axo uid,args | grep -i "[l]oginwindow.app" | awk '{print $1}'); do
+    for uid in $(ps -axo uid,args | grep "/[F]inder.app/" | awk '{print $1}'); do
         launchctl bootstrap gui/"$uid"/ /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
     done
 
