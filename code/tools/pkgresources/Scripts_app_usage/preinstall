@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Lovingly lifted from Per Olofsson
+# Lovingly adapted from Per Olofsson
 # https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
@@ -10,18 +10,17 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 if [ "$3" == "/" ]; then
 
     # Run preinstall actions for root.
-    launchctl unload /Library/LaunchDaemons/com.googlecode.munki.app_usage_monitor.plist
-    launchctl unload /Library/LaunchDaemons/com.googlecode.munki.appusaged.plist
+    if launchctl print system/munki.app_usage_monitor > /dev/null 2>&1 ; then
+        launchctl bootout system/munki.app_usage_monitor
+    fi
+    if launchctl print system/com.googlecode.munki.appusaged. > /dev/null 2>&1 ; then
+        launchctl bootout system/com.googlecode.munki.appusaged
+    fi
 
     # Run preinstall actions for all logged in users.
-    os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
-    for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
-        pid=$(echo $pid_uid | cut -d, -f1)
-        uid=$(echo $pid_uid | cut -d, -f2)
-        if [[ $os_build_version -lt 14 ]] ; then
-            launchctl bsexec "$pid" chroot -u "$uid" / launchctl unload /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
-        else
-            launchctl asuser "$uid" launchctl unload /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
+    for uid in $(ps -axo uid,args | grep -i "[l]oginwindow.app" | awk '{print $1}'); do
+        if launchctl print gui/"$uid"/com.googlecode.munki.app_usage_monitor > /dev/null 2>&1 ; then
+            launchctl bootout gui/"$uid"/com.googlecode.munki.app_usage_monitor
         fi
     done
 
