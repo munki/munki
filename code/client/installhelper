@@ -129,8 +129,8 @@ def reload_munki_launchd():
         # Returns a list of Munki's launch agents
         # excluding APPUSAGE_LAUNCH_AGENT and any installhelper one's
         launch_agents = [launch_agent for launch_agent in
-                          glob.glob('/Library/LaunchAgents' + LAUNCHD_PREFIX + '*') if not
-                          launch_agent != APPUSAGE_LAUNCH_AGENT]
+                         glob.glob('/Library/LaunchAgents/' + LAUNCHD_PREFIX + '*') if not
+                         launch_agent == APPUSAGE_LAUNCH_AGENT]
         # Returns a list of Munki's launch daemons
         # excluding APPUSAGE_LAUNCH_DAEMON and any installhelper one's
         launch_daemons = [launch_daemon for launch_daemon in
