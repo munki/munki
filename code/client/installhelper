@@ -17,7 +17,7 @@
 """
 installhelper
 
-Created 2024-02-20.
+Created 2024-02-28.
 
 A helper tool for handling launchd items etc when installing Munki
 
@@ -42,7 +42,7 @@ APPUSAGE_LAUNCH_AGENT = '/Library/LaunchAgents/com.googlecode.munki.app_usage_mo
 APPUSAGE_LAUNCH_DAEMON = '/Library/LaunchDaemons/com.googlecode.munki.appusaged.plist'
 CHECK_TIME = '10'
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
-PROCESS_ID = 'com.googlecode.munki.installhelper'
+INSTALL_HELPER = LAUNCHD_PREFIX + 'installhelper'
 PROG_NAME = 'managedsoftwareupdate'
 VERSION = '0.1'
 
@@ -113,26 +113,30 @@ def create_launch_daemon():
 def reload_munki_launchd():
     '''Reload Munki's launchd'''
 
-    launch_agents = []
-    launch_daemons = []
+    # Var declaration
+    #launch_agents = []
+    #launch_daemons = []
 
     # If we're to interact only with the appusage launchd items
-    if sys.argv[1].lower() == 'appusage':
+    if PASSED_ARG == 'appusage':
         # returns a list containing just the path to the app_usage_monitor launch agent
         launch_agents = [APPUSAGE_LAUNCH_AGENT]
         # returns a list containing just the path to the appusaged launch daemon
         launch_daemons = [APPUSAGE_LAUNCH_DAEMON]
 
     # If we're to interact with all non-appusage launchd items
-    if sys.argv[1].lower() == 'launchd':
-        # returns a list of launch agents prefixed with LAUNCHD_PREFIX
-        launch_agents = glob.glob("/Library/LaunchAgents/" + LAUNCHD_PREFIX + "*")
-        # remove the appusage launch agent
-        launch_agents.remove(APPUSAGE_LAUNCH_AGENT)
-        # returns a list of launch daemons prefixed with LAUNCHD_PREFIX
-        launch_daemons = glob.glob("/Library/LaunchDaemons/" + LAUNCHD_PREFIX + "*")
-        # remove the appusage launch agent
-        launch_daemons.remove(APPUSAGE_LAUNCH_DAEMON)
+    if PASSED_ARG == 'launchd':
+        # Returns a list of Munki's launch agents
+        # excluding APPUSAGE_LAUNCH_AGENT and any installhelper one's
+        launch_agents = [launch_agent for launch_agent in
+                          glob.glob('/Library/LaunchAgents' + LAUNCHD_PREFIX + '*') if not
+                          launch_agent != APPUSAGE_LAUNCH_AGENT]
+        # Returns a list of Munki's launch daemons
+        # excluding APPUSAGE_LAUNCH_DAEMON and any installhelper one's
+        launch_daemons = [launch_daemon for launch_daemon in
+                          glob.glob('/Library/LaunchDaemons/' + LAUNCHD_PREFIX + '*') if not
+                          launch_daemon.startswith('/Library/LaunchDaemons/' + INSTALL_HELPER) and
+                          launch_daemon != APPUSAGE_LAUNCH_DAEMON]
 
     # Only proceed if PROG_NAME isn't running, looping until it's not running
     is_managedsoftwareupdate_running()
@@ -154,22 +158,25 @@ def reload_munki_launchd():
         reload_user_launch_agents(launch_agents, user_details)
 
     # Set name and path based on the value of PASSED_ARGS
-    launch_daemon_name = 'com.googlecode.munki.installhelper-' + PASSED_ARG
+    launch_daemon_name = INSTALL_HELPER + '-' + PASSED_ARG
     launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
 
-    # Delete the launch daemon
-    log("Deleting: %s" % launch_daemon_path)
-    os.unlink(launch_daemon_path)
+    # If the launch daemon exists
+    if os.path.isfile(launch_daemon_path):
+        # Delete the launch daemon
+        log("Deleting: %s" % launch_daemon_path)
+        os.unlink(launch_daemon_path)
 
-    # Unload the launch daemon
-    log("Unloading: %s" % launch_daemon_name)
-    cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
-    subprocess.call(cmd)
+        # Unload the launch daemon
+        log("Unloading: %s" % launch_daemon_name)
+        cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
+        subprocess.call(cmd)
 
 
 def get_logged_in_users():
     '''Returns a dict containing any logged in users uid and username'''
 
+    # Var declaration
     user_details = {}
 
     # Retrieve details of all running processes
@@ -189,18 +196,19 @@ def get_logged_in_users():
 def log(msg):
     '''Logs messages from this tool with an identifier'''
 
-    munkilog.log("%s - %s: %s" % (PROCESS_ID, PASSED_ARG, msg))
+    munkilog.log("%s-%s: %s" % (INSTALL_HELPER, PASSED_ARG, msg))
 
 
 def is_managedsoftwareupdate_running():
     '''If managedsoftwareupdate is running, check again in x seconds'''
 
+    # Check to see if managedsoftwareupdate is running
     managedsoftwareupdate_pid = osutils.pythonScriptRunning(PROG_NAME)
 
     # An instance of managedsoftwareupdate is running, so we need to try again later
     while managedsoftwareupdate_pid:
         log("*" * 60)
-        log("%s is running as pid %s." % (PROCESS_ID, managedsoftwareupdate_pid))
+        log("%s is running as pid %s." % (managedsoftwareupdate_pid,  os.getpid()))
         log("checking again in %s seconds" % CHECK_TIME)
         log("*" * 60)
         time.sleep(CHECK_TIME)
@@ -229,6 +237,7 @@ def reload_launch_daemons(launch_daemons):
             break
         # Get the Label
         daemon_label = daemon_content.get('Label')
+        # If we have a label
         if daemon_label:
             # Check to see if the launch daemon is loaded, before stopping
             if daemon_label in launchd_labels:
@@ -260,6 +269,7 @@ def reload_loginwindow_launch_agents(launch_agents):
             agent_content = FoundationPlist.readPlist(launch_agent)
         except FoundationPlist.NSPropertyListSerializationException:
             break
+        # If we're to limit loading
         if agent_content.get('LimitLoadToSessionType'):
             # If the launch agent includes LimitLoadToSessionType, and it contains LoginWindow
             if 'LoginWindow' in agent_content.get('LimitLoadToSessionType'):
@@ -320,6 +330,7 @@ def reload_user_launch_agents(launch_agents, user_details):
 def split_launchctl_list(cmd_out):
     '''Takes launchctl list output and returns a list with just the labels'''
 
+    # Var declaration
     launchd_labels = []
 
     # Strip cmd_out to just the labels of the running launch agents
@@ -350,7 +361,7 @@ if __name__ == '__main__':
     # If INSTALLHELPER_RUN_TYPE is set
     else:
         # Else if we have INSTALLHELPER_RUN_TYPE defined, and it's not what's expected.. exit
-        if not (os.environ.get('INSTALLHELPER_RUN_TYPE') != 'appusage' and
+        if not (os.environ.get('INSTALLHELPER_RUN_TYPE') != 'appusage' or
                   os.environ.get('INSTALLHELPER_RUN_TYPE') != 'launchd'):
             # Set PASSED_ARG to the value of INSTALLHELPER_RUN_TYPE
             print("Requires INSTALLHELPER_RUN_TYPE to be set to either \'appusage\' or \'launchd\'")
