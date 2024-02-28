@@ -113,10 +113,6 @@ def create_launch_daemon():
 def reload_munki_launchd():
     '''Reload Munki's launchd'''
 
-    # Var declaration
-    #launch_agents = []
-    #launch_daemons = []
-
     # If we're to interact only with the appusage launchd items
     if PASSED_ARG == 'appusage':
         # returns a list containing just the path to the app_usage_monitor launch agent
@@ -280,11 +276,11 @@ def reload_loginwindow_launch_agents(launch_agents):
                     if agent_label in launchd_labels:
                         # Stop the launch agent at the login window
                         log("Stopping: %s" % launch_agent)
-                        cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + agent_label]
+                        cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launch_agent]
                         subprocess.call(cmd)
                     # Load the launch agent at the login window
                     log("Starting: %s" % launch_agent)
-                    cmd = ['/bin/launchctl', 'bootstrap', 'loginwindow', launch_agent]
+                    cmd = ['/bin/launchctl', 'load', '-S', 'LoginWindow', launch_agent]
                     subprocess.call(cmd)
 
 
