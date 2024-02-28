@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Lovingly adapted from Per Olofsson
 # https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
@@ -7,7 +7,7 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 # Execute preinstall actions if we're installing on a live system.
 # This is useful for unloading launch daemons and agents.
-if [ "$3" == "/" ]; then
+if [ "$3" = "/" ]; then
 
     # Run preinstall actions for root.
     if launchctl print system/munki.app_usage_monitor > /dev/null 2>&1 ; then
