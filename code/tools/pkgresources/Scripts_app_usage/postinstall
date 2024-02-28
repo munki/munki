@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Lovingly adapted from Per Olofsson
 # https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
@@ -7,7 +7,7 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 # Execute postinstall actions if we're installing on a live system.
 # This is useful for loading launch daemons and agents.
-if [ "$3" == "/" ]; then
+if [ "$3" = "/" ]; then
 
     # Run postinstall actions for root.
     launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.appusaged.plist
