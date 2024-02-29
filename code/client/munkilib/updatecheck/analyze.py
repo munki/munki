@@ -988,13 +988,17 @@ def process_removal(manifestitem, cataloglist, installinfo):
         # remove references for each package
         packages_to_really_remove = []
         pkgdata = catalogs.analyze_installed_pkgs()
+        pkg_references_messages = []
         for pkg in packages_to_remove:
             display.display_debug1('Considering %s for removal...', pkg)
             # find pkg in pkgdata['pkg_references'] and remove the reference
             # so we only remove packages if we're the last reference to it
             if pkg in pkgdata['pkg_references']:
-                display.display_debug1('%s references are: %s', pkg,
-                                       pkgdata['pkg_references'][pkg])
+                msg = ('Package %s references are: %s'
+                       % pkg, pkgdata['pkg_references'][pkg])
+                display.display_debug1(msg)
+                # record these for possible later use
+                pkg_references_messages.append(msg)
                 if iteminfo['name'] in pkgdata['pkg_references'][pkg]:
                     pkgdata['pkg_references'][pkg].remove(iteminfo['name'])
                     if not pkgdata['pkg_references'][pkg]:
@@ -1014,6 +1018,8 @@ def process_removal(manifestitem, cataloglist, installinfo):
             # no packages that belong to this item only.
             display.display_warning('could not find unique packages to remove '
                                     'for %s', iteminfo['name'])
+            for msg in pkg_references_messages:
+                display.display_warning(msg)
             return False
 
     iteminfo['uninstall_method'] = uninstallmethod
