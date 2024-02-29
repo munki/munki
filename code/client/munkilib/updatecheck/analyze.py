@@ -403,21 +403,31 @@ def process_install(manifestitem, cataloglist, installinfo,
     if item_pl.get('localized_strings'):
         iteminfo['localized_strings'] = item_pl['localized_strings']
 
-    if not dependencies_met:
-        display.display_warning(
-            'Didn\'t attempt to install %s because could not resolve all '
-            'dependencies.', manifestitemname)
-        # add information to managed_installs so we have some feedback
-        # to display in MSC.app
-        iteminfo['installed'] = False
-        iteminfo['note'] = ('Can\'t install %s because could not resolve all '
-                            'dependencies.' % iteminfo['display_name'])
-        iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
-        installinfo['managed_installs'].append(iteminfo)
-        return False
-
     installed_state = installationstate.installed_state(item_pl)
     if installed_state == 0:
+        # not installed, or older version present
+
+        if not dependencies_met:
+            if installationstate.some_version_installed(item_pl):
+                # we should not attempt to update
+                display.display_warning(
+                    'Didn\'t attempt to update %s because could not resolve '
+                    'all dependencies.', manifestitemname)
+            else:
+                # we should not attempt to install
+                display.display_warning(
+                    'Didn\'t attempt to install %s because could not resolve '
+                    'all dependencies.', manifestitemname)
+            # add information to managed_installs so we have some feedback
+            # to display in MSC.app
+            iteminfo['installed'] = False
+            iteminfo['note'] = (
+                'Can\'t install %s because could not resolve all '
+                'dependencies.' % iteminfo['display_name'])
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            installinfo['managed_installs'].append(iteminfo)
+            return False
+
         display.display_detail('Need to install %s', manifestitemname)
         iteminfo['installer_item_size'] = item_pl.get(
             'installer_item_size', 0)
@@ -600,8 +610,13 @@ def process_install(manifestitem, cataloglist, installinfo,
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
             return False
-    else: # some version installed
+    else: # same or higher version installed
         iteminfo['installed'] = True
+
+        if not dependencies_met:
+            display.display_warning(
+                'Could not resolve all dependencies for %s, but no install or '
+                'update needed.', manifestitemname)
 
         if item_pl.get("installer_type") == "stage_os_installer" and installed_state == 1:
             # installer appears to be staged; make sure the info is recorded
@@ -972,11 +987,11 @@ def process_removal(manifestitem, cataloglist, installinfo):
     if packages_to_remove:
         # remove references for each package
         packages_to_really_remove = []
+        pkgdata = catalogs.analyze_installed_pkgs()
         for pkg in packages_to_remove:
             display.display_debug1('Considering %s for removal...', pkg)
             # find pkg in pkgdata['pkg_references'] and remove the reference
             # so we only remove packages if we're the last reference to it
-            pkgdata = catalogs.analyze_installed_pkgs()
             if pkg in pkgdata['pkg_references']:
                 display.display_debug1('%s references are: %s', pkg,
                                        pkgdata['pkg_references'][pkg])
@@ -987,6 +1002,9 @@ def process_removal(manifestitem, cataloglist, installinfo):
                         display.display_debug1(
                             'Adding %s to removal list.', pkg)
                         packages_to_really_remove.append(pkg)
+                    else:
+                        display.display_debug1(
+                            'Will not attempt to remove %s.', pkg)
             else:
                 # This shouldn't happen
                 display.display_warning('pkg id %s missing from pkgdata', pkg)
