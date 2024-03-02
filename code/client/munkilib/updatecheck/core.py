@@ -116,6 +116,10 @@ def check(client_id='', localmanifestpath=None):
 
         # record info object for conditional item comparisons
         reports.report['Conditions'] = info.predicate_info_object()
+        # remove application data, because that's recorded elsewhere,
+        # and it's generally a _lot_ of data
+        if 'applications' in reports.report['Conditions']:
+            del reports.report['Conditions']['applications']
 
         # remove any staged os installer info we have; we'll check and
         # recreate if still valid

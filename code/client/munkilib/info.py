@@ -947,6 +947,8 @@ def predicate_info_object():
         info_object['machine_type'] = 'laptop'
     else:
         info_object['machine_type'] = 'desktop'
+    # add installed applications
+    info_object['applications'] = app_data()
     return info_object
 
 
