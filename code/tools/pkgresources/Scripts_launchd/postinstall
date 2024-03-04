@@ -26,10 +26,11 @@ if [ "$3" = "/" ]; then
     done
 
     # Load all launch daemons.
-    launchctl load /Library/LaunchDaemons/com.googlecode.munki.logouthelper.plist
-    launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-check.plist
-    launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-install.plist
-    launchctl load /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-manualcheck.plist
+    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.authrestartd.plist
+    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.logouthelper.plist
+    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-check.plist
+    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-install.plist
+    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-manualcheck.plist
     
     loggedInUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
     if [ "$loggedInUser" = "" ] ; then
@@ -40,17 +41,9 @@ if [ "$3" = "/" ]; then
     fi
 
     # Load launch agents for all currently logged in users.
-    os_build_version=$(sw_vers -buildVersion | cut -b 1-2)
-    for pid_uid in $(ps -axo pid,uid,args | grep -i "[l]oginwindow.app" | awk '{print $1 "," $2}'); do
-        pid=$(echo "$pid_uid" | cut -d, -f1)
-        uid=$(echo "$pid_uid" | cut -d, -f2)
-        if [ "$os_build_version" -lt 14 ] ; then
-            launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
-            launchctl bsexec "$pid" chroot -u "$uid" / launchctl load /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
-        else
-            launchctl asuser "$uid" launchctl load /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
-            launchctl asuser "$uid" launchctl load /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
-        fi
+    for uid in $(ps -axo uid,args | grep "/[F]inder.app/" | awk '{print $1}'); do
+        launchctl bootstrap gui/"$uid"/ /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
+        launchctl bootstrap gui/"$uid"/ /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
     done
 
 fi
