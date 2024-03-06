@@ -40,7 +40,6 @@ from munkilib import FoundationPlist
 
 APPUSAGE_LAUNCH_AGENT = '/Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist'
 APPUSAGE_LAUNCH_DAEMON = '/Library/LaunchDaemons/com.googlecode.munki.appusaged.plist'
-CHECK_TIME = '10'
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
 INSTALL_HELPER = LAUNCHD_PREFIX + 'installhelper'
 PROG_NAME = 'managedsoftwareupdate'
@@ -205,9 +204,9 @@ def is_managedsoftwareupdate_running():
     while managedsoftwareupdate_pid:
         log("*" * 60)
         log("%s is running as pid %s." % (managedsoftwareupdate_pid,  os.getpid()))
-        log("checking again in %s seconds" % CHECK_TIME)
+        log("checking again in 10 seconds")
         log("*" * 60)
-        time.sleep(CHECK_TIME)
+        time.sleep(10)
 
     # If managedsoftwareupdate is not running.. return from function to proceed
     log("%s is not running, proceeding..." % (PROG_NAME))
@@ -237,11 +236,11 @@ def reload_launch_daemons(launch_daemons):
         if daemon_label:
             # Check to see if the launch daemon is loaded, before stopping
             if daemon_label in launchd_labels:
-                # Stop the launch daemon at the login window
+                # Stop the launch daemon
                 log("Stopping: %s" % launch_daemon)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + daemon_label]
                 subprocess.call(cmd)
-            # Load the launch daemon at the login window
+            # Load the launch daemon
             log("Starting: %s" % launch_daemon)
             cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
             subprocess.call(cmd)
@@ -265,23 +264,21 @@ def reload_loginwindow_launch_agents(launch_agents):
             agent_content = FoundationPlist.readPlist(launch_agent)
         except FoundationPlist.NSPropertyListSerializationException:
             break
-        # If we're to limit loading
-        if agent_content.get('LimitLoadToSessionType'):
-            # If the launch agent includes LimitLoadToSessionType, and it contains LoginWindow
-            if 'LoginWindow' in agent_content.get('LimitLoadToSessionType'):
-                # If the launch agent is to be loaded at the login window, get the Label
-                agent_label = agent_content.get('Label')
-                if agent_label:
-                    # Check to see if the launch agent is loaded, before stopping
-                    if agent_label in launchd_labels:
-                        # Stop the launch agent at the login window
-                        log("Stopping: %s" % launch_agent)
-                        cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launch_agent]
-                        subprocess.call(cmd)
-                    # Load the launch agent at the login window
-                    log("Starting: %s" % launch_agent)
-                    cmd = ['/bin/launchctl', 'load', '-S', 'LoginWindow', launch_agent]
+        # If we're to limit loading to the LoginWindow
+        if agent_content.get('LimitLoadToSessionType') == "LoginWindow":
+            # If the launch agent is to be loaded at the login window, get the Label
+            agent_label = agent_content.get('Label')
+            if agent_label:
+                # Check to see if the launch agent is loaded, before stopping
+                if agent_label in launchd_labels:
+                    # Stop the launch agent at the login window
+                    log("Stopping: %s" % launch_agent)
+                    cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launch_agent]
                     subprocess.call(cmd)
+                # Load the launch agent at the login window
+                log("Starting: %s" % launch_agent)
+                cmd = ['/bin/launchctl', 'load', '-S', 'LoginWindow', launch_agent]
+                subprocess.call(cmd)
 
 
 def reload_user_launch_agents(launch_agents, user_details):
