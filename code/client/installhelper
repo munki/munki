@@ -1,0 +1,372 @@
+#!/usr/local/munki/munki-python
+# encoding: utf-8
+#
+# Copyright 2011-2024 Greg Neagle.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+installhelper
+
+Created 2024-02-28.
+
+A helper tool for handling launchd items etc when installing Munki
+
+"""
+from __future__ import absolute_import
+
+# standard libs
+import glob
+import os
+import subprocess
+import time
+import sys
+
+# our libs
+from munkilib import munkilog
+from munkilib import osutils
+from munkilib import prefs
+from munkilib import FoundationPlist
+
+
+APPUSAGE_LAUNCH_AGENT = '/Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist'
+APPUSAGE_LAUNCH_DAEMON = '/Library/LaunchDaemons/com.googlecode.munki.appusaged.plist'
+CHECK_TIME = '10'
+LAUNCHD_PREFIX = 'com.googlecode.munki.'
+INSTALL_HELPER = LAUNCHD_PREFIX + 'installhelper'
+PROG_NAME = 'managedsoftwareupdate'
+VERSION = '0.1'
+
+
+def main():
+    '''Main function'''
+
+    # add munki's path to import munki's modules
+    sys.path.append('/usr/local/munki')
+
+    # Configure logging to syslog
+    if prefs.pref('LogToSyslog'):
+        munkilog.configure_syslog()
+
+    # If not launched via launchd
+    if not os.environ.get('INSTALLHELPER_RUN_TYPE'):
+        # Launched manually
+        log("v%s launched manually - arg - %s" % (VERSION, PASSED_ARG))
+        create_launch_daemon()
+    # If launched via launchd
+    else:
+        # Launched via launchd
+        log("v%s launched via launchd - arg - %s" % (VERSION, PASSED_ARG))
+        reload_munki_launchd()
+
+
+def create_launch_daemon():
+    '''Creates and loads the launch daemon'''
+
+    # Set name and path based on the value of PASSED_ARGS
+    launch_daemon_name = 'com.googlecode.munki.installhelper-' + PASSED_ARG
+    launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
+
+    # Log what we're upto
+    log("Creating launch daemon")
+
+    # Retrieve all running launch daemons
+    cmd = ['/bin/launchctl', 'list']
+    cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+    launchd_labels = split_launchctl_list(cmd_out)
+
+    # Check to see if launch_daemon_name is already loaded, and stop if so
+    if launch_daemon_name in launchd_labels:
+        # Stop the launch daemon at the login window
+        cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
+        subprocess.call(cmd)
+
+    # Populate launch deamon dict
+    launch_daemon = {}
+    launch_daemon['EnvironmentVariables'] = {'INSTALLHELPER_RUN_TYPE': PASSED_ARG}
+    launch_daemon['Label'] = launch_daemon_name
+    launch_daemon['ProgramArguments'] = ['/usr/local/munki/installhelper']
+    launch_daemon['RunAtLoad'] = True
+
+    # Create the launch daemon
+    FoundationPlist.writePlist(launch_daemon, launch_daemon_path)
+
+    # Set the launch daemons owner and perms
+    os.chown(launch_daemon_path, 0, 0)
+    os.chmod(launch_daemon_path, int('644', 8))
+
+    # Load the launch daemon
+    log("Starting: %s" % launch_daemon_path)
+    cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon_path]
+    subprocess.call(cmd)
+
+
+def reload_munki_launchd():
+    '''Reload Munki's launchd'''
+
+    # If we're to interact only with the appusage launchd items
+    if PASSED_ARG == 'appusage':
+        # returns a list containing just the path to the app_usage_monitor launch agent
+        launch_agents = [APPUSAGE_LAUNCH_AGENT]
+        # returns a list containing just the path to the appusaged launch daemon
+        launch_daemons = [APPUSAGE_LAUNCH_DAEMON]
+
+    # If we're to interact with all non-appusage launchd items
+    if PASSED_ARG == 'launchd':
+        # Returns a list of Munki's launch agents
+        # excluding APPUSAGE_LAUNCH_AGENT and any installhelper one's
+        launch_agents = [launch_agent for launch_agent in
+                         glob.glob('/Library/LaunchAgents/' + LAUNCHD_PREFIX + '*') if not
+                         launch_agent == APPUSAGE_LAUNCH_AGENT]
+        # Returns a list of Munki's launch daemons
+        # excluding APPUSAGE_LAUNCH_DAEMON and any installhelper one's
+        launch_daemons = [launch_daemon for launch_daemon in
+                          glob.glob('/Library/LaunchDaemons/' + LAUNCHD_PREFIX + '*') if not
+                          launch_daemon.startswith('/Library/LaunchDaemons/' + INSTALL_HELPER) and
+                          launch_daemon != APPUSAGE_LAUNCH_DAEMON]
+
+    # Only proceed if PROG_NAME isn't running, looping until it's not running
+    is_managedsoftwareupdate_running()
+
+    # Reload launch daemons as needed
+    reload_launch_daemons(launch_daemons)
+
+    # If we're not only looking to reload the appusage launchd's
+    if PASSED_ARG != 'appusage':
+        # reload munki's loginwindow launch agents
+        reload_loginwindow_launch_agents(launch_agents)
+
+    # Get the userid and username of any logged in users
+    user_details = get_logged_in_users()
+
+    # Reload launchagents as needed
+    if user_details:
+        # If users are logged in, reload the required launch agents as them
+        reload_user_launch_agents(launch_agents, user_details)
+
+    # Set name and path based on the value of PASSED_ARGS
+    launch_daemon_name = INSTALL_HELPER + '-' + PASSED_ARG
+    launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
+
+    # If the launch daemon exists
+    if os.path.isfile(launch_daemon_path):
+        # Delete the launch daemon
+        log("Deleting: %s" % launch_daemon_path)
+        os.unlink(launch_daemon_path)
+
+        # Unload the launch daemon
+        log("Unloading: %s" % launch_daemon_name)
+        cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
+        subprocess.call(cmd)
+
+
+def get_logged_in_users():
+    '''Returns a dict containing any logged in users uid and username'''
+
+    # Var declaration
+    user_details = {}
+
+    # Retrieve details of all running processes
+    cmd = ['/bin/ps', '-axo', 'uid,login,args']
+    cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+    # Split out the above output
+    for some_process in cmd_out.stdout.decode().splitlines():
+        # Retrieve details for users that are running loginwindow.app, excluding root
+        if "loginwindow.app" in some_process.lower() and some_process.split()[0] != "0":
+            # Capture the userid and username for all users running the loginwindow
+            user_details[some_process.split()[0]] = some_process.split()[1]
+
+    # Returns either an empty dict, or a dict with userid and usernames
+    return user_details
+
+
+def log(msg):
+    '''Logs messages from this tool with an identifier'''
+
+    munkilog.log("%s-%s: %s" % (INSTALL_HELPER, PASSED_ARG, msg))
+
+
+def is_managedsoftwareupdate_running():
+    '''If managedsoftwareupdate is running, check again in x seconds'''
+
+    # Check to see if managedsoftwareupdate is running
+    managedsoftwareupdate_pid = osutils.pythonScriptRunning(PROG_NAME)
+
+    # An instance of managedsoftwareupdate is running, so we need to try again later
+    while managedsoftwareupdate_pid:
+        log("*" * 60)
+        log("%s is running as pid %s." % (managedsoftwareupdate_pid,  os.getpid()))
+        log("checking again in %s seconds" % CHECK_TIME)
+        log("*" * 60)
+        time.sleep(CHECK_TIME)
+
+    # If managedsoftwareupdate is not running.. return from function to proceed
+    log("%s is not running, proceeding..." % (PROG_NAME))
+
+
+def reload_launch_daemons(launch_daemons):
+    '''Reloads Munki's Launch Daemons'''
+
+    # Log what we're upto
+    log("Reloading Launch Daemons")
+
+    # Retrieve all running launch daemons
+    cmd = ['/bin/launchctl', 'list']
+    cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+    launchd_labels = split_launchctl_list(cmd_out)
+
+    # For each plist in /Library/LaunchDaemons/ prefixed with LAUNCHD_PREFIX
+    for launch_daemon in launch_daemons:
+        try:
+            # Make sure content is valid, before proceeding to reload
+            daemon_content = FoundationPlist.readPlist(launch_daemon)
+        except FoundationPlist.NSPropertyListSerializationException:
+            break
+        # Get the Label
+        daemon_label = daemon_content.get('Label')
+        # If we have a label
+        if daemon_label:
+            # Check to see if the launch daemon is loaded, before stopping
+            if daemon_label in launchd_labels:
+                # Stop the launch daemon at the login window
+                log("Stopping: %s" % launch_daemon)
+                cmd = ['/bin/launchctl', 'bootout', 'system/' + daemon_label]
+                subprocess.call(cmd)
+            # Load the launch daemon at the login window
+            log("Starting: %s" % launch_daemon)
+            cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
+            subprocess.call(cmd)
+
+
+def reload_loginwindow_launch_agents(launch_agents):
+    '''Reloads Munki's loginwindow Launch Agents'''
+
+    # Log what we're upto
+    log("Reloading LoginWindow Launch Agents")
+
+    # Retrieve all running launch agents at the login window
+    cmd = ['/bin/launchctl', 'list']
+    cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+    launchd_labels = split_launchctl_list(cmd_out)
+
+    # For each plist in /Library/LaunchAgents/ prefixed with LAUNCHD_PREFIX
+    for launch_agent in launch_agents:
+        try:
+            # Make sure content is valid, before proceeding to reload
+            agent_content = FoundationPlist.readPlist(launch_agent)
+        except FoundationPlist.NSPropertyListSerializationException:
+            break
+        # If we're to limit loading
+        if agent_content.get('LimitLoadToSessionType'):
+            # If the launch agent includes LimitLoadToSessionType, and it contains LoginWindow
+            if 'LoginWindow' in agent_content.get('LimitLoadToSessionType'):
+                # If the launch agent is to be loaded at the login window, get the Label
+                agent_label = agent_content.get('Label')
+                if agent_label:
+                    # Check to see if the launch agent is loaded, before stopping
+                    if agent_label in launchd_labels:
+                        # Stop the launch agent at the login window
+                        log("Stopping: %s" % launch_agent)
+                        cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launch_agent]
+                        subprocess.call(cmd)
+                    # Load the launch agent at the login window
+                    log("Starting: %s" % launch_agent)
+                    cmd = ['/bin/launchctl', 'load', '-S', 'LoginWindow', launch_agent]
+                    subprocess.call(cmd)
+
+
+def reload_user_launch_agents(launch_agents, user_details):
+    '''Reloads the Launch Agents as the logged in users'''
+
+    # For each logged in user
+    for userid, username in user_details.items():
+        # Log who we're reloading the Launch Agents as
+        log("Reloading Launch Agents for: %s" % username)
+        # Retrieve all running launch agents for the user
+        cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'list']
+        cmd_out = subprocess.run(cmd, capture_output = True, check = False)
+        launchd_labels = split_launchctl_list(cmd_out)
+        # For each plist in /Library/LaunchAgents/ prefixed with LAUNCHD_PREFIX
+        for launch_agent in launch_agents:
+            try:
+                # Make sure content is valid, before proceeding to reload
+                agent_content = FoundationPlist.readPlist(launch_agent)
+            except FoundationPlist.NSPropertyListSerializationException:
+                break
+            # If the launch agent doesn't contain LimitLoadToSessionType or
+            # LimitLoadToSessionType exists and it contains Aqua
+            if (not agent_content.get('LimitLoadToSessionType') or 'Aqua' in
+                agent_content.get('LimitLoadToSessionType')):
+                # If the launch agent is to be loaded at the login window, get the Label
+                agent_label = agent_content.get('Label')
+                if agent_label:
+                    # Check to see if the launch agent is loaded, before stopping
+                    if agent_label in launchd_labels:
+                        # Stop the launch agent
+                        log("Stopping: %s" % launch_agent)
+                        cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
+                               'gui/' + str(userid) + '/' + agent_label]
+                        subprocess.call(cmd)
+                    # Load the launch agent
+                    log("Starting: %s" % launch_agent)
+                    cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootstrap',
+                           'gui/' + str(userid), launch_agent]
+                    subprocess.call(cmd)
+
+
+def split_launchctl_list(cmd_out):
+    '''Takes launchctl list output and returns a list with just the labels'''
+
+    # Var declaration
+    launchd_labels = []
+
+    # Strip cmd_out to just the labels of the running launch agents
+    for launchd_item in cmd_out.stdout.decode().splitlines():
+        launchd_labels.append(launchd_item.split('\t')[2])
+
+    # Returns a list of launchd labels
+    return launchd_labels
+
+
+if __name__ == '__main__':
+
+    # Check to see if we're root
+    if os.geteuid() != 0:
+        print("You must run this as root!", file=sys.stderr)
+        sys.exit(1)
+
+    # If INSTALLHELPER_RUN_TYPE isn't set
+    if not os.environ.get('INSTALLHELPER_RUN_TYPE'):
+        # If we have no arguments passed or the arguments passed are not expected.. exit
+        if len(sys.argv) == 1 or not (sys.argv[1].lower() == 'appusage' or
+                                        sys.argv[1].lower() == 'launchd'):
+            print("Requires either \'appusage\' or \'launchd\' arguments to be passed.")
+            sys.exit(1)
+        # Set PASSED_ARG to the value passed
+        else:
+            PASSED_ARG = sys.argv[1].lower()
+    # If INSTALLHELPER_RUN_TYPE is set
+    else:
+        # Else if we have INSTALLHELPER_RUN_TYPE defined, and it's not what's expected.. exit
+        if not (os.environ.get('INSTALLHELPER_RUN_TYPE') != 'appusage' or
+                  os.environ.get('INSTALLHELPER_RUN_TYPE') != 'launchd'):
+            # Set PASSED_ARG to the value of INSTALLHELPER_RUN_TYPE
+            print("Requires INSTALLHELPER_RUN_TYPE to be set to either \'appusage\' or \'launchd\'")
+            sys.exit(1)
+        # If INSTALLHELPER_RUN_TYPE is set and we have a valid value passed
+        elif (os.environ.get('INSTALLHELPER_RUN_TYPE') == 'appusage' or
+                os.environ.get('INSTALLHELPER_RUN_TYPE') == 'launchd'):
+            # Set PASSED_ARG to the value of INSTALLHELPER_RUN_TYPE
+            PASSED_ARG = os.environ.get('INSTALLHELPER_RUN_TYPE')
+
+    # Proceed to run main
+    main()
