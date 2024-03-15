@@ -154,21 +154,25 @@ def process_munki_launchd(launchd_group):
     # Only proceed if PROG_NAME isn't running, looping until it's not running
     is_managedsoftwareupdate_running()
 
-    # Reload launch daemons as needed
-    process_launch_daemons(launch_daemons, launchd_group)
-
-    # If we're not only looking to reload the appusage launchd's
-    if launchd_group != 'appusage':
-        # reload munki's loginwindow launch agents
-        process_loginwindow_launch_agents(launch_agents)
-
     # Get the userid and username of any logged in users
     user_details = get_logged_in_users()
 
-    # Reload launchagents as needed
+    # If users are logged in
     if user_details:
         # If users are logged in, reload the required launch agents as them
         process_user_launch_agents(launch_agents, launchd_group, user_details)
+
+    # If we're not only looking to reload the appusage launchd's
+    if launchd_group != 'appusage':
+        # reload munki's loginwindow launch agents, returning a list of labels
+        loginwindow_launchds = process_loginwindow_launch_agents(launch_agents)
+    # If we're just looking to reload the appusage launchd's
+    else:
+        # Set to an empty list
+        loginwindow_launchds = []
+
+    # Reload launch daemons as needed
+    process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds)
 
     # Set name and path based on the value of launchd_group
     launch_daemon_name = INSTALL_HELPER + '-' + launchd_group
@@ -225,7 +229,7 @@ def is_managedsoftwareupdate_running():
     logging.info("%s is not running, proceeding...", (PROG_NAME))
 
 
-def process_launch_daemons(launch_daemons, launchd_group):
+def process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds):
     '''Processes Munki's Launch Daemons'''
 
     # Progress notification
@@ -267,10 +271,10 @@ def process_launch_daemons(launch_daemons, launchd_group):
     if launchd_group == 'launchd':
         # For each label in launchd_labels
         for launchd_label in launchd_labels:
-            # If we have a label, it's not in matched_labels and it's not an APPUSAGE_DAEMON or
-            # INSTALL_HELPER launchd item
-            if (launchd_label not in matched_labels
-                and not APPUSAGE_DAEMON and not INSTALL_HELPER in launchd_label):
+            # If we have a label, it's not in matched_labels or loginwindow_launchds,
+            # and it's not an APPUSAGE_DAEMON or INSTALL_HELPER launchd item
+            if (launchd_label not in matched_labels + loginwindow_launchds
+                and (APPUSAGE_DAEMON and INSTALL_HELPER not in launchd_label)):
                 # Stop the launch daemon
                 logging.info("Stopping: %s", launchd_label)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + launchd_label]
@@ -284,7 +288,7 @@ def process_loginwindow_launch_agents(launch_agents):
     logging.info("Processing LoginWindow Launch Agents")
 
     # Var declaration
-    matched_labels = []
+    loginwindow_launchds = []
 
     # Get the labels for any launchd running at the LoginWindow, this will only list LoginWindow
     # launch agents when ran at the LoginWindow
@@ -318,18 +322,21 @@ def process_loginwindow_launch_agents(launch_agents):
                     logging.info("Starting: %s", launch_agent)
                     cmd = ['/bin/launchctl', 'load', '-S', 'LoginWindow', launch_agent]
                     subprocess.call(cmd)
-                    # Append the launchd items label to matched_labels
-                    matched_labels.append(agent_label)
+                    # Append the launchd items label to loginwindow_launchds
+                    loginwindow_launchds.append(agent_label)
 
     # For each label in launchd_labels
     for launchd_label in launchd_labels:
-        # If we have a label, it's not in matched_labels and it's not an INSTALL_HELPER
+        # If we have a label, it's not in loginwindow_launchds and it's not an INSTALL_HELPER
         # launchd item
-        if launchd_label not in matched_labels and not INSTALL_HELPER in launchd_label:
+        if launchd_label not in loginwindow_launchds and not INSTALL_HELPER in launchd_label:
             # Stop the launch agent
             logging.info("Stopping: %s", launchd_label)
-            cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launchd_label]
+            cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + launchd_label]
             subprocess.call(cmd)
+
+    # Returns loginwindow_launchds
+    return loginwindow_launchds
 
 
 def process_user_launch_agents(launch_agents, launchd_group, user_details):
