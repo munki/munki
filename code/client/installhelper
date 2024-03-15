@@ -270,7 +270,7 @@ def process_launch_daemons(launch_daemons, launchd_group):
             # If we have a label, it's not in matched_labels and it's not an APPUSAGE_DAEMON or
             # INSTALL_HELPER launchd item
             if (launchd_label not in matched_labels
-                and not (APPUSAGE_DAEMON or INSTALL_HELPER) in launchd_label):
+                and not APPUSAGE_DAEMON and not INSTALL_HELPER in launchd_label):
                 # Stop the launch daemon
                 logging.info("Stopping: %s", launchd_label)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + launchd_label]
@@ -306,8 +306,8 @@ def process_loginwindow_launch_agents(launch_agents):
             if 'LoginWindow' in agent_content.get('LimitLoadToSessionType'):
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
-                # If we have a label and it doesn't start with INSTALL_HELPER
-                if agent_label and not agent_label.startswith(INSTALL_HELPER):
+                # If we have a label and it's not an INSTALL_HELPER launchd item
+                if agent_label and not INSTALL_HELPER in agent_label:
                     # Check to see if the launch agent is loaded, before stopping
                     if agent_label in launchd_labels:
                         # Stop the launch agent at the login window
@@ -323,8 +323,9 @@ def process_loginwindow_launch_agents(launch_agents):
 
     # For each label in launchd_labels
     for launchd_label in launchd_labels:
-        # If launchd_label, is not in matched_labels and it doesn't start with INSTALL_HELPER
-        if launchd_label not in matched_labels and not launchd_label.startswith(INSTALL_HELPER):
+        # If we have a label, it's not in matched_labels and it's not an INSTALL_HELPER
+        # launchd item
+        if launchd_label not in matched_labels and not INSTALL_HELPER in launchd_label:
             # Stop the launch agent
             logging.info("Stopping: %s", launchd_label)
             cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launchd_label]
@@ -357,8 +358,8 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
                 agent_content.get('LimitLoadToSessionType')):
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
-                # If we have a label and it doesn't start with INSTALL_HELPER
-                if agent_label and not agent_label.startswith(INSTALL_HELPER):
+                # If we have a label and it's not an INSTALL_HELPER launchd item
+                if agent_label and not INSTALL_HELPER in agent_label:
                     # Check to see if the launch agent is loaded, before stopping
                     if agent_label in launchd_labels:
                         # Stop the launch agent
@@ -378,10 +379,9 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
         if launchd_group == 'launchd':
             # For each label in launchd_labels
             for launchd_label in launchd_labels:
-                # If launchd_label, is not in matched_labels and it doesn't start with
-                # INSTALL_HELPER
-                if (launchd_label not in matched_labels
-                    and not launchd_label.startswith(INSTALL_HELPER)):
+                # If we have a label, it's not in matched_labels and it's not an INSTALL_HELPER
+                # launchd item
+                if launchd_label not in matched_labels and not INSTALL_HELPER in launchd_label:
                     # Stop the launch agent
                     logging.info("Stopping: %s", launchd_label)
                     cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
