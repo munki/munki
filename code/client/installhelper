@@ -19,7 +19,7 @@ installhelper
 
 Created 2024-02-28.
 
-A helper tool for handling launchd items etc when installing Munki
+A helper tool for handling launchd items when installing Munki
 
 """
 from __future__ import absolute_import
@@ -27,23 +27,31 @@ from __future__ import absolute_import
 # standard libs
 import glob
 import os
+import logging
+import logging.handlers
+import re
 import subprocess
 import time
 import sys
+from pathlib import Path
+
+# Append munki's path, to load our libs when not running under munki
+# pylint: disable = C0413
+sys.path.append('/usr/local/munki')
 
 # our libs
-from munkilib import munkilog
 from munkilib import osutils
 from munkilib import prefs
 from munkilib import FoundationPlist
 
-
-APPUSAGE_LAUNCH_AGENT = '/Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist'
-APPUSAGE_LAUNCH_DAEMON = '/Library/LaunchDaemons/com.googlecode.munki.appusaged.plist'
+# globals
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
+APPUSAGE_DAEMON = LAUNCHD_PREFIX + 'appusaged'
+APPUSAGE_AGENT = LAUNCHD_PREFIX + 'app_usage_monitor'
 INSTALL_HELPER = LAUNCHD_PREFIX + 'installhelper'
 PROG_NAME = 'managedsoftwareupdate'
-VERSION = '0.1'
+APP_NAME = 'installhelper'
+APP_VERSION = '0.1'
 
 
 def main():
@@ -61,27 +69,23 @@ def main():
     # If we've got here, something isn't right
     else:
         # Error message
-        print("ERROR: Cannot ascertain correct value for passed argument")
+        logging.info("ERROR: Cannot ascertain correct value for passed argument")
         # Exit
         sys.exit(1)
 
-    # add munki's path to import munki's modules
-    sys.path.append('/usr/local/munki')
-
-    # Configure logging to syslog
-    if prefs.pref('LogToSyslog'):
-        munkilog.configure_syslog()
+    # Setup logging
+    setup_logging()
 
     # If not launched via launchd
     if not os.environ.get('INSTALLHELPER_RUN_TYPE'):
         # Launched manually
-        log(launchd_group, "v%s launched manually - arg - %s" % (VERSION, launchd_group))
+        logging.info("Launched manually - arg: %s", launchd_group)
         create_launch_daemon(launchd_group)
     # If launched via launchd
     else:
         # Launched via launchd
-        log(launchd_group, "v%s launched via launchd - arg - %s" % (VERSION, launchd_group))
-        reload_munki_launchd(launchd_group)
+        logging.info("Launched via launchd - arg: %s", launchd_group)
+        process_munki_launchd(launchd_group)
 
 
 def create_launch_daemon(launchd_group):
@@ -91,8 +95,8 @@ def create_launch_daemon(launchd_group):
     launch_daemon_name = 'com.googlecode.munki.installhelper-' + launchd_group
     launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
 
-    # Log what we're upto
-    log(launchd_group, "Creating launch daemon")
+    # Progress notification
+    logging.info("Creating launch daemon")
 
     # Retrieve all running launch daemons
     cmd = ['/bin/launchctl', 'list']
@@ -120,45 +124,43 @@ def create_launch_daemon(launchd_group):
     os.chmod(launch_daemon_path, int('644', 8))
 
     # Load the launch daemon
-    log(launchd_group, "Starting: %s" % launch_daemon_path)
+    logging.info("Starting: %s", launch_daemon_path)
     cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon_path]
     subprocess.call(cmd)
 
 
-def reload_munki_launchd(launchd_group):
+def process_munki_launchd(launchd_group):
     '''Reload Munki's launchd'''
 
     # If we're to interact only with the appusage launchd items
     if launchd_group == 'appusage':
         # returns a list containing just the path to the app_usage_monitor launch agent
-        launch_agents = [APPUSAGE_LAUNCH_AGENT]
+        launch_agents = ['/Library/LaunchAgents/' + APPUSAGE_AGENT+ '.plist']
         # returns a list containing just the path to the appusaged launch daemon
-        launch_daemons = [APPUSAGE_LAUNCH_DAEMON]
+        launch_daemons = ['/Library/LaunchDaemons/' + APPUSAGE_DAEMON + '.plist']
 
     # If we're to interact with all non-appusage launchd items
     if launchd_group == 'launchd':
-        # Returns a list of Munki's launch agents
-        # excluding APPUSAGE_LAUNCH_AGENT and any installhelper one's
+        # Returns a list of Munki's launch agents, excluding the APPUSAGE_AGENT agent
         launch_agents = [launch_agent for launch_agent in
                          glob.glob('/Library/LaunchAgents/' + LAUNCHD_PREFIX + '*') if not
-                         launch_agent == APPUSAGE_LAUNCH_AGENT]
-        # Returns a list of Munki's launch daemons
-        # excluding APPUSAGE_LAUNCH_DAEMON and any installhelper one's
+                         APPUSAGE_AGENT in launch_agent]
+        # Returns a list of Munki's launch daemons, excluding the APPUSAGE_DAEMON and
+        # INSTALL_HELPER launchd items
         launch_daemons = [launch_daemon for launch_daemon in
                           glob.glob('/Library/LaunchDaemons/' + LAUNCHD_PREFIX + '*') if not
-                          launch_daemon.startswith('/Library/LaunchDaemons/' + INSTALL_HELPER) and
-                          launch_daemon != APPUSAGE_LAUNCH_DAEMON]
+                          (APPUSAGE_DAEMON or INSTALL_HELPER) in launch_daemon]
 
     # Only proceed if PROG_NAME isn't running, looping until it's not running
-    is_managedsoftwareupdate_running(launchd_group)
+    is_managedsoftwareupdate_running()
 
     # Reload launch daemons as needed
-    reload_launch_daemons(launch_daemons, launchd_group)
+    process_launch_daemons(launch_daemons, launchd_group)
 
     # If we're not only looking to reload the appusage launchd's
     if launchd_group != 'appusage':
         # reload munki's loginwindow launch agents
-        reload_loginwindow_launch_agents(launch_agents, launchd_group)
+        process_loginwindow_launch_agents(launch_agents)
 
     # Get the userid and username of any logged in users
     user_details = get_logged_in_users()
@@ -166,7 +168,7 @@ def reload_munki_launchd(launchd_group):
     # Reload launchagents as needed
     if user_details:
         # If users are logged in, reload the required launch agents as them
-        reload_user_launch_agents(launch_agents, launchd_group, user_details)
+        process_user_launch_agents(launch_agents, launchd_group, user_details)
 
     # Set name and path based on the value of launchd_group
     launch_daemon_name = INSTALL_HELPER + '-' + launchd_group
@@ -174,12 +176,13 @@ def reload_munki_launchd(launchd_group):
 
     # If the launch daemon exists
     if os.path.isfile(launch_daemon_path):
+        # Progress notification
+        logging.info("Completed tasks, tidying up")
         # Delete the launch daemon
-        log(launchd_group, "Deleting: %s" % launch_daemon_path)
+        logging.info("Deleting: %s", launch_daemon_path)
         os.unlink(launch_daemon_path)
-
         # Unload the launch daemon
-        log(launchd_group, "Unloading: %s" % launch_daemon_name)
+        logging.info("Unloading: %s", launch_daemon_name)
         cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
         subprocess.call(cmd)
 
@@ -204,14 +207,7 @@ def get_logged_in_users():
     return user_details
 
 
-def log(launchd_group, msg):
-    '''Logs messages from this tool with an identifier'''
-
-    # Log to /Library/Managed Installs/Logs/ManagedSoftwareUpdate.log
-    munkilog.log("%s-%s: %s" % (INSTALL_HELPER, launchd_group, msg))
-
-
-def is_managedsoftwareupdate_running(launchd_group):
+def is_managedsoftwareupdate_running():
     '''If managedsoftwareupdate is running, check again in x seconds'''
 
     # Check to see if managedsoftwareupdate is running
@@ -219,21 +215,24 @@ def is_managedsoftwareupdate_running(launchd_group):
 
     # An instance of managedsoftwareupdate is running, so we need to try again later
     while managedsoftwareupdate_pid:
-        log(launchd_group, "*" * 60)
-        log(launchd_group, "%s is running as pid %s." % (managedsoftwareupdate_pid,  os.getpid()))
-        log(launchd_group, "checking again in 10 seconds")
-        log(launchd_group, "*" * 60)
+        logging.info("*" * 60)
+        logging.info("%s is running as pid %s.", managedsoftwareupdate_pid, os.getpid())
+        logging.info("checking again in 10 seconds")
+        logging.info("*" * 60)
         time.sleep(10)
 
     # If managedsoftwareupdate is not running.. return from function to proceed
-    log(launchd_group, "%s is not running, proceeding..." % (PROG_NAME))
+    logging.info("%s is not running, proceeding...", (PROG_NAME))
 
 
-def reload_launch_daemons(launch_daemons, launchd_group):
-    '''Reloads Munki's Launch Daemons'''
+def process_launch_daemons(launch_daemons, launchd_group):
+    '''Processes Munki's Launch Daemons'''
 
-    # Log what we're upto
-    log(launchd_group, "Reloading Launch Daemons")
+    # Progress notification
+    logging.info("Processing Launch Daemons")
+
+    # Var declaration
+    matched_labels = []
 
     # Retrieve all running launch daemons
     cmd = ['/bin/launchctl', 'list']
@@ -249,30 +248,50 @@ def reload_launch_daemons(launch_daemons, launchd_group):
             break
         # Get the Label
         daemon_label = daemon_content.get('Label')
-        # If we have a label
-        if daemon_label:
+        # If we have a label and it's not an INSTALL_HELPER launchd item
+        if daemon_label and not INSTALL_HELPER in daemon_label:
             # Check to see if the launch daemon is loaded, before stopping
             if daemon_label in launchd_labels:
                 # Stop the launch daemon
-                log(launchd_group, "Stopping: %s" % launch_daemon)
+                logging.info("Stopping: %s", launch_daemon)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + daemon_label]
                 subprocess.call(cmd)
             # Load the launch daemon
-            log(launchd_group, "Starting: %s" % launch_daemon)
+            logging.info("Starting: %s", launch_daemon)
             cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
             subprocess.call(cmd)
+            # Append the launchd items label to matched_labels
+            matched_labels.append(daemon_label)
+
+    # If we're to interact with all non-appusage launchd items
+    if launchd_group == 'launchd':
+        # For each label in launchd_labels
+        for launchd_label in launchd_labels:
+            # If we have a label, it's not in matched_labels and it's not an APPUSAGE_DAEMON or
+            # INSTALL_HELPER launchd item
+            if (launchd_label not in matched_labels
+                and not (APPUSAGE_DAEMON or INSTALL_HELPER) in launchd_label):
+                # Stop the launch daemon
+                logging.info("Stopping: %s", launchd_label)
+                cmd = ['/bin/launchctl', 'bootout', 'system/' + launchd_label]
+                subprocess.call(cmd)
 
 
-def reload_loginwindow_launch_agents(launch_agents, launchd_group):
-    '''Reloads Munki's loginwindow Launch Agents'''
+def process_loginwindow_launch_agents(launch_agents):
+    '''Processes Munki's LoginWindow Launch Agents'''
 
-    # Log what we're upto
-    log(launchd_group, "Reloading LoginWindow Launch Agents")
+    # Progress notification
+    logging.info("Processing LoginWindow Launch Agents")
 
-    # Retrieve all running launch agents at the login window
-    cmd = ['/bin/launchctl', 'list']
+    # Var declaration
+    matched_labels = []
+
+    # Get the labels for any launchd running at the LoginWindow, this will only list LoginWindow
+    # launch agents when ran at the LoginWindow
+    cmd = ['/bin/launchctl', 'dumpstate']
     cmd_out = subprocess.run(cmd, capture_output = True, check = False)
-    launchd_labels = split_launchctl_list(cmd_out)
+    launchd_labels = re.findall("loginwindow/.*/(" + LAUNCHD_PREFIX + ".*) =",
+                                cmd_out.stdout.decode())
 
     # For each plist in /Library/LaunchAgents/ prefixed with LAUNCHD_PREFIX
     for launch_agent in launch_agents:
@@ -287,26 +306,40 @@ def reload_loginwindow_launch_agents(launch_agents, launchd_group):
             if 'LoginWindow' in agent_content.get('LimitLoadToSessionType'):
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
-                if agent_label:
+                # If we have a label and it doesn't start with INSTALL_HELPER
+                if agent_label and not agent_label.startswith(INSTALL_HELPER):
                     # Check to see if the launch agent is loaded, before stopping
                     if agent_label in launchd_labels:
                         # Stop the launch agent at the login window
-                        log(launchd_group, "Stopping: %s" % launch_agent)
+                        logging.info("Stopping: %s", launch_agent)
                         cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launch_agent]
                         subprocess.call(cmd)
                     # Load the launch agent at the login window
-                    log(launchd_group, "Starting: %s" % launch_agent)
+                    logging.info("Starting: %s", launch_agent)
                     cmd = ['/bin/launchctl', 'load', '-S', 'LoginWindow', launch_agent]
                     subprocess.call(cmd)
+                    # Append the launchd items label to matched_labels
+                    matched_labels.append(agent_label)
+
+    # For each label in launchd_labels
+    for launchd_label in launchd_labels:
+        # If launchd_label, is not in matched_labels and it doesn't start with INSTALL_HELPER
+        if launchd_label not in matched_labels and not launchd_label.startswith(INSTALL_HELPER):
+            # Stop the launch agent
+            logging.info("Stopping: %s", launchd_label)
+            cmd = ['/bin/launchctl', 'unload', '-S', 'LoginWindow', launchd_label]
+            subprocess.call(cmd)
 
 
-def reload_user_launch_agents(launch_agents, launchd_group, user_details):
-    '''Reloads the Launch Agents as the logged in users'''
+def process_user_launch_agents(launch_agents, launchd_group, user_details):
+    '''Processes Munki's user Launch Agents'''
 
     # For each logged in user
     for userid, username in user_details.items():
+        # Var declaration
+        matched_labels = []
         # Log who we're reloading the Launch Agents as
-        log(launchd_group, "Reloading Launch Agents for: %s" % username)
+        logging.info("Processing Launch Agents for: %s", username)
         # Retrieve all running launch agents for the user
         cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'list']
         cmd_out = subprocess.run(cmd, capture_output = True, check = False)
@@ -324,19 +357,77 @@ def reload_user_launch_agents(launch_agents, launchd_group, user_details):
                 agent_content.get('LimitLoadToSessionType')):
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
-                if agent_label:
+                # If we have a label and it doesn't start with INSTALL_HELPER
+                if agent_label and not agent_label.startswith(INSTALL_HELPER):
                     # Check to see if the launch agent is loaded, before stopping
                     if agent_label in launchd_labels:
                         # Stop the launch agent
-                        log(launchd_group, "Stopping: %s" % launch_agent)
+                        logging.info("Stopping: %s", launch_agent)
                         cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
                                'gui/' + str(userid) + '/' + agent_label]
-                        subprocess.call(cmd)
+                    subprocess.call(cmd)
                     # Load the launch agent
-                    log(launchd_group, "Starting: %s" % launch_agent)
+                    logging.info("Starting: %s", launch_agent)
                     cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootstrap',
                            'gui/' + str(userid), launch_agent]
                     subprocess.call(cmd)
+                    # Append the launchd items label to matched_labels
+                    matched_labels.append(agent_label)
+
+        # If we're to interact with all non-appusage launchd items
+        if launchd_group == 'launchd':
+            # For each label in launchd_labels
+            for launchd_label in launchd_labels:
+                # If launchd_label, is not in matched_labels and it doesn't start with
+                # INSTALL_HELPER
+                if (launchd_label not in matched_labels
+                    and not launchd_label.startswith(INSTALL_HELPER)):
+                    # Stop the launch agent
+                    logging.info("Stopping: %s", launchd_label)
+                    cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
+                           'gui/' + str(userid) + '/' + launchd_label]
+                    subprocess.call(cmd)
+
+
+def setup_logging():
+    '''Configure logging'''
+
+    # Creates the logging dir if doesn't exist
+    Path(os.path.dirname(prefs.pref('LogFile'))).mkdir(parents=True, exist_ok=True)
+
+    # Store the log in the same directory as ManagedSoftwareUpdate.log
+    log_path = os.path.join(os.path.dirname(prefs.pref('LogFile')), APP_NAME + '.log')
+
+    # Generic settings
+    log_level = logging.getLevelName('INFO')
+
+    # Log format
+    log_format = logging.Formatter('%(asctime)s %(levelname)s %(message)s', '%b %d %Y %H:%M:%S %z')
+
+    # Change root logger level from WARNING to NOTSET in order for all messages to be delegated.
+    # https://stackoverflow.com/a/59431653
+    logging.getLogger('').setLevel(logging.NOTSET)
+
+    # Create a rotating log file handler, rotate at 10MB, keeping 9 backups
+    file_logger = logging.handlers.RotatingFileHandler(log_path, 'a', 100000, 9, 'utf-8')
+    # Set file logging level
+    file_logger.setLevel(log_level)
+    # Set file log format
+    file_logger.setFormatter(log_format)
+    # Add to logger
+    logging.getLogger('').addHandler(file_logger)
+
+    # Add console handler to logging object
+    console_logger = logging.StreamHandler()
+    # Set console logging level
+    console_logger.setLevel(log_level)
+    # Set console logging format
+    console_logger.setFormatter(log_format)
+    # Add to logger
+    logging.getLogger('').addHandler(console_logger)
+
+    # Start log
+    logging.info("Starting %s - %s", APP_NAME, APP_VERSION)
 
 
 def split_launchctl_list(cmd_out):
@@ -347,7 +438,10 @@ def split_launchctl_list(cmd_out):
 
     # Strip cmd_out to just the labels of the running launch agents
     for launchd_item in cmd_out.stdout.decode().splitlines():
-        launchd_labels.append(launchd_item.split('\t')[2])
+        # If the launchd_item starts with LAUNCHD_PREFIX
+        if launchd_item.split('\t')[2].startswith(LAUNCHD_PREFIX):
+            # Add the label to launchd_labels
+            launchd_labels.append(launchd_item.split('\t')[2])
 
     # Returns a list of launchd labels
     return launchd_labels
