@@ -46,8 +46,8 @@ from munkilib import FoundationPlist
 
 # globals
 LAUNCHD_PREFIX = 'com.googlecode.munki.'
-APPUSAGE_DAEMON = LAUNCHD_PREFIX + 'appusaged'
 APPUSAGE_AGENT = LAUNCHD_PREFIX + 'app_usage_monitor'
+APPUSAGE_DAEMON = LAUNCHD_PREFIX + 'appusaged'
 INSTALL_HELPER = LAUNCHD_PREFIX + 'installhelper'
 PROG_NAME = 'managedsoftwareupdate'
 APP_NAME = 'installhelper'
@@ -127,68 +127,6 @@ def create_launch_daemon(launchd_group):
     logging.info("Starting: %s", launch_daemon_path)
     cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon_path]
     subprocess.call(cmd)
-
-
-def process_munki_launchd(launchd_group):
-    '''Reload Munki's launchd'''
-
-    # If we're to interact only with the appusage launchd items
-    if launchd_group == 'appusage':
-        # returns a list containing just the path to the app_usage_monitor launch agent
-        launch_agents = ['/Library/LaunchAgents/' + APPUSAGE_AGENT+ '.plist']
-        # returns a list containing just the path to the appusaged launch daemon
-        launch_daemons = ['/Library/LaunchDaemons/' + APPUSAGE_DAEMON + '.plist']
-
-    # If we're to interact with all non-appusage launchd items
-    if launchd_group == 'launchd':
-        # Returns a list of Munki's launch agents, excluding the APPUSAGE_AGENT agent
-        launch_agents = [launch_agent for launch_agent in
-                         glob.glob('/Library/LaunchAgents/' + LAUNCHD_PREFIX + '*') if not
-                         APPUSAGE_AGENT in launch_agent]
-        # Returns a list of Munki's launch daemons, excluding the APPUSAGE_DAEMON and
-        # INSTALL_HELPER launchd items
-        launch_daemons = [launch_daemon for launch_daemon in
-                          glob.glob('/Library/LaunchDaemons/' + LAUNCHD_PREFIX + '*') if not
-                          (APPUSAGE_DAEMON or INSTALL_HELPER) in launch_daemon]
-
-    # Only proceed if PROG_NAME isn't running, looping until it's not running
-    is_managedsoftwareupdate_running()
-
-    # Get the userid and username of any logged in users
-    user_details = get_logged_in_users()
-
-    # If users are logged in
-    if user_details:
-        # If users are logged in, reload the required launch agents as them
-        process_user_launch_agents(launch_agents, launchd_group, user_details)
-
-    # If we're not only looking to reload the appusage launchd's
-    if launchd_group != 'appusage':
-        # reload munki's loginwindow launch agents, returning a list of labels
-        loginwindow_launchds = process_loginwindow_launch_agents(launch_agents)
-    # If we're just looking to reload the appusage launchd's
-    else:
-        # Set to an empty list
-        loginwindow_launchds = []
-
-    # Reload launch daemons as needed
-    process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds)
-
-    # Set name and path based on the value of launchd_group
-    launch_daemon_name = INSTALL_HELPER + '-' + launchd_group
-    launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
-
-    # If the launch daemon exists
-    if os.path.isfile(launch_daemon_path):
-        # Progress notification
-        logging.info("Completed tasks, tidying up")
-        # Delete the launch daemon
-        logging.info("Deleting: %s", launch_daemon_path)
-        os.unlink(launch_daemon_path)
-        # Unload the launch daemon
-        logging.info("Unloading: %s", launch_daemon_name)
-        cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
-        subprocess.call(cmd)
 
 
 def get_logged_in_users():
@@ -272,9 +210,9 @@ def process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds):
         # For each label in launchd_labels
         for launchd_label in launchd_labels:
             # If we have a label, it's not in matched_labels or loginwindow_launchds,
-            # and it's not an APPUSAGE_DAEMON or INSTALL_HELPER launchd item
-            if (launchd_label not in matched_labels + loginwindow_launchds
-                and (APPUSAGE_DAEMON and INSTALL_HELPER not in launchd_label)):
+            # and it's not an APPUSAGE_DAEMON or a INSTALL_HELPER launchd item
+            if (launchd_label not in matched_labels + loginwindow_launchds + [APPUSAGE_DAEMON]
+                and not launchd_label.startswith(INSTALL_HELPER)):
                 # Stop the launch daemon
                 logging.info("Stopping: %s", launchd_label)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + launchd_label]
@@ -329,7 +267,8 @@ def process_loginwindow_launch_agents(launch_agents):
     for launchd_label in launchd_labels:
         # If we have a label, it's not in loginwindow_launchds and it's not an INSTALL_HELPER
         # launchd item
-        if launchd_label not in loginwindow_launchds and not INSTALL_HELPER in launchd_label:
+        if (launchd_label not in loginwindow_launchds
+            and not launchd_label.startswith(INSTALL_HELPER)):
             # Stop the launch agent
             logging.info("Stopping: %s", launchd_label)
             cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + launchd_label]
@@ -337,6 +276,68 @@ def process_loginwindow_launch_agents(launch_agents):
 
     # Returns loginwindow_launchds
     return loginwindow_launchds
+
+
+def process_munki_launchd(launchd_group):
+    '''Reload Munki's launchd'''
+
+    # If we're to interact only with the appusage launchd items
+    if launchd_group == 'appusage':
+        # returns a list containing just the path to the app_usage_monitor launch agent
+        launch_agents = ['/Library/LaunchAgents/' + APPUSAGE_AGENT+ '.plist']
+        # returns a list containing just the path to the appusaged launch daemon
+        launch_daemons = ['/Library/LaunchDaemons/' + APPUSAGE_DAEMON + '.plist']
+
+    # If we're to interact with all non-appusage launchd items
+    if launchd_group == 'launchd':
+        # Returns a list of Munki's launch agents, excluding the APPUSAGE_AGENT agent
+        launch_agents = [launch_agent for launch_agent in
+                         glob.glob('/Library/LaunchAgents/' + LAUNCHD_PREFIX + '*') if not
+                         APPUSAGE_AGENT in launch_agent]
+        # Returns a list of Munki's launch daemons, excluding the APPUSAGE_DAEMON and
+        # INSTALL_HELPER launchd items
+        launch_daemons = [launch_daemon for launch_daemon in
+                          glob.glob('/Library/LaunchDaemons/' + LAUNCHD_PREFIX + '*') if not
+                          (APPUSAGE_DAEMON or INSTALL_HELPER) in launch_daemon]
+
+    # Only proceed if PROG_NAME isn't running, looping until it's not running
+    is_managedsoftwareupdate_running()
+
+    # Get the userid and username of any logged in users
+    user_details = get_logged_in_users()
+
+    # If users are logged in
+    if user_details:
+        # If users are logged in, reload the required launch agents as them
+        process_user_launch_agents(launch_agents, launchd_group, user_details)
+
+    # If we're not only looking to reload the appusage launchd's
+    if launchd_group != 'appusage':
+        # reload munki's loginwindow launch agents, returning a list of labels
+        loginwindow_launchds = process_loginwindow_launch_agents(launch_agents)
+    # If we're just looking to reload the appusage launchd's
+    else:
+        # Set to an empty list
+        loginwindow_launchds = []
+
+    # Reload launch daemons as needed
+    process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds)
+
+    # Set name and path based on the value of launchd_group
+    launch_daemon_name = INSTALL_HELPER + '-' + launchd_group
+    launch_daemon_path = '/Library/LaunchDaemons/' + launch_daemon_name + '.plist'
+
+    # If the launch daemon exists
+    if os.path.isfile(launch_daemon_path):
+        # Progress notification
+        logging.info("Completed tasks, tidying up")
+        # Delete the launch daemon
+        logging.info("Deleting: %s", launch_daemon_path)
+        os.unlink(launch_daemon_path)
+        # Unload the launch daemon
+        logging.info("Unloading: %s", launch_daemon_name)
+        cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
+        subprocess.call(cmd)
 
 
 def process_user_launch_agents(launch_agents, launchd_group, user_details):
@@ -366,7 +367,7 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
                 # If we have a label and it's not an INSTALL_HELPER launchd item
-                if agent_label and not INSTALL_HELPER in agent_label:
+                if agent_label and not agent_label.startswith(INSTALL_HELPER):
                     # Check to see if the launch agent is loaded, before stopping
                     if agent_label in launchd_labels:
                         # Stop the launch agent
@@ -388,7 +389,8 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
             for launchd_label in launchd_labels:
                 # If we have a label, it's not in matched_labels and it's not an INSTALL_HELPER
                 # launchd item
-                if launchd_label not in matched_labels and not INSTALL_HELPER in launchd_label:
+                if (launchd_label not in matched_labels + [APPUSAGE_AGENT]
+                    and not launchd_label.startswith(INSTALL_HELPER)):
                     # Stop the launch agent
                     logging.info("Stopping: %s", launchd_label)
                     cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
