@@ -941,7 +941,7 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='my.choice.packageUpgradeAction != "installed"'>
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
