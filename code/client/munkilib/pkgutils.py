@@ -61,21 +61,25 @@ def getPkgRestartInfo(filename):
     installerinfo = {}
     proc = subprocess.Popen(['/usr/sbin/installer',
                              '-query', 'RestartAction',
-                             '-pkg', filename],
+                             '-pkg', filename,
+                             '-plist'],
                             bufsize=-1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
-    out = out.decode('UTF-8')
-    err = err.decode('UTF-8')
     if proc.returncode:
-        display.display_error("installer -query failed: %s %s", out, err)
+        display.display_error("installer -query failed: %s %s",
+                              out.decode("UTF-8"), err.decode("UTF-8"))
         return {}
 
     if out:
-        restartAction = out.rstrip('\n')
-        if restartAction != 'None':
-            installerinfo['RestartAction'] = restartAction
+        # have to use getFirstPlist since in macOS 14.4 Apple prints
+        # a deprecation warning to STDOUT before the actual plist
+        pliststr, _ = utils.getFirstPlist(out)
+        if pliststr:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            if plist.get('RestartAction') != 'None':
+                installerinfo['RestartAction'] = plist['RestartAction']
 
     return installerinfo
 
@@ -824,12 +828,16 @@ def getChoiceChangesXML(pkgitem):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out = proc.communicate()[0]
         if out:
-            plist = FoundationPlist.readPlistFromString(out)
+            # have to use getFirstPlist now because in macOS 14.4 Apple
+            # print deprecation warnings to STDOUT before the plist :-(
+            pliststr, _ = utils.getFirstPlist(out)
+            if pliststr:
+                plist = FoundationPlist.readPlistFromString(pliststr)
 
-            # list comprehension to populate choices with those items
-            # whose 'choiceAttribute' value is 'selected'
-            choices = [item for item in plist
-                       if 'selected' in item['choiceAttribute']]
+                # list comprehension to populate choices with those items
+                # whose 'choiceAttribute' value is 'selected'
+                choices = [item for item in plist
+                           if 'selected' in item['choiceAttribute']]
     except Exception:
         # No choices found or something went wrong
         pass
