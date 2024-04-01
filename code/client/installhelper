@@ -372,13 +372,12 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
                     if agent_label in launchd_labels:
                         # Stop the launch agent
                         logging.info("Stopping: %s", launch_agent)
-                        cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
-                               'gui/' + str(userid) + '/' + agent_label]
+                        cmd = ['/bin/launchctl', 'bootout', 'gui/' + str(userid) + '/' +
+                               agent_label]
                     subprocess.call(cmd)
                     # Load the launch agent
                     logging.info("Starting: %s", launch_agent)
-                    cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootstrap',
-                           'gui/' + str(userid), launch_agent]
+                    cmd = ['/bin/launchctl', 'bootstrap', 'gui/' + str(userid), launch_agent]
                     subprocess.call(cmd)
                     # Append the launchd items label to matched_labels
                     matched_labels.append(agent_label)
@@ -393,8 +392,7 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
                     and not launchd_label.startswith(INSTALL_HELPER)):
                     # Stop the launch agent
                     logging.info("Stopping: %s", launchd_label)
-                    cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'bootout',
-                           'gui/' + str(userid) + '/' + launchd_label]
+                    cmd = ['/bin/launchctl', 'bootout', 'gui/' + str(userid) + '/' + launchd_label]
                     subprocess.call(cmd)
 
 
