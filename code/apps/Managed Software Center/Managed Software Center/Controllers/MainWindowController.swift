@@ -295,7 +295,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
         
-        // add custom link if nessesary
+        // add custom sidebar item if nessesary
         if let CustonSidebarItem = pref("CustonSidebarItem") as? Dictionary<String, String> {
             if let title = CustonSidebarItem["title"], let icon = CustonSidebarItem["icon"] {
                 sidebar_items.append( ["title": title, "icon": icon])
