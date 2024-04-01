@@ -21,7 +21,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
-    let sidebar_items = [
+    var sidebar_items = [
         ["title": "Software", "icon": "AllItemsTemplate"],
         ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
         ["title": "My Items", "icon": "MyStuffTemplate"],
@@ -75,6 +75,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                         loadMyItemsPage(self)
                     case 3:
                         loadUpdatesPage(self)
+                    case 4:
+                        loadCustomPage(self)
                     default:
                         loadUpdatesPage(self)
             }
@@ -292,6 +294,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
+        
+        // add custom link if nessesary
+        if let CustonMenuItem = pref("CustonMenuItem") as? Dictionary<String, String> {
+            if let title = CustonMenuItem["title"], let icon = CustonMenuItem["icon"] {
+                sidebar_items.append( ["title": title, "icon": icon])
+                self.sidebar.reloadData()
+            }
+        }
+        
         if optionalInstallsExist() {
             loadAllSoftwarePage(self)
         } else {
@@ -940,10 +951,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         msc_debug_log("load_page request for \(url_fragment)")
         
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
-        let request = URLRequest(url: URL(fileURLWithPath: html_file),
+        var request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
                                  timeoutInterval: TimeInterval(10.0))
+        if url_fragment.starts(with: "http") {
+            request = URLRequest(url: URL(string: url_fragment)!,
+                                     cachePolicy: .reloadIgnoringLocalCacheData,
+                                     timeoutInterval: TimeInterval(10.0))
+        }
+        
         webView.load(request)
+        
         if url_fragment == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
@@ -1623,6 +1641,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         load_page("updates.html")
     }
     
+    @IBAction func loadCustomPage(_ sender: Any) {
+        // Called by Navigate menu item'''
+        clearSearchField()
+        var page = "updates.html"
+        if let CustonMenuItem = pref("CustonMenuItem") as? Dictionary<String, String> {
+            if let link = CustonMenuItem["link"] {
+                page = link
+            }
+        }
+        load_page(page)
+    }
+    
     @IBAction func searchFilterChanged(_ sender: Any) {
         // User changed the search field
         let filterString = searchField.stringValue.lowercased()
@@ -1670,6 +1700,16 @@ extension MainWindowController: NSOutlineViewDelegate {
             }
             if let imageView = view?.imgView {
                 imageView.image = NSImage(named: NSImage.Name(icon))?.tint(color: .secondaryLabelColor)
+                if #available(macOS 11.0, *) {
+                    if imageView.image == nil {
+                        if let image = NSImage(systemSymbolName: icon,
+                                               accessibilityDescription: nil) {
+                            var config = NSImage.SymbolConfiguration(textStyle: .body,
+                                                                     scale: .large)
+                            imageView.image = image.withSymbolConfiguration(config)
+                        }
+                    }
+                }
             }
         }
         return view
