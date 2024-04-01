@@ -296,8 +296,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Called by app delegate from applicationDidFinishLaunching:
         
         // add custom link if nessesary
-        if let CustonMenuItem = pref("CustonMenuItem") as? Dictionary<String, String> {
-            if let title = CustonMenuItem["title"], let icon = CustonMenuItem["icon"] {
+        if let CustonSidebarItem = pref("CustonSidebarItem") as? Dictionary<String, String> {
+            if let title = CustonSidebarItem["title"], let icon = CustonSidebarItem["icon"] {
                 sidebar_items.append( ["title": title, "icon": icon])
                 self.sidebar.reloadData()
             }
@@ -1646,8 +1646,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Called by Navigate menu item'''
         clearSearchField()
         var page = "updates.html"
-        if let CustonMenuItem = pref("CustonMenuItem") as? Dictionary<String, String> {
-            if let link = CustonMenuItem["link"] {
+        if let CustonSidebarItem = pref("CustonSidebarItem") as? Dictionary<String, String> {
+            if let link = CustonSidebarItem["link"] {
                 page = link
             }
         }
