@@ -293,16 +293,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
         
-        // add custom sidebar item if nessesary
-        if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
-            for CustomSidebarItem in CustomSidebarItems {
-                if let title = CustomSidebarItem["title"], let icon = CustomSidebarItem["icon"] {
-                    sidebar_items.append( ["title": title, "icon": icon])
-                    self.sidebar.reloadData()
+        // enable custom sidebar items if 11.0 or later // SF Symbols only supported on 11.0 or later
+        if #available(macOS 11.0, *) {
+            // add custom sidebar item if nessesary
+            if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
+                for CustomSidebarItem in CustomSidebarItems {
+                    if let title = CustomSidebarItem["title"], let icon = CustomSidebarItem["icon"] {
+                        sidebar_items.append( ["title": title, "icon": icon])
+                        self.sidebar.reloadData()
+                    }
                 }
             }
-            
-            
         }
         
         if optionalInstallsExist() {
