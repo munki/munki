@@ -75,10 +75,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                         loadMyItemsPage(self)
                     case 3:
                         loadUpdatesPage(self)
-                    case 4:
-                        loadCustomPage(self)
                     default:
-                        loadUpdatesPage(self)
+                        loadCustomPage(selected_item: sidebar.clickedRow)
             }
         }
     }
@@ -296,11 +294,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Called by app delegate from applicationDidFinishLaunching:
         
         // add custom sidebar item if nessesary
-        if let CustonSidebarItem = pref("CustonSidebarItem") as? Dictionary<String, String> {
-            if let title = CustonSidebarItem["title"], let icon = CustonSidebarItem["icon"] {
-                sidebar_items.append( ["title": title, "icon": icon])
-                self.sidebar.reloadData()
+        if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
+            for CustomSidebarItem in CustomSidebarItems {
+                if let title = CustomSidebarItem["title"], let icon = CustomSidebarItem["icon"] {
+                    sidebar_items.append( ["title": title, "icon": icon])
+                    self.sidebar.reloadData()
+                }
             }
+            
+            
         }
         
         if optionalInstallsExist() {
@@ -1642,13 +1644,17 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         load_page("updates.html")
     }
     
-    @IBAction func loadCustomPage(_ sender: Any) {
+    func loadCustomPage(selected_item: Int) {
         // Called by Navigate menu item'''
         clearSearchField()
         var page = "updates.html"
-        if let CustonSidebarItem = pref("CustonSidebarItem") as? Dictionary<String, String> {
-            if let link = CustonSidebarItem["link"] {
-                page = link
+        if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
+            // get the page for the selected item
+            let item = selected_item - 4
+            if selected_item >= 0 {
+                if let link = CustomSidebarItems[item]["link"] {
+                    page = link
+                }
             }
         }
         load_page(page)
