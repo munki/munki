@@ -1005,7 +1005,7 @@ def process_removal(manifestitem, cataloglist, installinfo):
             # so we only remove packages if we're the last reference to it
             if pkg in pkgdata['pkg_references']:
                 msg = ('Package %s references are: %s'
-                       % pkg, pkgdata['pkg_references'][pkg])
+                       % (pkg, pkgdata['pkg_references'][pkg]))
                 display.display_debug1(msg)
                 # record these for possible later use
                 pkg_references_messages.append(msg)
