@@ -115,9 +115,10 @@ def import_middleware():
                         '%s does not have a %s function'
                         % (filepath, required_function_name))
                     display.display_warning('Ignoring %s' % filepath)
-            except BaseException:
+            except BaseException as err:
                 display.display_warning(
-                    'Ignoring %s because of error importing module.' % filepath)
+                    'Ignoring %s because of error importing module: %s',
+                    filepath, err)
     return
 
 
