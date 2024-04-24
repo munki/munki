@@ -113,8 +113,7 @@ def create_launch_daemon(launchd_group):
     launch_daemon = {}
     launch_daemon['EnvironmentVariables'] = {'INSTALLHELPER_RUN_TYPE': launchd_group}
     launch_daemon['Label'] = launch_daemon_name
-    #launch_daemon['ProgramArguments'] = ['/usr/local/munki/installhelper']
-    launch_daemon['ProgramArguments'] = ['/Users/ben.toms/Git/other/munki/code/client/installhelper']
+    launch_daemon['ProgramArguments'] = ['/usr/local/munki/installhelper']
     launch_daemon['RunAtLoad'] = True
 
     # Create the launch daemon
