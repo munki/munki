@@ -923,9 +923,9 @@ cat > "$DISTFILE" <<EOF
         <line choice="core"/>
         <line choice="admin"/>
         <line choice="app"/>
-        <line choice="launchd"/>
         <line choice="app_usage"/>
         <line choice="python"/>
+        <line choice="launchd"/>
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
         $CLIENTCERTOUTLINE
@@ -941,14 +941,14 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
-        <pkg-ref id="$PKGID.launchd"/>
-    </choice>
     <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
         <pkg-ref id="$PKGID.app_usage"/>
     </choice>
     <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
         <pkg-ref id="$PKGID.python"/>
+    </choice>
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
+        <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $BOOTSTRAPCHOICE
     $CONFCHOICE
@@ -959,8 +959,8 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
     $BOOTSTRAPREF
     $CONFREF
     $CLIENTCERTREF
