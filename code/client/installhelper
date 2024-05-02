@@ -17,7 +17,7 @@
 """
 installhelper
 
-Created 2024-02-28.
+Created 2024-04-23.
 
 A helper tool for handling launchd items when installing Munki
 
@@ -101,7 +101,7 @@ def create_launch_daemon(launchd_group):
     # Retrieve all running launch daemons
     cmd = ['/bin/launchctl', 'list']
     cmd_out = subprocess.run(cmd, capture_output = True, check = False)
-    launchd_labels = split_launchctl_list(cmd_out)
+    launchd_labels = split_launchctl_list(cmd_out, launchd_group)
 
     # Check to see if launch_daemon_name is already loaded, and stop if so
     if launch_daemon_name in launchd_labels:
@@ -157,8 +157,9 @@ def is_managedsoftwareupdate_running():
 
     # An instance of managedsoftwareupdate is running, so we need to try again later
     while managedsoftwareupdate_pid:
+        managedsoftwareupdate_pid = osutils.pythonScriptRunning(PROG_NAME)
         logging.info("*" * 60)
-        logging.info("%s is running as pid %s.", managedsoftwareupdate_pid, os.getpid())
+        logging.info("%s is running as pid %s.", PROG_NAME, os.getpid())
         logging.info("checking again in 10 seconds")
         logging.info("*" * 60)
         time.sleep(10)
@@ -179,9 +180,9 @@ def process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds):
     # Retrieve all running launch daemons
     cmd = ['/bin/launchctl', 'list']
     cmd_out = subprocess.run(cmd, capture_output = True, check = False)
-    launchd_labels = split_launchctl_list(cmd_out)
+    launchd_labels = split_launchctl_list(cmd_out, launchd_group)
 
-    # For each plist in /Library/LaunchDaemons/ prefixed with LAUNCHD_PREFIX
+    # For matched launchd item in /Library/LaunchDaemons/
     for launch_daemon in launch_daemons:
         try:
             # Make sure content is valid, before proceeding to reload
@@ -195,9 +196,13 @@ def process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds):
             # Check to see if the launch daemon is loaded, before stopping
             if daemon_label in launchd_labels:
                 # Stop the launch daemon
-                logging.info("Stopping: %s", launch_daemon)
+                logging.info("Stopping: system/%s", daemon_label)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + daemon_label]
                 subprocess.call(cmd)
+            # Enable the launch daemon
+            logging.info("Enabling: system/%s", daemon_label)
+            cmd = ['/bin/launchctl', 'enable', 'system/' + daemon_label]
+            subprocess.call(cmd)
             # Load the launch daemon
             logging.info("Starting: %s", launch_daemon)
             cmd = ['/bin/launchctl', 'bootstrap', 'system', launch_daemon]
@@ -209,12 +214,10 @@ def process_launch_daemons(launch_daemons, launchd_group, loginwindow_launchds):
     if launchd_group == 'launchd':
         # For each label in launchd_labels
         for launchd_label in launchd_labels:
-            # If we have a label, it's not in matched_labels or loginwindow_launchds,
-            # and it's not an APPUSAGE_DAEMON or a INSTALL_HELPER launchd item
-            if (launchd_label not in matched_labels + loginwindow_launchds + [APPUSAGE_DAEMON]
-                and not launchd_label.startswith(INSTALL_HELPER)):
+            # If we have a label, it's not in matched_labels or loginwindow_launchds
+            if launchd_label not in matched_labels + loginwindow_launchds:
                 # Stop the launch daemon
-                logging.info("Stopping: %s", launchd_label)
+                logging.info("Stopping orphaned launch daemon: system/%s", launchd_label)
                 cmd = ['/bin/launchctl', 'bootout', 'system/' + launchd_label]
                 subprocess.call(cmd)
 
@@ -235,7 +238,7 @@ def process_loginwindow_launch_agents(launch_agents):
     launchd_labels = re.findall("loginwindow/.*/(" + LAUNCHD_PREFIX + ".*) =",
                                 cmd_out.stdout.decode())
 
-    # For each plist in /Library/LaunchAgents/ prefixed with LAUNCHD_PREFIX
+    # For matched launchd item in /Library/LaunchAgents/
     for launch_agent in launch_agents:
         try:
             # Make sure content is valid, before proceeding to reload
@@ -270,7 +273,7 @@ def process_loginwindow_launch_agents(launch_agents):
         if (launchd_label not in loginwindow_launchds
             and not launchd_label.startswith(INSTALL_HELPER)):
             # Stop the launch agent
-            logging.info("Stopping: %s", launchd_label)
+            logging.info("Stopping orphaned LoginWindow launch agent: %s", launchd_label)
             cmd = ['/bin/launchctl', 'bootout', 'loginwindow/' + launchd_label]
             subprocess.call(cmd)
 
@@ -298,7 +301,7 @@ def process_munki_launchd(launchd_group):
         # INSTALL_HELPER launchd items
         launch_daemons = [launch_daemon for launch_daemon in
                           glob.glob('/Library/LaunchDaemons/' + LAUNCHD_PREFIX + '*') if not
-                          (APPUSAGE_DAEMON or INSTALL_HELPER) in launch_daemon]
+                          (APPUSAGE_DAEMON and INSTALL_HELPER) in launch_daemon]
 
     # Only proceed if PROG_NAME isn't running, looping until it's not running
     is_managedsoftwareupdate_running()
@@ -352,7 +355,7 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
         # Retrieve all running launch agents for the user
         cmd = ['/bin/launchctl', 'asuser', str(userid), '/bin/launchctl', 'list']
         cmd_out = subprocess.run(cmd, capture_output = True, check = False)
-        launchd_labels = split_launchctl_list(cmd_out)
+        launchd_labels = split_launchctl_list(cmd_out, launchd_group)
         # For each plist in /Library/LaunchAgents/ prefixed with LAUNCHD_PREFIX
         for launch_agent in launch_agents:
             try:
@@ -366,14 +369,18 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
                 agent_content.get('LimitLoadToSessionType')):
                 # If the launch agent is to be loaded at the login window, get the Label
                 agent_label = agent_content.get('Label')
-                # If we have a label and it's not an INSTALL_HELPER launchd item
-                if agent_label and not agent_label.startswith(INSTALL_HELPER):
+                # If we have a label
+                if agent_label:
                     # Check to see if the launch agent is loaded, before stopping
                     if agent_label in launchd_labels:
                         # Stop the launch agent
                         logging.info("Stopping: %s", launch_agent)
                         cmd = ['/bin/launchctl', 'bootout', 'gui/' + str(userid) + '/' +
                                agent_label]
+                        subprocess.call(cmd)
+                    # Enable the launch agent
+                    logging.info("Enabling: gui/%s", agent_label)
+                    cmd = ['/bin/launchctl', 'enable', 'gui/' + agent_label]
                     subprocess.call(cmd)
                     # Load the launch agent
                     logging.info("Starting: %s", launch_agent)
@@ -386,12 +393,10 @@ def process_user_launch_agents(launch_agents, launchd_group, user_details):
         if launchd_group == 'launchd':
             # For each label in launchd_labels
             for launchd_label in launchd_labels:
-                # If we have a label, it's not in matched_labels and it's not an INSTALL_HELPER
-                # launchd item
-                if (launchd_label not in matched_labels + [APPUSAGE_AGENT]
-                    and not launchd_label.startswith(INSTALL_HELPER)):
+                # If we have a label, it's not in matched_labels
+                if launchd_label not in matched_labels + [APPUSAGE_AGENT]:
                     # Stop the launch agent
-                    logging.info("Stopping: %s", launchd_label)
+                    logging.info("Stopping orphaned launch agent: %s", launchd_label)
                     cmd = ['/bin/launchctl', 'bootout', 'gui/' + str(userid) + '/' + launchd_label]
                     subprocess.call(cmd)
 
@@ -437,16 +442,28 @@ def setup_logging():
     logging.info("Starting %s - %s", APP_NAME, APP_VERSION)
 
 
-def split_launchctl_list(cmd_out):
+def split_launchctl_list(cmd_out, launchd_group):
     '''Takes launchctl list output and returns a list with just the labels'''
 
     # Var declaration
     launchd_labels = []
 
+    # If we're to interact only with the appusage launchd items
+    if launchd_group == 'appusage':
+        # Exclude list
+        exclude_items = [INSTALL_HELPER + '-' + launchd_group]
+
+    # If we're to interact with all non-appusage launchd items
+    if launchd_group == 'launchd':
+        # Exclude list
+        exclude_items = [APPUSAGE_DAEMON, APPUSAGE_AGENT, INSTALL_HELPER + '-' + launchd_group]
+
     # Strip cmd_out to just the labels of the running launch agents
     for launchd_item in cmd_out.stdout.decode().splitlines():
-        # If the launchd_item starts with LAUNCHD_PREFIX
-        if launchd_item.split('\t')[2].startswith(LAUNCHD_PREFIX):
+        # Get the launchd label from the output
+        launchd_label = launchd_item.split('\t')[2]
+        # If the launchd_item starts with LAUNCHD_PREFIX, and doesn't include some others
+        if launchd_label.startswith(LAUNCHD_PREFIX) and not launchd_label in exclude_items:
             # Add the label to launchd_labels
             launchd_labels.append(launchd_item.split('\t')[2])
 
