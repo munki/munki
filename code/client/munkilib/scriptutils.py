@@ -103,7 +103,7 @@ def run_script(itemname, path, scriptname, suppress_error=False):
         return -1
 
     while True:
-        msg = proc.stdout.readline().decode('UTF-8')
+        msg = proc.stdout.readline().decode("UTF-8", "replace")
         if not msg and (proc.poll() != None):
             break
         # save all script output in case there is
