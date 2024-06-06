@@ -669,6 +669,8 @@ def run(only_unattended=False):
     # prevent sleep when idle so our installs complete. The Caffeinator class
     # automatically releases the Power Manager assertion when the variable
     # goes out of scope, so we only need to create it and hold a reference
+    # If SuspendDisplaySleepDuringBootstrap is set and bootstrapping the 
+    # NoDisplaySleep assertion is set instead
     caffeinator = powermgr.Caffeinator()
     # pylint: enable=unused-variable
 

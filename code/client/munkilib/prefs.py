@@ -89,6 +89,7 @@ DEFAULT_PREFS = {
     'SuppressLoginwindowInstall': False,
     'SuppressStopButtonOnInstall': False,
     'SuppressUserNotification': False,
+    'SuspendDisplaySleepDuringBootstrap': False,
     'UnattendedAppleUpdates': False,
     'UseClientCertificate': False,
     'UseClientCertificateCNAsClientIdentifier': False,
