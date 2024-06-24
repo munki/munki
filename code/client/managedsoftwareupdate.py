@@ -904,6 +904,7 @@ def main():
     munkilog.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print('Managed Software Update Tool')
+        print('Version %s' % info.get_version())
         print('Copyright 2010-2024 The Munki Project')
         print('https://github.com/munki/munki\n')
 
