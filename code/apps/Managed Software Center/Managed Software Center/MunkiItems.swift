@@ -853,7 +853,7 @@ class OptionalItem: GenericItem {
                     start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
                 }
             }
-            if !((my["dependent_items"] as? [String] ?? []).isEmpty) {
+            if !(dependent_items.isEmpty) {
                 start_text += dependency_description()
             }
         }
