@@ -249,12 +249,11 @@ def display_update_info():
         if item.get('RestartAction') == 'RequireLogout':
             display.display_info('       *Logout required')
             reports.report['LogoutRequired'] = True
-        '''Displays force install deadline if present'''
-        if item.get('force_install_after_date'):
-            force_install_after_date = (
-                    info.subtract_tzoffset_from_date(item.get('force_install_after_date', '')))
-            display.display_info('       *Must be installed by %s',
-                    force_install_after_date)
+         '''Displays force install deadline if present'''
+         if item.get('force_install_after_date'):
+             force_install_after_date = str(item['force_install_after_date'])[0:-6]
+             display.display_info('       *Must be installed by %s',
+                     force_install_after_date)
 
     installinfo = get_installinfo()
     installcount = len(installinfo.get('managed_installs', []))
