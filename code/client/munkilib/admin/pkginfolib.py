@@ -1073,7 +1073,7 @@ def add_option_groups(parser):
     additional_options.add_option(
         '--arch', '--supported_architecture', '--supported-architecture',
         action="append",
-        choices=['i386', 'x86_64', 'arm64'],
+        choices=['i386', 'x86_64', 'amd64', 'arm64'],
         metavar='ARCH',
         help=('Declares a supported architecture for the item. '
               'Can be specified multiple times to declare multiple '

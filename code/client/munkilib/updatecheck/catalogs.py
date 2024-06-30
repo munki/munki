@@ -520,9 +520,10 @@ def get_item_detail(name, cataloglist, vers='',
                 item['name'], item['version'], item['supported_architectures'])
             display.display_debug1(
                 'Our architecture is %s', machine['arch'])
-            if machine['arch'] in item['supported_architectures']:
+            if (machine['arch'] in item['supported_architectures'] or
+                    (machine['arch'] == 'x86_64' and 'amd64' in item['supported_architectures'])):
                 return True
-            if ('x86_64' in item['supported_architectures'] and
+            if ({'x86_64', 'amd64'}.intersection(set(item['supported_architectures'])) and
                     machine['arch'] == 'i386' and
                     machine['x86_64_capable'] is True):
                 return True
