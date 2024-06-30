@@ -12,41 +12,41 @@ let DEFAULT_INSECURE_REPO_URL = "http://munki/repo"
 // unlike the previous Python implementation, we define default
 // preference values only if they are not None/nil
 let DEFAULT_PREFS: [String: Any] = [
-    //"AdditionalHttpHeaders": None,
+    // "AdditionalHttpHeaders": None,
     "AggressiveUpdateNotificationDays": 14,
     "AppleSoftwareUpdatesIncludeMajorOSUpdates": false,
     "AppleSoftwareUpdatesOnly": false,
-    //"CatalogURL": None,
-    //"ClientCertificatePath": None,
+    // "CatalogURL": None,
+    // "ClientCertificatePath": None,
     "ClientIdentifier": "",
-    //"ClientKeyPath": None,
-    //"ClientResourcesFilename": None,
-    //"ClientResourceURL": None,
+    // "ClientKeyPath": None,
+    // "ClientResourcesFilename": None,
+    // "ClientResourceURL": None,
     "DaysBetweenNotifications": 1,
     "EmulateProfileSupport": false,
     "FollowHTTPRedirects": "none",
-    //"HelpURL": None,
-    //"IconURL": None,
+    // "HelpURL": None,
+    // "IconURL": None,
     "IgnoreMiddleware": false,
     "IgnoreSystemProxies": false,
     "InstallRequiresLogout": false,
     "InstallAppleSoftwareUpdates": false,
-    "LastNotifiedDate": NSDate.init(timeIntervalSince1970: 0),
-    //"LocalOnlyManifest": None,
+    "LastNotifiedDate": NSDate(timeIntervalSince1970: 0),
+    // "LocalOnlyManifest": None,
     "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log",
     "LoggingLevel": 1,
     "LogToSyslog": false,
     "ManagedInstallDir": "/Library/Managed Installs",
-    //"ManifestURL": None,
-    //"PackageURL": None,
+    // "ManifestURL": None,
+    // "PackageURL": None,
     "PackageVerificationMode": "hash",
     "PerformAuthRestarts": false,
-    //"RecoveryKeyFile": None,
+    // "RecoveryKeyFile": None,
     "ShowOptionalInstallsForHigherOSVersions": false,
-    //"SoftwareRepoCACertificate": None,
-    //"SoftwareRepoCAPath": None,
+    // "SoftwareRepoCACertificate": None,
+    // "SoftwareRepoCAPath": None,
     "SoftwareRepoURL": DEFAULT_INSECURE_REPO_URL,
-    //"SoftwareUpdateServerURL": None,
+    // "SoftwareUpdateServerURL": None,
     "SuppressAutoInstall": false,
     "SuppressLoginwindowInstall": false,
     "SuppressStopButtonOnInstall": false,
@@ -104,27 +104,26 @@ let CONFIG_KEY_NAMES = [
     "UseNotificationCenterDays",
 ]
 
-
 func reloadPrefs() {
     /* Uses CFPreferencesAppSynchronize(BUNDLE_ID)
-    to make sure we have the latest prefs. Call this
-    if you have modified /Library/Preferences/ManagedInstalls.plist
-    or /var/root/Library/Preferences/ManagedInstalls.plist directly */
+     to make sure we have the latest prefs. Call this
+     if you have modified /Library/Preferences/ManagedInstalls.plist
+     or /var/root/Library/Preferences/ManagedInstalls.plist directly */
     CFPreferencesAppSynchronize(BUNDLE_ID)
 }
 
-
 func setPref(_ prefName: String, _ prefValue: Any) {
     /* Sets a preference, writing it to
-    /Library/Preferences/ManagedInstalls.plist.
-    This should normally be used only for 'bookkeeping' values;
-    values that control the behavior of munki may be overridden
-    elsewhere (by MCX, for example) */
+     /Library/Preferences/ManagedInstalls.plist.
+     This should normally be used only for 'bookkeeping' values;
+     values that control the behavior of munki may be overridden
+     elsewhere (by MCX, for example) */
     if let key = prefName as CFString? {
         if let value = prefValue as CFPropertyList? {
             CFPreferencesSetValue(
                 key, value, BUNDLE_ID,
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost
+            )
             CFPreferencesAppSynchronize(BUNDLE_ID)
         } else {
             // raise error about illegal value?
@@ -133,7 +132,6 @@ func setPref(_ prefName: String, _ prefValue: Any) {
         // raise error about illegal key?
     }
 }
-
 
 func pref(_ prefName: String) -> Any? {
     /* Return a preference. Since this uses CFPreferencesCopyAppValue,
@@ -156,12 +154,11 @@ func pref(_ prefName: String) -> Any? {
         }
     }
     // prior Python implementation converted dates to strings; we won't do that
-    /*if isinstance(pref_value, NSDate):
+    /* if isinstance(pref_value, NSDate):
      # convert NSDate/CFDates to strings
-     pref_value = str(pref_value)*/
+     pref_value = str(pref_value) */
     return prefValue
 }
-
 
 struct prefsDomain {
     var file: String
@@ -169,7 +166,6 @@ struct prefsDomain {
     var user: CFString
     var host: CFString
 }
-
 
 func isEqual(_ a: CFPropertyList, _ b: CFPropertyList) -> Bool {
     // attempt to compare two CFPropertyList objects that are actually one of:
@@ -185,7 +181,6 @@ func isEqual(_ a: CFPropertyList, _ b: CFPropertyList) -> Bool {
     }
     return false
 }
-
 
 func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> String {
     // Returns a string indicating where the given preference is defined
@@ -232,7 +227,7 @@ func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> Stri
             domain: ".GlobalPreferences" as CFString,
             user: kCFPreferencesAnyUser,
             host: kCFPreferencesCurrentHost
-        )
+        ),
     ]
     for level in levels {
         if let levelValue = CFPreferencesCopyValue(
@@ -256,11 +251,10 @@ func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> Stri
     return "[unknown]"
 }
 
-
 func printConfig() {
     // Prints the current Munki configuration
     print("Current Munki configuration:")
-    let maxPrefNameLen = CONFIG_KEY_NAMES.max(by: {$1.count > $0.count})?.count ?? 0
+    let maxPrefNameLen = CONFIG_KEY_NAMES.max(by: { $1.count > $0.count })?.count ?? 0
     let padding = "                                                  "
     for prefName in CONFIG_KEY_NAMES.sorted() {
         let value = pref(prefName)
@@ -270,7 +264,7 @@ func printConfig() {
         // we look at the type of the default value if defined
         if let numberValue = value as? NSNumber {
             if DEFAULT_PREFS[prefName] is Bool {
-                if numberValue != 0  {
+                if numberValue != 0 {
                     reprValue = "True"
                 } else {
                     reprValue = "False"
@@ -283,7 +277,7 @@ func printConfig() {
         } else if let arrayValue = value as? NSArray {
             reprValue = "\(arrayValue)"
         }
-        //print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
+        // print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
         //       pref_name, repr_value, level))
         let paddedPrefName = (padding + prefName).suffix(maxPrefNameLen)
         print("\(paddedPrefName): \(reprValue) \(level)")
