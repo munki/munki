@@ -19,6 +19,9 @@
 		C013644E2C30F5D8008DB215 /* RepoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013644C2C30F5D8008DB215 /* RepoFactory.swift */; };
 		C013644F2C30F5D8008DB215 /* RepoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013644C2C30F5D8008DB215 /* RepoFactory.swift */; };
 		C01364522C311DFA008DB215 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C01364512C311DFA008DB215 /* ArgumentParser */; };
+		C01364542C321FE7008DB215 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
+		C01364552C321FE7008DB215 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
+		C01364562C321FE7008DB215 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
 		C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */; };
 		C07A6FB02C2B22A400090743 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
 		C07A6FB22C2B22D300090743 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
@@ -75,6 +78,7 @@
 		C01364422C2DD1BA008DB215 /* plistutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = plistutils.swift; sourceTree = "<group>"; };
 		C01364482C2F8EFE008DB215 /* GitFileRepo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitFileRepo.swift; sourceTree = "<group>"; };
 		C013644C2C30F5D8008DB215 /* RepoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoFactory.swift; sourceTree = "<group>"; };
+		C01364532C321FE7008DB215 /* dmgutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dmgutils.swift; sourceTree = "<group>"; };
 		C07A6FA52C2A82B400090743 /* managedsoftwareupdate */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = managedsoftwareupdate; sourceTree = BUILT_PRODUCTS_DIR; };
 		C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = managedsoftwareupdate.swift; sourceTree = "<group>"; };
 		C07A6FAF2C2B22A400090743 /* prefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = prefs.swift; sourceTree = "<group>"; };
@@ -197,6 +201,7 @@
 				C07A6FD12C2B654300090743 /* utils.swift */,
 				C07A6FD92C2CF19600090743 /* cliutils.swift */,
 				C01364422C2DD1BA008DB215 /* plistutils.swift */,
+				C01364532C321FE7008DB215 /* dmgutils.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -315,6 +320,7 @@
 				C07A6FB02C2B22A400090743 /* prefs.swift in Sources */,
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
 				C07A6FB22C2B22D300090743 /* constants.swift in Sources */,
+				C01364542C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C07A6FD22C2B654300090743 /* utils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -325,6 +331,7 @@
 			files = (
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C01364462C2E051F008DB215 /* makecatalogslib.swift in Sources */,
+				C01364552C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C07A6FDB2C2CF19600090743 /* cliutils.swift in Sources */,
 				C013644E2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FBE2C2B5AF000090743 /* prefs.swift in Sources */,
@@ -343,6 +350,7 @@
 			files = (
 				C07A6FDC2C2CF19600090743 /* cliutils.swift in Sources */,
 				C01364452C2DD1BA008DB215 /* plistutils.swift in Sources */,
+				C01364562C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C07A6FCB2C2B5C3A00090743 /* prefs.swift in Sources */,
 				C013644F2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FC72C2B5C0700090743 /* makecatalogs.swift in Sources */,
