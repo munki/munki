@@ -73,4 +73,3 @@ func plistToString(_ dataObject: Any) throws -> String {
         throw PlistError.writeError(description: "\(error)")
     }
 }
-

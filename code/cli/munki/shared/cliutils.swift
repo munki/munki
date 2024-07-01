@@ -12,7 +12,7 @@ func printStderr(_ items: Any..., separator: String = " ", terminator: String = 
     let output = items
         .map { String(describing: $0) }
         .joined(separator: separator) + terminator
-    
+
     FileHandle.standardError.write(output.data(using: .utf8)!)
 }
 
@@ -33,18 +33,18 @@ struct CLIResults {
 func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
     // runs a command line tool synchronously, returns CLIResults
     // not a good choice for tools that might generate a lot of output or error output
-    let inPipe = Pipe.init()
-    let outPipe = Pipe.init()
-    let errorPipe = Pipe.init()
-    
-    let task = Process.init()
+    let inPipe = Pipe()
+    let outPipe = Pipe()
+    let errorPipe = Pipe()
+
+    let task = Process()
     task.launchPath = tool
     task.arguments = arguments
-    
+
     task.standardInput = inPipe
     task.standardOutput = outPipe
     task.standardError = errorPipe
-    
+
     task.launch()
     if stdIn != "" {
         if let data = stdIn.data(using: .utf8) {
@@ -53,20 +53,19 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     }
     inPipe.fileHandleForWriting.closeFile()
     task.waitUntilExit()
-    
+
     let outputData = outPipe.fileHandleForReading.readDataToEndOfFile()
     let outputString = trimTrailingNewline(String(data: outputData, encoding: .utf8) ?? "")
     outPipe.fileHandleForReading.closeFile()
-    
+
     let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
     let errorString = trimTrailingNewline(String(data: errorData, encoding: .utf8) ?? "")
     errorPipe.fileHandleForReading.closeFile()
-    
-    return (CLIResults(
+
+    return CLIResults(
         exitcode: Int(task.terminationStatus),
         output: outputString,
         error: errorString)
-    )
 }
 
 enum CalledProcessError: Error {

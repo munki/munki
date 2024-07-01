@@ -9,10 +9,13 @@ import Foundation
 
 class GitFileRepo: FileRepo {
     // A subclass of FileRepo that also does git commits for repo changes
+
     // MARK: instance variables
+
     var cmd: String
     
     // MARK: override init
+
     required init(_ url: String) throws {
         // try to get path to git binary from admin prefs or use default path
         cmd = adminPref("GitBinaryPath") as? String ?? "/usr/bin/git"
@@ -21,6 +24,7 @@ class GitFileRepo: FileRepo {
     }
         
     // MARK: git functions
+
     func runGit(args: [String] = []) -> CLIResults {
         return runCLI(cmd, arguments: args)
     }
@@ -37,7 +41,7 @@ class GitFileRepo: FileRepo {
     
     func isInGitRepo(_ identifier: String) -> Bool {
         // Returns True if file referred to by identifer is in a Git repo, false otherwise.
-        let results =  runGit(
+        let results = runGit(
             args: ["-C", parentDir(identifier),
                    "status", "-z", fullPath(identifier)]
         )
@@ -58,8 +62,8 @@ class GitFileRepo: FileRepo {
         
         // get the status of file at path
         let statusResults = runGit(
-            args:["-C", parentDir(identifier),
-                  "status", "-s", fullPath(identifier)]
+            args: ["-C", parentDir(identifier),
+                   "status", "-s", fullPath(identifier)]
         )
         var action = ""
         if statusResults.output.hasPrefix("A") {
@@ -116,6 +120,7 @@ class GitFileRepo: FileRepo {
     }
 
     // MARK: override FileRepo API methods
+
     override func put(_ identifier: String, content: Data) throws {
         try super.put(identifier, content: content)
         gitAdd(identifier)
