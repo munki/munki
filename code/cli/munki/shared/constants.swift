@@ -39,4 +39,4 @@ let POSTACTION_LOGOUT = 1
 let POSTACTION_RESTART = 2
 let POSTACTION_SHUTDOWN = 4
 
-typealias PlistDict = [String:Any]
+typealias PlistDict = [String: Any]

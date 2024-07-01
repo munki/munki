@@ -5,12 +5,11 @@
 //  Created by Greg Neagle on 6/25/24.
 //
 
-import Foundation
 import ArgumentParser
+import Foundation
 
 @main
 struct MakeCatalogs: ParsableCommand {
-    
     static let configuration = CommandConfiguration(
         commandName: "makecatalogs",
         abstract: "Builds Munki catalogs from pkginfo files.",
@@ -28,7 +27,7 @@ struct MakeCatalogs: ParsableCommand {
     var skipPkgCheck = false
     
     @Option(name: [.customLong("repo-url"), .customLong("repo_url")],
-                   help: "Optional repo URL that takes precedence over the default repo_url specified via preferences.")
+            help: "Optional repo URL that takes precedence over the default repo_url specified via preferences.")
     var repoURL = ""
     
     @Option(help: "Specify a custom plugin to connect to the Munki repo.")
@@ -66,7 +65,6 @@ struct MakeCatalogs: ParsableCommand {
         if actual_repo_url.isEmpty {
             throw ValidationError("Please specify --repo_url or a repo path.")
         }
-        
     }
 
     mutating func run() throws {
@@ -93,13 +91,13 @@ struct MakeCatalogs: ParsableCommand {
                 }
                 throw ExitCode(-1)
             }
-        } catch RepoError.error(let description) {
+        } catch let RepoError.error(description) {
             printStderr("Repo error: \(description)")
             throw ExitCode(-1)
-        } catch MakeCatalogsError.PkginfoAccessError(let description) {
+        } catch let MakeCatalogsError.PkginfoAccessError(description) {
             printStderr("Pkginfo read error: \(description)")
             throw ExitCode(-1)
-        } catch MakeCatalogsError.CatalogWriteError(let description) {
+        } catch let MakeCatalogsError.CatalogWriteError(description) {
             printStderr("Catalog write error: \(description)")
             throw ExitCode(-1)
         } catch {

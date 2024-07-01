@@ -5,8 +5,8 @@
 //  Created by Greg Neagle on 6/27/24.
 //
 
-import Foundation
 import CryptoKit
+import Foundation
 
 enum MakeCatalogsError: Error {
     case PkginfoAccessError(description: String)
@@ -24,14 +24,15 @@ struct CatalogsMaker {
     var options: MakeCatalogOptions
     var pkgsinfoList: [String]
     var pkgsList: [String]
-    var catalogs: [String:[PlistDict]]
+    var catalogs: [String: [PlistDict]]
     var errors: [String]
     
     init(repo: Repo,
-         options: MakeCatalogOptions = MakeCatalogOptions() ) throws {
+         options: MakeCatalogOptions = MakeCatalogOptions()) throws
+    {
         self.repo = repo
         self.options = options
-        catalogs = [String:[PlistDict]]()
+        catalogs = [String: [PlistDict]]()
         errors = [String]()
         pkgsinfoList = [String]()
         pkgsList = [String]()
@@ -45,7 +46,7 @@ struct CatalogsMaker {
             pkgsinfoList = try listItemsOfKind(repo, "pkgsinfo")
         } catch is RepoError {
             throw MakeCatalogsError.PkginfoAccessError(
-                description: "Error getting list of pkgsinfo items" )
+                description: "Error getting list of pkgsinfo items")
         }
     }
     
@@ -55,16 +56,16 @@ struct CatalogsMaker {
             pkgsList = try listItemsOfKind(repo, "pkgs")
         } catch is RepoError {
             throw MakeCatalogsError.PkginfoAccessError(
-                description: "Error getting list of pkgs items" )
+                description: "Error getting list of pkgs items")
         }
     }
     
-    mutating func hashIcons() -> [String:String] {
+    mutating func hashIcons() -> [String: String] {
         // Builds a dictionary containing hashes for all our repo icons
         if options.verbose {
             print("Getting list of icons...")
         }
-        var iconHashes = [String:String]()
+        var iconHashes = [String: String]()
         if var iconList = try? repo.list("icons") {
             // remove plist of hashes from the list
             if let index = iconList.firstIndex(of: "_icon_hashes.plist") {
@@ -79,7 +80,7 @@ struct CatalogsMaker {
                     let hashed = SHA256.hash(data: icondata)
                     let hashString = hashed.compactMap { String(format: "%02x", $0) }.joined()
                     iconHashes[icon] = hashString
-                } catch RepoError.error(let description) {
+                } catch let RepoError.error(description) {
                     errors.append("RepoError reading icons/\(icon): \(description)")
                 } catch {
                     errors.append("Unexpected error reading icons/\(icon): \(error)")
@@ -132,7 +133,7 @@ struct CatalogsMaker {
             if let match = caseInsensitivePkgsListContains(installeritempath) {
                 errors.append(
                     "WARNING: \(identifier) refers to installer item: \(installeritemlocation). The pathname of the item in the repo has different case: \(match). This may cause issues depending on the case-sensitivity of the underlying filesystem."
-                    )
+                )
             } else {
                 errors.append(
                     "WARNING: \(identifier) refers to missing installer item: \(installeritemlocation)"
@@ -155,7 +156,7 @@ struct CatalogsMaker {
                 if let match = caseInsensitivePkgsListContains(uninstalleritempath) {
                     errors.append(
                         "WARNING: \(identifier) refers to uninstaller item: \(uninstalleritemlocation). The pathname of the item in the repo has different case: \(match). This may cause issues depending on the case-sensitivity of the underlying filesystem."
-                        )
+                    )
                 } else {
                     errors.append(
                         "WARNING: \(identifier) refers to missing uninstaller item: \(uninstalleritemlocation)"
@@ -199,7 +200,7 @@ struct CatalogsMaker {
             // sanity checking
             if !options.skipPkgCheck {
                 let verified = verify(pkginfoIdentifier, pkginfo)
-                if !verified && !options.force {
+                if !verified, !options.force {
                     // Skip this pkginfo unless we're running with force flag
                     continue
                 }
@@ -227,7 +228,7 @@ struct CatalogsMaker {
         // look for catalog names that differ only in case
         var duplicateCatalogs = [String]()
         for name in catalogs.keys {
-            let filtered_lowercase_names = catalogs.keys.filter( { $0 != name } ).map( { $0.lowercased() })
+            let filtered_lowercase_names = catalogs.keys.filter { $0 != name }.map { $0.lowercased() }
             if filtered_lowercase_names.contains(name.lowercased()) {
                 duplicateCatalogs.append(name)
             }
@@ -235,8 +236,8 @@ struct CatalogsMaker {
         if !duplicateCatalogs.isEmpty {
             errors.append(
                 "WARNING: There are catalogs with names that differ only by case. " +
-                "This may cause issues depending on the case-sensitivity of the " +
-                "underlying filesystem: \(duplicateCatalogs)")
+                    "This may cause issues depending on the case-sensitivity of the " +
+                    "underlying filesystem: \(duplicateCatalogs)")
         }
     }
     
@@ -283,9 +284,9 @@ struct CatalogsMaker {
                             print("Created \(catalogIdentifier)...")
                         }
                     }
-                } catch PlistError.writeError(let description) {
+                } catch let PlistError.writeError(description) {
                     errors.append("Could not serialize catalog \(key): \(description)")
-                } catch RepoError.error(let description){
+                } catch let RepoError.error(description) {
                     errors.append("Failed to create catalog \(key): \(description)")
                 } catch {
                     errors.append("Unexpected error creating catalog \(key): \(error)")
@@ -304,9 +305,9 @@ struct CatalogsMaker {
                 if options.verbose {
                     print("Created \(iconHashesIdentifier)...")
                 }
-            } catch PlistError.writeError(let description) {
+            } catch let PlistError.writeError(description) {
                 errors.append("Could not serialize icon hashes: \(description)")
-            } catch RepoError.error(let description){
+            } catch let RepoError.error(description) {
                 errors.append("Failed to create \(iconHashesIdentifier): \(description)")
             } catch {
                 errors.append("Unexpected error creating \(iconHashesIdentifier): \(error)")
@@ -315,6 +316,3 @@ struct CatalogsMaker {
         return errors
     }
 }
-
-
-

@@ -29,7 +29,7 @@ protocol Repo {
 func isDir(_ path: String) -> Bool {
     let filemanager = FileManager.default
     do {
-        let fileType = (try filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
         return fileType == FileAttributeType.typeDirectory.rawValue
     } catch {
         return false
@@ -37,6 +37,7 @@ func isDir(_ path: String) -> Bool {
 }
 
 // MARK: share mounting functions
+
 // NetFS error codes
 /*
  *    ENETFSPWDNEEDSCHANGE           -5045
@@ -93,7 +94,7 @@ func mountShareURL(_ share_url: String) throws -> String {
     do {
         return try mountShare(share_url)
     } catch ShareMountError.authorizationNeeded {
-        //pass
+        // pass
     } catch {
         throw error
     }
@@ -109,16 +110,18 @@ func mountShareURL(_ share_url: String) throws -> String {
     return try mountShare(share_url, username: username, password: password)
 }
 
-
 // MARK: File repo class
+
 class FileRepo: Repo {
     // MARK: instance variables
+
     var baseurl: String
     var urlScheme: String
     var root: String
     var weMountedTheRepo: Bool
-    
+
     // MARK: init/deinit
+
     required init(_ url: String) throws {
         baseurl = url
         urlScheme = NSURL(string: url)?.scheme ?? ""
@@ -132,13 +135,14 @@ class FileRepo: Repo {
         weMountedTheRepo = false
         try _connect()
     }
-    
+
     deinit {
         // Destructor -- unmount the fileshare if we mounted it
         if weMountedTheRepo && isDir(root) {
             print("Attempting to unmount \(root)...")
             let results = runCLI(
-                "/usr/sbin/diskutil", arguments: ["unmount", root])
+                "/usr/sbin/diskutil", arguments: ["unmount", root]
+            )
             if results.exitcode == 0 {
                 print(results.output)
             } else {
@@ -147,18 +151,19 @@ class FileRepo: Repo {
             }
         }
     }
-    
+
     // MARK: utility methods
+
     func fullPath(_ identifier: String) -> String {
         // returns the full (absolute) filesystem path to identifier
         return (root as NSString).appendingPathComponent(identifier)
     }
-    
+
     func parentDir(_ identifier: String) -> String {
         // returns the filesystem path to the parent dir of identifier
         return (fullPath(identifier) as NSString).deletingLastPathComponent
     }
-    
+
     private func _connect() throws {
         // If self.root is present, return. Otherwise, if the url scheme is not
         // "file" then try to mount the share url.
@@ -179,8 +184,9 @@ class FileRepo: Repo {
             throw RepoError.error(description: "Repo path does not exist")
         }
     }
-    
+
     // MARK: API methods
+
     func list(_ kind: String) throws -> [String] {
         // Returns a list of identifiers for each item of kind.
         // Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
@@ -200,7 +206,7 @@ class FileRepo: Repo {
         }
         return fileList
     }
-    
+
     func get(_ identifier: String) throws -> Data {
         // Returns the content of item with given resource_identifier.
         // For a file-backed repo, a resource_identifier of
@@ -214,7 +220,7 @@ class FileRepo: Repo {
         }
         throw RepoError.error(description: "Error getting contents from \(repoFilePath)")
     }
-    
+
     func get(_ identifier: String, toFile local_file_path: String) throws {
         // Gets the contents of item with given resource_identifier and saves
         // it to local_file_path.
@@ -229,7 +235,7 @@ class FileRepo: Repo {
         }
         try filemanager.copyItem(atPath: fullPath(identifier), toPath: local_file_path)
     }
-    
+
     func put(_ identifier: String, content: Data) throws {
         // Stores content on the repo based on resource_identifier.
         // For a file-backed repo, a resource_identifier of
@@ -248,7 +254,7 @@ class FileRepo: Repo {
             throw RepoError.error(description: "write failed")
         }
     }
-    
+
     func put(_ identifier: String, fromFile localFilePath: String) throws {
         // Copies the content of local_file_path to the repo based on
         // resource_identifier. For a file-backed repo, a resource_identifier
@@ -270,7 +276,7 @@ class FileRepo: Repo {
         }
         try filemanager.copyItem(atPath: localFilePath, toPath: repoFilePath)
     }
-    
+
     func delete(_ identifier: String) throws {
         // Deletes a repo object located by resource_identifier.
         // For a file-backed repo, a resource_identifier of
@@ -278,5 +284,4 @@ class FileRepo: Repo {
         // <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
         try FileManager.default.removeItem(atPath: fullPath(identifier))
     }
-
 }
