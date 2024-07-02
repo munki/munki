@@ -15,8 +15,7 @@ func hdiutilData(arguments: [String], stdIn: String = "") -> PlistDict {
     }
     let results = runCLI("/usr/bin/hdiutil", arguments: hdiUtilArgs, stdIn: stdIn)
     if results.exitcode != 0 {
-        //TODO: implement Munki's display* methods
-        printStderr("hdiutil error \(results.error) with arguments \(arguments)")
+        displayError("hdiutil error \(results.error) with arguments \(arguments)")
     }
     let (plistStr, _) = parseFirstPlist(fromString: results.output)
     if !plistStr.isEmpty {
@@ -175,8 +174,7 @@ func mountdmg(
     var stdIn = ""
     if dmgHasSLA(dmgPath) {
         stdIn = "Y\n"
-        // TODO: implement Munki display* methods
-        print("NOTE: \(dmgName) has embedded Software License Agreement")
+        displayDetail("NOTE: \(dmgName) has embedded Software License Agreement")
     }
     var arguments = ["attach", dmgPath, "-nobrowse"]
     if randomMountpoint {
@@ -196,8 +194,7 @@ func mountdmg(
             }
         }
     } else {
-        // TODO: implement Munki display* methods
-        printStderr("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
+        displayError("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
     }
     return mountpoints
 }
@@ -208,14 +205,12 @@ func unmountdmg(_ mountpoint: String) {
     let results = runCLI("/usr/bin/hdiutil", arguments: arguments)
     if results.exitcode != 0 {
         // regular unmount failed; try to force unmount
-        // TODO: implement Munki display* methods
-        printStderr("Polite unmount failed: \(results.error)")
-        printStderr("Attempting to force unmount \(mountpoint)")
+        displayError("Polite unmount failed: \(results.error)")
+        displayError("Attempting to force unmount \(mountpoint)")
         arguments.append("-force")
         let results = runCLI("/usr/bin/hdiutil", arguments: arguments)
         if results.exitcode != 0 {
-            // TODO: implement Munki display* methods
-            print("WARNING: Failed to unmount \(mountpoint): \(results.error)")
+            displayWarning("WARNING: Failed to unmount \(mountpoint): \(results.error)")
         }
     }
 }
