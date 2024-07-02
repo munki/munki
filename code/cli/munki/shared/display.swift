@@ -57,8 +57,7 @@ func displayMajorStatus(_ message: String) {
     // Displays major status messages, formatting as needed
     // for verbose/non-verbose and munkistatus-style output.
     
-    // TODO: implement logging
-    // munkiLog(message)
+    munkiLog(message)
     if DisplayOptions.shared.munkistatusoutput {
         // TODO: implement munkistatus stuff
         // munkistatusMessage(message)
@@ -79,8 +78,7 @@ func displayMinorStatus(_ message: String) {
     // Displays minor status messages, formatting as needed
     // for verbose/non-verbose and munkistatus-style output.
     
-    // TODO: implement logging
-    // munkiLog("    \(message)")
+    munkiLog("    \(message)")
     if DisplayOptions.shared.munkistatusoutput {
         // TODO: implement munkistatus stuff
         // munkistatusDetail(message)
@@ -99,8 +97,7 @@ func displayInfo(_ message: String) {
     // Displays info messages.
     // Not displayed in MunkiStatus.
     
-    // TODO: implement logging
-    // munkiLog("    \(message)")
+    munkiLog("    \(message)")
     if DisplayOptions.shared.verbose > 0 {
         print("    \(message)")
         fflush(stdout)
@@ -116,10 +113,9 @@ func displayDetail(_ message: String) {
         print("    \(message)")
         fflush(stdout)
     }
-    // TODO: implement logging
-    // if munkiLoggingLevel() > 0 {
-    //     munkiLog("   \(message)")
-    // }
+    if loggingLevel() > 0 {
+        munkiLog("   \(message)")
+    }
 }
 
 func displayDebug1(_ message: String) {
@@ -128,10 +124,9 @@ func displayDebug1(_ message: String) {
         print("    \(message)")
         fflush(stdout)
     }
-    // TODO: implement logging
-    // if munkiLoggingLevel() > 1 {
-    //     munkiLog("DEBUG1: \(message)")
-    // }
+    if loggingLevel() > 1 {
+        munkiLog("DEBUG1: \(message)")
+    }
 }
 
 func displayDebug2(_ message: String) {
@@ -140,38 +135,37 @@ func displayDebug2(_ message: String) {
         print("    \(message)")
         fflush(stdout)
     }
-    // TODO: implement logging
-    // if munkiLoggingLevel() > 2 {
-    //     munkiLog("DEBUG2: \(message)")
-    // }
+    if loggingLevel() > 2 {
+        munkiLog("DEBUG2: \(message)")
+    }
 }
 
-func displayWarning(_ message: String) {
+func displayWarning(_ message: String, addToReport: Bool = true) {
     // Prints warning message to stderr and the log
     let warning = "WARNING: \(message)"
     if DisplayOptions.shared.verbose > 0 {
         printStderr(warning)
     }
-    // TODO: implement logging
-    // munkiLog(warning)
-    // munkiLog(warning, logfile: "warnings.log")
+    munkiLog(warning)
+    munkiLog(warning, logFile: "warnings.log")
     
-    // TODO: implement report collection
-    // report(key: "Warnings", append: warning)
+    if addToReport {
+        Report.shared.add(warning, to: "Warnings")
+    }
 }
 
-func displayError(_ message: String) {
+func displayError(_ message: String, addToReport: Bool = true) {
     // Prints error message to stderr and the log
     let errorMsg = "ERROR: \(message)"
     if DisplayOptions.shared.verbose > 0 {
         printStderr(errorMsg)
     }
-    // TODO: implement logging
-    // munkiLog(errorMsg)
-    // munkiLog(errorMsg, logfile: "errors.log")
+    munkiLog(errorMsg)
+    munkiLog(errorMsg, logFile: "errors.log")
     
-    // TODO: implement report collection
-    // report(key: "Errors", append: errorMsg)
+    if addToReport {
+        Report.shared.add(errorMsg, to: "Errors")
+    }
 }
 
 
