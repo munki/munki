@@ -151,4 +151,115 @@ func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
     return "0.0.0.0.0"
 }
 
-// MARK: dist file functions
+// MARK: XML file functions
+
+func getProductVersionFromDist(_ filepath: String) -> String {
+    // Extracts product version from a Distribution file
+    guard let data = NSData(contentsOfFile: filepath) else { return "" }
+    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
+    guard let products = try? doc.nodes(forXPath: "//product") else { return "" }
+    guard let product = products[0] as? XMLElement else { return "" }
+    guard let versionAttr = product.attribute(forName: "version") else { return "" }
+    return versionAttr.stringValue ?? ""
+}
+
+
+func parsePackageInfoFile(_ filepath: String) -> [PlistDict] {
+    // Parses a PackageInfo XML file and returns useful info
+    // No official Apple documentation on the format of this file, but
+    // http://s.sudre.free.fr/Stuff/Ivanhoe/FLAT.html has some
+    
+    var info = [PlistDict]()
+    guard let data = NSData(contentsOfFile: filepath) else { return info }
+    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return info }
+    guard let nodes = try? doc.nodes(forXPath: "//pkg-info") else { return info }
+    for node in nodes {
+        guard let element = node as? XMLElement else { continue }
+        if let identifierAttr = element.attribute(forName: "identifier"),
+           let versionAttr = element.attribute(forName: "version") {
+            var pkginfo = PlistDict()
+            if let identifier = identifierAttr.stringValue {
+                pkginfo["packageid"] = identifier
+            }
+            if let version = versionAttr.stringValue {
+                pkginfo["version"] = version
+            }
+            if let payloads = try? element.nodes(forXPath: "child::payload") {
+                guard let payload = payloads[0] as? XMLElement else { continue }
+                if let sizeAttr = payload.attribute(forName: "installKBytes") {
+                    if let size = sizeAttr.stringValue {
+                        pkginfo["installed_size"] = Int(size)
+                    }
+                }
+                info.append(pkginfo)
+            }
+        }
+    }
+    return info
+}
+
+
+func partialFileURLToRelativePath(_ partialURL: String) -> String {
+    //
+    // converts the partial file urls found in Distribution pkg-refs
+    // to relative file paths
+    // TODO: handle pkg-ref content that starts with "file:"
+    
+    var temp = partialURL
+    if temp.hasPrefix("#") {
+        temp.removeFirst()
+    }
+    let fileurl = URL(string: "file:///")
+    if let url = URL(string: temp, relativeTo: fileurl) {
+        return url.relativePath
+    }
+    // fallback in case that failed
+    return temp.removingPercentEncoding ?? ""
+}
+
+
+func parseDistFile(_ filepath: String) -> PlistDict {
+    /* https://developer.apple.com/library/archive/documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Distribution_XML_Ref.html
+    */
+    var pkgrefDict = [String:PlistDict]()
+    guard let data = NSData(contentsOfFile: filepath) else { return PlistDict() }
+    guard let doc = try? XMLDocument(data: data as Data, options: []) else {
+        return PlistDict()
+    }
+    guard let nodes = try? doc.nodes(forXPath: "//pkg-ref") else {
+        return PlistDict()
+    }
+    for node in nodes {
+        guard let element = node as? XMLElement else { continue }
+        guard let idAttr = element.attribute(forName: "id") else { continue }
+        if let pkgid = idAttr.stringValue {
+            if !pkgrefDict.keys.contains(pkgid) {
+                pkgrefDict[pkgid] = ["packageid": pkgid]
+            }
+            if let versAttr = element.attribute(forName: "version") {
+                if let version = versAttr.stringValue {
+                    pkgrefDict[pkgid]?["version"] = version
+                }
+            }
+            if let sizeAttr = element.attribute(forName: "installKBytes") {
+                if let size = sizeAttr.stringValue {
+                    pkgrefDict[pkgid]?["installed_size"] = Int(size)
+                }
+            }
+            element.normalizeAdjacentTextNodesPreservingCDATA(false)
+            var textvalue = ""
+            if let textnodes = try? element.nodes(forXPath: "child::text()") {
+                for textnode in textnodes {
+                    if let str = textnode.stringValue {
+                        textvalue += str
+                    }
+                }
+            }
+            if !textvalue.isEmpty {
+                pkgrefDict[pkgid]?["file"] = partialFileURLToRelativePath(textvalue)
+            }
+        }
+    }
+    return pkgrefDict
+}
+
