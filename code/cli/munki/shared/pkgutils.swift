@@ -164,15 +164,13 @@ func getProductVersionFromDist(_ filepath: String) -> String {
 }
 
 
-func parsePackageInfoFile(_ filepath: String) -> [PlistDict] {
-    // Parses a PackageInfo XML file and returns useful info
+func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
+    // parses a PackageInfo file and returns a package receipt
     // No official Apple documentation on the format of this file, but
     // http://s.sudre.free.fr/Stuff/Ivanhoe/FLAT.html has some
-    
-    var info = [PlistDict]()
-    guard let data = NSData(contentsOfFile: filepath) else { return info }
-    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return info }
-    guard let nodes = try? doc.nodes(forXPath: "//pkg-info") else { return info }
+    guard let data = NSData(contentsOfFile: filepath) else { return PlistDict() }
+    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return PlistDict() }
+    guard let nodes = try? doc.nodes(forXPath: "//pkg-info") else { return PlistDict() }
     for node in nodes {
         guard let element = node as? XMLElement else { continue }
         if let identifierAttr = element.attribute(forName: "identifier"),
@@ -191,11 +189,11 @@ func parsePackageInfoFile(_ filepath: String) -> [PlistDict] {
                         pkginfo["installed_size"] = Int(size)
                     }
                 }
-                info.append(pkginfo)
+                return pkginfo
             }
         }
     }
-    return info
+    return PlistDict()
 }
 
 
@@ -218,16 +216,19 @@ func partialFileURLToRelativePath(_ partialURL: String) -> String {
 }
 
 
-func parseDistFile(_ filepath: String) -> PlistDict {
+func receiptsFromDistFile(_ filepath: String) -> [PlistDict] {
+    // parses a package Distribution file and returns a list of
+    // package receipts
     /* https://developer.apple.com/library/archive/documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Distribution_XML_Ref.html
     */
+    var info = [PlistDict]()
     var pkgrefDict = [String:PlistDict]()
-    guard let data = NSData(contentsOfFile: filepath) else { return PlistDict() }
+    guard let data = NSData(contentsOfFile: filepath) else { return info }
     guard let doc = try? XMLDocument(data: data as Data, options: []) else {
-        return PlistDict()
+        return info
     }
     guard let nodes = try? doc.nodes(forXPath: "//pkg-ref") else {
-        return PlistDict()
+        return info
     }
     for node in nodes {
         guard let element = node as? XMLElement else { continue }
@@ -260,6 +261,82 @@ func parseDistFile(_ filepath: String) -> PlistDict {
             }
         }
     }
-    return pkgrefDict
+    for pkgref in pkgrefDict.values {
+        if pkgref.keys.contains("file") && pkgref.keys.contains("version") {
+            var receipt = pkgref
+            receipt["file"] = nil
+            info.append(receipt)
+        }
+    }
+    return info
 }
 
+// MARK: flat pkg methods
+
+func getAbsolutePath(_ path: String) -> String {
+    // returns absolute path to item referred to by path
+    if (path as NSString).isAbsolutePath {
+        return path
+    }
+    let cwd = FileManager.default.currentDirectoryPath
+    let composedPath = (cwd as NSString).appendingPathComponent(path)
+    return (composedPath as NSString).standardizingPath
+}
+
+
+func getFlatPackageReceipts(_ pkgpath: String) -> [PlistDict] {
+    // returns receipts array for a flat package
+    var receiptarray = [PlistDict]()
+    // get the absolute path to the pkg because we need to do a chdir later
+    let absolutePkgPath = getAbsolutePath(pkgpath)
+    // make a tmp dir to expand the flat package into
+    guard let pkgTmpDir = TempDir.shared.makeTempDir() else { return receiptarray }
+    // record our current working dir
+    let filemanager = FileManager.default
+    let cwd = filemanager.currentDirectoryPath
+    // change into our tmpdir so we can use xar to unarchive the flat package
+    filemanager.changeCurrentDirectoryPath(pkgTmpDir)
+    // Get the TOC of the flat pkg so we can search it later
+    let tocResults = runCLI("/usr/bin/xar", arguments: ["-tf", absolutePkgPath])
+    if tocResults.exitcode == 0  {
+        for tocEntry in tocResults.output.components(separatedBy: "\n") {
+            if tocEntry.hasSuffix("PackageInfo") {
+                let extractResults = runCLI(
+                    "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
+                if extractResults.exitcode == 0 {
+                    let packageInfoPath = getAbsolutePath(
+                        (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
+                    receiptarray.append( receiptFromPackageInfoFile(packageInfoPath))
+                } else {
+                    displayWarning(
+                        "An error occurred while extracting \(tocEntry): \(tocResults.error)")
+                }
+            }
+        }
+        if receiptarray.isEmpty {
+            // nothing from PackageInfo files; try Distribution files
+            for tocEntry in tocResults.output.components(separatedBy: "\n") {
+                if tocEntry.hasSuffix("Distribution") {
+                    let extractResults = runCLI(
+                        "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
+                    if extractResults.exitcode == 0 {
+                        let distributionPath = getAbsolutePath(
+                            (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
+                            receiptarray += receiptsFromDistFile(distributionPath)
+                    } else {
+                        displayWarning(
+                            "An error occurred while extracting \(tocEntry): \(tocResults.error)")
+                    }
+                }
+            }
+        }
+    } else {
+        displayWarning(
+            "An error occurred while geting table of contents for \(pkgpath): \(tocResults.error)")
+    }
+    // change back to original working dir
+    filemanager.changeCurrentDirectoryPath(cwd)
+    // clean up tmpdir
+    try? filemanager.removeItem(atPath: pkgTmpDir)
+    return receiptarray
+}
