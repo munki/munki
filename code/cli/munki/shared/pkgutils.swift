@@ -41,8 +41,8 @@ func getVersionString(plist: PlistDict, key: String = "") -> String {
     // is not a string.
     //
     // If key is not specified:
-    // if there's a valid CFBundleShortVersionString, returns that.
-    // else if there's a CFBundleVersion, returns that
+    // if there"s a valid CFBundleShortVersionString, returns that.
+    // else if there"s a CFBundleVersion, returns that
     // else returns an empty string.
     
     if !key.isEmpty {
@@ -119,6 +119,23 @@ func parseInfoFile(_ infofilepath: String) -> PlistDict {
     return PlistDict()
 }
 
+func getOldStyleInfoFile(_ bundlepath: String) -> String? {
+    // returns a path to an old-style .info file inside the
+    // bundle if present
+    let infopath = (bundlepath as NSString).appendingPathComponent("Contents/Resources/English.lproj")
+    if isDir(infopath) {
+        let filemanager = FileManager.default
+        if let dirlist = try? filemanager.contentsOfDirectory(atPath: infopath) {
+            for item in dirlist {
+                if item.hasSuffix(".info") {
+                    return (infopath as NSString).appendingPathComponent(item)
+                }
+            }
+        }
+    }
+    return nil
+}
+
 
 func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
     // Returns version number from a bundle.
@@ -133,19 +150,10 @@ func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
         }
     }
     // no version number in Info.plist. Maybe old-style package?
-    let infopath = (bundlepath as NSString).appendingPathComponent("Contents/Resources/English.lproj")
-    if isDir(infopath) {
-        let filemanager = FileManager.default
-        if let dirlist = try? filemanager.contentsOfDirectory(atPath: infopath) {
-            for item in dirlist {
-                if item.hasSuffix(".info") {
-                    let infofile = (infopath as NSString).appendingPathComponent(item)
-                    let info = parseInfoFile(infofile)
-                    if let version = info["Version"] as? String {
-                        return version
-                    }
-                }
-            }
+    if let infofile = getOldStyleInfoFile(bundlepath) {
+        let info = parseInfoFile(infofile)
+        if let version = info["Version"] as? String {
+            return version
         }
     }
     return "0.0.0.0.0"
@@ -174,6 +182,102 @@ func getBomList(_ pkgpath: String) -> [String] {
     }
     return [String]()
 }
+
+func getSinglePkgReceipt(_ pkgpath: String) -> PlistDict {
+    // returns receipt info for a single bundle-style package
+    var receipt = PlistDict()
+    let pkgname = (pkgpath as NSString).lastPathComponent
+    if let plist = getBundleInfo(pkgpath) {
+        receipt["filename"] = pkgname
+        if let identifier = plist["CFBundleIdentifier"] as? String {
+            receipt["packageid"] = identifier
+        } else if let identifier = plist["Bundle identifier"] as? String {
+            receipt["packageid"] = identifier
+        } else {
+            receipt["packageid"] = pkgname
+        }
+        if let name = plist["CFBundleName"] as? String {
+            receipt["name"] = name
+        }
+        if let installedSize = plist["IFPkgFlagInstalledSize"] as? Int {
+            receipt["installed_size"] = installedSize
+        }
+        receipt["version"] = getBundleVersion(pkgpath)
+    } else {
+        // look for really old-style .info file
+        if let infofile = getOldStyleInfoFile(pkgpath) {
+            let info = parseInfoFile(infofile)
+            receipt["version"] = info["Version"] as? String ?? "0.0"
+            receipt["name"] = info["Title"] as? String ?? pkgname
+            receipt["packageid"] = pkgname
+            receipt["filename"] = pkgname
+        }
+    }
+    return receipt
+}
+
+func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
+    // get metadate from a bundle-style package
+    var receiptarray = [PlistDict]()
+    if pkgpath.hasSuffix(".pkg") {
+        // try to get info as if this is a single component pkg
+        let receipt = getSinglePkgReceipt(pkgpath)
+        if !receipt.isEmpty {
+            receiptarray.append(receipt)
+            return ["receipts": receiptarray]
+        }
+    }
+    // might be a mpkg
+    let contentsPath = (pkgpath as NSString).appendingPathComponent("Contents")
+    let filemanager = FileManager.default
+    if isDir(contentsPath) {
+        if let dirlist = try? filemanager.contentsOfDirectory(atPath: contentsPath) {
+            for item in dirlist {
+                if item.hasSuffix(".dist") {
+                    let distfilepath = (contentsPath as NSString).appendingPathComponent(item)
+                    let receiptarray = receiptsFromDistFile(distfilepath)
+                    return ["receipts": receiptarray]
+                }
+            }
+        }
+        // no .dist file found; let"s look for subpackages
+        var searchDirs = [String]()
+        if let info = getBundleInfo(pkgpath) {
+            if let componentDir = info["IFPkgFlagComponentDirectory"] as? String {
+                searchDirs.append(componentDir)
+            }
+        }
+        if searchDirs.isEmpty {
+            searchDirs = ["", "Contents", "Contents/Installers",
+                            "Contents/Packages", "Contents/Resources",
+                            "Contents/Resources/Packages"]
+        }
+        for dir in searchDirs {
+            let searchDir = (pkgpath as NSString).appendingPathComponent(dir)
+            guard isDir(searchDir) else { continue }
+            guard let dirlist = try? filemanager.contentsOfDirectory(atPath: searchDir) else { continue }
+            for item in dirlist {
+                let itempath = (searchDir as NSString).appendingPathComponent(item)
+                guard isDir(itempath) else { continue }
+                if itempath.hasSuffix(".pkg") {
+                    let receipt = getSinglePkgReceipt(itempath)
+                    if !receipt.isEmpty {
+                        receiptarray.append(receipt)
+                    }
+                } else if itempath.hasSuffix(".mpkg") {
+                    let info = getBundlePackageInfo(itempath)
+                    if !info.isEmpty {
+                        if let receipts = info["receipts"] as? [PlistDict] {
+                            receiptarray += receipts
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return ["receipts": receiptarray]
+}
+
 
 // MARK: XML file functions (mostly for flat packages)
 
