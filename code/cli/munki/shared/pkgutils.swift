@@ -151,7 +151,31 @@ func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
     return "0.0.0.0.0"
 }
 
-// MARK: XML file functions
+func getBomList(_ pkgpath: String) -> [String] {
+    // Gets bom listing from pkgpath, which should be a path
+    // to a bundle-style package
+    // Returns a list of strings
+    let contentsPath = (pkgpath as NSString).appendingPathComponent("Contents")
+    if isDir(contentsPath) {
+        let filemanager = FileManager.default
+        if let dirlist = try? filemanager.contentsOfDirectory(atPath: contentsPath) {
+            for item in dirlist {
+                if item.hasSuffix(".bom") {
+                    let bompath = (contentsPath as NSString).appendingPathComponent(item)
+                    let results = runCLI(
+                        "/usr/bin/lsbom", arguments: ["-s", bompath])
+                    if results.exitcode == 0 {
+                        return results.output.components(separatedBy: "\n")
+                    }
+                    break
+                }
+            }
+        }
+    }
+    return [String]()
+}
+
+// MARK: XML file functions (mostly for flat packages)
 
 func getProductVersionFromDist(_ filepath: String) -> String {
     // Extracts product version from a Distribution file
