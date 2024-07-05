@@ -80,3 +80,119 @@ func checkCall(_ tool: String, arguments: [String] = [], stdIn: String = "") thr
     }
     return result.output
 }
+
+
+enum AsyncProcessPhase: Int {
+    case notStarted
+    case started
+    case ended
+}
+
+struct AsyncProcessStatus {
+    var phase: AsyncProcessPhase = .notStarted
+    var terminationStatus: Int32 = 0
+    var outputProcessing = false
+    var errorProcessing = false
+}
+
+protocol AsyncProcessDelegate: AnyObject {
+    func processUpdated()
+}
+
+class AsyncProcessRunner {
+    let task = Process()
+    var status = AsyncProcessStatus()
+    var results = CLIResults()
+    var delegate: AsyncProcessDelegate?
+    
+    init(_ tool: String, arguments: [String] = [], stdIn: String = "") {
+        task.launchPath = tool
+        task.arguments = arguments
+        
+        // set up our stdout and stderr pipes and handlers
+        task.standardOutput = Pipe()
+        let outputHandler =  { (file: FileHandle!) -> Void in
+            self.processOutput(file)
+        }
+        (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
+        task.standardError = Pipe()
+        let errorHandler = { (file: FileHandle!) -> Void in
+            self.processError(file)
+        }
+        (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
+    }
+    
+    deinit {
+        // make sure the task gets terminated
+        cancel()
+    }
+    
+    func cancel() {
+        task.terminate()
+    }
+    
+    func run() async {
+        if !task.isRunning {
+            do {
+                try task.run()
+            } catch {
+                // task didn't start
+                displayError("ERROR running \(String(describing: task.launchPath))")
+                displayError(error.localizedDescription)
+                status.phase = .ended
+                delegate?.processUpdated()
+                return
+            }
+            status.phase = .started
+            delegate?.processUpdated()
+        }
+        task.waitUntilExit()
+        
+        // wait until all stdout/stderr is processed
+        while status.outputProcessing || status.errorProcessing {
+            do {
+                try await Task.sleep(nanoseconds: 100_000_000)
+            } catch {
+                // do nothing
+            }
+        }
+
+        // reset the readability handlers
+        (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+        (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+        
+        status.phase = .ended
+        status.terminationStatus = task.terminationStatus
+        results.exitcode = Int(task.terminationStatus)
+        delegate?.processUpdated()
+    }
+    
+    func readData(_ file: FileHandle) -> String {
+        // read available data from a file handle and return a string
+        let data = file.availableData
+        if data.count > 0 {
+            return String(bytes: data, encoding: .utf8) ?? ""
+        }
+        return ""
+    }
+    
+    func processError(_ file: FileHandle) {
+        status.errorProcessing = true
+        results.error.append(readData(file))
+        status.errorProcessing = false
+    }
+    
+    func processOutput(_ file: FileHandle) {
+        status.outputProcessing = true
+        results.output.append(readData(file))
+        status.outputProcessing = false
+    }
+}
+
+func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") async -> CLIResults {
+    // a basic wrapper intended to be used just as you would runCLI, but with tasks that
+    // return a lot of output and would overflow the buffer
+    let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
+    await proc.run()
+    return proc.results
+}
