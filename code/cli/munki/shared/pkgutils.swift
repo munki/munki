@@ -144,9 +144,9 @@ func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
     // Specify key to use a specific key in the Info.plist for the version string.
     
     if let plist = getBundleInfo(bundlepath) {
-        let versionstring = getVersionString(plist: plist, key: key)
-        if !versionstring.isEmpty {
-            return versionstring
+        let version = getVersionString(plist: plist, key: key)
+        if !version.isEmpty {
+            return version
         }
     }
     // no version number in Info.plist. Maybe old-style package?
@@ -156,7 +156,7 @@ func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
             return version
         }
     }
-    return "0.0.0.0.0"
+    return ""
 }
 
 func getBomList(_ pkgpath: String) -> [String] {
@@ -173,7 +173,7 @@ func getBomList(_ pkgpath: String) -> [String] {
                     let results = runCLI(
                         "/usr/bin/lsbom", arguments: ["-s", bompath])
                     if results.exitcode == 0 {
-                        return results.output.components(separatedBy: "\n")
+                        return results.output.components(separatedBy: .newlines)
                     }
                     break
                 }
@@ -289,6 +289,29 @@ func getProductVersionFromDist(_ filepath: String) -> String {
     guard let product = products[0] as? XMLElement else { return "" }
     guard let versionAttr = product.attribute(forName: "version") else { return "" }
     return versionAttr.stringValue ?? ""
+}
+
+func getMinOSVersFromDist(_ filepath: String) -> String {
+    // attempts to get a minimum os version
+    guard let data = NSData(contentsOfFile: filepath) else { return "" }
+    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
+    guard let volumeChecks = try? doc.nodes(forXPath: "//volume-check") else { return "" }
+    guard let allowedOSVersions = try? volumeChecks[0].nodes(forXPath: "child::allowed-os-versions") else { return "" }
+    guard let osVersions = try? allowedOSVersions[0].nodes(forXPath: "child::os-version") else { return "" }
+    var minOSVersionStrings = [String]()
+    for osVersion in osVersions {
+        guard let element = osVersion as? XMLElement else { continue }
+        if let minAttr = element.attribute(forName: "min") {
+            if let os = minAttr.stringValue {
+                minOSVersionStrings.append(os)
+            }
+        }
+    }
+    let versions = minOSVersionStrings.map( { MunkiVersion($0) })
+    if let minVersion = versions.min() {
+        return minVersion.value
+    }
+    return ""
 }
 
 
@@ -412,13 +435,17 @@ func getAbsolutePath(_ path: String) -> String {
 }
 
 
-func getFlatPackageReceipts(_ pkgpath: String) -> [PlistDict] {
-    // returns receipts array for a flat package
+func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
+    // returns info for a flat package, including receipts array
+    var info = PlistDict()
     var receiptarray = [PlistDict]()
+    var productVersion = ""
+    var minimumOSVersion = ""
+    
     // get the absolute path to the pkg because we need to do a chdir later
     let absolutePkgPath = getAbsolutePath(pkgpath)
     // make a tmp dir to expand the flat package into
-    guard let pkgTmpDir = TempDir.shared.makeTempDir() else { return receiptarray }
+    guard let pkgTmpDir = TempDir.shared.makeTempDir() else { return info }
     // record our current working dir
     let filemanager = FileManager.default
     let cwd = filemanager.currentDirectoryPath
@@ -427,7 +454,8 @@ func getFlatPackageReceipts(_ pkgpath: String) -> [PlistDict] {
     // Get the TOC of the flat pkg so we can search it later
     let tocResults = runCLI("/usr/bin/xar", arguments: ["-tf", absolutePkgPath])
     if tocResults.exitcode == 0  {
-        for tocEntry in tocResults.output.components(separatedBy: "\n") {
+        let tocEntries = tocResults.output.components(separatedBy: .newlines)
+        for tocEntry in tocEntries {
             if tocEntry.hasSuffix("PackageInfo") {
                 let extractResults = runCLI(
                     "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
@@ -441,22 +469,29 @@ func getFlatPackageReceipts(_ pkgpath: String) -> [PlistDict] {
                 }
             }
         }
-        if receiptarray.isEmpty {
-            // nothing from PackageInfo files; try Distribution files
-            for tocEntry in tocResults.output.components(separatedBy: "\n") {
-                if tocEntry.hasSuffix("Distribution") {
-                    let extractResults = runCLI(
-                        "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
-                    if extractResults.exitcode == 0 {
-                        let distributionPath = getAbsolutePath(
-                            (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
-                            receiptarray += receiptsFromDistFile(distributionPath)
-                    } else {
-                        displayWarning(
-                            "An error occurred while extracting \(tocEntry): \(tocResults.error)")
+        // now get data from a Distribution file
+        for tocEntry in tocEntries {
+            if tocEntry.hasSuffix("Distribution") {
+                let extractResults = runCLI(
+                    "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
+                if extractResults.exitcode == 0 {
+                    let distributionPath = getAbsolutePath(
+                        (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
+                    productVersion = getProductVersionFromDist(distributionPath)
+                    minimumOSVersion = getMinOSVersFromDist(distributionPath)
+                    if receiptarray.isEmpty {
+                        receiptarray = receiptsFromDistFile(distributionPath)
                     }
+                    break
+                } else {
+                    displayWarning(
+                        "An error occurred while extracting \(tocEntry): \(tocResults.error)")
                 }
             }
+        }
+        
+        if receiptarray.isEmpty {
+            displayWarning("No receipts found in Distribution or PackageInfo files within the package.")
         }
     } else {
         displayWarning(
@@ -466,5 +501,286 @@ func getFlatPackageReceipts(_ pkgpath: String) -> [PlistDict] {
     filemanager.changeCurrentDirectoryPath(cwd)
     // clean up tmpdir
     try? filemanager.removeItem(atPath: pkgTmpDir)
-    return receiptarray
+    info["receipts"] = receiptarray
+    if !productVersion.isEmpty {
+        info["product_version"] = productVersion
+    }
+    if !minimumOSVersion.isEmpty {
+        info["minimum_os_version"] = minimumOSVersion
+    }
+        
+    return info
+}
+
+// MARK: higher-level functions for getting pkg metadata
+
+func getPackageInfo(_ pkgpath: String) -> PlistDict {
+    // get some package info (receipts, version, etc) and return as a dict
+    guard hasValidPackageExt(pkgpath) else { return PlistDict() }
+    displayDebug2("Examining \(pkgpath)...")
+    if isDir(pkgpath) {
+        return getBundlePackageInfo(pkgpath)
+    }
+    return getFlatPackageInfo(pkgpath)
+}
+
+
+func getPackageMetaData(_ pkgpath: String) -> PlistDict {
+    // Queries an installer item (.pkg, .mpkg, .dist)
+    // and gets metadata. There are a lot of valid Apple package formats
+    // and this function may not deal with them all equally well.
+    //
+    // metadata items include:
+    // installer_item_size:  size of the installer item (.dmg, .pkg, etc)
+    // installed_size: size of items that will be installed
+    // RestartAction: will a restart be needed after installation?
+    // name
+    // version
+    // receipts: an array of packageids that may be installed
+    //           (some may not be installed on some machines)
+    
+    var pkginfo = PlistDict()
+    if !hasValidPackageExt(pkgpath) {
+        displayError("\(pkgpath) does not appear to be an Apple installer package.")
+        return pkginfo
+    }
+    
+    pkginfo = getPackageInfo(pkgpath)
+    let restartInfo = getPkgRestartInfo(pkgpath)
+    if let restartAction = restartInfo["RestartAction"] as? String {
+        pkginfo["RestartAction"] = restartAction
+    }
+    var packageVersion = ""
+    if let productVersion = pkginfo["product_version"] as? String {
+        packageVersion = productVersion
+        pkginfo["product_version"] = nil
+    }
+    if packageVersion.isEmpty {
+        // get it from a bundle package
+        let bundleVersion = getBundleVersion(pkgpath)
+        if !bundleVersion.isEmpty {
+            packageVersion = bundleVersion
+        }
+    }
+    if packageVersion.isEmpty {
+        // go through receipts and find highest version
+        if let receipts = pkginfo["receipts"] as? [PlistDict] {
+            let receiptVersions = receipts.map(
+                { MunkiVersion($0["version"] as? String ?? "0.0") })
+            if let maxVersion = receiptVersions.max() {
+                packageVersion = maxVersion.value
+            }
+        }
+    }
+    if packageVersion.isEmpty {
+        packageVersion = "0.0.0.0.0"
+    }
+    
+    pkginfo["version"] = packageVersion
+    let nameAndExt = (pkgpath as NSString).lastPathComponent
+    let nameMaybeWithVersion = (nameAndExt as NSString).deletingPathExtension
+    pkginfo["name"] = nameAndVersion(nameMaybeWithVersion).0
+    var installedSize: Int = 0
+    if let receipts = pkginfo["receipts"] as? [PlistDict] {
+        pkginfo["receipts"] = receipts
+        for receipt in receipts {
+            if let size = receipt["installed_size"] as? Int {
+                installedSize += size
+            }
+        }
+    }
+    if installedSize > 0 {
+        pkginfo["installed_size"] = installedSize
+    }
+    
+    return pkginfo
+}
+
+// MARK: miscellaneous functions
+
+func hasValidPackageExt(_ path: String) -> Bool {
+    // Verifies a path ends in '.pkg' or '.mpkg'
+    let ext = (path as NSString).pathExtension
+    return ["pkg", "mpkg"].contains(ext.lowercased())
+}
+
+
+func hasValidDiskImageExt(_ path: String) -> Bool {
+    // Verifies a path ends in '.dmg' or '.iso'
+    let ext = (path as NSString).pathExtension
+    return ["dmg", "iso"].contains(ext.lowercased())
+}
+
+
+func hasValidInstallerItemExt(_ path: String) -> Bool {
+    // Verifies path refers to an item we can (possibly) install
+    return hasValidPackageExt(path) || hasValidDiskImageExt(path)
+}
+
+
+func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict] {
+    // Queries package for 'ChoiceChangesXML'
+    var choices = [PlistDict]()
+    do {
+        let results = runCLI(
+            "/usr/sbin/installer",
+            arguments: ["-showChoiceChangesXML", "-pkg", pkgpath])
+        if results.exitcode == 0 {
+            let (pliststr, _) = parseFirstPlist(fromString: results.output)
+            let plist = try readPlistFromString(pliststr) as? [PlistDict] ?? [PlistDict]()
+            choices = plist.filter {
+                ($0["choiceAttribute"] as? String ?? "") == "selected"
+            }
+        }
+    } catch {
+        // nothing right now
+    }
+    return choices
+}
+
+
+func getInstalledPackageVersion(_ pkgid: String) -> String {
+    // Checks a package id against the receipts to determine if a
+    // package is already installed.
+    // Returns the version string of the installed pkg if it exists, or
+    // an empty string if it does not
+    
+    let results = runCLI(
+        "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid])
+    if results.exitcode == 0 {
+        guard let plist = try? readPlistFromString(results.output),
+              let receipt =  plist as? PlistDict else { return "" }
+        guard let foundpkgid = receipt["pkgid"] as? String else { return ""}
+        guard let foundversion = receipt["version"] as? String else { return ""}
+        if foundpkgid == pkgid {
+            displayDebug2(
+                "\tThis machine has \(pkgid), version \(foundversion)")
+            return foundversion
+        }
+    }
+    // This package does not appear to be currently installed
+    displayDebug2("\tThis machine does not have \(pkgid)")
+    return ""
+}
+
+
+func trimVersionString(_ version: String) -> String {
+    // Trims all lone trailing zeros in the version string after
+    // major/minor.
+    //
+    // Examples:
+    //   10.0.0.0 -> 10.0
+    //   10.0.0.1 -> 10.0.0.1
+    //   10.0.0-abc1 -> 10.0.0-abc1
+    //   10.0.0-abc1.0 -> 10.0.0-abc1
+    var parts = version.components(separatedBy: ".")
+    while parts.count > 2 && parts.last == "0" {
+        parts.removeLast()
+    }
+    return parts.joined(separator: ".")
+}
+
+
+func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, String) {
+    // Splits a string into name and version
+    // first look for hyphen or double-hyphen as separator
+    for delim in ["--", "-"] {
+        if str.contains(delim) {
+            var parts = str.components(separatedBy: delim)
+            if parts.count > 1 {
+                let version = parts.removeLast()
+                if "0123456789".contains(version.first ?? " ") {
+                    let name = parts.joined(separator: delim)
+                    return (name, version)
+                }
+            }
+        }
+    }
+    if onlySplitOnHyphens {
+        return (str, "")
+    }
+    
+    // more loosey-goosey method (used when importing items)
+    // use regex
+    if let versionRange = str.range(
+        of: "[0-9]+(\\.[0-9]+)((\\.|a|b|d|v)[0-9]+)+",
+        options: .regularExpression) {
+        let version = String(str[versionRange.lowerBound...])
+        var name = String(str[..<versionRange.lowerBound])
+        if let range = name.range(of: "[ v\\._-]+$", options: .regularExpression) {
+            name = name.replacingCharacters(in: range, with: "")
+        }
+        return(name, version)
+    }
+    return (str, "")
+}
+
+func getInstalledPackages() async -> PlistDict {
+    // Builds a dictionary of installed receipts and their version number
+    var installedpkgs = PlistDict()
+    
+    let results = await runCliAsync(
+        "/usr/sbin/pkgutil", arguments: ["--regexp", "--pkg-info-plist", ".*"])
+    if results.exitcode == 0 {
+        var out = results.output
+        while !out.isEmpty {
+            let (pliststr, tempOut) = parseFirstPlist(fromString: out)
+            out = tempOut
+            if pliststr.isEmpty {
+                break
+            }
+            if let plist = try? readPlistFromString(pliststr) as? PlistDict {
+                if let pkgid = plist["pkgid"] as? String,
+                   let version = plist["pkg-version"] as? String {
+                    installedpkgs[pkgid] = version
+                }
+            }
+        }
+    }
+    return installedpkgs
+}
+
+
+func pathIsSymlink(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    do {
+        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+        return fileType == FileAttributeType.typeSymbolicLink.rawValue
+    } catch {
+        return false
+    }
+}
+
+func pathIsDirectory(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    do {
+        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+        return fileType == FileAttributeType.typeDirectory.rawValue
+    } catch {
+        return false
+    }
+}
+
+// This function doesn't really have anything to do with packages or receipts
+// but is used by makepkginfo, munkiimport, and installer.py, so it might as
+// well live here for now
+func isApplication(_ pathname: String) -> Bool {
+    // Returns true if path appears to be a macOS application
+    if pathIsDirectory(pathname) {
+        if pathname.hasSuffix(".app") {
+            return true
+        }
+        // if path extension is not absent (and it's not .app) we can't be an application
+        guard (pathname as NSString).pathExtension == "" else { return false }
+        // look to see if we have the structure of an application
+        if let plist = getBundleInfo(pathname) {
+            if let bundlePkgType = plist["CFBundlePackageType"] as? String {
+                if bundlePkgType != "APPL" {
+                    return false
+                }
+            }
+            return !getAppBundleExecutable(pathname).isEmpty
+        }
+    }
+    return false
 }
