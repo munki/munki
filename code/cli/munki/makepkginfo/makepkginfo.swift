@@ -10,7 +10,6 @@ import Foundation
 
 @main
 struct MakePkgInfo: ParsableCommand {
-
     @OptionGroup(title: "Pkginfo Override Options")
     var overrideOptions: OverrideOptions
 
@@ -56,5 +55,15 @@ struct MakePkgInfo: ParsableCommand {
             return
         }
 
+        if let installerItem {
+            do {
+                let pkginfo = try makepkginfo(installerItem)
+                let plistStr = try plistToString(pkginfo)
+                print(plistStr)
+            } catch {
+                printStderr("Unexpected error: \(error)")
+                throw ExitCode(-1)
+            }
+        }
     }
 }
