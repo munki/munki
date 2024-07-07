@@ -12,36 +12,36 @@ struct DisplayOptions {
     // a Singleton struct to hold shared config values
     // this might eventually be replaced by a more encompassing struct
     static let shared = DisplayOptions()
-    
+
     var verbose: Int
     var munkistatusoutput: Bool
-    
+
     private init(verbose: Int = 1, munkistatusoutput: Bool = false) {
         self.verbose = verbose
         self.munkistatusoutput = munkistatusoutput
     }
 }
-    
+
 func displayPercentDone(current: Int, maximum: Int) {
     // displays percent-done info
     var percentDone = 0
     if current >= maximum {
         percentDone = 100
     } else {
-        percentDone = Int(Double(current)/Double(maximum) * 100)
+        percentDone = Int(Double(current) / Double(maximum) * 100)
     }
-    
+
     if DisplayOptions.shared.munkistatusoutput {
         // TODO: implement munkistatus stuff
         // munkistatusPercentDone(percentDone)
     }
-    
+
     if DisplayOptions.shared.verbose > 0 {
         let step = [0, 7, 13, 20, 27, 33, 40, 47, 53, 60, 67, 73, 80, 87, 93, 100]
         let indicator = ["\t0", ".", ".", "20", ".", ".", "40", ".", ".",
                          "60", ".", ".", "80", ".", ".", "100\n"]
         var output = ""
-        for i in 0...15 {
+        for i in 0 ... 15 {
             if percentDone >= step[i] {
                 output += indicator[i]
             }
@@ -56,7 +56,7 @@ func displayPercentDone(current: Int, maximum: Int) {
 func displayMajorStatus(_ message: String) {
     // Displays major status messages, formatting as needed
     // for verbose/non-verbose and munkistatus-style output.
-    
+
     munkiLog(message)
     if DisplayOptions.shared.munkistatusoutput {
         // TODO: implement munkistatus stuff
@@ -77,7 +77,7 @@ func displayMajorStatus(_ message: String) {
 func displayMinorStatus(_ message: String) {
     // Displays minor status messages, formatting as needed
     // for verbose/non-verbose and munkistatus-style output.
-    
+
     munkiLog("    \(message)")
     if DisplayOptions.shared.munkistatusoutput {
         // TODO: implement munkistatus stuff
@@ -96,7 +96,7 @@ func displayMinorStatus(_ message: String) {
 func displayInfo(_ message: String) {
     // Displays info messages.
     // Not displayed in MunkiStatus.
-    
+
     munkiLog("    \(message)")
     if DisplayOptions.shared.verbose > 0 {
         print("    \(message)")
@@ -148,7 +148,7 @@ func displayWarning(_ message: String, addToReport: Bool = true) {
     }
     munkiLog(warning)
     munkiLog(warning, logFile: "warnings.log")
-    
+
     if addToReport {
         Report.shared.add(warning, to: "Warnings")
     }
@@ -162,13 +162,8 @@ func displayError(_ message: String, addToReport: Bool = true) {
     }
     munkiLog(errorMsg)
     munkiLog(errorMsg, logFile: "errors.log")
-    
+
     if addToReport {
         Report.shared.add(errorMsg, to: "Errors")
     }
 }
-
-
-
-
-
