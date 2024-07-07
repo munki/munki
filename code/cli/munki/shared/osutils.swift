@@ -9,7 +9,8 @@ import Foundation
 
 func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     let version = ProcessInfo().operatingSystemVersion
-    if onlyMajorMinor {
+    
+    if version.patchVersion == 0 || onlyMajorMinor {
         return "\(version.majorVersion).\(version.minorVersion)"
     } else {
         return "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
@@ -66,5 +67,35 @@ class TempDir {
     
     deinit {
         cleanUp()
+    }
+}
+
+func pathIsRegularFile(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    do {
+        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+        return fileType == FileAttributeType.typeRegular.rawValue
+    } catch {
+        return false
+    }
+}
+
+func pathIsSymlink(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    do {
+        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+        return fileType == FileAttributeType.typeSymbolicLink.rawValue
+    } catch {
+        return false
+    }
+}
+
+func pathIsDirectory(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    do {
+        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+        return fileType == FileAttributeType.typeDirectory.rawValue
+    } catch {
+        return false
     }
 }

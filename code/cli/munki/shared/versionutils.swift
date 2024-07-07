@@ -49,3 +49,20 @@ struct MunkiVersion: Equatable, Comparable {
         return compare(lhs.value, rhs.value) == .orderedSame
     }
 }
+
+
+func trimVersionString(_ version: String) -> String {
+    // Trims all lone trailing zeros in the version string after
+    // major/minor.
+    //
+    // Examples:
+    //   10.0.0.0 -> 10.0
+    //   10.0.0.1 -> 10.0.0.1
+    //   10.0.0-abc1 -> 10.0.0-abc1
+    //   10.0.0-abc1.0 -> 10.0.0-abc1
+    var parts = version.components(separatedBy: ".")
+    while parts.count > 2 && parts.last == "0" {
+        parts.removeLast()
+    }
+    return parts.joined(separator: ".")
+}
