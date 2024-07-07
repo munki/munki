@@ -9,7 +9,7 @@ import Foundation
 
 func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     let version = ProcessInfo().operatingSystemVersion
-    
+
     if version.patchVersion == 0 || onlyMajorMinor {
         return "\(version.majorVersion).\(version.minorVersion)"
     } else {
@@ -20,19 +20,18 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
 class TempDir {
     // a class to return a shared temp directory, and to clean it up when we exit
     static let shared = TempDir()
-    
+
     private var url: URL?
     var path: String? {
-        get {
-            return url?.path
-        }
+        return url?.path
     }
-    
+
     private init() {
         let filemanager = FileManager.default
         let dirName = "munki-\(UUID().uuidString)"
         let tmpURL = filemanager.temporaryDirectory.appendingPathComponent(
-            dirName, isDirectory: true)
+            dirName, isDirectory: true
+        )
         do {
             try filemanager.createDirectory(at: tmpURL, withIntermediateDirectories: true)
             url = tmpURL
@@ -40,7 +39,7 @@ class TempDir {
             url = nil
         }
     }
-    
+
     func makeTempDir() -> String? {
         if let url {
             let tmpURL = url.appendingPathComponent(UUID().uuidString)
@@ -53,7 +52,7 @@ class TempDir {
         }
         return nil
     }
-    
+
     func cleanUp() {
         if let url {
             do {
@@ -64,7 +63,7 @@ class TempDir {
             }
         }
     }
-    
+
     deinit {
         cleanUp()
     }

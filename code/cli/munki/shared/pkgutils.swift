@@ -12,8 +12,8 @@ func getPkgRestartInfo(_ pkgpath: String) -> PlistDict {
     let results = runCLI(
         "/usr/sbin/installer",
         arguments: ["-query", "RestartAction",
-                   "-pkg", pkgpath,
-                   "-plist"]
+                    "-pkg", pkgpath,
+                    "-plist"]
     )
     if results.exitcode != 0 {
         displayError("installer -query for \(pkgpath) failed: \(results.error)")
@@ -32,7 +32,6 @@ func getPkgRestartInfo(_ pkgpath: String) -> PlistDict {
     return installerinfo
 }
 
-
 func getVersionString(plist: PlistDict, key: String = "") -> String {
     // Gets a version string from the plist.
     //
@@ -44,7 +43,7 @@ func getVersionString(plist: PlistDict, key: String = "") -> String {
     // if there"s a valid CFBundleShortVersionString, returns that.
     // else if there"s a CFBundleVersion, returns that
     // else returns an empty string.
-    
+
     if !key.isEmpty {
         return plist[key] as? String ?? ""
     }
@@ -71,7 +70,6 @@ func getBundleInfo(_ bundlepath: String) -> PlistDict? {
     return nil
 }
 
-
 func getAppBundleExecutable(_ bundlepath: String) -> String {
     // Returns path to the actual executable in an app bundle or empty string
     var executableName = (bundlepath as NSString).lastPathComponent
@@ -91,9 +89,8 @@ func getAppBundleExecutable(_ bundlepath: String) -> String {
     return ""
 }
 
-
-func parseInfoFileText(_ text: String) -> [String:String] {
-    var info = [String:String]()
+func parseInfoFileText(_ text: String) -> [String: String] {
+    var info = [String: String]()
     for line in text.components(separatedBy: .newlines) {
         let parts = line.components(separatedBy: .whitespaces)
         if parts.count > 1 {
@@ -104,7 +101,6 @@ func parseInfoFileText(_ text: String) -> [String:String] {
     }
     return info
 }
-
 
 func parseInfoFile(_ infofilepath: String) -> PlistDict {
     // parses an ancient data format in old bundle-style packages
@@ -136,13 +132,12 @@ func getOldStyleInfoFile(_ bundlepath: String) -> String? {
     return nil
 }
 
-
 func getBundleVersion(_ bundlepath: String, key: String = "") -> String {
     // Returns version number from a bundle.
     // Some extra code to deal with very old-style bundle packages
     //
     // Specify key to use a specific key in the Info.plist for the version string.
-    
+
     if let plist = getBundleInfo(bundlepath) {
         let version = getVersionString(plist: plist, key: key)
         if !version.isEmpty {
@@ -171,7 +166,8 @@ func getBomList(_ pkgpath: String) -> [String] {
                 if item.hasSuffix(".bom") {
                     let bompath = (contentsPath as NSString).appendingPathComponent(item)
                     let results = runCLI(
-                        "/usr/bin/lsbom", arguments: ["-s", bompath])
+                        "/usr/bin/lsbom", arguments: ["-s", bompath]
+                    )
                     if results.exitcode == 0 {
                         return results.output.components(separatedBy: .newlines)
                     }
@@ -249,8 +245,8 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
         }
         if searchDirs.isEmpty {
             searchDirs = ["", "Contents", "Contents/Installers",
-                            "Contents/Packages", "Contents/Resources",
-                            "Contents/Resources/Packages"]
+                          "Contents/Packages", "Contents/Resources",
+                          "Contents/Resources/Packages"]
         }
         for dir in searchDirs {
             let searchDir = (pkgpath as NSString).appendingPathComponent(dir)
@@ -277,7 +273,6 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
     }
     return ["receipts": receiptarray]
 }
-
 
 // MARK: XML file functions (mostly for flat packages)
 
@@ -308,13 +303,12 @@ func getMinOSVersFromDist(_ filepath: String) -> String {
         }
     }
     // if there's more than one, use the highest minimum OS
-    let versions = minOSVersionStrings.map( { MunkiVersion($0) })
+    let versions = minOSVersionStrings.map { MunkiVersion($0) }
     if let maxVersion = versions.max() {
         return maxVersion.value
     }
     return ""
 }
-
 
 func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
     // parses a PackageInfo file and returns a package receipt
@@ -326,7 +320,8 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
     for node in nodes {
         guard let element = node as? XMLElement else { continue }
         if let identifierAttr = element.attribute(forName: "identifier"),
-           let versionAttr = element.attribute(forName: "version") {
+           let versionAttr = element.attribute(forName: "version")
+        {
             var pkginfo = PlistDict()
             if let identifier = identifierAttr.stringValue {
                 pkginfo["packageid"] = identifier
@@ -348,13 +343,12 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
     return PlistDict()
 }
 
-
 func partialFileURLToRelativePath(_ partialURL: String) -> String {
     //
     // converts the partial file urls found in Distribution pkg-refs
     // to relative file paths
     // TODO: handle pkg-ref content that starts with "file:"
-    
+
     var temp = partialURL
     if temp.hasPrefix("#") {
         temp.removeFirst()
@@ -367,14 +361,13 @@ func partialFileURLToRelativePath(_ partialURL: String) -> String {
     return temp.removingPercentEncoding ?? ""
 }
 
-
 func receiptsFromDistFile(_ filepath: String) -> [PlistDict] {
     // parses a package Distribution file and returns a list of
     // package receipts
     /* https://developer.apple.com/library/archive/documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Distribution_XML_Ref.html
-    */
+     */
     var info = [PlistDict]()
-    var pkgrefDict = [String:PlistDict]()
+    var pkgrefDict = [String: PlistDict]()
     guard let data = NSData(contentsOfFile: filepath) else { return info }
     guard let doc = try? XMLDocument(data: data as Data, options: []) else {
         return info
@@ -414,7 +407,7 @@ func receiptsFromDistFile(_ filepath: String) -> [PlistDict] {
         }
     }
     for pkgref in pkgrefDict.values {
-        if pkgref.keys.contains("file") && pkgref.keys.contains("version") {
+        if pkgref.keys.contains("file"), pkgref.keys.contains("version") {
             var receipt = pkgref
             receipt["file"] = nil
             info.append(receipt)
@@ -435,14 +428,13 @@ func getAbsolutePath(_ path: String) -> String {
     return (composedPath as NSString).standardizingPath
 }
 
-
 func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
     // returns info for a flat package, including receipts array
     var info = PlistDict()
     var receiptarray = [PlistDict]()
     var productVersion = ""
     var minimumOSVersion = ""
-    
+
     // get the absolute path to the pkg because we need to do a chdir later
     let absolutePkgPath = getAbsolutePath(pkgpath)
     // make a tmp dir to expand the flat package into
@@ -454,16 +446,17 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
     filemanager.changeCurrentDirectoryPath(pkgTmpDir)
     // Get the TOC of the flat pkg so we can search it later
     let tocResults = runCLI("/usr/bin/xar", arguments: ["-tf", absolutePkgPath])
-    if tocResults.exitcode == 0  {
+    if tocResults.exitcode == 0 {
         let tocEntries = tocResults.output.components(separatedBy: .newlines)
         for tocEntry in tocEntries {
             if tocEntry.hasSuffix("PackageInfo") {
                 let extractResults = runCLI(
-                    "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
+                    "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry]
+                )
                 if extractResults.exitcode == 0 {
                     let packageInfoPath = getAbsolutePath(
                         (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
-                    receiptarray.append( receiptFromPackageInfoFile(packageInfoPath))
+                    receiptarray.append(receiptFromPackageInfoFile(packageInfoPath))
                 } else {
                     displayWarning(
                         "An error occurred while extracting \(tocEntry): \(tocResults.error)")
@@ -474,7 +467,8 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
         for tocEntry in tocEntries {
             if tocEntry.hasSuffix("Distribution") {
                 let extractResults = runCLI(
-                    "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry])
+                    "/usr/bin/xar", arguments: ["-xf", absolutePkgPath, tocEntry]
+                )
                 if extractResults.exitcode == 0 {
                     let distributionPath = getAbsolutePath(
                         (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
@@ -490,7 +484,7 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                 }
             }
         }
-        
+
         if receiptarray.isEmpty {
             displayWarning("No receipts found in Distribution or PackageInfo files within the package.")
         }
@@ -509,7 +503,7 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
     if !minimumOSVersion.isEmpty {
         info["minimum_os_version"] = minimumOSVersion
     }
-        
+
     return info
 }
 
@@ -525,7 +519,6 @@ func getPackageInfo(_ pkgpath: String) -> PlistDict {
     return getFlatPackageInfo(pkgpath)
 }
 
-
 func getPackageMetaData(_ pkgpath: String) -> PlistDict {
     // Queries an installer item (.pkg, .mpkg, .dist)
     // and gets metadata. There are a lot of valid Apple package formats
@@ -539,13 +532,13 @@ func getPackageMetaData(_ pkgpath: String) -> PlistDict {
     // version
     // receipts: an array of packageids that may be installed
     //           (some may not be installed on some machines)
-    
+
     var pkginfo = PlistDict()
     if !hasValidPackageExt(pkgpath) {
         displayError("\(pkgpath) does not appear to be an Apple installer package.")
         return pkginfo
     }
-    
+
     pkginfo = getPackageInfo(pkgpath)
     let restartInfo = getPkgRestartInfo(pkgpath)
     if let restartAction = restartInfo["RestartAction"] as? String {
@@ -566,8 +559,7 @@ func getPackageMetaData(_ pkgpath: String) -> PlistDict {
     if packageVersion.isEmpty {
         // go through receipts and find highest version
         if let receipts = pkginfo["receipts"] as? [PlistDict] {
-            let receiptVersions = receipts.map(
-                { MunkiVersion($0["version"] as? String ?? "0.0") })
+            let receiptVersions = receipts.map { MunkiVersion($0["version"] as? String ?? "0.0") }
             if let maxVersion = receiptVersions.max() {
                 packageVersion = maxVersion.value
             }
@@ -576,12 +568,12 @@ func getPackageMetaData(_ pkgpath: String) -> PlistDict {
     if packageVersion.isEmpty {
         packageVersion = "0.0.0.0.0"
     }
-    
+
     pkginfo["version"] = packageVersion
     let nameAndExt = (pkgpath as NSString).lastPathComponent
     let nameMaybeWithVersion = (nameAndExt as NSString).deletingPathExtension
     pkginfo["name"] = nameAndVersion(nameMaybeWithVersion).0
-    var installedSize: Int = 0
+    var installedSize = 0
     if let receipts = pkginfo["receipts"] as? [PlistDict] {
         pkginfo["receipts"] = receipts
         for receipt in receipts {
@@ -593,7 +585,7 @@ func getPackageMetaData(_ pkgpath: String) -> PlistDict {
     if installedSize > 0 {
         pkginfo["installed_size"] = installedSize
     }
-    
+
     return pkginfo
 }
 
@@ -605,27 +597,25 @@ func hasValidPackageExt(_ path: String) -> Bool {
     return ["pkg", "mpkg"].contains(ext.lowercased())
 }
 
-
 func hasValidDiskImageExt(_ path: String) -> Bool {
     // Verifies a path ends in '.dmg' or '.iso'
     let ext = (path as NSString).pathExtension
     return ["dmg", "iso"].contains(ext.lowercased())
 }
 
-
 func hasValidInstallerItemExt(_ path: String) -> Bool {
     // Verifies path refers to an item we can (possibly) install
     return hasValidPackageExt(path) || hasValidDiskImageExt(path)
 }
 
-
 func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict]? {
     // Queries package for 'ChoiceChangesXML'
-    var choices: [PlistDict]? = nil
+    var choices: [PlistDict]?
     do {
         let results = runCLI(
             "/usr/sbin/installer",
-            arguments: ["-showChoiceChangesXML", "-pkg", pkgpath])
+            arguments: ["-showChoiceChangesXML", "-pkg", pkgpath]
+        )
         if results.exitcode == 0 {
             let (pliststr, _) = parseFirstPlist(fromString: results.output)
             let plist = try readPlistFromString(pliststr) as? [PlistDict] ?? [PlistDict]()
@@ -639,20 +629,20 @@ func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict]? {
     return choices
 }
 
-
 func getInstalledPackageVersion(_ pkgid: String) -> String {
     // Checks a package id against the receipts to determine if a
     // package is already installed.
     // Returns the version string of the installed pkg if it exists, or
     // an empty string if it does not
-    
+
     let results = runCLI(
-        "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid])
+        "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid]
+    )
     if results.exitcode == 0 {
         guard let plist = try? readPlistFromString(results.output),
-              let receipt =  plist as? PlistDict else { return "" }
-        guard let foundpkgid = receipt["pkgid"] as? String else { return ""}
-        guard let foundversion = receipt["version"] as? String else { return ""}
+              let receipt = plist as? PlistDict else { return "" }
+        guard let foundpkgid = receipt["pkgid"] as? String else { return "" }
+        guard let foundversion = receipt["version"] as? String else { return "" }
         if foundpkgid == pkgid {
             displayDebug2(
                 "\tThis machine has \(pkgid), version \(foundversion)")
@@ -663,7 +653,6 @@ func getInstalledPackageVersion(_ pkgid: String) -> String {
     displayDebug2("\tThis machine does not have \(pkgid)")
     return ""
 }
-
 
 func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, String) {
     // Splits a string into name and version
@@ -683,18 +672,19 @@ func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, 
     if onlySplitOnHyphens {
         return (str, "")
     }
-    
+
     // more loosey-goosey method (used when importing items)
     // use regex
     if let versionRange = str.range(
         of: "[0-9]+(\\.[0-9]+)((\\.|a|b|d|v)[0-9]+)+",
-        options: .regularExpression) {
+        options: .regularExpression
+    ) {
         let version = String(str[versionRange.lowerBound...])
         var name = String(str[..<versionRange.lowerBound])
         if let range = name.range(of: "[ v\\._-]+$", options: .regularExpression) {
             name = name.replacingCharacters(in: range, with: "")
         }
-        return(name, version)
+        return (name, version)
     }
     return (str, "")
 }
@@ -702,9 +692,10 @@ func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, 
 func getInstalledPackages() async -> PlistDict {
     // Builds a dictionary of installed receipts and their version number
     var installedpkgs = PlistDict()
-    
+
     let results = await runCliAsync(
-        "/usr/sbin/pkgutil", arguments: ["--regexp", "--pkg-info-plist", ".*"])
+        "/usr/sbin/pkgutil", arguments: ["--regexp", "--pkg-info-plist", ".*"]
+    )
     if results.exitcode == 0 {
         var out = results.output
         while !out.isEmpty {
@@ -715,7 +706,8 @@ func getInstalledPackages() async -> PlistDict {
             }
             if let plist = try? readPlistFromString(pliststr) as? PlistDict {
                 if let pkgid = plist["pkgid"] as? String,
-                   let version = plist["pkg-version"] as? String {
+                   let version = plist["pkg-version"] as? String
+                {
                     installedpkgs[pkgid] = version
                 }
             }
@@ -723,7 +715,6 @@ func getInstalledPackages() async -> PlistDict {
     }
     return installedpkgs
 }
-
 
 // This function doesn't really have anything to do with packages or receipts
 // but is used by makepkginfo, munkiimport, and installer.py, so it might as

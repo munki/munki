@@ -41,6 +41,5 @@ func parseFirstPlist(fromString str: String) -> (String, String) {
     let plistStr = (str as NSString).substring(with: plistRange)
     let remainderIndex = plistRange.location + plistRange.length
     let remainder = (str as NSString).substring(from: remainderIndex)
-    return(plistStr, remainder)
+    return (plistStr, remainder)
 }
-
