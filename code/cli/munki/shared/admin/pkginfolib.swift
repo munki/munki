@@ -60,41 +60,41 @@ struct PkginfoOptions {
     var minimumOSVersion = ""
     var maximumOSVersion = ""
     var supportedArchitectures = [String]()
-    var forceInstallAfterDate: NSDate? = nil
+    var forceInstallAfterDate: NSDate?
     var restartAction = ""
     var updateFor = [String]()
     var requires = [String]()
     var blockingApplications = [String]()
     var uninstallMethod = ""
-    var installerEnvironment = [String:String]()
+    var installerEnvironment = [String: String]()
     var notes = ""
 }
 
 func createPkgInfoFromPkg(_ pkgpath: String,
-                          options: PkginfoOptions = PkginfoOptions() ) -> PlistDict {
+                          options: PkginfoOptions = PkginfoOptions()) -> PlistDict
+{
     // Gets package metadata for the package at pkgpath.
     // Returns pkginfo
     var info = PlistDict()
-    
+
     if hasValidPackageExt(pkgpath) {
         info = getPackageMetaData(pkgpath)
-        if !info.isEmpty && options.installerChoices {
+        if !info.isEmpty, options.installerChoices {
             if let installerChoices = getChoiceChangesXML(pkgpath) {
                 info["installer_choices_xml"] = installerChoices
             }
         }
-        if !info.isEmpty && !pathIsDirectory(pkgpath) {
+        if !info.isEmpty, !pathIsDirectory(pkgpath) {
             // generate and add installer_item_size
             if let attributes = try? FileManager.default.attributesOfItem(atPath: pkgpath) {
                 let filesize = (attributes as NSDictionary).fileSize()
-                info["installer_item_size"] = Int(filesize/1024)
+                info["installer_item_size"] = Int(filesize / 1024)
             }
             info["installer_item_hash"] = sha256hash(file: pkgpath)
         }
     }
     return info
 }
-
 
 func createInstallsItem(_ itempath: String) -> PlistDict {
     // Creates an item for a pkginfo "installs" array
@@ -105,17 +105,18 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         info["type"] = "application"
         if let plist = getBundleInfo(itempath) {
             for key in ["CFBundleName", "CFBundleIdentifier",
-                        "CFBundleShortVersionString", "CFBundleVersion"] {
+                        "CFBundleShortVersionString", "CFBundleVersion"]
+            {
                 if let value = plist[key] as? String {
                     info[key] = value
                 }
             }
             if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
                 info["minosversion"] = minOSVers
-            } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String:String] {
+            } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
                 // get the highest/latest of all the minmum os versions
                 let minOSVersions = minOSVersByArch.values
-                let versions = minOSVersions.map( { MunkiVersion($0) })
+                let versions = minOSVersions.map { MunkiVersion($0) }
                 if let maxVersion = versions.max() {
                     info["minosversion"] = maxVersion.value
                 }
@@ -153,8 +154,8 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
             info["version_comparison_key"] = "CFBundleShortVersionString"
         }
     }
-    
-    if !info.keys.contains("CFBundleShortVersionString") && !info.keys.contains("CFBundleVersion") {
+
+    if !info.keys.contains("CFBundleShortVersionString"), !info.keys.contains("CFBundleVersion") {
         // no version keys, so must be either a plist without version info
         // or just a simple file or directory
         info["type"] = "file"
@@ -167,7 +168,6 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
     }
     return info
 }
-
 
 func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict {
     // processes a drag-n-drop dmg to build pkginfo
@@ -200,7 +200,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
             }
         }
     }
-    
+
     if !installsitem.isEmpty {
         var itemsToCopyItem = PlistDict()
         var mountpointPattern = mountpoint
@@ -209,7 +209,8 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
         }
         if dragNDropItem.hasPrefix(mountpointPattern) {
             let startIndex = dragNDropItem.index(
-                dragNDropItem.startIndex, offsetBy: mountpointPattern.count)
+                dragNDropItem.startIndex, offsetBy: mountpointPattern.count
+            )
             dragNDropItem = String(dragNDropItem[startIndex...])
         }
         var destItem = dragNDropItem
@@ -217,7 +218,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
             destItem = options.destitemname
             itemsToCopyItem["destination_item"] = destItem
         }
-        
+
         let destItemFilename = (destItem as NSString).lastPathComponent
         if !options.destinationpath.isEmpty {
             installsitem["path"] = (options.destinationpath as NSString).appendingPathComponent(destItemFilename)
@@ -256,19 +257,19 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
         info["items_to_copy"] = [itemsToCopyItem]
         info["uninstallable"] = true
         info["uninstall_method"] = "remove_copied_items"
-        
+
         if options.installerTypeRequested == "stage_os_installer" {
             // TODO: transform this copy_from_dmg item
             // into a staged_os_installer item
         }
     }
-    
+
     return info
 }
 
-
 func createPkgInfoFromDmg(_ dmgpath: String,
-                          options: PkginfoOptions = PkginfoOptions() ) throws -> PlistDict {
+                          options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict
+{
     // Mounts a disk image if it"s not already mounted
     // Builds pkginfo for the first installer item found at the root level,
     // or a specific one if specified by options.pkgname or options.item
@@ -297,13 +298,14 @@ func createPkgInfoFromDmg(_ dmgpath: String,
             }
         }
     }
-    if info.isEmpty && options.itemtocopy.isEmpty {
+    if info.isEmpty, options.itemtocopy.isEmpty {
         // TODO: check for macOS installer
     }
     if info.isEmpty {
         // maybe this is a drag-n-drop disk image
         if let dragNDropInfo = try? createPkgInfoForDragNDrop(
-            mountpoint, options: options) {
+            mountpoint, options: options
+        ) {
             info = dragNDropInfo
         }
     }
@@ -311,7 +313,7 @@ func createPkgInfoFromDmg(_ dmgpath: String,
         // generate and add installer_item_size
         if let attributes = try? FileManager.default.attributesOfItem(atPath: dmgpath) {
             let filesize = (attributes as NSDictionary).fileSize()
-            info["installer_item_size"] = Int(filesize/1024)
+            info["installer_item_size"] = Int(filesize / 1024)
         }
         info["installer_item_hash"] = sha256hash(file: dmgpath)
     }
@@ -322,7 +324,6 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     return info
 }
 
-
 func readFileOrString(_ fileNameOrString: String) -> String {
     // attempt to read a file with the same name as the input string and return its text,
     // otherwise return the input string
@@ -332,19 +333,19 @@ func readFileOrString(_ fileNameOrString: String) -> String {
     return fileNameOrString
 }
 
-
 func makepkginfo(_ filepath: String,
-                 options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict {
+                 options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict
+{
     // Return a pkginfo dictionary for installeritem
     var installeritem = filepath
     var pkginfo = PlistDict()
-    
+
     if !installeritem.isEmpty {
         if !FileManager.default.fileExists(atPath: installeritem) {
             throw PkgInfoGenerationError.error(
                 description: "File \(installeritem) does not exist")
         }
-        
+
         // is this the mountpoint for a mounted disk image?
         if pathIsVolumeMountPoint(installeritem) {
             // Get the disk image path for the mountpoint
@@ -353,7 +354,7 @@ func makepkginfo(_ filepath: String,
                 installeritem = dmgPath
             }
         }
-        
+
         // is this a disk image?
         if hasValidDiskImageExt(installeritem) {
             pkginfo = try createPkgInfoFromDmg(installeritem, options: options)
@@ -361,13 +362,13 @@ func makepkginfo(_ filepath: String,
                 throw PkgInfoGenerationError.error(
                     description: "Could not find a supported installer item in \(installeritem)")
             }
-            if dmgIsWritable(installeritem) && options.printWarnings {
+            if dmgIsWritable(installeritem), options.printWarnings {
                 printStderr("WARNING: \(installeritem) is a writable disk image. Checksum verification is not supported.")
                 pkginfo["installer_item_hash"] = "N/A"
             }
-        // is this a package?
+            // is this a package?
         } else if hasValidPackageExt(installeritem) {
-            if !options.installerTypeRequested.isEmpty && options.printWarnings {
+            if !options.installerTypeRequested.isEmpty, options.printWarnings {
                 printStderr("WARNING: installer_type requested is \(options.installerTypeRequested). Provided installer item appears to be an Apple pkg.")
             }
             pkginfo = createPkgInfoFromPkg(installeritem, options: options)
@@ -375,21 +376,21 @@ func makepkginfo(_ filepath: String,
                 throw PkgInfoGenerationError.error(
                     description: "\(installeritem) doesn't appear to be a valid installer item.")
             }
-            if pathIsDirectory(installeritem) && options.printWarnings {
+            if pathIsDirectory(installeritem), options.printWarnings {
                 printStderr("WARNING: \(installeritem) is a bundle-style package!\nTo use it with Munki, you should encapsulate it in a disk image.")
             }
         } else {
             throw PkgInfoGenerationError.error(
                 description: "\(installeritem) is not a supported installer item!")
         }
-        
+
         // try to generate the correct item location if item was imported from
         // inside the munki repo
         // TODO: remove start of path if it refers to the Munki repo pkgs dir
-        
+
         // for now, just the filename
         pkginfo["installer_item_location"] = (installeritem as NSString).lastPathComponent
-        
+
         if !options.uninstalleritem.isEmpty {
             pkginfo["uninstallable"] = true
             pkginfo["uninstall_method"] = "uninstall_package"
@@ -408,10 +409,10 @@ func makepkginfo(_ filepath: String,
             pkginfo["uninstaller_item_hash"] = sha256hash(file: uninstallerpath)
             if let attributes = try? FileManager.default.attributesOfItem(atPath: uninstallerpath) {
                 let filesize = (attributes as NSDictionary).fileSize()
-                pkginfo["uninstaller_item_size"] = Int(filesize/1024)
+                pkginfo["uninstaller_item_size"] = Int(filesize / 1024)
             }
         }
-        
+
         // No uninstall method yet?
         // if we have receipts, assume we can uninstall using them
         if !pkginfo.keys.contains("uninstall_method") {
@@ -422,14 +423,14 @@ func makepkginfo(_ filepath: String,
                 }
             }
         }
-        
+
     } else {
         // no installer item
         if options.nopkg {
             pkginfo["installer_type"] = "nopkg"
         }
     }
-    
+
     if !options.catalogs.isEmpty {
         pkginfo["catalogs"] = options.catalogs
     } else {
@@ -564,6 +565,6 @@ func makepkginfo(_ filepath: String,
         pkginfo["notes"] = readFileOrString(options.notes)
     }
     pkginfo["_metadata"] = pkginfoMetadata()
-    
+
     return pkginfo
 }
