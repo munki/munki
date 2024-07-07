@@ -13,7 +13,7 @@ class GitFileRepo: FileRepo {
     // MARK: instance variables
 
     var cmd: String
-    
+
     // MARK: override init
 
     required init(_ url: String) throws {
@@ -22,13 +22,13 @@ class GitFileRepo: FileRepo {
         // init the rest
         try super.init(url)
     }
-        
+
     // MARK: git functions
 
     func runGit(args: [String] = []) -> CLIResults {
         return runCLI(cmd, arguments: args)
     }
-    
+
     func isGitIgnored(_ identifier: String) -> Bool {
         // Returns True if file referred to by identifer will be ignored by Git
         // (usually due to being in a .gitignore file)
@@ -38,7 +38,7 @@ class GitFileRepo: FileRepo {
         )
         return results.exitcode == 0
     }
-    
+
     func isInGitRepo(_ identifier: String) -> Bool {
         // Returns True if file referred to by identifer is in a Git repo, false otherwise.
         let results = runGit(
@@ -47,19 +47,19 @@ class GitFileRepo: FileRepo {
         )
         return results.exitcode == 0
     }
-    
+
     func gitCommit(_ identifier: String) {
         // Commits the file referred to be identifier. This method will also automatically
         // generate the commit log appropriate for the status of the file where
         // status would be 'modified', 'new file', or 'deleted'
-        
+
         // figure out the name of the tool in use
         let processPath = ProcessInfo.processInfo.arguments[0]
         let toolname = (processPath as NSString).lastPathComponent
-        
+
         // get the current username
         let username = NSUserName()
-        
+
         // get the status of file at path
         let statusResults = runGit(
             args: ["-C", parentDir(identifier),
@@ -75,7 +75,7 @@ class GitFileRepo: FileRepo {
         } else {
             action = "made unexpected change to"
         }
-        
+
         // generate the log message
         let logMessage = "\(username) \(action) '\(identifier)' via \(toolname)"
         // do the commit
@@ -89,7 +89,7 @@ class GitFileRepo: FileRepo {
             printStderr(results.error)
         }
     }
-    
+
     func _gitAddOrRemove(_ identifier: String, _ operation: String) {
         // Does a git add or rm of a file at path. "operation" must be either "add" or "rm"
         if isInGitRepo(identifier) {
@@ -108,12 +108,12 @@ class GitFileRepo: FileRepo {
             printStderr("\(identifier) is not in a git repo.")
         }
     }
-    
+
     func gitAdd(_ identifier: String) {
         // Adds and commits file at path
         _gitAddOrRemove(identifier, "add")
     }
-    
+
     func gitDelete(_ identifier: String) {
         // Deletes file at path and commits the result
         _gitAddOrRemove(identifier, "rm")
@@ -125,7 +125,7 @@ class GitFileRepo: FileRepo {
         try super.put(identifier, content: content)
         gitAdd(identifier)
     }
-    
+
     override func put(_ identifier: String, fromFile local_path: String) throws {
         try super.put(identifier, fromFile: local_path)
         gitAdd(identifier)
