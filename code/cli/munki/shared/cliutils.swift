@@ -65,7 +65,8 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     return CLIResults(
         exitcode: Int(task.terminationStatus),
         output: outputString,
-        error: errorString)
+        error: errorString
+    )
 }
 
 enum CalledProcessError: Error {
@@ -80,7 +81,6 @@ func checkCall(_ tool: String, arguments: [String] = [], stdIn: String = "") thr
     }
     return result.output
 }
-
 
 enum AsyncProcessPhase: Int {
     case notStarted
@@ -104,33 +104,33 @@ class AsyncProcessRunner {
     var status = AsyncProcessStatus()
     var results = CLIResults()
     var delegate: AsyncProcessDelegate?
-    
-    init(_ tool: String, arguments: [String] = [], stdIn: String = "") {
+
+    init(_ tool: String, arguments: [String] = [], stdIn _: String = "") {
         task.launchPath = tool
         task.arguments = arguments
-        
+
         // set up our stdout and stderr pipes and handlers
         task.standardOutput = Pipe()
-        let outputHandler =  { (file: FileHandle!) -> Void in
+        let outputHandler = { (file: FileHandle!) in
             self.processOutput(file)
         }
         (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
         task.standardError = Pipe()
-        let errorHandler = { (file: FileHandle!) -> Void in
+        let errorHandler = { (file: FileHandle!) in
             self.processError(file)
         }
         (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
     }
-    
+
     deinit {
         // make sure the task gets terminated
         cancel()
     }
-    
+
     func cancel() {
         task.terminate()
     }
-    
+
     func run() async {
         if !task.isRunning {
             do {
@@ -147,7 +147,7 @@ class AsyncProcessRunner {
             delegate?.processUpdated()
         }
         task.waitUntilExit()
-        
+
         // wait until all stdout/stderr is processed
         while status.outputProcessing || status.errorProcessing {
             do {
@@ -160,13 +160,13 @@ class AsyncProcessRunner {
         // reset the readability handlers
         (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
         (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
-        
+
         status.phase = .ended
         status.terminationStatus = task.terminationStatus
         results.exitcode = Int(task.terminationStatus)
         delegate?.processUpdated()
     }
-    
+
     func readData(_ file: FileHandle) -> String {
         // read available data from a file handle and return a string
         let data = file.availableData
@@ -175,13 +175,13 @@ class AsyncProcessRunner {
         }
         return ""
     }
-    
+
     func processError(_ file: FileHandle) {
         status.errorProcessing = true
         results.error.append(readData(file))
         status.errorProcessing = false
     }
-    
+
     func processOutput(_ file: FileHandle) {
         status.outputProcessing = true
         results.output.append(readData(file))
