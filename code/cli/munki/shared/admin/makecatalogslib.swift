@@ -26,7 +26,7 @@ struct CatalogsMaker {
     var pkgsList: [String]
     var catalogs: [String: [PlistDict]]
     var errors: [String]
-    
+
     init(repo: Repo,
          options: MakeCatalogOptions = MakeCatalogOptions()) throws
     {
@@ -39,7 +39,7 @@ struct CatalogsMaker {
         try getPkgsinfoList()
         try getPkgsList()
     }
-    
+
     mutating func getPkgsinfoList() throws {
         // returns a list of pkginfo identifiers
         do {
@@ -49,7 +49,7 @@ struct CatalogsMaker {
                 description: "Error getting list of pkgsinfo items")
         }
     }
-    
+
     mutating func getPkgsList() throws {
         // returns a list of pkg identifiers
         do {
@@ -59,7 +59,7 @@ struct CatalogsMaker {
                 description: "Error getting list of pkgs items")
         }
     }
-    
+
     mutating func hashIcons() -> [String: String] {
         // Builds a dictionary containing hashes for all our repo icons
         if options.verbose {
@@ -87,7 +87,7 @@ struct CatalogsMaker {
         }
         return iconHashes
     }
-    
+
     func caseInsensitivePkgsListContains(_ installer_item: String) -> String? {
         // returns a case-insentitive match for installer_item from pkgsList, if any
         for repo_pkg in pkgsList {
@@ -97,7 +97,7 @@ struct CatalogsMaker {
         }
         return nil
     }
-    
+
     mutating func verify(_ identifier: String, _ pkginfo: PlistDict) -> Bool {
         // Returns true if referenced installer items are present,
         // false otherwise. Updates list of errors.
@@ -115,7 +115,7 @@ struct CatalogsMaker {
             // installer item may be on a different server
             return true
         }
-        
+
         // Build path to installer item
         let installeritemlocation = pkginfo["installer_item_location"] as? String ?? ""
         if installeritemlocation.isEmpty {
@@ -124,7 +124,7 @@ struct CatalogsMaker {
             return false
         }
         let installeritempath = "pkgs/" + installeritemlocation
-        
+
         // Check if the installer item actually exists
         if !(pkgsList.contains(installeritempath)) {
             // didn't find it in the pkgsList; let's look case-insensitive
@@ -139,7 +139,7 @@ struct CatalogsMaker {
                 return false
             }
         }
-        
+
         // uninstaller checking
         if let uninstalleritemlocation = pkginfo["uninstaller_item_location"] as? String {
             if uninstalleritemlocation.isEmpty {
@@ -166,7 +166,7 @@ struct CatalogsMaker {
         // if we get here we passed all the checks
         return true
     }
-    
+
     mutating func processPkgsinfo() {
         // Processes pkginfo files and updates catalogs and errors instance variables
         catalogs["all"] = [PlistDict]()
@@ -238,7 +238,7 @@ struct CatalogsMaker {
                     "underlying filesystem: \(duplicateCatalogs)")
         }
     }
-    
+
     mutating func cleanupCatalogs() {
         // clear out old catalogs
         do {
@@ -257,19 +257,19 @@ struct CatalogsMaker {
             errors.append("Could not get list of current catalogs to clean up: \(error)")
         }
     }
-    
+
     mutating func makecatalogs() -> [String] {
         // Assembles all pkginfo files into catalogs.
         // User calling this needs to be able to write to the repo/catalogs
         // directory.
         // Returns a list of any errors it encountered
-        
+
         // process pkgsinfo items
         processPkgsinfo()
-        
+
         // clean up old catalogs no longer needed
         cleanupCatalogs()
-        
+
         // write the new catalogs
         for key in catalogs.keys {
             if !(catalogs[key]?.isEmpty ?? true) {
@@ -291,7 +291,7 @@ struct CatalogsMaker {
                 }
             }
         }
- 
+
         // make icon hashes
         let iconHashes = hashIcons()
         // create icon_hashes resource
