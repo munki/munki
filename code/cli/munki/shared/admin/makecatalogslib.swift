@@ -77,9 +77,7 @@ struct CatalogsMaker {
                 }
                 do {
                     let icondata = try repo.get("icons/" + icon)
-                    let hashed = SHA256.hash(data: icondata)
-                    let hashString = hashed.compactMap { String(format: "%02x", $0) }.joined()
-                    iconHashes[icon] = hashString
+                    iconHashes[icon] = sha256hash(data: icondata)
                 } catch let RepoError.error(description) {
                     errors.append("RepoError reading icons/\(icon): \(description)")
                 } catch {

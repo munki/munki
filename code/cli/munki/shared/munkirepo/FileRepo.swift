@@ -25,17 +25,6 @@ protocol Repo {
     func delete(_ identifier: String) throws
 }
 
-// utility funcs
-func isDir(_ path: String) -> Bool {
-    let filemanager = FileManager.default
-    do {
-        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
-        return fileType == FileAttributeType.typeDirectory.rawValue
-    } catch {
-        return false
-    }
-}
-
 // MARK: share mounting functions
 
 // NetFS error codes
@@ -138,7 +127,7 @@ class FileRepo: Repo {
 
     deinit {
         // Destructor -- unmount the fileshare if we mounted it
-        if weMountedTheRepo && isDir(root) {
+        if weMountedTheRepo && pathIsDirectory(root) {
             print("Attempting to unmount \(root)...")
             let results = runCLI(
                 "/usr/sbin/diskutil", arguments: ["unmount", root]
@@ -167,7 +156,7 @@ class FileRepo: Repo {
     private func _connect() throws {
         // If self.root is present, return. Otherwise, if the url scheme is not
         // "file" then try to mount the share url.
-        if isDir(root) {
+        if pathIsDirectory(root) {
             return
         }
         if urlScheme != "file" {
@@ -180,7 +169,7 @@ class FileRepo: Repo {
             }
         }
         // does root dir exist now?
-        if !isDir(root) {
+        if !pathIsDirectory(root) {
             throw RepoError.error(description: "Repo path does not exist")
         }
     }
@@ -197,7 +186,7 @@ class FileRepo: Repo {
         let dirEnum = filemanager.enumerator(atPath: searchPath)
         while let file = dirEnum?.nextObject() as? String {
             let fullpath = (searchPath as NSString).appendingPathComponent(file)
-            if !isDir(fullpath) {
+            if !pathIsDirectory(fullpath) {
                 let basename = (file as NSString).lastPathComponent
                 if !basename.hasPrefix(".") {
                     fileList.append(file)

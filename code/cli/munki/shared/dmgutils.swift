@@ -116,9 +116,8 @@ func diskImageForMountPoint(_ path: String) -> String? {
     return nil
 }
 
-func mountPointsForDiskImage(_ dmgPath: String) -> [String] {
-    // returns a list of mountpoints for the given disk image
-    var mountpoints = [String]()
+func mountPointForDiskImage(_ dmgPath: String) -> String? {
+    // returns the mountpoint for the given disk image
     let info = hdiutilInfo()
     if let images = info["images"] as? [PlistDict] {
         // "images" is an array of dicts
@@ -132,7 +131,7 @@ func mountPointsForDiskImage(_ dmgPath: String) -> [String] {
                         for entity in systemEntities {
                             if let mountpoint = entity["mount-point"] as? String {
                                 // there's a mount-point for this!
-                                mountpoints.append(mountpoint)
+                                return mountpoint
                             }
                         }
                     }
@@ -140,33 +139,33 @@ func mountPointsForDiskImage(_ dmgPath: String) -> [String] {
             }
         }
     }
-    return mountpoints
+    return nil
 }
 
 
 func diskImageIsMounted(_ dmgPath: String) -> Bool {
     // Returns true if the given disk image is currently mounted
-    return !mountPointsForDiskImage(dmgPath).isEmpty
+    if mountPointForDiskImage(dmgPath) != nil {
+        return true
+    }
+    return false
 }
 
 
-func mountdmg(
-    _ dmgPath: String,
-    useShadow: Bool = false,
-    useExistingMounts: Bool = false,
-    randomMountpoint: Bool = true,
-    skipVerification: Bool = false) -> [String]
-{
+func mountdmg(_ dmgPath: String,
+              useShadow: Bool = false,
+              useExistingMounts: Bool = false,
+              randomMountpoint: Bool = true,
+              skipVerification: Bool = false) -> String? {
     // Attempts to mount the dmg at dmgpath
-    // and returns a list of mountpoints
+    // and returns the first item in the list of mountpoints
     // If use_shadow is true, mount image with shadow file
     // If random_mountpoint, mount at random dir under /tmp
-    var mountpoints = [String]()
     let dmgName = (dmgPath as NSString).lastPathComponent
     
     if useExistingMounts {
         if diskImageIsMounted(dmgPath) {
-            return mountPointsForDiskImage(dmgPath)
+            return mountPointForDiskImage(dmgPath)
         }
     }
     
@@ -190,13 +189,13 @@ func mountdmg(
     if let systemEntities = plistData["system-entities"] as? [PlistDict] {
         for entity in systemEntities {
             if let mountPoint = entity["mount-point"] as? String {
-                mountpoints.append(mountPoint)
+                return mountPoint
             }
         }
     } else {
         displayError("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
     }
-    return mountpoints
+    return nil
 }
 
 func unmountdmg(_ mountpoint: String) {

@@ -123,7 +123,7 @@ func getOldStyleInfoFile(_ bundlepath: String) -> String? {
     // returns a path to an old-style .info file inside the
     // bundle if present
     let infopath = (bundlepath as NSString).appendingPathComponent("Contents/Resources/English.lproj")
-    if isDir(infopath) {
+    if pathIsDirectory(infopath) {
         let filemanager = FileManager.default
         if let dirlist = try? filemanager.contentsOfDirectory(atPath: infopath) {
             for item in dirlist {
@@ -164,7 +164,7 @@ func getBomList(_ pkgpath: String) -> [String] {
     // to a bundle-style package
     // Returns a list of strings
     let contentsPath = (pkgpath as NSString).appendingPathComponent("Contents")
-    if isDir(contentsPath) {
+    if pathIsDirectory(contentsPath) {
         let filemanager = FileManager.default
         if let dirlist = try? filemanager.contentsOfDirectory(atPath: contentsPath) {
             for item in dirlist {
@@ -230,7 +230,7 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
     // might be a mpkg
     let contentsPath = (pkgpath as NSString).appendingPathComponent("Contents")
     let filemanager = FileManager.default
-    if isDir(contentsPath) {
+    if pathIsDirectory(contentsPath) {
         if let dirlist = try? filemanager.contentsOfDirectory(atPath: contentsPath) {
             for item in dirlist {
                 if item.hasSuffix(".dist") {
@@ -254,11 +254,11 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
         }
         for dir in searchDirs {
             let searchDir = (pkgpath as NSString).appendingPathComponent(dir)
-            guard isDir(searchDir) else { continue }
+            guard pathIsDirectory(searchDir) else { continue }
             guard let dirlist = try? filemanager.contentsOfDirectory(atPath: searchDir) else { continue }
             for item in dirlist {
                 let itempath = (searchDir as NSString).appendingPathComponent(item)
-                guard isDir(itempath) else { continue }
+                guard pathIsDirectory(itempath) else { continue }
                 if itempath.hasSuffix(".pkg") {
                     let receipt = getSinglePkgReceipt(itempath)
                     if !receipt.isEmpty {
@@ -307,9 +307,10 @@ func getMinOSVersFromDist(_ filepath: String) -> String {
             }
         }
     }
+    // if there's more than one, use the highest minimum OS
     let versions = minOSVersionStrings.map( { MunkiVersion($0) })
-    if let minVersion = versions.min() {
-        return minVersion.value
+    if let maxVersion = versions.max() {
+        return maxVersion.value
     }
     return ""
 }
@@ -518,7 +519,7 @@ func getPackageInfo(_ pkgpath: String) -> PlistDict {
     // get some package info (receipts, version, etc) and return as a dict
     guard hasValidPackageExt(pkgpath) else { return PlistDict() }
     displayDebug2("Examining \(pkgpath)...")
-    if isDir(pkgpath) {
+    if pathIsDirectory(pkgpath) {
         return getBundlePackageInfo(pkgpath)
     }
     return getFlatPackageInfo(pkgpath)
@@ -618,9 +619,9 @@ func hasValidInstallerItemExt(_ path: String) -> Bool {
 }
 
 
-func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict] {
+func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict]? {
     // Queries package for 'ChoiceChangesXML'
-    var choices = [PlistDict]()
+    var choices: [PlistDict]? = nil
     do {
         let results = runCLI(
             "/usr/sbin/installer",
@@ -661,23 +662,6 @@ func getInstalledPackageVersion(_ pkgid: String) -> String {
     // This package does not appear to be currently installed
     displayDebug2("\tThis machine does not have \(pkgid)")
     return ""
-}
-
-
-func trimVersionString(_ version: String) -> String {
-    // Trims all lone trailing zeros in the version string after
-    // major/minor.
-    //
-    // Examples:
-    //   10.0.0.0 -> 10.0
-    //   10.0.0.1 -> 10.0.0.1
-    //   10.0.0-abc1 -> 10.0.0-abc1
-    //   10.0.0-abc1.0 -> 10.0.0-abc1
-    var parts = version.components(separatedBy: ".")
-    while parts.count > 2 && parts.last == "0" {
-        parts.removeLast()
-    }
-    return parts.joined(separator: ".")
 }
 
 
@@ -740,26 +724,6 @@ func getInstalledPackages() async -> PlistDict {
     return installedpkgs
 }
 
-
-func pathIsSymlink(_ path: String) -> Bool {
-    let filemanager = FileManager.default
-    do {
-        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
-        return fileType == FileAttributeType.typeSymbolicLink.rawValue
-    } catch {
-        return false
-    }
-}
-
-func pathIsDirectory(_ path: String) -> Bool {
-    let filemanager = FileManager.default
-    do {
-        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
-        return fileType == FileAttributeType.typeDirectory.rawValue
-    } catch {
-        return false
-    }
-}
 
 // This function doesn't really have anything to do with packages or receipts
 // but is used by makepkginfo, munkiimport, and installer.py, so it might as
