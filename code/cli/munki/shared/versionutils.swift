@@ -7,19 +7,18 @@
 
 import Foundation
 
-
 struct MunkiVersion: Equatable, Comparable {
     // Class to compare two version strings in a consistent way
     // Originally based on Python's distutils.version.LooseVersion
     // The intention is for version comparisons to be the same as
     // the Python version of Munki
-    
+
     let value: String
-    
+
     init(_ str: String) {
         value = str
     }
-    
+
     static func pad(_ a: String, count: Int) -> String {
         // pads version strings by adding extra ".0"s to one if needed
         var components = a.split(separator: ".", omittingEmptySubsequences: true)
@@ -28,7 +27,7 @@ struct MunkiVersion: Equatable, Comparable {
         }
         return components.joined(separator: ".")
     }
-    
+
     static func compare(_ lhs: String, _ rhs: String) -> ComparisonResult {
         // compares two version strings and returns a ComparisonResult
         let maxCount = max(lhs.count, rhs.count)
@@ -36,20 +35,19 @@ struct MunkiVersion: Equatable, Comparable {
         let b = pad(rhs, count: maxCount)
         return a.compare(b, options: .numeric)
     }
-    
+
     static func < (lhs: MunkiVersion, rhs: MunkiVersion) -> Bool {
         return compare(lhs.value, rhs.value) == .orderedAscending
     }
-    
+
     static func > (lhs: MunkiVersion, rhs: MunkiVersion) -> Bool {
         return compare(lhs.value, rhs.value) == .orderedDescending
     }
-    
+
     static func == (lhs: MunkiVersion, rhs: MunkiVersion) -> Bool {
         return compare(lhs.value, rhs.value) == .orderedSame
     }
 }
-
 
 func trimVersionString(_ version: String) -> String {
     // Trims all lone trailing zeros in the version string after
@@ -61,7 +59,7 @@ func trimVersionString(_ version: String) -> String {
     //   10.0.0-abc1 -> 10.0.0-abc1
     //   10.0.0-abc1.0 -> 10.0.0-abc1
     var parts = version.components(separatedBy: ".")
-    while parts.count > 2 && parts.last == "0" {
+    while parts.count > 2, parts.last == "0" {
         parts.removeLast()
     }
     return parts.joined(separator: ".")

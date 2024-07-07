@@ -16,7 +16,7 @@ func munkiLog(_ message: String, logFile: String = "") {
     // General logging function
     // TODO: add support for logging to /var/log/system.log
     // TODO: add support for logging to Apple unified logging
-    
+
     // date format like `Jul 01 2024 17:30:36 -0700`
     let dateformatter = DateFormatter()
     dateformatter.dateFormat = "MMM dd yyyy HH:mm:ss Z"
