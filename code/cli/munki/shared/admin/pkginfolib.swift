@@ -5,7 +5,11 @@
 //  Created by Greg Neagle on 7/2/24.
 //  functions used by makepkginfo to create pkginfo files
 
-import CryptoKit
+// This implementation drops support for:
+//   - pkginfo creation for configuration profiles
+//   - pkginfo creation for Apple Update Metadata
+//   - special handling of Adobe installers
+
 import Foundation
 
 enum PkgInfoGenerationError: Error {
