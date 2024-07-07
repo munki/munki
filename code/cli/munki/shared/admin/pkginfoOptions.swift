@@ -8,6 +8,8 @@
 import ArgumentParser
 import Foundation
 
+// Defines option groups for makepkginfo
+// These are also used by munkiimport
 
 struct OverrideOptions: ParsableArguments {
     // Pkginfo Override Options
