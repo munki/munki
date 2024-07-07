@@ -1,5 +1,5 @@
 //
-//  munkirepo.swift
+//  FileRepo.swift
 //  munki
 //
 //  Created by Greg Neagle on 6/25/24.
@@ -127,7 +127,7 @@ class FileRepo: Repo {
 
     deinit {
         // Destructor -- unmount the fileshare if we mounted it
-        if weMountedTheRepo && pathIsDirectory(root) {
+        if weMountedTheRepo, pathIsDirectory(root) {
             print("Attempting to unmount \(root)...")
             let results = runCLI(
                 "/usr/sbin/diskutil", arguments: ["unmount", root]
