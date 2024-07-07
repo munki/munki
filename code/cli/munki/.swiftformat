@@ -1,3 +1,4 @@
 --swiftversion 5.10 
+--exclude munkitester/main.swift
 --disable redundantReturn
 
