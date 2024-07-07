@@ -17,7 +17,8 @@ func deserialize(_ data: Data?) throws -> Any? {
             let dataObject = try PropertyListSerialization.propertyList(
                 from: data!,
                 options: PropertyListSerialization.MutabilityOptions.mutableContainers,
-                format: nil)
+                format: nil
+            )
             return dataObject
         } catch {
             throw PlistError.readError(description: "\(error)")
@@ -43,7 +44,8 @@ func serialize(_ plist: Any) throws -> Data {
         let plistData = try PropertyListSerialization.data(
             fromPropertyList: plist,
             format: PropertyListSerialization.PropertyListFormat.xml,
-            options: 0)
+            options: 0
+        )
         return plistData
     } catch {
         throw PlistError.writeError(description: "\(error)")
