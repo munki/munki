@@ -35,7 +35,6 @@ func dmgImageInfo(_ dmgPath: String) -> PlistDict {
     return hdiutilData(arguments: ["imageinfo", dmgPath])
 }
 
-
 func dmgIsWritable(_ dmgPath: String) -> Bool {
     // Attempts to determine if the given disk image is writable
     let imageInfo = dmgImageInfo(dmgPath)
@@ -46,7 +45,6 @@ func dmgIsWritable(_ dmgPath: String) -> Bool {
     }
     return false
 }
-
 
 func dmgHasSLA(_ dmgPath: String) -> Bool {
     // Returns true if dmg has a Software License Agreement.
@@ -60,12 +58,10 @@ func dmgHasSLA(_ dmgPath: String) -> Bool {
     return false
 }
 
-
 func hdiutilInfo() -> PlistDict {
     // runs hdiutil info on a dmg and returns a plist data structure
     return hdiutilData(arguments: ["info"])
 }
-
 
 func pathIsVolumeMountPoint(_ path: String) -> Bool {
     // Returns a boolean to indicate if path is a mountpoint for a disk image
@@ -89,7 +85,6 @@ func pathIsVolumeMountPoint(_ path: String) -> Bool {
     }
     return false
 }
-
 
 func diskImageForMountPoint(_ path: String) -> String? {
     // Attempts to find the path to a dmg for a given mount point
@@ -142,7 +137,6 @@ func mountPointForDiskImage(_ dmgPath: String) -> String? {
     return nil
 }
 
-
 func diskImageIsMounted(_ dmgPath: String) -> Bool {
     // Returns true if the given disk image is currently mounted
     if mountPointForDiskImage(dmgPath) != nil {
@@ -151,24 +145,24 @@ func diskImageIsMounted(_ dmgPath: String) -> Bool {
     return false
 }
 
-
 func mountdmg(_ dmgPath: String,
               useShadow: Bool = false,
               useExistingMounts: Bool = false,
               randomMountpoint: Bool = true,
-              skipVerification: Bool = false) -> String? {
+              skipVerification: Bool = false) -> String?
+{
     // Attempts to mount the dmg at dmgpath
     // and returns the first item in the list of mountpoints
     // If use_shadow is true, mount image with shadow file
     // If random_mountpoint, mount at random dir under /tmp
     let dmgName = (dmgPath as NSString).lastPathComponent
-    
+
     if useExistingMounts {
         if diskImageIsMounted(dmgPath) {
             return mountPointForDiskImage(dmgPath)
         }
     }
-    
+
     // attempt to mount the dmg
     var stdIn = ""
     if dmgHasSLA(dmgPath) {
@@ -213,4 +207,3 @@ func unmountdmg(_ mountpoint: String) {
         }
     }
 }
-
