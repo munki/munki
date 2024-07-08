@@ -94,12 +94,15 @@ struct MakeCatalogs: ParsableCommand {
         } catch let RepoError.error(description) {
             printStderr("Repo error: \(description)")
             throw ExitCode(-1)
-        } catch let MakeCatalogsError.PkginfoAccessError(description) {
-            printStderr("Pkginfo read error: \(description)")
-            throw ExitCode(-1)
-        } catch let MakeCatalogsError.CatalogWriteError(description) {
-            printStderr("Catalog write error: \(description)")
-            throw ExitCode(-1)
+        } catch let error as MakeCatalogsError {
+            switch error {
+            case let .CatalogWriteError(description):
+                printStderr("Catalog write error: \(description)")
+                throw ExitCode(-1)
+            case let .PkginfoAccessError(description):
+                printStderr("Pkginfo read error: \(description)")
+                throw ExitCode(-1)
+            }
         } catch {
             printStderr("Unexpected error: \(error)")
             throw ExitCode(-1)
