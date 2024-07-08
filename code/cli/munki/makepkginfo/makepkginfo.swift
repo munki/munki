@@ -60,8 +60,18 @@ struct MakePkgInfo: ParsableCommand {
                 let pkginfo = try makepkginfo(installerItem)
                 let plistStr = try plistToString(pkginfo)
                 print(plistStr)
+            } catch let PkgInfoGenerationError.error(description) {
+                printStderr("ERROR: \(description)")
+                throw ExitCode(-1)
+            } catch let PackageParsingError.error(description) {
+                printStderr("ERROR: \(description)")
+                throw ExitCode(-1)
+            } catch let DiskImageError.error(description) {
+                printStderr("ERROR: \(description)")
+                throw ExitCode(-1)
             } catch {
-                printStderr("Unexpected error: \(error)")
+                printStderr("Unexpected error: \(type(of: error))")
+                printStderr(error)
                 throw ExitCode(-1)
             }
         }

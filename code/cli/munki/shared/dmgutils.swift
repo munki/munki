@@ -7,7 +7,11 @@
 
 import Foundation
 
-func hdiutilData(arguments: [String], stdIn: String = "") -> PlistDict {
+enum DiskImageError: Error {
+    case error(description: String)
+}
+
+func hdiutilData(arguments: [String], stdIn: String = "") throws -> PlistDict {
     // runs an hdiutil <command> on a dmg and attempts to return a plist data structure
     var hdiUtilArgs = arguments
     if !hdiUtilArgs.contains("-plist") {
@@ -15,7 +19,8 @@ func hdiutilData(arguments: [String], stdIn: String = "") -> PlistDict {
     }
     let results = runCLI("/usr/bin/hdiutil", arguments: hdiUtilArgs, stdIn: stdIn)
     if results.exitcode != 0 {
-        displayError("hdiutil error \(results.error) with arguments \(arguments)")
+        throw DiskImageError.error(
+            description: "hdiutil error \(results.error) with arguments \(arguments)")
     }
     let (plistStr, _) = parseFirstPlist(fromString: results.output)
     if !plistStr.isEmpty {
@@ -30,14 +35,14 @@ func hdiutilData(arguments: [String], stdIn: String = "") -> PlistDict {
     return PlistDict()
 }
 
-func dmgImageInfo(_ dmgPath: String) -> PlistDict {
+func dmgImageInfo(_ dmgPath: String) throws -> PlistDict {
     // runs hdiutil imageinfo on a dmg and returns a plist data structure
-    return hdiutilData(arguments: ["imageinfo", dmgPath])
+    return try hdiutilData(arguments: ["imageinfo", dmgPath])
 }
 
 func dmgIsWritable(_ dmgPath: String) -> Bool {
     // Attempts to determine if the given disk image is writable
-    let imageInfo = dmgImageInfo(dmgPath)
+    guard let imageInfo = try? dmgImageInfo(dmgPath) else { return false }
     if let format = imageInfo["Format"] as? String {
         if ["UDSB", "UDSP", "UDRW", "RdWr"].contains(format) {
             return true
@@ -49,7 +54,7 @@ func dmgIsWritable(_ dmgPath: String) -> Bool {
 func dmgHasSLA(_ dmgPath: String) -> Bool {
     // Returns true if dmg has a Software License Agreement.
     // These dmgs normally cannot be attached without user intervention
-    let imageInfo = dmgImageInfo(dmgPath)
+    guard let imageInfo = try? dmgImageInfo(dmgPath) else { return false }
     if let properties = imageInfo["Properties"] as? PlistDict {
         if let hasSLA = properties["Software License Agreement"] as? Bool {
             return hasSLA
@@ -58,14 +63,14 @@ func dmgHasSLA(_ dmgPath: String) -> Bool {
     return false
 }
 
-func hdiutilInfo() -> PlistDict {
+func hdiutilInfo() throws -> PlistDict {
     // runs hdiutil info on a dmg and returns a plist data structure
-    return hdiutilData(arguments: ["info"])
+    return try hdiutilData(arguments: ["info"])
 }
 
 func pathIsVolumeMountPoint(_ path: String) -> Bool {
     // Returns a boolean to indicate if path is a mountpoint for a disk image
-    let info = hdiutilInfo()
+    guard let info = try? hdiutilInfo() else { return false }
     if let images = info["images"] as? [PlistDict] {
         // "images" is an array of dicts
         for image in images {
@@ -88,7 +93,7 @@ func pathIsVolumeMountPoint(_ path: String) -> Bool {
 
 func diskImageForMountPoint(_ path: String) -> String? {
     // Attempts to find the path to a dmg for a given mount point
-    let info = hdiutilInfo()
+    guard let info = try? hdiutilInfo() else { return nil }
     if let images = info["images"] as? [PlistDict] {
         // "images" is an array of dicts
         for image in images {
@@ -113,7 +118,7 @@ func diskImageForMountPoint(_ path: String) -> String? {
 
 func mountPointForDiskImage(_ dmgPath: String) -> String? {
     // returns the mountpoint for the given disk image
-    let info = hdiutilInfo()
+    guard let info = try? hdiutilInfo() else { return nil }
     if let images = info["images"] as? [PlistDict] {
         // "images" is an array of dicts
         for image in images {
@@ -149,7 +154,7 @@ func mountdmg(_ dmgPath: String,
               useShadow: Bool = false,
               useExistingMounts: Bool = false,
               randomMountpoint: Bool = true,
-              skipVerification: Bool = false) -> String?
+              skipVerification: Bool = false) throws -> String
 {
     // Attempts to mount the dmg at dmgpath
     // and returns the first item in the list of mountpoints
@@ -157,15 +162,13 @@ func mountdmg(_ dmgPath: String,
     // If random_mountpoint, mount at random dir under /tmp
     let dmgName = (dmgPath as NSString).lastPathComponent
 
-    if useExistingMounts {
-        if diskImageIsMounted(dmgPath) {
-            return mountPointForDiskImage(dmgPath)
-        }
+    if useExistingMounts, let currentMountPoint = mountPointForDiskImage(dmgPath) {
+        return currentMountPoint
     }
 
     // attempt to mount the dmg
     var stdIn = ""
-    if dmgHasSLA(dmgPath) {
+    if let hasSLA = try? dmgHasSLA(dmgPath), hasSLA == true {
         stdIn = "Y\n"
         displayDetail("NOTE: \(dmgName) has embedded Software License Agreement")
     }
@@ -179,17 +182,16 @@ func mountdmg(_ dmgPath: String,
     if skipVerification {
         arguments.append("-noverify")
     }
-    let plistData = hdiutilData(arguments: arguments, stdIn: stdIn)
+    let plistData = try hdiutilData(arguments: arguments, stdIn: stdIn)
     if let systemEntities = plistData["system-entities"] as? [PlistDict] {
         for entity in systemEntities {
             if let mountPoint = entity["mount-point"] as? String {
                 return mountPoint
             }
         }
-    } else {
-        displayError("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
     }
-    return nil
+    throw DiskImageError.error(
+        description: "Could not get mountpoint info from results of hdiutil attach \(dmgName)")
 }
 
 func unmountdmg(_ mountpoint: String) {
