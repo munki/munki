@@ -280,8 +280,15 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     // Unmounts the disk image if it wasn"t already mounted
     var info = PlistDict()
     let wasAlreadyMounted = diskImageIsMounted(dmgpath)
-    guard let mountpoint = mountdmg(dmgpath, useExistingMounts: true) else {
-        throw PkgInfoGenerationError.error(description: "Could not mount \(dmgpath)")
+    var mountpoint = ""
+    do {
+        mountpoint = try mountdmg(dmgpath, useExistingMounts: true)
+    } catch let DiskImageError.error(description) {
+        throw PkgInfoGenerationError.error(
+            description: "Could not mount \(dmgpath): \(description)")
+    }
+    guard !mountpoint.isEmpty else {
+        throw PkgInfoGenerationError.error(description: "No mountpoint for \(dmgpath)")
     }
     if !options.pkgname.isEmpty {
         // a package was specified
