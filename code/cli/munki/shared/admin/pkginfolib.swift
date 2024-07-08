@@ -75,20 +75,20 @@ struct PkginfoOptions {
 }
 
 func createPkgInfoFromPkg(_ pkgpath: String,
-                          options: PkginfoOptions = PkginfoOptions()) -> PlistDict
+                          options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict
 {
     // Gets package metadata for the package at pkgpath.
     // Returns pkginfo
     var info = PlistDict()
 
     if hasValidPackageExt(pkgpath) {
-        info = getPackageMetaData(pkgpath)
-        if !info.isEmpty, options.installerChoices {
+        info = try getPackageMetaData(pkgpath)
+        if options.installerChoices {
             if let installerChoices = getChoiceChangesXML(pkgpath) {
                 info["installer_choices_xml"] = installerChoices
             }
         }
-        if !info.isEmpty, !pathIsDirectory(pkgpath) {
+        if !pathIsDirectory(pkgpath) {
             // generate and add installer_item_size
             if let attributes = try? FileManager.default.attributesOfItem(atPath: pkgpath) {
                 let filesize = (attributes as NSDictionary).fileSize()
@@ -286,17 +286,15 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     if !options.pkgname.isEmpty {
         // a package was specified
         let pkgpath = (mountpoint as NSString).appendingPathComponent(options.pkgname)
-        info = createPkgInfoFromPkg(pkgpath, options: options)
-        if !info.isEmpty {
-            info["package_path"] = options.pkgname
-        }
+        info = try createPkgInfoFromPkg(pkgpath, options: options)
+        info["package_path"] = options.pkgname
     } else if options.itemtocopy.isEmpty {
         // look for first package at the root of the mounted dmg
         if let filelist = try? FileManager.default.contentsOfDirectory(atPath: mountpoint) {
             for item in filelist {
                 if hasValidPackageExt(item) {
                     let pkgpath = (mountpoint as NSString).appendingPathComponent(item)
-                    info = createPkgInfoFromPkg(pkgpath, options: options)
+                    info = try createPkgInfoFromPkg(pkgpath, options: options)
                     break
                 }
             }
@@ -375,7 +373,7 @@ func makepkginfo(_ filepath: String,
             if !options.installerTypeRequested.isEmpty, options.printWarnings {
                 printStderr("WARNING: installer_type requested is \(options.installerTypeRequested). Provided installer item appears to be an Apple pkg.")
             }
-            pkginfo = createPkgInfoFromPkg(installeritem, options: options)
+            pkginfo = try createPkgInfoFromPkg(installeritem, options: options)
             if pkginfo.isEmpty {
                 throw PkgInfoGenerationError.error(
                     description: "\(installeritem) doesn't appear to be a valid installer item.")

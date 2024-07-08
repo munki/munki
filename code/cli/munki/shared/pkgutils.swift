@@ -7,7 +7,11 @@
 
 import Foundation
 
-func getPkgRestartInfo(_ pkgpath: String) -> PlistDict {
+enum PackageParsingError: Error {
+    case error(description: String)
+}
+
+func getPkgRestartInfo(_ pkgpath: String) throws -> PlistDict {
     var installerinfo = PlistDict()
     let results = runCLI(
         "/usr/sbin/installer",
@@ -16,8 +20,8 @@ func getPkgRestartInfo(_ pkgpath: String) -> PlistDict {
                     "-plist"]
     )
     if results.exitcode != 0 {
-        displayError("installer -query for \(pkgpath) failed: \(results.error)")
-        return installerinfo
+        throw PackageParsingError.error(
+            description: "installer -query for \(pkgpath) failed: \(results.error)")
     }
     let (pliststr, _) = parseFirstPlist(fromString: results.output)
     if !pliststr.isEmpty {
@@ -212,7 +216,7 @@ func getSinglePkgReceipt(_ pkgpath: String) -> PlistDict {
     return receipt
 }
 
-func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
+func getBundlePackageInfo(_ pkgpath: String) throws -> PlistDict {
     // get metadate from a bundle-style package
     var receiptarray = [PlistDict]()
     if pkgpath.hasSuffix(".pkg") {
@@ -261,7 +265,7 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
                         receiptarray.append(receipt)
                     }
                 } else if itempath.hasSuffix(".mpkg") {
-                    let info = getBundlePackageInfo(itempath)
+                    let info = try getBundlePackageInfo(itempath)
                     if !info.isEmpty {
                         if let receipts = info["receipts"] as? [PlistDict] {
                             receiptarray += receipts
@@ -271,7 +275,11 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
             }
         }
     }
-    return ["receipts": receiptarray]
+    if !receiptarray.isEmpty {
+        return ["receipts": receiptarray]
+    }
+    throw PackageParsingError.error(
+        description: "Could not get receipt info from \(pkgpath)")
 }
 
 // MARK: XML file functions (mostly for flat packages)
@@ -428,12 +436,13 @@ func getAbsolutePath(_ path: String) -> String {
     return (composedPath as NSString).standardizingPath
 }
 
-func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
+func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
     // returns info for a flat package, including receipts array
     var info = PlistDict()
     var receiptarray = [PlistDict]()
     var productVersion = ""
     var minimumOSVersion = ""
+    var errors = [String]()
 
     // get the absolute path to the pkg because we need to do a chdir later
     let absolutePkgPath = getAbsolutePath(pkgpath)
@@ -458,7 +467,7 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                         (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
                     receiptarray.append(receiptFromPackageInfoFile(packageInfoPath))
                 } else {
-                    displayWarning(
+                    errors.append(
                         "An error occurred while extracting \(tocEntry): \(tocResults.error)")
                 }
             }
@@ -479,47 +488,51 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                     }
                     break
                 } else {
-                    displayWarning(
+                    errors.append(
                         "An error occurred while extracting \(tocEntry): \(tocResults.error)")
                 }
             }
         }
 
         if receiptarray.isEmpty {
-            displayWarning("No receipts found in Distribution or PackageInfo files within the package.")
+            errors.append("No receipts found in Distribution or PackageInfo files within the package.")
         }
     } else {
-        displayWarning(
-            "An error occurred while geting table of contents for \(pkgpath): \(tocResults.error)")
+        errors.append("An error occurred while geting table of contents for \(pkgpath): \(tocResults.error)")
     }
     // change back to original working dir
     filemanager.changeCurrentDirectoryPath(cwd)
     // clean up tmpdir
     try? filemanager.removeItem(atPath: pkgTmpDir)
-    info["receipts"] = receiptarray
+    if !receiptarray.isEmpty {
+        info["receipts"] = receiptarray
+    }
     if !productVersion.isEmpty {
         info["product_version"] = productVersion
     }
     if !minimumOSVersion.isEmpty {
         info["minimum_os_version"] = minimumOSVersion
     }
-
-    return info
+    if !info.isEmpty {
+        return info
+    }
+    throw PackageParsingError.error(
+        description: "Could not parse info from \(pkgpath):\n\(errors.joined(separator: "\n"))")
 }
 
 // MARK: higher-level functions for getting pkg metadata
 
-func getPackageInfo(_ pkgpath: String) -> PlistDict {
+func getPackageInfo(_ pkgpath: String) throws -> PlistDict {
     // get some package info (receipts, version, etc) and return as a dict
     guard hasValidPackageExt(pkgpath) else { return PlistDict() }
     displayDebug2("Examining \(pkgpath)...")
     if pathIsDirectory(pkgpath) {
-        return getBundlePackageInfo(pkgpath)
+        return try getBundlePackageInfo(pkgpath)
     }
-    return getFlatPackageInfo(pkgpath)
+    return try getFlatPackageInfo(pkgpath)
 }
 
-func getPackageMetaData(_ pkgpath: String) -> PlistDict {
+func getPackageMetaData(_ pkgpath: String) throws -> PlistDict {
     // Queries an installer item (.pkg, .mpkg, .dist)
     // and gets metadata. There are a lot of valid Apple package formats
     // and this function may not deal with them all equally well.
@@ -539,8 +552,8 @@ func getPackageMetaData(_ pkgpath: String) -> PlistDict {
         return pkginfo
     }
 
-    pkginfo = getPackageInfo(pkgpath)
-    let restartInfo = getPkgRestartInfo(pkgpath)
+    pkginfo = try getPackageInfo(pkgpath)
+    let restartInfo = try getPkgRestartInfo(pkgpath)
     if let restartAction = restartInfo["RestartAction"] as? String {
         pkginfo["RestartAction"] = restartAction
     }
