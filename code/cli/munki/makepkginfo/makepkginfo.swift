@@ -47,7 +47,9 @@ struct MakePkgInfo: ParsableCommand {
     ))
     var installerItem: String?
 
-    mutating func validate() throws {}
+    mutating func validate() throws {
+        // TODO: validate installerEnvironment
+    }
 
     mutating func run() throws {
         if version {
@@ -56,8 +58,20 @@ struct MakePkgInfo: ParsableCommand {
         }
 
         if let installerItem {
+            let options = PkginfoOptions(
+                override: overrideOptions,
+                script: scriptOptions,
+                dmg: dmgOptions,
+                pkg: packageOptions,
+                force: unattendedOptions,
+                installs: installsOptions,
+                type: installerTypeOptions,
+                other: additionalOptions,
+                hidden: hiddenOptions
+            )
+            
             do {
-                let pkginfo = try makepkginfo(installerItem)
+                let pkginfo = try makepkginfo(installerItem, options: options)
                 let plistStr = try plistToString(pkginfo)
                 print(plistStr)
             } catch let PlistError.writeError(description) {

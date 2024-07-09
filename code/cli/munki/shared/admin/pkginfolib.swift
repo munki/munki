@@ -27,55 +27,8 @@ func pkginfoMetadata() -> PlistDict {
     return metadata
 }
 
-struct PkginfoOptions {
-    var installerChoices = false
-    var pkgname = ""
-    var itemtocopy = ""
-    var destitemname = ""
-    var destinationpath = ""
-    var user = ""
-    var group = ""
-    var mode = ""
-    var installerTypeRequested = ""
-    var nopkg = false
-    var printWarnings = true
-    var uninstalleritem = ""
-    var catalogs = [String]()
-    var description = ""
-    var displayName = ""
-    var name = ""
-    var version = ""
-    var category = ""
-    var developer = ""
-    var iconName = ""
-    var files = [String]()
-    var installcheckScript = ""
-    var uninstallcheckScript = ""
-    var postinstallScript = ""
-    var preinstallScript = ""
-    var postuninstallScript = ""
-    var preuninstallScript = ""
-    var uninstallScript = ""
-    var minimumMunkiversion = ""
-    var autoremove = false
-    var onDemand = false
-    var unattendedInstall = false
-    var unattendedUninstall = false
-    var minimumOSVersion = ""
-    var maximumOSVersion = ""
-    var supportedArchitectures = [String]()
-    var forceInstallAfterDate: NSDate?
-    var restartAction = ""
-    var updateFor = [String]()
-    var requires = [String]()
-    var blockingApplications = [String]()
-    var uninstallMethod = ""
-    var installerEnvironment = [String: String]()
-    var notes = ""
-}
-
 func createPkgInfoFromPkg(_ pkgpath: String,
-                          options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict
+                          options: PkginfoOptions) throws -> PlistDict
 {
     // Gets package metadata for the package at pkgpath.
     // Returns pkginfo
@@ -83,7 +36,7 @@ func createPkgInfoFromPkg(_ pkgpath: String,
 
     if hasValidPackageExt(pkgpath) {
         info = try getPackageMetaData(pkgpath)
-        if options.installerChoices {
+        if options.pkg.installerChoices {
             if let installerChoices = getChoiceChangesXML(pkgpath) {
                 info["installer_choices_xml"] = installerChoices
             }
@@ -173,14 +126,14 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
     return info
 }
 
-func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict {
+func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) throws -> PlistDict {
     // processes a drag-n-drop dmg to build pkginfo
     var info = PlistDict()
     var dragNDropItem = ""
     var installsitem = PlistDict()
-    if !options.itemtocopy.isEmpty {
+    if let item = options.dmg.item {
         // specific item given
-        dragNDropItem = options.itemtocopy
+        dragNDropItem = item
         let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
         installsitem = createInstallsItem(itempath)
         if installsitem.isEmpty {
@@ -218,14 +171,14 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
             dragNDropItem = String(dragNDropItem[startIndex...])
         }
         var destItem = dragNDropItem
-        if !options.destitemname.isEmpty {
-            destItem = options.destitemname
+        if let destitemname = options.dmg.destitemname {
+            destItem = destitemname
             itemsToCopyItem["destination_item"] = destItem
         }
 
         let destItemFilename = (destItem as NSString).lastPathComponent
-        if !options.destinationpath.isEmpty {
-            installsitem["path"] = (options.destinationpath as NSString).appendingPathComponent(destItemFilename)
+        if let destinationpath = options.dmg.destinationpath {
+            installsitem["path"] = (destinationpath as NSString).appendingPathComponent(destItemFilename)
         } else {
             installsitem["path"] = ("/Applications" as NSString).appendingPathComponent(destItemFilename)
         }
@@ -244,25 +197,25 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
         info["installer_type"] = "copy_from_dmg"
         // build items_to_copy array
         itemsToCopyItem["source_item"] = dragNDropItem
-        if !options.destinationpath.isEmpty {
-            itemsToCopyItem["destination_path"] = options.destinationpath
+        if let destinationpath = options.dmg.destinationpath {
+            itemsToCopyItem["destination_path"] = destinationpath
         } else {
             itemsToCopyItem["destination_path"] = "/Applications"
         }
-        if !options.user.isEmpty {
-            itemsToCopyItem["user"] = options.user
+        if let user = options.dmg.user{
+            itemsToCopyItem["user"] = user
         }
-        if !options.group.isEmpty {
-            itemsToCopyItem["user"] = options.group
+        if let group = options.dmg.group {
+            itemsToCopyItem["user"] = group
         }
-        if !options.mode.isEmpty {
-            itemsToCopyItem["user"] = options.mode
+        if let mode = options.dmg.mode {
+            itemsToCopyItem["user"] = mode
         }
         info["items_to_copy"] = [itemsToCopyItem]
         info["uninstallable"] = true
         info["uninstall_method"] = "remove_copied_items"
 
-        if options.installerTypeRequested == "stage_os_installer" {
+        if let installerTypeRequested = options.type.installerType, installerTypeRequested == .stage_os_installer {
             // TODO: transform this copy_from_dmg item
             // into a staged_os_installer item
         }
@@ -272,7 +225,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions = P
 }
 
 func createPkgInfoFromDmg(_ dmgpath: String,
-                          options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict
+                          options: PkginfoOptions) throws -> PlistDict
 {
     // Mounts a disk image if it"s not already mounted
     // Builds pkginfo for the first installer item found at the root level,
@@ -290,12 +243,12 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     guard !mountpoint.isEmpty else {
         throw PkgInfoGenerationError.error(description: "No mountpoint for \(dmgpath)")
     }
-    if !options.pkgname.isEmpty {
+    if let pkgname = options.pkg.pkgname {
         // a package was specified
-        let pkgpath = (mountpoint as NSString).appendingPathComponent(options.pkgname)
+        let pkgpath = (mountpoint as NSString).appendingPathComponent(pkgname)
         info = try createPkgInfoFromPkg(pkgpath, options: options)
-        info["package_path"] = options.pkgname
-    } else if options.itemtocopy.isEmpty {
+        info["package_path"] = pkgname
+    } else if options.dmg.item == nil {
         // look for first package at the root of the mounted dmg
         if let filelist = try? FileManager.default.contentsOfDirectory(atPath: mountpoint) {
             for item in filelist {
@@ -307,7 +260,7 @@ func createPkgInfoFromDmg(_ dmgpath: String,
             }
         }
     }
-    if info.isEmpty, options.itemtocopy.isEmpty {
+    if info.isEmpty, options.dmg.item == nil {
         // TODO: check for macOS installer
     }
     if info.isEmpty {
@@ -343,7 +296,7 @@ func readFileOrString(_ fileNameOrString: String) -> String {
 }
 
 func makepkginfo(_ filepath: String,
-                 options: PkginfoOptions = PkginfoOptions()) throws -> PlistDict
+                 options: PkginfoOptions) throws -> PlistDict
 {
     // Return a pkginfo dictionary for installeritem
     var installeritem = filepath
@@ -371,21 +324,21 @@ func makepkginfo(_ filepath: String,
                 throw PkgInfoGenerationError.error(
                     description: "Could not find a supported installer item in \(installeritem)")
             }
-            if dmgIsWritable(installeritem), options.printWarnings {
+            if dmgIsWritable(installeritem), options.hidden.printWarnings {
                 printStderr("WARNING: \(installeritem) is a writable disk image. Checksum verification is not supported.")
                 pkginfo["installer_item_hash"] = "N/A"
             }
             // is this a package?
         } else if hasValidPackageExt(installeritem) {
-            if !options.installerTypeRequested.isEmpty, options.printWarnings {
-                printStderr("WARNING: installer_type requested is \(options.installerTypeRequested). Provided installer item appears to be an Apple pkg.")
+            if let installerTypeRequested = options.type.installerType, options.hidden.printWarnings {
+                printStderr("WARNING: installer_type requested is \(installerTypeRequested.rawValue). Provided installer item appears to be an Apple pkg.")
             }
             pkginfo = try createPkgInfoFromPkg(installeritem, options: options)
             if pkginfo.isEmpty {
                 throw PkgInfoGenerationError.error(
                     description: "\(installeritem) doesn't appear to be a valid installer item.")
             }
-            if pathIsDirectory(installeritem), options.printWarnings {
+            if pathIsDirectory(installeritem), options.hidden.printWarnings {
                 printStderr("WARNING: \(installeritem) is a bundle-style package!\nTo use it with Munki, you should encapsulate it in a disk image.")
             }
         } else {
@@ -400,23 +353,22 @@ func makepkginfo(_ filepath: String,
         // for now, just the filename
         pkginfo["installer_item_location"] = (installeritem as NSString).lastPathComponent
 
-        if !options.uninstalleritem.isEmpty {
+        if let uninstalleritem = options.pkg.uninstalleritem {
             pkginfo["uninstallable"] = true
             pkginfo["uninstall_method"] = "uninstall_package"
             let minMunkiVers = pkginfo["minimum_munki_version"] as? String ?? "0"
             if MunkiVersion(minMunkiVers) > MunkiVersion("6.2") {
                 pkginfo["minimum_munki_version"] = "6.2"
             }
-            let uninstallerpath = options.uninstalleritem
-            if !FileManager.default.fileExists(atPath: uninstallerpath) {
+            if !FileManager.default.fileExists(atPath: uninstalleritem) {
                 throw PkgInfoGenerationError.error(
-                    description: "No uninstaller item at \(uninstallerpath)")
+                    description: "No uninstaller item at \(uninstalleritem)")
             }
             // TODO: remove start of path if it refers to the Munki repo pkgs dir
             // for now, just the filename
-            pkginfo["uninstaller_item_location"] = (uninstallerpath as NSString).lastPathComponent
-            pkginfo["uninstaller_item_hash"] = sha256hash(file: uninstallerpath)
-            if let attributes = try? FileManager.default.attributesOfItem(atPath: uninstallerpath) {
+            pkginfo["uninstaller_item_location"] = (uninstalleritem as NSString).lastPathComponent
+            pkginfo["uninstaller_item_hash"] = sha256hash(file: uninstalleritem)
+            if let attributes = try? FileManager.default.attributesOfItem(atPath: uninstalleritem) {
                 let filesize = (attributes as NSDictionary).fileSize()
                 pkginfo["uninstaller_item_size"] = Int(filesize / 1024)
             }
@@ -435,43 +387,43 @@ func makepkginfo(_ filepath: String,
 
     } else {
         // no installer item
-        if options.nopkg {
+        if options.type.nopkg {
             pkginfo["installer_type"] = "nopkg"
         }
     }
 
-    if !options.catalogs.isEmpty {
-        pkginfo["catalogs"] = options.catalogs
+    if !options.other.catalog.isEmpty {
+        pkginfo["catalogs"] = options.other.catalog
     } else {
         pkginfo["catalogs"] = ["testing"]
     }
-    if !options.description.isEmpty {
-        pkginfo["description"] = readFileOrString(options.description)
+    if let description = options.override.description {
+        pkginfo["description"] = readFileOrString(description)
     }
-    if !options.displayName.isEmpty {
-        pkginfo["display_name"] = options.displayName
+    if let displayname = options.override.displayname {
+        pkginfo["display_name"] = displayname
     }
-    if !options.name.isEmpty {
-        pkginfo["name"] = options.name
+    if let name = options.override.name {
+        pkginfo["name"] = name
     }
-    if !options.version.isEmpty {
-        pkginfo["version"] = options.version
+    if let version = options.override.pkgvers {
+        pkginfo["version"] = version
     }
-    if !options.category.isEmpty {
-        pkginfo["category"] = options.category
+    if let category = options.other.category {
+        pkginfo["category"] = category
     }
-    if !options.developer.isEmpty {
-        pkginfo["developer"] = options.developer
+    if let developer = options.other.developer {
+        pkginfo["developer"] = developer
     }
-    if !options.iconName.isEmpty {
-        pkginfo["icon_name"] = options.iconName
+    if let iconName = options.other.iconName {
+        pkginfo["icon_name"] = iconName
     }
     if !pkginfo.isEmpty {
         pkginfo["autoremove"] = false
     }
     // process items for installs array
     var installs = [PlistDict]()
-    for var file in options.files {
+    for var file in options.installs.file {
         if file.hasSuffix("/") {
             file.removeLast()
         }
@@ -486,92 +438,93 @@ func makepkginfo(_ filepath: String,
         pkginfo["installs"] = installs
     }
     // add pkginfo scripts if specified
-    if !options.installcheckScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.installcheckScript, encoding: .utf8) {
+    if let installcheckScript = options.script.installcheckScript {
+        if let scriptText = try? String(contentsOfFile: installcheckScript, encoding: .utf8) {
             pkginfo["installcheck_script"] = scriptText
         }
     }
-    if !options.uninstallcheckScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.uninstallcheckScript, encoding: .utf8) {
+    if let uninstallcheckScript = options.script.uninstallcheckScript {
+        if let scriptText = try? String(contentsOfFile: uninstallcheckScript, encoding: .utf8) {
             pkginfo["uninstallcheck_script"] = scriptText
         }
     }
-    if !options.postinstallScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.postinstallScript, encoding: .utf8) {
+    if let postinstallScript = options.script.postinstallScript {
+        if let scriptText = try? String(contentsOfFile: postinstallScript, encoding: .utf8) {
             pkginfo["postinstall_script"] = scriptText
         }
     }
-    if !options.preinstallScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.preinstallScript, encoding: .utf8) {
+    if let preinstallScript = options.script.preinstallScript {
+        if let scriptText = try? String(contentsOfFile: preinstallScript, encoding: .utf8) {
             pkginfo["preinstall_script"] = scriptText
         }
     }
-    if !options.postuninstallScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.postuninstallScript, encoding: .utf8) {
+    if let postuninstallScript = options.script.postuninstallScript {
+        if let scriptText = try? String(contentsOfFile: postuninstallScript, encoding: .utf8) {
             pkginfo["postuninstall_script"] = scriptText
         }
     }
-    if !options.preuninstallScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.preuninstallScript, encoding: .utf8) {
+    if let preuninstallScript = options.script.preuninstallScript {
+        if let scriptText = try? String(contentsOfFile: preuninstallScript, encoding: .utf8) {
             pkginfo["preuninstall_script"] = scriptText
         }
     }
-    if !options.uninstallScript.isEmpty {
-        if let scriptText = try? String(contentsOfFile: options.uninstallScript, encoding: .utf8) {
+    if let uninstallScript = options.script.uninstallScript {
+        if let scriptText = try? String(contentsOfFile: uninstallScript, encoding: .utf8) {
             pkginfo["uninstall_script"] = scriptText
             pkginfo["uninstall_method"] = "uninstall_script"
             pkginfo["uninstallable"] = true
         }
     }
     // more options
-    if options.autoremove {
+    if options.other.autoremove {
         pkginfo["autoremove"] = true
     }
-    if !options.minimumMunkiversion.isEmpty {
-        pkginfo["miminum_munki_version"] = options.minimumMunkiversion
+    if let minimumMunkiVersion = options.other.minimumMunkiVersion {
+        pkginfo["miminum_munki_version"] = minimumMunkiVersion
     }
-    if options.onDemand {
+    if options.other.onDemand {
         pkginfo["OnDemand"] = true
     }
-    if options.unattendedInstall {
+    if options.force.unattendedInstall {
         pkginfo["unattended_install"] = true
     }
-    if options.unattendedUninstall {
+    if options.force.unattendedUninstall {
         pkginfo["unattended_uninstall"] = true
     }
-    if !options.minimumOSVersion.isEmpty {
-        pkginfo["minimum_os_version"] = options.minimumOSVersion
+    if let minimumOSVersion = options.other.minimumOSVersion {
+        pkginfo["minimum_os_version"] = minimumOSVersion
     }
-    if !options.maximumOSVersion.isEmpty {
-        pkginfo["maximum_os_version"] = options.maximumOSVersion
+    if let maximumOSVersion = options.other.maximumOSVersion {
+        pkginfo["maximum_os_version"] = maximumOSVersion
     }
-    if !options.supportedArchitectures.isEmpty {
-        pkginfo["supported_architectures"] = options.supportedArchitectures
+    if !options.other.supportedArchitectures.isEmpty {
+        let rawValues = options.other.supportedArchitectures.map { $0.rawValue }
+        pkginfo["supported_architectures"] = rawValues
     }
-    if options.forceInstallAfterDate != nil {
-        pkginfo["force_install_after_date"] = options.forceInstallAfterDate
+    if let forceInstallAfterDate = options.force.forceInstallAfterDate {
+        pkginfo["force_install_after_date"] = forceInstallAfterDate
     }
-    if !options.restartAction.isEmpty {
-        pkginfo["RestartAction"] = options.restartAction
+    if let restartAction = options.override.restartAction {
+        pkginfo["RestartAction"] = restartAction.rawValue
     }
-    if !options.updateFor.isEmpty {
-        pkginfo["update_for"] = options.updateFor
+    if !options.other.updateFor.isEmpty {
+        pkginfo["update_for"] = options.other.updateFor
     }
-    if !options.requires.isEmpty {
-        pkginfo["update_for"] = options.requires
+    if !options.other.requires.isEmpty {
+        pkginfo["update_for"] = options.other.requires
     }
-    if !options.blockingApplications.isEmpty {
-        pkginfo["update_for"] = options.blockingApplications
+    if !options.other.blockingApplication.isEmpty {
+        pkginfo["update_for"] = options.other.blockingApplication
     }
-    if !options.uninstallMethod.isEmpty {
-        pkginfo["uninstall_method"] = options.uninstallMethod
+    if let uninstallMethod = options.override.uninstallMethod {
+        pkginfo["uninstall_method"] = uninstallMethod
         pkginfo["uninstallable"] = true
     }
-    if !options.installerEnvironment.isEmpty {
-        pkginfo["installer_environment"] = options.installerEnvironment
+    if !options.pkg.installerEnvironment.isEmpty {
+        pkginfo["installer_environment"] = options.pkg.installerEnvironment
     }
-    if !options.notes.isEmpty {
-        pkginfo["notes"] = readFileOrString(options.notes)
+    if let notes = options.other.notes {
+        pkginfo["notes"] = readFileOrString(notes)
     }
     pkginfo["_metadata"] = pkginfoMetadata()
 

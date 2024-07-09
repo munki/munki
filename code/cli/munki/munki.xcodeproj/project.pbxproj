@@ -27,7 +27,6 @@
 		C030A9902C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9972C3A2E18007F0B34 /* makepkginfo.swift */; };
 		C030A99D2C3B12A6007F0B34 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C030A99C2C3B12A6007F0B34 /* ArgumentParser */; };
-		C030A9A02C3B4F04007F0B34 /* pkginfoOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */; };
 		C030A9A12C3B4F5B007F0B34 /* pkginfoOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */; };
 		C030A9A22C3B4F63007F0B34 /* pkginfolib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E12C3489FA00B86310 /* pkginfolib.swift */; };
 		C030A9A32C3B4FBC007F0B34 /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
@@ -473,7 +472,6 @@
 				C07074DD2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C07A6FBF2C2B5AF400090743 /* constants.swift in Sources */,
 				C030A9902C39C135007F0B34 /* munkihash.swift in Sources */,
-				C030A9A02C3B4F04007F0B34 /* pkginfoOptions.swift in Sources */,
 				C07074E02C33B9A000B86310 /* reports.swift in Sources */,
 				C07074E62C34910F00B86310 /* osutils.swift in Sources */,
 				C07074E92C34932400B86310 /* pkgutils.swift in Sources */,
