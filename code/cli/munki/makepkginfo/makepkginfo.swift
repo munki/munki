@@ -57,40 +57,70 @@ struct MakePkgInfo: ParsableCommand {
             return
         }
 
-        if let installerItem {
-            let options = PkginfoOptions(
-                override: overrideOptions,
-                script: scriptOptions,
-                dmg: dmgOptions,
-                pkg: packageOptions,
-                force: unattendedOptions,
-                installs: installsOptions,
-                type: installerTypeOptions,
-                other: additionalOptions,
-                hidden: hiddenOptions
-            )
+        let options = PkginfoOptions(
+            override: overrideOptions,
+            script: scriptOptions,
+            dmg: dmgOptions,
+            pkg: packageOptions,
+            force: unattendedOptions,
+            installs: installsOptions,
+            type: installerTypeOptions,
+            other: additionalOptions,
+            hidden: hiddenOptions
+        )
 
-            do {
-                let pkginfo = try makepkginfo(installerItem, options: options)
-                let plistStr = try plistToString(pkginfo)
-                print(plistStr)
-            } catch let PlistError.writeError(description) {
-                printStderr("ERROR: \(description)")
-                throw ExitCode(-1)
-            } catch let PkgInfoGenerationError.error(description) {
-                printStderr("ERROR: \(description)")
-                throw ExitCode(-1)
-            } catch let PackageParsingError.error(description) {
-                printStderr("ERROR: \(description)")
-                throw ExitCode(-1)
-            } catch let DiskImageError.error(description) {
-                printStderr("ERROR: \(description)")
-                throw ExitCode(-1)
-            } catch {
-                printStderr("Unexpected error: \(type(of: error))")
-                printStderr(error)
-                throw ExitCode(-1)
-            }
+        /*
+         if (not arguments and
+                     not options.file and
+                     not options.nopkg and
+                     not options.installer_environment and
+                     not options.installcheck_script and
+                     not options.uninstallcheck_script and
+                     not options.preinstall_script and
+                     not options.postinstall_script and
+                     not options.preuninstall_script and
+                     not options.postuninstall_script and
+                     not options.uninstall_script and
+                     not options.apple_update):
+                 parser.print_usage()
+                 exit(-1)
+         */
+
+        if installerItem == nil,
+           options.installs.file.isEmpty,
+           options.type.nopkg == false,
+           options.pkg.installerEnvironment.isEmpty,
+           options.script.installcheckScript == nil,
+           options.script.uninstallcheckScript == nil,
+           options.script.preinstallScript == nil,
+           options.script.postinstallScript == nil,
+           options.script.preuninstallScript == nil,
+           options.script.postuninstallScript == nil,
+           options.script.uninstallScript == nil
+        {
+            throw ValidationError("")
+        }
+
+        do {
+            let pkginfo = try makepkginfo(installerItem, options: options)
+            let plistStr = try plistToString(pkginfo)
+            print(plistStr)
+        } catch let PlistError.writeError(description) {
+            printStderr("ERROR: \(description)")
+            throw ExitCode(-1)
+        } catch let PkgInfoGenerationError.error(description) {
+            printStderr("ERROR: \(description)")
+            throw ExitCode(-1)
+        } catch let PackageParsingError.error(description) {
+            printStderr("ERROR: \(description)")
+            throw ExitCode(-1)
+        } catch let DiskImageError.error(description) {
+            printStderr("ERROR: \(description)")
+            throw ExitCode(-1)
+        } catch {
+            printStderr("Unexpected error: \(type(of: error))")
+            printStderr(error)
+            throw ExitCode(-1)
         }
     }
 }
