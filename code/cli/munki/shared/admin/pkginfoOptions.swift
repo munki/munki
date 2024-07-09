@@ -200,7 +200,7 @@ struct UnattendedInstallOptions: ParsableArguments {
     var unattendedUninstall = false
 
     @Option(name: [.long, .customLong("force_install_after_date")],
-            help: ArgumentHelp("Specify a date, in local time, after which the package will be forcefully installed. DATE format: yyyy-mm-ddThh:mm:ssZ Example: '2011-08-11T12:55:00Z' equates to 11 August 2011 at 12:55 PM local time.", valueName: "date"))
+            help: ArgumentHelp("Specify a date, in local time, after which the package will be forcefully installed. DATE format: yyyy-mm-ddThh:mm:ssZ Example: '2024-08-11T12:55:00Z' equates to 11 August 2024 at 12:55 PM local time.", valueName: "date"))
     var forceInstallAfterDate: String? = nil
 
     mutating func validate() throws {
