@@ -124,7 +124,7 @@ struct DragNDropOptions: ParsableArguments {
             help: ArgumentHelp("Alternate name for which the item should be copied as. Specifying this option also alters the corresponding 'installs' item's path with the provided name.", valueName: "name"))
     var destitemname: String? = nil
 
-    @Option(name: [.customShort("o"), .customLong("owner")],
+    @Option(name: [.customShort("o"), .customLong("owner"), .customLong("user")],
             help: "Sets the owner of the copied item. The owner may be either a UID number or a UNIX short name. The owner will be set recursively on the item.")
     var user: String? = nil
 

@@ -206,10 +206,10 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
             itemsToCopyItem["user"] = user
         }
         if let group = options.dmg.group {
-            itemsToCopyItem["user"] = group
+            itemsToCopyItem["group"] = group
         }
         if let mode = options.dmg.mode {
-            itemsToCopyItem["user"] = mode
+            itemsToCopyItem["mode"] = mode
         }
         info["items_to_copy"] = [itemsToCopyItem]
         info["uninstallable"] = true
