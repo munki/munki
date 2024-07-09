@@ -202,7 +202,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
         } else {
             itemsToCopyItem["destination_path"] = "/Applications"
         }
-        if let user = options.dmg.user{
+        if let user = options.dmg.user {
             itemsToCopyItem["user"] = user
         }
         if let group = options.dmg.group {
@@ -498,7 +498,7 @@ func makepkginfo(_ filepath: String,
         pkginfo["maximum_os_version"] = maximumOSVersion
     }
     if !options.other.supportedArchitectures.isEmpty {
-        let rawValues = options.other.supportedArchitectures.map { $0.rawValue }
+        let rawValues = options.other.supportedArchitectures.map(\.rawValue)
         pkginfo["supported_architectures"] = rawValues
     }
     if let forceInstallAfterDate = options.force.forceInstallAfterDate {

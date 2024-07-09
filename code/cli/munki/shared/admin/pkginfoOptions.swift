@@ -11,53 +11,6 @@ import Foundation
 // Defines option groups for makepkginfo
 // These are also used by munkiimport
 
-struct OldPkginfoOptions {
-    var autoremove = false
-    var blockingApplications = [String]()
-    var catalogs = [String]()
-    var category: String?
-    var description: String?
-    var destinationpath: String?
-    var destitemname: String?
-    var developer: String?
-    var displayName: String?
-    var files = [String]()
-    var forceInstallAfterDate: NSDate?
-    var group: String?
-    var iconName: String?
-    var installcheckScript: String?
-    var installerChoices = false
-    var installerEnvironment = [String: String]()
-    var installerTypeRequested: String?
-    var itemtocopy: String?
-    var maximumOSVersion: String?
-    var minimumMunkiversion: String?
-    var minimumOSVersion: String?
-    var mode: String?
-    var name: String?
-    var nopkg = false
-    var notes: String?
-    var onDemand = false
-    var pkgname: String?
-    var postinstallScript: String?
-    var postuninstallScript: String?
-    var preinstallScript: String?
-    var preuninstallScript: String?
-    var printWarnings = true
-    var requires = [String]()
-    var restartAction: String?
-    var supportedArchitectures = [String]()
-    var unattendedInstall = false
-    var unattendedUninstall = false
-    var uninstallcheckScript: String?
-    var uninstalleritem: String?
-    var uninstallMethod: String?
-    var uninstallScript: String?
-    var updateFor = [String]()
-    var user: String?
-    var version: String?
-}
-
 struct PkginfoOptions {
     // collect all our OptionGroups into a single struct
     // I don't love this because if options move into different groups
