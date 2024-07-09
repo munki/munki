@@ -10,6 +10,11 @@ import Foundation
 
 @main
 struct MakePkgInfo: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "makepkginfo",
+        abstract: "Creates a pkginfo file (or fragment thereof) from given input."
+    )
+
     @OptionGroup(title: "Pkginfo Override Options")
     var overrideOptions: OverrideOptions
 
