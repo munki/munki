@@ -11,6 +11,85 @@ import Foundation
 // Defines option groups for makepkginfo
 // These are also used by munkiimport
 
+struct OldPkginfoOptions {
+    var autoremove = false
+    var blockingApplications = [String]()
+    var catalogs = [String]()
+    var category: String?
+    var description: String?
+    var destinationpath: String?
+    var destitemname: String?
+    var developer: String?
+    var displayName: String?
+    var files = [String]()
+    var forceInstallAfterDate: NSDate?
+    var group: String?
+    var iconName: String?
+    var installcheckScript: String?
+    var installerChoices = false
+    var installerEnvironment = [String: String]()
+    var installerTypeRequested: String?
+    var itemtocopy: String?
+    var maximumOSVersion: String?
+    var minimumMunkiversion: String?
+    var minimumOSVersion: String?
+    var mode: String?
+    var name: String?
+    var nopkg = false
+    var notes: String?
+    var onDemand = false
+    var pkgname: String?
+    var postinstallScript: String?
+    var postuninstallScript: String?
+    var preinstallScript: String?
+    var preuninstallScript: String?
+    var printWarnings = true
+    var requires = [String]()
+    var restartAction: String?
+    var supportedArchitectures = [String]()
+    var unattendedInstall = false
+    var unattendedUninstall = false
+    var uninstallcheckScript: String?
+    var uninstalleritem: String?
+    var uninstallMethod: String?
+    var uninstallScript: String?
+    var updateFor = [String]()
+    var user: String?
+    var version: String?
+}
+
+struct PkginfoOptions {
+    // collect all our OptionGroups into a single struct
+    // I don't love this because if options move into different groups
+    // we have to change other stuff
+    var override: OverrideOptions
+    var script: ScriptOptions
+    var dmg: DragNDropOptions
+    var pkg: ApplePackageOptions
+    var force: UnattendedInstallOptions
+    var installs: GeneratingInstallsOptions
+    var type: InstallerTypeOptions
+    var other: AdditionalPkginfoOptions
+    var hidden: HiddenPkginfoOptions
+}
+
+enum RestartAction: String, CaseIterable, ExpressibleByArgument {
+    case RequireRestart
+    case RecommendRestart
+    case RequireLogout
+}
+
+enum InstallerType: String, CaseIterable, ExpressibleByArgument {
+    case copy_from_dmg
+    case startosinstall
+    case stage_os_installer
+}
+
+enum SupportedArchitecture: String, CaseIterable, ExpressibleByArgument {
+    case x86_64
+    case arm64
+}
+
 struct OverrideOptions: ParsableArguments {
     // Pkginfo Override Options
     @Option(help: "Name to be used to refer to the installer item.")
@@ -30,12 +109,21 @@ struct OverrideOptions: ParsableArguments {
     var pkgvers: String? = nil
 
     @Option(name: [.customLong("RestartAction")],
-            help: "Specify a 'RestartAction' for the installer item.  Supported actions: RequireRestart, RequireLogout, or RecommendRestart")
-    var restartAction: String? = nil
+            help: "Specify a 'RestartAction' for the installer item.")
+    var restartAction: RestartAction? = nil
 
     @Option(name: [.long, .customLong("uninstall_method")],
             help: "Specify an 'uninstall_method' for the installer item.  Default method depends on the package type: i.e.  drag-n-drop, Apple package, or an embedded uninstall script. Can be a path to a script on the client computer.")
     var uninstallMethod: String? = nil
+
+    mutating func validate() throws {
+        // validate pkgvers actually starts with a digit
+        if let pkgvers {
+            if !"0123456789".contains(pkgvers.first ?? "X") {
+                throw ValidationError("'pkgvers' must start with a digit!")
+            }
+        }
+    }
 }
 
 struct ScriptOptions: ParsableArguments {
@@ -94,6 +182,14 @@ struct DragNDropOptions: ParsableArguments {
     @Option(name: .shortAndLong,
             help: "Sets the mode of the copied item. The specified mode must be in symbolic form. See the manpage for chmod(1) for more information. The mode is applied recursively.")
     var mode: String? = nil
+
+    mutating func validate() throws {
+        if let mode {
+            guard mode.range(
+                of: "[augo]+[=+-][rstwxXugo]+", options: .regularExpression
+            ) != nil else { throw ValidationError("'mode' is invalid. Please provide a symbolic mode.") }
+        }
+    }
 }
 
 struct ApplePackageOptions: ParsableArguments {
@@ -109,9 +205,11 @@ struct ApplePackageOptions: ParsableArguments {
             help: "<uninstalleritem> is a path to an uninstall package or a disk image containing an uninstall package.")
     var uninstalleritem: String? = nil
 
-    @Flag(name: [.long, .customLong("installer_choices_xml")],
+    @Flag(name: [.long,
+                 .customLong("installer-choices-xml"),
+                 .customLong("installer_choices_xml")],
           help: "Generate installer choices for distribution packages.")
-    var installerChoicesXML = false
+    var installerChoices = false
 
     @Option(
         name: [.customShort("E"), .long, .customLong("installer_environment")],
@@ -133,6 +231,16 @@ struct UnattendedInstallOptions: ParsableArguments {
     @Option(name: [.long, .customLong("force_install_after_date")],
             help: ArgumentHelp("Specify a date, in local time, after which the package will be forcefully installed. DATE format: yyyy-mm-ddThh:mm:ssZ Example: '2011-08-11T12:55:00Z' equates to 11 August 2011 at 12:55 PM local time.", valueName: "date"))
     var forceInstallAfterDate: String? = nil
+
+    mutating func validate() throws {
+        // validate options with version strings actually start with a digit
+        if let forceInstallAfterDate {
+            let dateFormatter = ISO8601DateFormatter()
+            if dateFormatter.date(from: forceInstallAfterDate) == nil {
+                throw ValidationError("Can't parse 'force_install_after_date' into a date!")
+            }
+        }
+    }
 }
 
 struct GeneratingInstallsOptions: ParsableArguments {
@@ -145,8 +253,8 @@ struct GeneratingInstallsOptions: ParsableArguments {
 struct InstallerTypeOptions: ParsableArguments {
     // installer type options
     @Option(name: [.long, .customLong("installer_type")],
-            help: "Specify an intended installer_type when the installer item could be one of multiple types. Currently supported only to specify the intended type for a macOS installer ('startosinstall' or 'stage_os_installer').")
-    var installerType: String? = nil
+            help: "Specify an intended installer_type when the installer item could be one of multiple types. Currently supported only to specify the intended type when importing a macOS installer.")
+    var installerType: InstallerType? = nil
 
     @Flag(help: "Indicates this pkginfo should have an 'installer_type' of 'nopkg'. Ignored if a package or dmg argument is supplied.")
     var nopkg = false
@@ -162,12 +270,12 @@ struct AdditionalPkginfoOptions: ParsableArguments {
 
     @Option(name: [.long, .customLong("minimum_munki_version")],
             help: ArgumentHelp("Minimum version of Munki required to perform installation. Uses format produced by \'--version\' query from any Munki utility.", valueName: "version-string"))
-    var minumumMunkiVersion: String? = nil
+    var minimumMunkiVersion: String? = nil
 
     @Option(name: [.long, .customLong("minimum_os_version")],
             help: ArgumentHelp("Minimum OS version for the installer item.",
                                valueName: "version-string"))
-    var minumumOSVersion: String? = nil
+    var minimumOSVersion: String? = nil
 
     @Option(name: [.long, .customLong("maximum_os_version")],
             help: ArgumentHelp("Maximum OS version for the installer item.", valueName: "version-string"))
@@ -177,7 +285,7 @@ struct AdditionalPkginfoOptions: ParsableArguments {
                    .customLong("supported_architecture"),
                    .customLong("supported-architecture")],
             help: "Declares a supported architecture for the item. Can be specified multiple times to declare multiple supported architectures.")
-    var supportedArchitectures = [String]()
+    var supportedArchitectures = [SupportedArchitecture]()
 
     @Option(name: [.short, .long, .customLong("update_for")],
             help: ArgumentHelp("Specifies a Munki item for which the current package is an update. Can be specified multiple times to build an array of items.", valueName: "munki-item-name"))
@@ -210,6 +318,17 @@ struct AdditionalPkginfoOptions: ParsableArguments {
 
     @Option(help: ArgumentHelp("Specifies administrator provided notes to be embedded into the pkginfo. Can be a path to a file.", valueName: "text|path"))
     var notes: String? = nil
+
+    mutating func validate() throws {
+        // validate options with version strings actually start with a digit
+        for optionItem in [minimumMunkiVersion, minimumOSVersion, maximumOSVersion] {
+            if let optionItem {
+                if !"0123456789".contains(optionItem.first ?? "X") {
+                    throw ValidationError("Version strings must start with a digit!")
+                }
+            }
+        }
+    }
 }
 
 struct HiddenPkginfoOptions: ParsableArguments {
