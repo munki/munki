@@ -69,7 +69,7 @@ struct MakePkgInfo: ParsableCommand {
                 other: additionalOptions,
                 hidden: hiddenOptions
             )
-            
+
             do {
                 let pkginfo = try makepkginfo(installerItem, options: options)
                 let plistStr = try plistToString(pkginfo)
