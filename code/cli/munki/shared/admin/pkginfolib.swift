@@ -295,11 +295,11 @@ func readFileOrString(_ fileNameOrString: String) -> String {
     return fileNameOrString
 }
 
-func makepkginfo(_ filepath: String,
+func makepkginfo(_ filepath: String?,
                  options: PkginfoOptions) throws -> PlistDict
 {
     // Return a pkginfo dictionary for installeritem
-    var installeritem = filepath
+    var installeritem = filepath ?? ""
     var pkginfo = PlistDict()
 
     if !installeritem.isEmpty {
@@ -394,8 +394,6 @@ func makepkginfo(_ filepath: String,
 
     if !options.other.catalog.isEmpty {
         pkginfo["catalogs"] = options.other.catalog
-    } else {
-        pkginfo["catalogs"] = ["testing"]
     }
     if let description = options.override.description {
         pkginfo["description"] = readFileOrString(description)
@@ -418,9 +416,7 @@ func makepkginfo(_ filepath: String,
     if let iconName = options.other.iconName {
         pkginfo["icon_name"] = iconName
     }
-    if !pkginfo.isEmpty {
-        pkginfo["autoremove"] = false
-    }
+
     // process items for installs array
     var installs = [PlistDict]()
     for var file in options.installs.file {
@@ -438,6 +434,7 @@ func makepkginfo(_ filepath: String,
         pkginfo["installs"] = installs
     }
     // add pkginfo scripts if specified
+    // TODO: verify scripts start with a shebang line?
     if let installcheckScript = options.script.installcheckScript {
         if let scriptText = try? String(contentsOfFile: installcheckScript, encoding: .utf8) {
             pkginfo["installcheck_script"] = scriptText
@@ -475,9 +472,13 @@ func makepkginfo(_ filepath: String,
             pkginfo["uninstallable"] = true
         }
     }
-    // more options
-    if options.other.autoremove {
-        pkginfo["autoremove"] = true
+    // more options and pkginfo bits
+    if !installeritem.isEmpty || options.type.nopkg {
+        pkginfo["_metadata"] = pkginfoMetadata()
+        pkginfo["autoremove"] = options.other.autoremove
+        if pkginfo["catalogs"] == nil {
+            pkginfo["catalogs"] = ["testing"]
+        }
     }
     if let minimumMunkiVersion = options.other.minimumMunkiVersion {
         pkginfo["miminum_munki_version"] = minimumMunkiVersion
@@ -521,12 +522,12 @@ func makepkginfo(_ filepath: String,
         pkginfo["uninstallable"] = true
     }
     if !options.pkg.installerEnvironment.isEmpty {
+        // TODO: actually support installer_environment correctly
         pkginfo["installer_environment"] = options.pkg.installerEnvironment
     }
     if let notes = options.other.notes {
         pkginfo["notes"] = readFileOrString(notes)
     }
-    pkginfo["_metadata"] = pkginfoMetadata()
 
     return pkginfo
 }
