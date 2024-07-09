@@ -169,6 +169,23 @@ struct ApplePackageOptions: ParsableArguments {
         help: ArgumentHelp("Specifies a key/value pair to set environment variables for use by /usr/sbin/installer. A key/value pair of USER=CURRENT_CONSOLE_USER indicates that USER be set to the GUI user, otherwise root. Can be specified multiple times.", valueName: "key=value")
     )
     var installerEnvironment = [String]()
+
+    var installerEnvironmentDict: [String: String] {
+        var dict = [String: String]()
+        for line in installerEnvironment {
+            let parts = line.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            if parts.count == 2 {
+                dict[String(parts[0])] = String(parts[1])
+            }
+        }
+        return dict
+    }
+
+    mutating func validate() throws {
+        if !installerEnvironment.isEmpty, installerEnvironmentDict.isEmpty {
+            throw ValidationError("'installer-environment' values must take the form of 'key=value")
+        }
+    }
 }
 
 struct UnattendedInstallOptions: ParsableArguments {

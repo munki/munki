@@ -522,8 +522,7 @@ func makepkginfo(_ filepath: String?,
         pkginfo["uninstallable"] = true
     }
     if !options.pkg.installerEnvironment.isEmpty {
-        // TODO: actually support installer_environment correctly
-        pkginfo["installer_environment"] = options.pkg.installerEnvironment
+        pkginfo["installer_environment"] = options.pkg.installerEnvironmentDict
     }
     if let notes = options.other.notes {
         pkginfo["notes"] = readFileOrString(notes)
