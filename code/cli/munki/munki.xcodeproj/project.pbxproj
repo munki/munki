@@ -42,11 +42,15 @@
 		C030A9AE2C3B50A5007F0B34 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
 		C030A9AF2C3B50B5007F0B34 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
 		C030A9B02C3B50ED007F0B34 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
+		C030A9B22C3DB88E007F0B34 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B12C3DB88E007F0B34 /* osinstaller.swift */; };
+		C030A9B42C3DF241007F0B34 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B12C3DB88E007F0B34 /* osinstaller.swift */; };
+		C030A9B62C3DF6D0007F0B34 /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
+		C030A9B72C3DF6D0007F0B34 /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
+		C030A9B82C3DF7DA007F0B34 /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
 		C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DD2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DF2C33B9A000B86310 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
 		C07074E02C33B9A000B86310 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
-		C07074E32C3489FA00B86310 /* pkginfolib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E12C3489FA00B86310 /* pkginfolib.swift */; };
 		C07074E52C34910F00B86310 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C07074E62C34910F00B86310 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C07074E82C34932400B86310 /* pkgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E72C34932400B86310 /* pkgutils.swift */; };
@@ -124,6 +128,8 @@
 		C030A9952C3A2E18007F0B34 /* makepkginfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makepkginfo; sourceTree = BUILT_PRODUCTS_DIR; };
 		C030A9972C3A2E18007F0B34 /* makepkginfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfo.swift; sourceTree = "<group>"; };
 		C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkginfoOptions.swift; sourceTree = "<group>"; };
+		C030A9B12C3DB88E007F0B34 /* osinstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstaller.swift; sourceTree = "<group>"; };
+		C030A9B52C3DF6D0007F0B34 /* fileutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileutils.swift; sourceTree = "<group>"; };
 		C07074DB2C33AE5F00B86310 /* munkilog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkilog.swift; sourceTree = "<group>"; };
 		C07074DE2C33B9A000B86310 /* reports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reports.swift; sourceTree = "<group>"; };
 		C07074E12C3489FA00B86310 /* pkginfolib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkginfolib.swift; sourceTree = "<group>"; };
@@ -280,6 +286,8 @@
 				C07074E72C34932400B86310 /* pkgutils.swift */,
 				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 				C030A98E2C39C135007F0B34 /* munkihash.swift */,
+				C030A9B12C3DB88E007F0B34 /* osinstaller.swift */,
+				C030A9B52C3DF6D0007F0B34 /* fileutils.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -417,6 +425,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C030A9B42C3DF241007F0B34 /* osinstaller.swift in Sources */,
+				C030A9B82C3DF7DA007F0B34 /* fileutils.swift in Sources */,
 				C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */,
 				C030A9B02C3B50ED007F0B34 /* prefs.swift in Sources */,
 				C030A9A82C3B4FF1007F0B34 /* plistutils.swift in Sources */,
@@ -449,7 +459,9 @@
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
 				C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C07A6FB22C2B22D300090743 /* constants.swift in Sources */,
+				C030A9B22C3DB88E007F0B34 /* osinstaller.swift in Sources */,
 				C01364542C321FE7008DB215 /* dmgutils.swift in Sources */,
+				C030A9B62C3DF6D0007F0B34 /* fileutils.swift in Sources */,
 				C01364582C3265D6008DB215 /* display.swift in Sources */,
 				C07A6FD22C2B654300090743 /* utils.swift in Sources */,
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
@@ -461,7 +473,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C07074E32C3489FA00B86310 /* pkginfolib.swift in Sources */,
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C01364462C2E051F008DB215 /* makecatalogslib.swift in Sources */,
 				C01364552C321FE7008DB215 /* dmgutils.swift in Sources */,
@@ -469,6 +480,7 @@
 				C013644E2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FBE2C2B5AF000090743 /* prefs.swift in Sources */,
 				C07A6FBA2C2B5ADE00090743 /* main.swift in Sources */,
+				C030A9B72C3DF6D0007F0B34 /* fileutils.swift in Sources */,
 				C07074DD2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C07A6FBF2C2B5AF400090743 /* constants.swift in Sources */,
 				C030A9902C39C135007F0B34 /* munkihash.swift in Sources */,
@@ -511,6 +523,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -522,6 +535,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};

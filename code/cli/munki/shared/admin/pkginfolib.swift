@@ -132,14 +132,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     var dragNDropItem = ""
     var installsitem = PlistDict()
     if let item = options.dmg.item {
-        // specific item given
         dragNDropItem = item
-        let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
-        installsitem = createInstallsItem(itempath)
-        if installsitem.isEmpty {
-            throw PkgInfoGenerationError.error(
-                description: "\(dragNDropItem) not found on disk image.")
-        }
     } else {
         // no item specified; look for an application at root of
         // mounted dmg
@@ -149,14 +142,32 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
                 let itempath = (mountpoint as NSString).appendingPathComponent(item)
                 if isApplication(itempath) {
                     dragNDropItem = item
-                    installsitem = createInstallsItem(itempath)
-                    if !installsitem.isEmpty {
-                        break
-                    }
+                    break
                 }
             }
         }
     }
+    guard !dragNDropItem.isEmpty else {
+        throw PkgInfoGenerationError.error(
+            description: "No application found on disk image.")
+    }
+    // check to see if item is a macOS installer and we can generate a startosinstall item
+    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
+    if pathIsInstallMacOSApp(itempath),
+       options.type.installerType == nil || options.type.installerType == .startosinstall
+    {
+        if options.hidden.printWarnings,
+           installMacOSAppIsStub(itempath)
+        {
+            printStderr("WARNING: the provided disk image appears to contain an Install macOS application, but the application does not contain Contents/SharedSupport/InstallESD.dmg or Contents/SharedSupport/SharedSupport.dmg")
+        }
+        return try makeStartOSInstallPkgInfo(
+            mountpoint: mountpoint, item: dragNDropItem
+        )
+    }
+
+    // continue as copy_from_dmg item
+    installsitem = createInstallsItem(itempath)
 
     if !installsitem.isEmpty {
         var itemsToCopyItem = PlistDict()
@@ -215,9 +226,13 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
         info["uninstallable"] = true
         info["uninstall_method"] = "remove_copied_items"
 
-        if let installerTypeRequested = options.type.installerType, installerTypeRequested == .stage_os_installer {
-            // TODO: transform this copy_from_dmg item
-            // into a staged_os_installer item
+        if let installerTypeRequested = options.type.installerType,
+           installerTypeRequested == .stage_os_installer,
+           pathIsInstallMacOSApp(itempath)
+        {
+            let additionalInfo = try makeStageOSInstallerPkgInfo(itempath)
+            // merge the additionalPkgInfo, giving it priority
+            info.merge(additionalInfo) { _, second in second }
         }
     }
 
@@ -259,9 +274,6 @@ func createPkgInfoFromDmg(_ dmgpath: String,
                 }
             }
         }
-    }
-    if info.isEmpty, options.dmg.item == nil {
-        // TODO: check for macOS installer
     }
     if info.isEmpty {
         // maybe this is a drag-n-drop disk image
