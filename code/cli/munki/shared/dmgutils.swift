@@ -38,7 +38,7 @@ func hdiutilData(arguments: [String], stdIn: String = "") throws -> PlistDict {
     let (plistStr, _) = parseFirstPlist(fromString: results.output)
     if !plistStr.isEmpty {
         do {
-            if let plist = try readPlistFromString(plistStr) as? PlistDict {
+            if let plist = try readPlist(fromString: plistStr) as? PlistDict {
                 return plist
             }
         } catch {
@@ -181,7 +181,7 @@ func mountdmg(_ dmgPath: String,
 
     // attempt to mount the dmg
     var stdIn = ""
-    if let hasSLA = try? dmgHasSLA(dmgPath), hasSLA == true {
+    if dmgHasSLA(dmgPath) {
         stdIn = "Y\n"
         displayDetail("NOTE: \(dmgName) has embedded Software License Agreement")
     }

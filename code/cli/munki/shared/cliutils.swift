@@ -18,6 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import Darwin
 import Foundation
 
 func printStderr(_ items: Any..., separator: String = " ", terminator: String = "\n") {
@@ -43,9 +44,13 @@ struct CLIResults {
     var error: String = ""
 }
 
-func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
+func OLDrunCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
     // runs a command line tool synchronously, returns CLIResults
     // not a good choice for tools that might generate a lot of output or error output
+    // this implementation tended to hang when processing a lot of output data; I assume
+    // the pipe was full.
+    // Keeping this implementation aound for a bit while I test the new one.
+
     let inPipe = Pipe()
     let outPipe = Pipe()
     let errorPipe = Pipe()
@@ -80,6 +85,75 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
         output: outputString,
         error: errorString
     )
+}
+
+func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
+    // runs a command line tool synchronously, returns CLIResults
+    // this implementation attempts to handle scenarios in which a large amount of stdout
+    // or sterr output is generated
+
+    func readData(_ file: FileHandle) -> String {
+        // read available data from a file handle and return a string
+        let data = file.availableData
+        if data.count > 0 {
+            return String(bytes: data, encoding: .utf8) ?? ""
+        }
+        return ""
+    }
+
+    var outputProcessing = false
+    var errorProcessing = false
+    var results = CLIResults()
+
+    let inPipe = Pipe()
+
+    let task = Process()
+    task.launchPath = tool
+    task.arguments = arguments
+
+    task.standardInput = inPipe
+    // set up our stdout and stderr pipes and handlers
+    task.standardOutput = Pipe()
+    let outputHandler = { (file: FileHandle!) in
+        outputProcessing = true
+        results.output.append(readData(file))
+        outputProcessing = false
+    }
+    (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
+    task.standardError = Pipe()
+    let errorHandler = { (file: FileHandle!) in
+        errorProcessing = true
+        results.error.append(readData(file))
+        errorProcessing = false
+    }
+    (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
+
+    task.launch()
+    if stdIn != "" {
+        if let data = stdIn.data(using: .utf8) {
+            inPipe.fileHandleForWriting.write(data)
+        }
+    }
+    inPipe.fileHandleForWriting.closeFile()
+    task.waitUntilExit()
+    results.exitcode = Int(task.terminationStatus)
+
+    // wait until all stdout/stderr is processed
+    // use the countdown so we don't wait forever
+    var countdown = 10
+    while countdown > 0, outputProcessing || errorProcessing {
+        usleep(100_000)
+        countdown -= 1
+    }
+
+    // reset the readability handlers
+    (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+    (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+
+    results.output = trimTrailingNewline(results.output)
+    results.error = trimTrailingNewline(results.error)
+
+    return results
 }
 
 enum CalledProcessError: Error {

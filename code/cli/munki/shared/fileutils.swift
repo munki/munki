@@ -122,3 +122,13 @@ func getSizeOfDirectory(_ path: String) -> Int {
     }
     return totalSize
 }
+
+func getAbsolutePath(_ path: String) -> String {
+    // returns absolute path to item referred to by path
+    if (path as NSString).isAbsolutePath {
+        return path
+    }
+    let cwd = FileManager.default.currentDirectoryPath
+    let composedPath = (cwd as NSString).appendingPathComponent(path)
+    return (composedPath as NSString).standardizingPath
+}

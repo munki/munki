@@ -64,7 +64,7 @@ class Report {
     func read() {
         // read report data from file
         do {
-            if let temp = try readPlist(reportFile()) {
+            if let temp = try readPlist(fromFile: reportFile()) {
                 report = temp as? PlistDict ?? PlistDict()
             }
         } catch {

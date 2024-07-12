@@ -188,7 +188,7 @@ struct CatalogsMaker {
             var pkginfo = PlistDict()
             do {
                 let data = try repo.get(pkginfoIdentifier)
-                pkginfo = try readPlistFromData(data) as? PlistDict ?? PlistDict()
+                pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
             } catch {
                 errors.append("Unexpected error reading \(pkginfoIdentifier): \(error)")
                 continue

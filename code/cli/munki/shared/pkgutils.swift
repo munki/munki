@@ -38,7 +38,7 @@ func getPkgRestartInfo(_ pkgpath: String) throws -> PlistDict {
     }
     let (pliststr, _) = parseFirstPlist(fromString: results.output)
     if !pliststr.isEmpty {
-        if let plist = try? readPlistFromString(pliststr) as? PlistDict {
+        if let plist = try? readPlist(fromString: pliststr) as? PlistDict {
             if let restartAction = plist["RestartAction"] as? String {
                 if restartAction != "None" {
                     installerinfo["RestartAction"] = restartAction
@@ -82,7 +82,7 @@ func getBundleInfo(_ bundlepath: String) -> PlistDict? {
         infopath = (bundlepath as NSString).appendingPathComponent("Resources/Info.plist")
     }
     if filemanager.fileExists(atPath: infopath) {
-        return try? readPlist(infopath) as? PlistDict
+        return try? readPlist(fromFile: infopath) as? PlistDict
     }
     return nil
 }
@@ -439,16 +439,6 @@ func receiptsFromDistFile(_ filepath: String) -> [PlistDict] {
 
 // MARK: flat pkg methods
 
-func getAbsolutePath(_ path: String) -> String {
-    // returns absolute path to item referred to by path
-    if (path as NSString).isAbsolutePath {
-        return path
-    }
-    let cwd = FileManager.default.currentDirectoryPath
-    let composedPath = (cwd as NSString).appendingPathComponent(path)
-    return (composedPath as NSString).standardizingPath
-}
-
 func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
     // returns info for a flat package, including receipts array
     var info = PlistDict()
@@ -644,7 +634,7 @@ func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict]? {
         )
         if results.exitcode == 0 {
             let (pliststr, _) = parseFirstPlist(fromString: results.output)
-            let plist = try readPlistFromString(pliststr) as? [PlistDict] ?? [PlistDict]()
+            let plist = try readPlist(fromString: pliststr) as? [PlistDict] ?? [PlistDict]()
             choices = plist.filter {
                 ($0["choiceAttribute"] as? String ?? "") == "selected"
             }
@@ -665,7 +655,7 @@ func getInstalledPackageVersion(_ pkgid: String) -> String {
         "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid]
     )
     if results.exitcode == 0 {
-        guard let plist = try? readPlistFromString(results.output),
+        guard let plist = try? readPlist(fromString: results.output),
               let receipt = plist as? PlistDict else { return "" }
         guard let foundpkgid = receipt["pkgid"] as? String else { return "" }
         guard let foundversion = receipt["version"] as? String else { return "" }
@@ -715,11 +705,11 @@ func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, 
     return (str, "")
 }
 
-func getInstalledPackages() async -> PlistDict {
+func getInstalledPackages() -> PlistDict {
     // Builds a dictionary of installed receipts and their version number
     var installedpkgs = PlistDict()
 
-    let results = await runCliAsync(
+    let results = runCLI(
         "/usr/sbin/pkgutil", arguments: ["--regexp", "--pkg-info-plist", ".*"]
     )
     if results.exitcode == 0 {
@@ -730,7 +720,7 @@ func getInstalledPackages() async -> PlistDict {
             if pliststr.isEmpty {
                 break
             }
-            if let plist = try? readPlistFromString(pliststr) as? PlistDict {
+            if let plist = try? readPlist(fromString: pliststr) as? PlistDict {
                 if let pkgid = plist["pkgid"] as? String,
                    let version = plist["pkg-version"] as? String
                 {

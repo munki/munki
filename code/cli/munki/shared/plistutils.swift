@@ -40,16 +40,16 @@ func deserialize(_ data: Data?) throws -> Any? {
     return nil
 }
 
-func readPlist(_ filepath: String) throws -> Any? {
+func readPlist(fromFile filepath: String) throws -> Any? {
     return try deserialize(NSData(contentsOfFile: filepath) as Data?)
 }
 
-func readPlistFromData(_ data: Data) throws -> Any? {
+func readPlist(fromData data: Data) throws -> Any? {
     return try deserialize(data)
 }
 
-func readPlistFromString(_ stringData: String) throws -> Any? {
-    return try deserialize(stringData.data(using: String.Encoding.utf8))
+func readPlist(fromString string: String) throws -> Any? {
+    return try deserialize(string.data(using: String.Encoding.utf8))
 }
 
 func serialize(_ plist: Any) throws -> Data {

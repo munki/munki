@@ -253,7 +253,7 @@ class FileRepo: Repo {
             )
         }
         if !((content as NSData).write(toFile: fullPath(identifier), atomically: true)) {
-            throw RepoError.error(description: "write failed")
+            throw RepoError.error(description: "Write to \(identifier) failed")
         }
     }
 

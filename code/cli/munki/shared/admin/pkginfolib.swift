@@ -19,7 +19,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-
 // This implementation drops support for:
 //   - pkginfo creation for configuration profiles
 //   - pkginfo creation for Apple Update Metadata
@@ -105,7 +104,7 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
                 info[key] = value
             }
         }
-    } else if let plist = try? readPlist(itempath) as? PlistDict {
+    } else if let plist = try? readPlist(fromFile: itempath) as? PlistDict {
         // we must be a plist
         info["type"] = "plist"
         for key in ["CFBundleShortVersionString", "CFBundleVersion"] {
