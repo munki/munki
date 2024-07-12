@@ -59,7 +59,7 @@ func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
     if pathIsRegularFile(installInfoPlist) {
         appInfo["version"] = ""
         do {
-            if let installInfo = try readPlist(installInfoPlist) as? PlistDict,
+            if let installInfo = try readPlist(fromFile: installInfoPlist) as? PlistDict,
                let imageInfo = installInfo["System Image Info"] as? PlistDict,
                let version = imageInfo["version"] as? String
             {
@@ -80,7 +80,7 @@ func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
         }
         let plistPath = (mountpoint as NSString).appendingPathComponent("com_apple_MobileAsset_MacSoftwareUpdate/com_apple_MobileAsset_MacSoftwareUpdate.xml")
         do {
-            if let plist = try readPlist(plistPath) as? PlistDict,
+            if let plist = try readPlist(fromFile: plistPath) as? PlistDict,
                let assets = plist["Assets"] as? [PlistDict],
                let version = assets[0]["OSVersion"] as? String
             {
