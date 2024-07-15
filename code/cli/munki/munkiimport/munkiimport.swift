@@ -66,7 +66,7 @@ struct MunkiImport: AsyncParsableCommand {
 
     mutating func validate() throws {
         // TODO: validate installerEnvironment
-        
+
         if munkiImportOptions.version {
             return
         }
@@ -374,7 +374,7 @@ struct MunkiImport: AsyncParsableCommand {
                 pkginfo["installer_item_location"] = (uploadedPkgPath as NSString).pathComponents[1...].joined(separator: "/")
                 // If there's an uninstaller_item, upload that
                 // TODO: implement uninstaller_item upload
-                
+
                 // One more chance to edit the pkginfo
                 if !munkiImportOptions.nointeractive {
                     pkginfo = editPkgInfoInExternalEditor(pkginfo)
