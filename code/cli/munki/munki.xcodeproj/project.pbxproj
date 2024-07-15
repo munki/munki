@@ -112,6 +112,21 @@
 		C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C07A6FDB2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C07A6FDC2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
+		C0D00FA22C457E4E0021DA9C /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
+		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
+		C0D00FA42C457E7D0021DA9C /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
+		C0D00FA52C457EB50021DA9C /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
+		C0D00FA62C45804A0021DA9C /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
+		C0D00FA82C45814F0021DA9C /* repoutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FA72C45814F0021DA9C /* repoutils.swift */; };
+		C0D00FAA2C45814F0021DA9C /* repoutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FA72C45814F0021DA9C /* repoutils.swift */; };
+		C0D00FAB2C4581800021DA9C /* repoutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FA72C45814F0021DA9C /* repoutils.swift */; };
+		C0D00FAE2C45841D0021DA9C /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
+		C0D00FB02C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0D00FB12C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0D00FB22C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0D00FB32C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0D00FB42C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -202,6 +217,8 @@
 		C07A6FD12C2B654300090743 /* utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = utils.swift; sourceTree = "<group>"; };
 		C07A6FD52C2B7F2100090743 /* FileRepo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRepo.swift; sourceTree = "<group>"; };
 		C07A6FD92C2CF19600090743 /* cliutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cliutils.swift; sourceTree = "<group>"; };
+		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
+		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -269,6 +286,7 @@
 				C07A6FD52C2B7F2100090743 /* FileRepo.swift */,
 				C01364482C2F8EFE008DB215 /* GitFileRepo.swift */,
 				C013644C2C30F5D8008DB215 /* RepoFactory.swift */,
+				C0D00FA72C45814F0021DA9C /* repoutils.swift */,
 			);
 			path = munkirepo;
 			sourceTree = "<group>";
@@ -370,6 +388,7 @@
 				C030A9BE2C409738007F0B34 /* iconutils.swift */,
 				C030A9EE2C43505B007F0B34 /* munkitester-Bridging-Header.h */,
 				C030A9EF2C43505B007F0B34 /* munkiimport-Bridging-Header.h */,
+				C0D00FAF2C458EAA0021DA9C /* version.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -539,7 +558,9 @@
 				C030A9B42C3DF241007F0B34 /* osinstaller.swift in Sources */,
 				C030A9B82C3DF7DA007F0B34 /* fileutils.swift in Sources */,
 				C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */,
+				C0D00FA62C45804A0021DA9C /* admincommon.swift in Sources */,
 				C030A9B02C3B50ED007F0B34 /* prefs.swift in Sources */,
+				C0D00FB32C458EAA0021DA9C /* version.swift in Sources */,
 				C030A9A82C3B4FF1007F0B34 /* plistutils.swift in Sources */,
 				C030A9A22C3B4F63007F0B34 /* pkginfolib.swift in Sources */,
 				C030A9AB2C3B5007007F0B34 /* osutils.swift in Sources */,
@@ -564,7 +585,9 @@
 				C030A9EB2C4241AC007F0B34 /* munkilog.swift in Sources */,
 				C030A9D42C41F849007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9E92C424179007F0B34 /* fileutils.swift in Sources */,
+				C0D00FAA2C45814F0021DA9C /* repoutils.swift in Sources */,
 				C030A9DE2C424083007F0B34 /* munkiimportlib.swift in Sources */,
+				C0D00FB42C458EAA0021DA9C /* version.swift in Sources */,
 				C030A9E42C42415C007F0B34 /* dmgutils.swift in Sources */,
 				C030A9EA2C42417D007F0B34 /* iconutils.swift in Sources */,
 				C030A9D02C41F798007F0B34 /* munkiimport.swift in Sources */,
@@ -587,6 +610,7 @@
 				C030A9DA2C42405D007F0B34 /* constants.swift in Sources */,
 				C030A9E12C424144007F0B34 /* GitFileRepo.swift in Sources */,
 				C030A9F72C435183007F0B34 /* readline.swift in Sources */,
+				C0D00FAE2C45841D0021DA9C /* makecatalogslib.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -601,6 +625,7 @@
 				C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */,
 				C07A6FB02C2B22A400090743 /* prefs.swift in Sources */,
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
+				C0D00FB02C458EAA0021DA9C /* version.swift in Sources */,
 				C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C07A6FB22C2B22D300090743 /* constants.swift in Sources */,
 				C030A9B22C3DB88E007F0B34 /* osinstaller.swift in Sources */,
@@ -623,10 +648,12 @@
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
 				C030A9F62C435183007F0B34 /* readline.swift in Sources */,
+				C0D00FB12C458EAA0021DA9C /* version.swift in Sources */,
 				C030A9C32C41B581007F0B34 /* pkginfoOptions.swift in Sources */,
 				C01364552C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C030A9BC2C3F4CF4007F0B34 /* munkiimportlib.swift in Sources */,
 				C07A6FDB2C2CF19600090743 /* cliutils.swift in Sources */,
+				C0D00FA82C45814F0021DA9C /* repoutils.swift in Sources */,
 				C013644E2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FBE2C2B5AF000090743 /* prefs.swift in Sources */,
 				C07A6FBA2C2B5ADE00090743 /* main.swift in Sources */,
@@ -653,16 +680,23 @@
 			buildActionMask = 2147483647;
 			files = (
 				C07A6FDC2C2CF19600090743 /* cliutils.swift in Sources */,
+				C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */,
 				C01364452C2DD1BA008DB215 /* plistutils.swift in Sources */,
+				C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */,
 				C07A6FCB2C2B5C3A00090743 /* prefs.swift in Sources */,
 				C013644F2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FC72C2B5C0700090743 /* makecatalogs.swift in Sources */,
+				C0D00FB22C458EAA0021DA9C /* version.swift in Sources */,
+				C0D00FA52C457EB50021DA9C /* reports.swift in Sources */,
+				C0D00FA42C457E7D0021DA9C /* munkilog.swift in Sources */,
 				C07A6FCC2C2B5C3D00090743 /* constants.swift in Sources */,
 				C07A6FD42C2B659400090743 /* utils.swift in Sources */,
 				C013644B2C2F8EFE008DB215 /* GitFileRepo.swift in Sources */,
 				C07A6FD82C2B7F2100090743 /* FileRepo.swift in Sources */,
+				C0D00FAB2C4581800021DA9C /* repoutils.swift in Sources */,
 				C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */,
 				C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */,
+				C0D00FA22C457E4E0021DA9C /* display.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -673,8 +707,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -685,8 +721,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -698,8 +736,11 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "shared/munkiimport-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -712,8 +753,11 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "shared/munkiimport-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -895,8 +939,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "";
+				"INFOPLIST_FILE[sdk=*]" = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -907,8 +954,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "";
+				"INFOPLIST_FILE[sdk=*]" = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

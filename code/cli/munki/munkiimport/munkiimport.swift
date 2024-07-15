@@ -62,12 +62,19 @@ struct MunkiImport: AsyncParsableCommand {
         "Path to installer item (package or disk image).",
         valueName: "installer-item"
     ))
-    var installerItem: String
+    var installerItem = ""
 
     mutating func validate() throws {
         // TODO: validate installerEnvironment
+        
+        if munkiImportOptions.version {
+            return
+        }
 
         // validate installerItem
+        if installerItem.isEmpty {
+            throw ValidationError("Missing expected argument '<installer-item>'")
+        }
         if installerItem.last == "/" {
             installerItem.removeLast()
         }
@@ -384,12 +391,14 @@ struct MunkiImport: AsyncParsableCommand {
                     if let answer = readLine(),
                        answer.lowercased().hasPrefix("y")
                     {
-                        var catalogsmaker = try CatalogsMaker(repo: repo, options: )
+                        let makecatalogOptions = MakeCatalogOptions()
+                        var catalogsmaker = try CatalogsMaker(repo: repo, options: makecatalogOptions)
                         let errors = catalogsmaker.makecatalogs()
                         if !errors.isEmpty {
                             for error in errors {
                                 printStderr(error)
                             }
+                        }
                     }
                 }
             }
