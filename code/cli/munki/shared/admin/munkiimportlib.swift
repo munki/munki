@@ -655,6 +655,73 @@ func promptForSubdirectory(_ repo: Repo, _ subdirectory: String?) -> String {
 }
 
 func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
-    // TODO: implement this
+    // Opens pkginfo list in the user's chosen editor.
+    guard let editor = adminPref("editor") as? String else {
+        return pkginfo
+    }
+    print("Edit pkginfo before upload? [y/N]: ", terminator: "")
+    if let answer = readLine(),
+       answer.lowercased().hasPrefix("y")
+    {
+        guard let tempDir = TempDir.shared.makeTempDir() else {
+            printStderr("Could not get a temporary working directory")
+            return pkginfo
+        }
+        defer {
+            try? FileManager.default.removeItem(atPath: tempDir)
+        }
+        let name = pkginfo["name"] as? String ?? "pkginfo"
+        let version = pkginfo["version"] as? String ?? ""
+        let ext = adminPref("pkginfo_extension") as? String ?? ""
+        let filename = "\(name)-\(version)\(ext)"
+        let filePath = (tempDir as NSString).appendingPathComponent(filename)
+        do {
+            try writePlist(pkginfo, toFile: filePath)
+        } catch let PlistError.writeError(description) {
+            printStderr("Could not write pkginfo to temp file: \(filePath): \(description)")
+            return pkginfo
+        } catch {
+            printStderr("Could not write pkginfo to temp file: \(error)")
+            return pkginfo
+        }
+        var cmd = ""
+        var args = [String]()
+        if editor.hasSuffix(".app") {
+            cmd = "/usr/bin/open"
+            args = ["-a", editor, filePath]
+        } else {
+            cmd = editor
+            args = [filePath]
+        }
+        let result = runCLI(cmd, arguments: args)
+        if result.exitcode != 0 {
+            printStderr("Problem running editor \(editor): \(result.error)")
+            return pkginfo
+        }
+        if editor.hasSuffix(".app") {
+            // wait for editor to exit
+            var response: String? = "no"
+            while let answer = response,
+                  !answer.lowercased().hasPrefix("y")
+            {
+                print("Pkginfo editing complete? [y/N]: ", terminator: "")
+                response = readLine()
+            }
+        }
+        // read edited pkginfo
+        do {
+            if let editedPkginfo = try readPlist(fromFile: filePath) as? PlistDict {
+                return editedPkginfo
+            } else {
+                throw PlistError.readError(description: "Plist has bad format")
+            }
+        } catch let PlistError.readError(description) {
+            printStderr("Problem reading edited pkginfo: \(description)")
+            return pkginfo
+        } catch {
+            printStderr("Problem reading edited pkginfo: \(error)")
+            return pkginfo
+        }
+    }
     return pkginfo
 }
