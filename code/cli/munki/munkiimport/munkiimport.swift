@@ -150,14 +150,8 @@ struct MunkiImport: AsyncParsableCommand {
         var pkginfo: PlistDict
         do {
             pkginfo = try makepkginfo(installerItem, options: pkginfoOptions)
-        } catch let PkgInfoGenerationError.error(description) {
-            printStderr("ERROR: \(description)")
-            throw ExitCode(-1)
-        } catch let PackageParsingError.error(description) {
-            printStderr("ERROR: \(description)")
-            throw ExitCode(-1)
-        } catch let DiskImageError.error(description) {
-            printStderr("ERROR: \(description)")
+        } catch let error as MunkiError {
+            printStderr("ERROR: \(error.description)")
             throw ExitCode(-1)
         } catch {
             printStderr("Unexpected error: \(type(of: error))")
@@ -169,8 +163,8 @@ struct MunkiImport: AsyncParsableCommand {
         var repo: Repo
         do {
             repo = try repoConnect(url: repoURL, plugin: plugin)
-        } catch let RepoError.error(description) {
-            printStderr("Repo connection error: \(description)")
+        } catch let error as RepoError {
+            printStderr("Repo connection error: \(error.description)")
             throw ExitCode(-1)
         }
 
@@ -296,7 +290,7 @@ struct MunkiImport: AsyncParsableCommand {
                     {
                         return
                     }
-                    // adjusr subdir if needed
+                    // adjust subdir if needed
                     if munkiImportOptions.subdirectory == nil,
                        let filerepo = repo as? FileRepo
                     {
@@ -325,8 +319,8 @@ struct MunkiImport: AsyncParsableCommand {
                 {
                     do {
                         let _ = try convertAndInstallIcon(repo, name: name, iconPath: iconPath)
-                    } catch let MunkiImportError.error(description) {
-                        printStderr("Error importing \(iconPath): \(description)")
+                    } catch let error as MunkiImportError {
+                        printStderr("Error importing \(iconPath): \(error.description)")
                     }
                 } else if !munkiImportOptions.extractIcon,
                           !iconIsInRepo(repo, pkginfo: pkginfo)
@@ -348,8 +342,8 @@ struct MunkiImport: AsyncParsableCommand {
                         } else {
                             print("No icons found for import.")
                         }
-                    } catch let MunkiImportError.error(description) {
-                        printStderr("Error importing icons: \(description)")
+                    } catch let error as MunkiImportError {
+                        printStderr("Error importing icons: \(error.description)")
                     } catch {
                         printStderr("Error importing icons: \(error)")
                     }
@@ -363,8 +357,8 @@ struct MunkiImport: AsyncParsableCommand {
                     let version = pkginfo["version"] as? String ?? "UNKNOWN"
                     uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: installerItem, version: version, subdirectory: subdir)
                     print("Copied \(installerItemName) to \(uploadedPkgPath).")
-                } catch let MunkiImportError.error(description) {
-                    printStderr("Error importing \(installerItem): \(description)")
+                } catch let error as MunkiImportError {
+                    printStderr("Error importing \(installerItem): \(error.description)")
                     throw ExitCode(-1)
                 } catch {
                     printStderr("Error importing \(installerItem): \(error)")

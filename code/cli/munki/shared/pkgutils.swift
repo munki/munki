@@ -20,9 +20,7 @@
 
 import Foundation
 
-enum PackageParsingError: Error {
-    case error(description: String)
-}
+typealias PackageParsingError = MunkiError
 
 func getPkgRestartInfo(_ pkgpath: String) throws -> PlistDict {
     var installerinfo = PlistDict()
@@ -33,8 +31,7 @@ func getPkgRestartInfo(_ pkgpath: String) throws -> PlistDict {
                     "-plist"]
     )
     if results.exitcode != 0 {
-        throw PackageParsingError.error(
-            description: "installer -query for \(pkgpath) failed: \(results.error)")
+        throw PackageParsingError("installer -query for \(pkgpath) failed: \(results.error)")
     }
     let (pliststr, _) = parseFirstPlist(fromString: results.output)
     if !pliststr.isEmpty {
@@ -291,8 +288,7 @@ func getBundlePackageInfo(_ pkgpath: String) throws -> PlistDict {
     if !receiptarray.isEmpty {
         return ["receipts": receiptarray]
     }
-    throw PackageParsingError.error(
-        description: "Could not get receipt info from \(pkgpath)")
+    throw PackageParsingError("Could not get receipt info from \(pkgpath)")
 }
 
 // MARK: XML file functions (mostly for flat packages)
@@ -519,8 +515,7 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
     if !info.isEmpty {
         return info
     }
-    throw PackageParsingError.error(
-        description: "Could not parse info from \(pkgpath):\n\(errors.joined(separator: "\n"))")
+    throw PackageParsingError("Could not parse info from \(pkgpath):\n\(errors.joined(separator: "\n"))")
 }
 
 // MARK: higher-level functions for getting pkg metadata

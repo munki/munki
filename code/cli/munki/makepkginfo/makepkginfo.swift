@@ -109,14 +109,8 @@ struct MakePkgInfo: ParsableCommand {
         } catch let PlistError.writeError(description) {
             printStderr("ERROR: \(description)")
             throw ExitCode(-1)
-        } catch let PkgInfoGenerationError.error(description) {
-            printStderr("ERROR: \(description)")
-            throw ExitCode(-1)
-        } catch let PackageParsingError.error(description) {
-            printStderr("ERROR: \(description)")
-            throw ExitCode(-1)
-        } catch let DiskImageError.error(description) {
-            printStderr("ERROR: \(description)")
+        } catch let error as MunkiError {
+            printStderr("ERROR: \(error.description)")
             throw ExitCode(-1)
         } catch {
             printStderr("Unexpected error: \(type(of: error))")
