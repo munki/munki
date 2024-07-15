@@ -45,3 +45,10 @@ func listItemsOfKind(_ repo: Repo, _ kind: String) throws -> [String] {
         { (kind as NSString).appendingPathComponent($0) }
     )
 }
+
+func leftPad(_ str: String, _ count: Int) -> String {
+    if str.count < count {
+        return String(repeating: " ", count: count - str.count) + str
+    }
+    return str
+}

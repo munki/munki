@@ -279,7 +279,7 @@ struct AdditionalPkginfoOptions: ParsableArguments {
             help: ArgumentHelp("Specifies a Munki item required by the current item. Can be specified multiple times to build an array of required items.", valueName: "munki-item-name"))
     var requires = [String]()
 
-    @Option(name: [.short, .long, .customLong("blocking_applications")],
+    @Option(name: [.short, .long, .customLong("blocking_application")],
             help: ArgumentHelp("Specifies an application that blocks installation. Can be specified multiple times to build an array of blocking applications.", valueName: "application-name"))
     var blockingApplication = [String]()
 
@@ -310,6 +310,13 @@ struct AdditionalPkginfoOptions: ParsableArguments {
                 if !"0123456789".contains(optionItem.first ?? "X") {
                     throw ValidationError("Version strings must start with a digit!")
                 }
+            }
+        }
+        if catalog.isEmpty {
+            if let defaultCatalog = adminPref("default_catalog") as? String {
+                catalog.append(defaultCatalog)
+            } else {
+                catalog.append("testing")
             }
         }
     }
