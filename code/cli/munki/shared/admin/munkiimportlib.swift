@@ -21,9 +21,7 @@
 import Darwin.C
 import Foundation
 
-enum MunkiImportError: Error {
-    case error(description: String)
-}
+typealias MunkiImportError = MunkiError
 
 func getSingleArch(_ pkginfo: PlistDict) -> String {
     // If there is exactly one supported architecture, return a string with it
@@ -75,22 +73,18 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
             itemName = "\(name)__\(index)\(ext)"
             destIdentifier = (destPath as NSString).appendingPathComponent(itemName)
         }
-    } catch let RepoError.error(description) {
-        throw MunkiImportError.error(
-            description: "Unable to get list of current pkgs: \(description)")
+    } catch let error as RepoError {
+        throw MunkiImportError("Unable to get list of current pkgs: \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Unexpected error: \(error)")
+        throw MunkiImportError("Unexpected error: \(error)")
     }
     do {
         try repo.put(destIdentifier, fromFile: itempath)
         return destIdentifier
-    } catch let RepoError.error(description) {
-        throw MunkiImportError.error(
-            description: "Unable to copy \(itempath) to pkgs/\(destIdentifier): \(description)")
+    } catch let error as RepoError {
+        throw MunkiImportError("Unable to copy \(itempath) to pkgs/\(destIdentifier): \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Unexpected error when copying \(itempath) to pkgs/\(destIdentifier): \(error)")
+        throw MunkiImportError("Unexpected error when copying \(itempath) to pkgs/\(destIdentifier): \(error)")
     }
 }
 
@@ -108,10 +102,10 @@ func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = 
         arch = "-" + arch
     }
     guard let name = pkginfo["name"] as? String else {
-        throw MunkiImportError.error(description: "pkginfo is missing value for 'name'")
+        throw MunkiImportError("pkginfo is missing value for 'name'")
     }
     guard let version = pkginfo["version"] as? String else {
-        throw MunkiImportError.error(description: "pkginfo is missing value for 'version'")
+        throw MunkiImportError("pkginfo is missing value for 'version'")
     }
     var pkginfoName = "\(name)-\(version)\(arch)\(pkginfoExt)"
     var pkginfoIdentifier = (destinationPath as NSString).appendingPathComponent(pkginfoName)
@@ -124,12 +118,10 @@ func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = 
             pkginfoName = "\(name)-\(version)\(arch)__\(index)\(pkginfoExt)"
             pkginfoIdentifier = (destinationPath as NSString).appendingPathComponent(pkginfoName)
         }
-    } catch let RepoError.error(description) {
-        throw MunkiImportError.error(
-            description: "Unable to get list of current pkgsinfo: \(description)")
+    } catch let error as RepoError {
+        throw MunkiImportError("Unable to get list of current pkgsinfo: \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Unexpected error: \(error)")
+        throw MunkiImportError("Unexpected error: \(error)")
     }
     do {
         try repo.put(pkginfoIdentifier, content: pkginfoData)
@@ -159,9 +151,9 @@ func makeCatalogDB(_ repo: Repo) throws -> CatalogDatabase {
     let catalogItems: [PlistDict]
     do {
         allCatalog = try repo.get("catalogs/all")
-    } catch let RepoError.error(description) {
+    } catch let error as RepoError {
         throw CatalogError.readError(
-            description: "Could not read 'all' catalog: \(description)")
+            description: "Could not read 'all' catalog: \(error.description)")
     } catch {
         throw CatalogError.readError(
             description: "Unexpected error while attempting to read 'all' catalog: \(error)")
@@ -373,8 +365,8 @@ func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) -> Bool {
     do {
         let iconList = try listItemsOfKind(repo, "icons")
         return iconList.contains(iconIdentifer)
-    } catch let RepoError.error(description) {
-        printStderr("Unable to get list of icons: \(description)")
+    } catch let error as RepoError {
+        printStderr("Unable to get list of icons: \(error.description)")
         return false
     } catch {
         printStderr("Unable to get list of icons: \(error)")
@@ -386,7 +378,7 @@ func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws 
     // Convert icon file to png and save to repo icon path.
     // Returns resource path to icon in repo
     guard let tmpDir = TempDir.shared.makeTempDir() else {
-        throw MunkiImportError.error(description: "Could not create a temp directory")
+        throw MunkiImportError("Could not create a temp directory")
     }
     defer {
         try? FileManager.default.removeItem(atPath: tmpDir)
@@ -398,16 +390,13 @@ func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws 
         do {
             try repo.put(iconIdentifier, fromFile: localPNGpath)
             return iconIdentifier
-        } catch let RepoError.error(description) {
-            throw MunkiImportError.error(
-                description: "Could not create icon \(pngName) in repo: \(description)")
+        } catch let error as RepoError {
+            throw MunkiImportError("Could not create icon \(pngName) in repo: \(error.description)")
         } catch {
-            throw MunkiImportError.error(
-                description: "Could not create icon \(pngName) in repo: \(error)")
+            throw MunkiImportError("Could not create icon \(pngName) in repo: \(error)")
         }
     }
-    throw MunkiImportError.error(
-        description: "Could not create icon \(pngName) in repo: failed to convert icon to png")
+    throw MunkiImportError("Could not create icon \(pngName) in repo: failed to convert icon to png")
 }
 
 func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemname: String) throws -> String {
@@ -426,14 +415,11 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemn
             )
             return repoIconIdentifier
         }
-        throw MunkiImportError.error(
-            description: "Unexpected error generating PNG from installer dmg")
-    } catch let DiskImageError.error(description) {
-        throw MunkiImportError.error(
-            description: "Could not mount installer dmg: \(description)")
+        throw MunkiImportError("Unexpected error generating PNG from installer dmg")
+    } catch let error as DiskImageError {
+        throw MunkiImportError("Could not mount installer dmg: \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Unexpected error generating PNG from app on disk image: \(error)")
+        throw MunkiImportError("Unexpected error generating PNG from app on disk image: \(error)")
     }
 }
 
@@ -441,8 +427,7 @@ func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) t
     // Generates a product icon from a copy_from_dmg item
     // and uploads to the repo. Returns repo path to icon
     guard let itemname = pkginfo["name"] as? String else {
-        throw MunkiImportError.error(
-            description: "pkginfo is missing 'name'")
+        throw MunkiImportError("pkginfo is missing 'name'")
     }
     do {
         let mountpoint = try mountdmg(dmgPath)
@@ -467,12 +452,10 @@ func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) t
         }
         // it's not an error if nothing we copy is an app
         return ""
-    } catch let DiskImageError.error(description) {
-        throw MunkiImportError.error(
-            description: "Could not mount installer dmg: \(description)")
+    } catch let error as DiskImageError {
+        throw MunkiImportError("Could not mount installer dmg: \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Unexpected error generating PNG from app on disk image: \(error)")
+        throw MunkiImportError("Unexpected error generating PNG from app on disk image: \(error)")
     }
 }
 
@@ -482,7 +465,7 @@ func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, imp
     // itemPath can be a path to a disk image or to a package
     guard let itemname = pkginfo["name"] as? String else {
         // this should essentially never happen
-        throw MunkiImportError.error(description: "Pkginfo is missing 'name': \(pkginfo)")
+        throw MunkiImportError("Pkginfo is missing 'name': \(pkginfo)")
     }
     var iconPaths = [String]()
     var importedPaths = [String]()
@@ -552,31 +535,25 @@ func copyIconToRepo(_ repo: Repo, iconPath: String) throws -> String {
             // need to first remove existing icon
             do {
                 try repo.delete(repoIdentifier)
-            } catch let RepoError.error(description) {
-                throw MunkiImportError.error(
-                    description: "Could not delete existing icon in repo: \(description)")
+            } catch let error as RepoError {
+                throw MunkiImportError("Could not delete existing icon in repo: \(error.description)")
             } catch {
-                throw MunkiImportError.error(
-                    description: "Could not delete existing icon in repo: \(error)")
+                throw MunkiImportError("Could not delete existing icon in repo: \(error)")
             }
         }
-    } catch let RepoError.error(description) {
-        throw MunkiImportError.error(
-            description: "Could not get list of icons on repo: \(description)")
+    } catch let error as RepoError {
+        throw MunkiImportError("Could not get list of icons on repo: \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Could not get list of icons on repo: \(error)")
+        throw MunkiImportError("Could not get list of icons on repo: \(error)")
     }
     print("Copying \(iconName) to \(repoIdentifier)...")
     do {
         try repo.put(repoIdentifier, fromFile: iconPath)
         return repoIdentifier
-    } catch let RepoError.error(description) {
-        throw MunkiImportError.error(
-            description: "Could not copy icon to repo: \(description)")
+    } catch let error as RepoError {
+        throw MunkiImportError("Could not copy icon to repo: \(error.description)")
     } catch {
-        throw MunkiImportError.error(
-            description: "Could not copy icon to repo: \(error)")
+        throw MunkiImportError("Could not copy icon to repo: \(error)")
     }
 }
 
@@ -600,8 +577,7 @@ func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict,
         let importedPaths = try generatePNGsFromPkg(repo, itemPath: installerItem, pkginfo: pkginfo, importMultiple: importMultiple)
         return importedPaths
     default:
-        throw MunkiImportError.error(
-            description: "Can't generate icons for installer_type \(installerType)")
+        throw MunkiImportError("Can't generate icons for installer_type \(installerType)")
     }
     return [String]()
 }

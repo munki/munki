@@ -1,10 +1,8 @@
 //
-//  RepoFactory.swift
+//  errors.swift
 //  munki
 //
-//  Created by Greg Neagle on 6/29/24.
-//
-//  Copyright 2024 Greg Neagle.
+//  Created by Greg Neagle on 7/15/24.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,14 +18,16 @@
 
 import Foundation
 
-func repoConnect(url: String, plugin: String = "FileRepo") throws -> Repo {
-    // Factory function that returns an instance of a specific Repo class
-    switch plugin {
-    case "FileRepo":
-        return try FileRepo(url)
-    case "GitFileRepo":
-        return try GitFileRepo(url)
-    default:
-        throw RepoError("No repo plugin named \"\(plugin)\"")
+struct MunkiError: Error, CustomStringConvertible {
+    // General error class for errors
+    public internal(set) var message: String
+
+    // Creates a new error with the given message.
+    public init(_ message: String) {
+        self.message = message
+    }
+
+    public var description: String {
+        return message
     }
 }

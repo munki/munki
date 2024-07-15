@@ -127,6 +127,11 @@
 		C0D00FB22C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C0D00FB32C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C0D00FB42C458EAA0021DA9C /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0D00FB62C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0D00FB72C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0D00FB82C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0D00FB92C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0D00FBA2C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -219,6 +224,7 @@
 		C07A6FD92C2CF19600090743 /* cliutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cliutils.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
+		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -389,6 +395,7 @@
 				C030A9EE2C43505B007F0B34 /* munkitester-Bridging-Header.h */,
 				C030A9EF2C43505B007F0B34 /* munkiimport-Bridging-Header.h */,
 				C0D00FAF2C458EAA0021DA9C /* version.swift */,
+				C0D00FB52C45BCB90021DA9C /* errors.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -569,6 +576,7 @@
 				C030A9AF2C3B50B5007F0B34 /* constants.swift in Sources */,
 				C030A9A12C3B4F5B007F0B34 /* pkginfoOptions.swift in Sources */,
 				C030A9A92C3B4FF5007F0B34 /* display.swift in Sources */,
+				C0D00FB92C45BCB90021DA9C /* errors.swift in Sources */,
 				C030A9AE2C3B50A5007F0B34 /* reports.swift in Sources */,
 				C030A9A62C3B4FDF007F0B34 /* munkihash.swift in Sources */,
 				C030A9AA2C3B4FFC007F0B34 /* munkilog.swift in Sources */,
@@ -584,6 +592,7 @@
 			files = (
 				C030A9EB2C4241AC007F0B34 /* munkilog.swift in Sources */,
 				C030A9D42C41F849007F0B34 /* munkiimportOptions.swift in Sources */,
+				C0D00FBA2C45BCB90021DA9C /* errors.swift in Sources */,
 				C030A9E92C424179007F0B34 /* fileutils.swift in Sources */,
 				C0D00FAA2C45814F0021DA9C /* repoutils.swift in Sources */,
 				C030A9DE2C424083007F0B34 /* munkiimportlib.swift in Sources */,
@@ -623,6 +632,7 @@
 				C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */,
 				C01364432C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */,
+				C0D00FB62C45BCB90021DA9C /* errors.swift in Sources */,
 				C07A6FB02C2B22A400090743 /* prefs.swift in Sources */,
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
 				C0D00FB02C458EAA0021DA9C /* version.swift in Sources */,
@@ -645,6 +655,7 @@
 			files = (
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C01364462C2E051F008DB215 /* makecatalogslib.swift in Sources */,
+				C0D00FB72C45BCB90021DA9C /* errors.swift in Sources */,
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
 				C030A9F62C435183007F0B34 /* readline.swift in Sources */,
@@ -684,6 +695,7 @@
 				C01364452C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */,
 				C07A6FCB2C2B5C3A00090743 /* prefs.swift in Sources */,
+				C0D00FB82C45BCB90021DA9C /* errors.swift in Sources */,
 				C013644F2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FC72C2B5C0700090743 /* makecatalogs.swift in Sources */,
 				C0D00FB22C458EAA0021DA9C /* version.swift in Sources */,

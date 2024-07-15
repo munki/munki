@@ -104,8 +104,8 @@ struct MakeCatalogs: ParsableCommand {
                 }
                 throw ExitCode(-1)
             }
-        } catch let RepoError.error(description) {
-            printStderr("Repo error: \(description)")
+        } catch let error as RepoError {
+            printStderr("Repo error: \(error.description)")
             throw ExitCode(-1)
         } catch let error as MakeCatalogsError {
             switch error {
