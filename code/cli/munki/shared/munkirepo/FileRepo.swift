@@ -193,6 +193,11 @@ class FileRepo: Repo {
         // Returns a list of identifiers for each item of kind.
         // Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
         // For a file-backed repo this would be a list of pathnames.
+        
+        // TODO: the order Foundation enumerates files is different than the order
+        // you get from Python's os.walk. This affets the behavior of MWA2.
+        // MWA2 probably should not be relying on catalogs being built in a specific ordering.
+        
         var fileList = [String]()
         let searchPath = (root as NSString).appendingPathComponent(kind)
         let filemanager = FileManager.default
