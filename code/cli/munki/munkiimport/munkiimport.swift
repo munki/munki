@@ -234,9 +234,8 @@ struct MunkiImport: AsyncParsableCommand {
                         ("icon_name", "String"),
                         ("unused_software_removal_info", "Dict"),
                         ("localized_strings", "Dict"),
-                        ("featured", "Bool")
-                    ]
-                    {
+                        ("featured", "Bool"),
+                    ] {
                         if let matchingKeyValue = matchingPkgInfo[key] {
                             switch kind {
                             // TODO: add more cases in the future
