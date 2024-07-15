@@ -222,22 +222,30 @@ struct MunkiImport: AsyncParsableCommand {
                     {
                         munkiImportOptions.subdirectory = (matchingInstallLocation as NSString).deletingLastPathComponent
                     }
-                    for key in ["name",
-                                "blocking_applications",
-                                "unattended_install",
-                                "unattended_uninstall",
-                                "requires",
-                                "update_for",
-                                "category",
-                                "developer",
-                                "icon_name",
-                                "unused_software_removal_info",
-                                "localized_strings",
-                                "featured"]
+                    for (key, kind) in [
+                        ("name", "String"),
+                        ("blocking_applications", "StringArray"),
+                        ("unattended_install", "Bool"),
+                        ("unattended_uninstall", "Bool"),
+                        ("requires", "StringArray"),
+                        ("update_for", "StringArray"),
+                        ("category", "String"),
+                        ("developer", "String"),
+                        ("icon_name", "String"),
+                        ("unused_software_removal_info", "Dict"),
+                        ("localized_strings", "Dict"),
+                        ("featured", "Bool")
+                    ]
                     {
                         if let matchingKeyValue = matchingPkgInfo[key] {
-                            // TODO: fix this so things other than strings print corrrectly
-                            print("Copying \(key): \(matchingKeyValue)")
+                            switch kind {
+                            // TODO: add more cases in the future
+                            case "Bool":
+                                let value = String(matchingKeyValue as? Bool ?? false).capitalized
+                                print("Copying \(key): \(value)")
+                            default:
+                                print("Copying \(key): \(matchingKeyValue)")
+                            }
                             pkginfo[key] = matchingKeyValue
                         }
                     }
@@ -256,7 +264,7 @@ struct MunkiImport: AsyncParsableCommand {
                         let prompt = leftPad(name, 20) + ": "
                         var defaultValue = ""
                         if kind == "Bool" {
-                            defaultValue = String(pkginfo[key] as? Bool ?? false)
+                            defaultValue = String(pkginfo[key] as? Bool ?? false).capitalized
                         } else {
                             defaultValue = pkginfo[key] as? String ?? ""
                         }
