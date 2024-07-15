@@ -59,7 +59,7 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
     if !ext.isEmpty {
         ext = "." + ext
     }
-    if !version.isEmpty, !version.hasSuffix(version) {
+    if !version.isEmpty, !name.hasSuffix(version) {
         // add the version number to the end of the filename
         itemName = "\(name)-\(version)\(ext)"
         destIdentifier = (destPath as NSString).appendingPathComponent(itemName)
