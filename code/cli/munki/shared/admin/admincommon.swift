@@ -36,16 +36,6 @@ func adminPref(_ pref_name: String) -> Any? {
     return CFPreferencesCopyAppValue(pref_name as CFString, ADMIN_BUNDLE_ID)
 }
 
-func listItemsOfKind(_ repo: Repo, _ kind: String) throws -> [String] {
-    // Returns a list of items of kind. Relative pathnames are prepended
-    // with kind. (example: ["icons/Bar.png", "icons/Foo.png"])
-    // Could throw RepoError
-    let itemlist = try repo.list(kind)
-    return itemlist.map(
-        { (kind as NSString).appendingPathComponent($0) }
-    )
-}
-
 func leftPad(_ str: String, _ count: Int) -> String {
     if str.count < count {
         return String(repeating: " ", count: count - str.count) + str
