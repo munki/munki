@@ -1,6 +1,6 @@
 //
 //  makepkginfo.swift
-//  makepkginfo
+//  munki
 //
 //  Created by Greg Neagle on 7/6/24.
 //
@@ -87,23 +87,6 @@ struct MakePkgInfo: ParsableCommand {
             hidden: hiddenOptions
         )
 
-        /*
-         if (not arguments and
-                     not options.file and
-                     not options.nopkg and
-                     not options.installer_environment and
-                     not options.installcheck_script and
-                     not options.uninstallcheck_script and
-                     not options.preinstall_script and
-                     not options.postinstall_script and
-                     not options.preuninstall_script and
-                     not options.postuninstall_script and
-                     not options.uninstall_script and
-                     not options.apple_update):
-                 parser.print_usage()
-                 exit(-1)
-         */
-
         if installerItem == nil,
            options.installs.file.isEmpty,
            options.type.nopkg == false,
@@ -116,7 +99,7 @@ struct MakePkgInfo: ParsableCommand {
            options.script.postuninstallScript == nil,
            options.script.uninstallScript == nil
         {
-            throw ValidationError("")
+            throw ValidationError("Can't figure out what to do!")
         }
 
         do {
