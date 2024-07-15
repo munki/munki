@@ -1,51 +1,19 @@
 #!/bin/sh
 
-# Lovingly lifted from Per Olofsson
-# https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
-
-# this is intended for a new install of the Munki tools -- the tools will be 
-# installed and the launchagents/daemons will be activated without the need for
-# a restart
 #
-# This should not be used for "upgrade" installs of the munkitools, or by
-# installs handled by Munki itself.
+# this postinstall should run installhelper in the background, with it then waiting until
+# managedsoftwareupdate isn't running and then (re)load Munki's launchd items as needed
+#
 
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin
-
-# Execute postinstall actions if we're installing on a live system.
-# This is useful for loading launch daemons and agents.
-if [ "$3" = "/" ]; then
-    
-    # is a Munki launchd job already loaded? if so, exit now
-    for JOB in logouthelper managedsoftwareupdate-check managedsoftwareupdate-install managedsoftwareupdate-manualcheck
-    do
-        if launchctl list com.googlecode.munki.${JOB} >/dev/null 2>&1 ; then
-            echo "com.googlecode.munki.${JOB} is loaded: exiting postflight"
-            exit 0
-        fi
-    done
-
-    # Load all launch daemons.
-    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.authrestartd.plist
-    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.logouthelper.plist
-    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-check.plist
-    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-install.plist
-    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.managedsoftwareupdate-manualcheck.plist
-    
-    loggedInUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
-    if [ "$loggedInUser" = "" ] ; then
-        # no-one is logged in; I.E. we're at the loginwindow.
-        # Load the loginwindow launchagents
-        launchctl load -S LoginWindow /Library/LaunchAgents/com.googlecode.munki.managedsoftwareupdate-loginwindow.plist
-        launchctl load -S LoginWindow /Library/LaunchAgents/com.googlecode.munki.MunkiStatus.plist
+# Only execute postinstall actions if we're installing on a live system.
+if [ "$3" = "/" ]
+then
+    installHelper='/usr/local/munki/installhelper'
+    if [ -f  "${installHelper}" ]
+    then
+        /bin/echo "Loading ${installHelper}..."
+        "${installHelper}" launchd
+    else
+        /bin/echo "Cannot locate: ${installHelper}..."
     fi
-
-    # Load launch agents for all currently logged in users.
-    for uid in $(ps -axo uid,args | grep "/[F]inder.app/" | awk '{print $1}'); do
-        launchctl bootstrap gui/"$uid"/ /Library/LaunchAgents/com.googlecode.munki.ManagedSoftwareCenter.plist
-        launchctl bootstrap gui/"$uid"/ /Library/LaunchAgents/com.googlecode.munki.munki-notifier.plist
-    done
-
 fi
-
-exit 0
