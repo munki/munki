@@ -147,6 +147,7 @@ struct MunkiImport: AsyncParsableCommand {
         }
 
         // make a pkginfo
+        print("Analyzing installer item...")
         var pkginfo: PlistDict
         do {
             pkginfo = try makepkginfo(installerItem, options: pkginfoOptions)
@@ -347,7 +348,7 @@ struct MunkiImport: AsyncParsableCommand {
             do {
                 let importedPaths = try extractAndCopyIcon(repo, installerItem: installerItem, pkginfo: pkginfo)
                 if !importedPaths.isEmpty {
-                    print("Imported \(importedPaths)")
+                    print("Imported " + importedPaths.joined(separator: ", "))
                 } else {
                     print("No icons found for import.")
                 }
@@ -376,9 +377,24 @@ struct MunkiImport: AsyncParsableCommand {
         // adjust the pkginfo installer_item_location with actual location/identifier
         pkginfo["installer_item_location"] = (uploadedPkgPath as NSString).pathComponents[1...].joined(separator: "/")
         // If there's an uninstaller_item, upload that
-        // TODO: implement uninstaller_item upload
-
-        // One more chance to edit the pkginfo
+        if let uninstallerItem = pkginfoOptions.pkg.uninstalleritem {
+            do {
+                let uninstallerItemName = (uninstallerItem as NSString).lastPathComponent
+                print("Copying \(uninstallerItemName) to repo...")
+                let version = pkginfo["version"] as? String ?? "UNKNOWN"
+                uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: uninstallerItem, version: version, subdirectory: subdir)
+                print("Copied \(uninstallerItemName) to \(uploadedPkgPath).")
+            } catch let error as MunkiImportError {
+                printStderr("Error importing \(uninstallerItem): \(error.description)")
+                throw ExitCode(-1)
+            } catch {
+                printStderr("Error importing \(uninstallerItem): \(error)")
+                throw ExitCode(-1)
+            }
+            // adjust the pkginfo uninstaller_item_location with actual location/identifier
+            pkginfo["uninstaller_item_location"] = (uploadedPkgPath as NSString).pathComponents[1...].joined(separator: "/")
+        }
+        // One last chance to edit the pkginfo
         if !munkiImportOptions.nointeractive {
             pkginfo = editPkgInfoInExternalEditor(pkginfo)
         }
