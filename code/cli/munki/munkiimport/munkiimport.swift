@@ -248,158 +248,158 @@ struct MunkiImport: AsyncParsableCommand {
                             pkginfo[key] = matchingKeyValue
                         }
                     }
-                    // now let user do some basic editing
-                    let editfields = [
-                        ("Item name", "name", "String"),
-                        ("Display name", "display_name", "String"),
-                        ("Description", "description", "String"),
-                        ("Version", "version", "String"),
-                        ("Category", "category", "String"),
-                        ("Developer", "developer", "String"),
-                        ("Unattended install", "unattended_install", "Bool"),
-                        ("Unattended uninstall", "unattended_uninstall", "Bool"),
-                    ]
-                    for (name, key, kind) in editfields {
-                        let prompt = leftPad(name, 20) + ": "
-                        var defaultValue = ""
-                        if kind == "Bool" {
-                            defaultValue = String(pkginfo[key] as? Bool ?? false).capitalized
-                        } else {
-                            defaultValue = pkginfo[key] as? String ?? ""
-                        }
-                        if let newValue = getInput(prompt: prompt, defaultText: defaultValue) {
-                            if kind == "Bool" {
-                                pkginfo[key] = newValue.lowercased().hasPrefix("t")
-                            } else {
-                                pkginfo[key] = newValue
-                            }
-                        }
-                    }
-                    // special handling for catalogs
-                    let prompt = leftPad("Catalogs", 20) + ": "
-                    let catalogs = pkginfo["catalogs"] as? [String] ?? ["testing"]
-                    let defaultValue = catalogs.joined(separator: ",")
-                    if let newValue = getInput(prompt: prompt, defaultText: defaultValue) {
-                        pkginfo["catalogs"] = newValue.components(separatedBy: ",")
-                    }
-                    // warn if no 'is installed' criteria
-                    let installerType = pkginfo["installer_type"] as? String ?? ""
-                    if installerType != "startosinstall",
-                       !pkginfo.keys.contains("receipts"),
-                       !pkginfo.keys.contains("installs")
-                    {
-                        printStderr("WARNING: There are no receipts and no 'installs' items for this installer item. You should add at least one item to the 'installs' list, or add an installcheck_script.")
-                    }
-                    // Confirm import post-edit
-                    print("\nImport this item? [y/N] ", terminator: "")
-                    if let answer = readLine(),
-                       !answer.lowercased().hasPrefix("y")
-                    {
-                        return
-                    }
-                    // adjust subdir if needed
-                    if munkiImportOptions.subdirectory == nil,
-                       let filerepo = repo as? FileRepo
-                    {
-                        let repoPkgsDir = (filerepo.root as NSString).appendingPathComponent("pkgs") + "/"
-                        let installerItemAbsPath = getAbsolutePath(installerItem)
-                        if installerItemAbsPath.hasPrefix(repoPkgsDir) {
-                            // super special case:
-                            // We're using a file repo and the item being "imported"
-                            // is actually already in the repo -- we're just creating
-                            // a pkginfo item and copying it to the repo.
-                            // In this case, we want to use the same subdirectory for
-                            // the pkginfo that corresponds to the one the pkg is
-                            // already in.
-                            // We aren't handling the case of alternate implementations
-                            // of FileRepo-like repos.
-                            let installerItemDirPath = (installerItemAbsPath as NSString).deletingLastPathComponent
-                            let startIndex = installerItemDirPath.index(installerItemDirPath.startIndex, offsetBy: repoPkgsDir.count)
-                            munkiImportOptions.subdirectory = String(installerItemDirPath[startIndex...])
-                        }
-                    }
-                    munkiImportOptions.subdirectory = promptForSubdirectory(repo, munkiImportOptions.subdirectory)
                 }
-                // if we have an icon, upload it
-                if let iconPath = munkiImportOptions.iconPath,
-                   let name = pkginfo["name"] as? String
-                {
-                    do {
-                        let _ = try convertAndInstallIcon(repo, name: name, iconPath: iconPath)
-                    } catch let error as MunkiImportError {
-                        printStderr("Error importing \(iconPath): \(error.description)")
-                    }
-                } else if !munkiImportOptions.extractIcon,
-                          !iconIsInRepo(repo, pkginfo: pkginfo)
-                {
-                    print("No existing product icon found.")
-                    print("Attempt to create a product icon? [y/N] ", terminator: "")
-                    if let answer = readLine(),
-                       answer.lowercased().hasPrefix("y")
-                    {
-                        munkiImportOptions.extractIcon = true
+            }
+            // now let user do some basic editing
+            let editfields = [
+                ("Item name", "name", "String"),
+                ("Display name", "display_name", "String"),
+                ("Description", "description", "String"),
+                ("Version", "version", "String"),
+                ("Category", "category", "String"),
+                ("Developer", "developer", "String"),
+                ("Unattended install", "unattended_install", "Bool"),
+                ("Unattended uninstall", "unattended_uninstall", "Bool"),
+            ]
+            for (name, key, kind) in editfields {
+                let prompt = leftPad(name, 20) + ": "
+                var defaultValue = ""
+                if kind == "Bool" {
+                    defaultValue = String(pkginfo[key] as? Bool ?? false).capitalized
+                } else {
+                    defaultValue = pkginfo[key] as? String ?? ""
+                }
+                if let newValue = getInput(prompt: prompt, defaultText: defaultValue) {
+                    if kind == "Bool" {
+                        pkginfo[key] = newValue.lowercased().hasPrefix("t")
+                    } else {
+                        pkginfo[key] = newValue
                     }
                 }
-                if munkiImportOptions.extractIcon {
-                    print("Attempting to extract and upload icon...")
-                    do {
-                        let importedPaths = try extractAndCopyIcon(repo, installerItem: installerItem, pkginfo: pkginfo)
-                        if !importedPaths.isEmpty {
-                            print("Imported \(importedPaths)")
-                        } else {
-                            print("No icons found for import.")
-                        }
-                    } catch let error as MunkiImportError {
-                        printStderr("Error importing icons: \(error.description)")
-                    } catch {
-                        printStderr("Error importing icons: \(error)")
-                    }
+            }
+            // special handling for catalogs
+            let prompt = leftPad("Catalogs", 20) + ": "
+            let catalogs = pkginfo["catalogs"] as? [String] ?? ["testing"]
+            let defaultValue = catalogs.joined(separator: ",")
+            if let newValue = getInput(prompt: prompt, defaultText: defaultValue) {
+                pkginfo["catalogs"] = newValue.components(separatedBy: ",")
+            }
+            // warn if no 'is installed' criteria
+            let installerType = pkginfo["installer_type"] as? String ?? ""
+            if installerType != "startosinstall",
+               !pkginfo.keys.contains("receipts"),
+               !pkginfo.keys.contains("installs")
+            {
+                printStderr("WARNING: There are no receipts and no 'installs' items for this installer item. You should add at least one item to the 'installs' list, or add an installcheck_script.")
+            }
+            // Confirm import post-edit
+            print("\nImport this item? [y/N] ", terminator: "")
+            if let answer = readLine(),
+               !answer.lowercased().hasPrefix("y")
+            {
+                return
+            }
+            // adjust subdir if needed
+            if munkiImportOptions.subdirectory == nil,
+               let filerepo = repo as? FileRepo
+            {
+                let repoPkgsDir = (filerepo.root as NSString).appendingPathComponent("pkgs") + "/"
+                let installerItemAbsPath = getAbsolutePath(installerItem)
+                if installerItemAbsPath.hasPrefix(repoPkgsDir) {
+                    // super special case:
+                    // We're using a file repo and the item being "imported"
+                    // is actually already in the repo -- we're just creating
+                    // a pkginfo item and copying it to the repo.
+                    // In this case, we want to use the same subdirectory for
+                    // the pkginfo that corresponds to the one the pkg is
+                    // already in.
+                    // We aren't handling the case of alternate implementations
+                    // of FileRepo-like repos.
+                    let installerItemDirPath = (installerItemAbsPath as NSString).deletingLastPathComponent
+                    let startIndex = installerItemDirPath.index(installerItemDirPath.startIndex, offsetBy: repoPkgsDir.count)
+                    munkiImportOptions.subdirectory = String(installerItemDirPath[startIndex...])
                 }
-                // copy the installerItem to the repo
-                var uploadedPkgPath = ""
-                let subdir = munkiImportOptions.subdirectory ?? ""
-                do {
-                    let installerItemName = (installerItem as NSString).lastPathComponent
-                    print("Copying \(installerItemName) to repo...")
-                    let version = pkginfo["version"] as? String ?? "UNKNOWN"
-                    uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: installerItem, version: version, subdirectory: subdir)
-                    print("Copied \(installerItemName) to \(uploadedPkgPath).")
-                } catch let error as MunkiImportError {
-                    printStderr("Error importing \(installerItem): \(error.description)")
-                    throw ExitCode(-1)
-                } catch {
-                    printStderr("Error importing \(installerItem): \(error)")
-                    throw ExitCode(-1)
+            }
+            munkiImportOptions.subdirectory = promptForSubdirectory(repo, munkiImportOptions.subdirectory)
+        }
+        // if we have an icon, upload it
+        if let iconPath = munkiImportOptions.iconPath,
+           let name = pkginfo["name"] as? String
+        {
+            do {
+                let _ = try convertAndInstallIcon(repo, name: name, iconPath: iconPath)
+            } catch let error as MunkiImportError {
+                printStderr("Error importing \(iconPath): \(error.description)")
+            }
+        } else if !munkiImportOptions.extractIcon,
+                  !iconIsInRepo(repo, pkginfo: pkginfo)
+        {
+            print("No existing product icon found.")
+            print("Attempt to create a product icon? [y/N] ", terminator: "")
+            if let answer = readLine(),
+               answer.lowercased().hasPrefix("y")
+            {
+                munkiImportOptions.extractIcon = true
+            }
+        }
+        if munkiImportOptions.extractIcon {
+            print("Attempting to extract and upload icon...")
+            do {
+                let importedPaths = try extractAndCopyIcon(repo, installerItem: installerItem, pkginfo: pkginfo)
+                if !importedPaths.isEmpty {
+                    print("Imported \(importedPaths)")
+                } else {
+                    print("No icons found for import.")
                 }
-                // adjust the pkginfo installer_item_location with actual location/identifier
-                pkginfo["installer_item_location"] = (uploadedPkgPath as NSString).pathComponents[1...].joined(separator: "/")
-                // If there's an uninstaller_item, upload that
-                // TODO: implement uninstaller_item upload
+            } catch let error as MunkiImportError {
+                printStderr("Error importing icons: \(error.description)")
+            } catch {
+                printStderr("Error importing icons: \(error)")
+            }
+        }
+        // copy the installerItem to the repo
+        var uploadedPkgPath = ""
+        let subdir = munkiImportOptions.subdirectory ?? ""
+        do {
+            let installerItemName = (installerItem as NSString).lastPathComponent
+            print("Copying \(installerItemName) to repo...")
+            let version = pkginfo["version"] as? String ?? "UNKNOWN"
+            uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: installerItem, version: version, subdirectory: subdir)
+            print("Copied \(installerItemName) to \(uploadedPkgPath).")
+        } catch let error as MunkiImportError {
+            printStderr("Error importing \(installerItem): \(error.description)")
+            throw ExitCode(-1)
+        } catch {
+            printStderr("Error importing \(installerItem): \(error)")
+            throw ExitCode(-1)
+        }
+        // adjust the pkginfo installer_item_location with actual location/identifier
+        pkginfo["installer_item_location"] = (uploadedPkgPath as NSString).pathComponents[1...].joined(separator: "/")
+        // If there's an uninstaller_item, upload that
+        // TODO: implement uninstaller_item upload
 
-                // One more chance to edit the pkginfo
-                if !munkiImportOptions.nointeractive {
-                    pkginfo = editPkgInfoInExternalEditor(pkginfo)
-                }
-                // Now upload pkginfo
-                var pkginfoPath = ""
-                do {
-                    pkginfoPath = try copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
-                    print("Saved pkginfo to \(pkginfoPath).")
-                }
-                // Maybe rebuild the catalogs?
-                if !munkiImportOptions.nointeractive {
-                    print("Rebuild catalogs? [y/N] ", terminator: "")
-                    if let answer = readLine(),
-                       answer.lowercased().hasPrefix("y")
-                    {
-                        let makecatalogOptions = MakeCatalogOptions()
-                        var catalogsmaker = try CatalogsMaker(repo: repo, options: makecatalogOptions)
-                        let errors = catalogsmaker.makecatalogs()
-                        if !errors.isEmpty {
-                            for error in errors {
-                                printStderr(error)
-                            }
-                        }
+        // One more chance to edit the pkginfo
+        if !munkiImportOptions.nointeractive {
+            pkginfo = editPkgInfoInExternalEditor(pkginfo)
+        }
+        // Now upload pkginfo
+        var pkginfoPath = ""
+        do {
+            pkginfoPath = try copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
+            print("Saved pkginfo to \(pkginfoPath).")
+        }
+        // Maybe rebuild the catalogs?
+        if !munkiImportOptions.nointeractive {
+            print("Rebuild catalogs? [y/N] ", terminator: "")
+            if let answer = readLine(),
+               answer.lowercased().hasPrefix("y")
+            {
+                let makecatalogOptions = MakeCatalogOptions()
+                var catalogsmaker = try CatalogsMaker(repo: repo, options: makecatalogOptions)
+                let errors = catalogsmaker.makecatalogs()
+                if !errors.isEmpty {
+                    for error in errors {
+                        printStderr(error)
                     }
                 }
             }
