@@ -102,7 +102,7 @@ do
         "A")
             AUTORUNPKG=YES
             ;;
-        "R") 
+        "R")
             ROSETTA2=YES
             ;;
         "T")
@@ -624,7 +624,7 @@ if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
 fi
 
 # Create package info file.
-makeinfo launchd "$PKGTMP/info" restart
+makeinfo launchd "$PKGTMP/info" norestart
 
 
 #######################
@@ -748,7 +748,7 @@ if [ "$AUTORUNPKG" == "YES" ] ; then
 
     # Create package info file.
     makeinfo autorun "$PKGTMP/info" norestart
-    
+
 fi
 
 
