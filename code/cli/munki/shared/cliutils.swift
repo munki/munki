@@ -101,32 +101,36 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
         return ""
     }
 
-    var outputProcessing = false
-    var errorProcessing = false
     var results = CLIResults()
-
-    let inPipe = Pipe()
 
     let task = Process()
     task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
 
+    // set up input pipe
+    let inPipe = Pipe()
     task.standardInput = inPipe
     // set up our stdout and stderr pipes and handlers
-    task.standardOutput = Pipe()
-    let outputHandler = { (file: FileHandle!) in
-        outputProcessing = true
-        results.output.append(readData(file))
-        outputProcessing = false
+    let outputPipe = Pipe()
+    outputPipe.fileHandleForReading.readabilityHandler = { fh in
+        let data = fh.availableData
+        if data.isEmpty { // EOF on the pipe
+            outputPipe.fileHandleForReading.readabilityHandler = nil
+        } else {
+            results.output.append(String(data: data, encoding: .utf8)!)
+        }
     }
-    (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
-    task.standardError = Pipe()
-    let errorHandler = { (file: FileHandle!) in
-        errorProcessing = true
-        results.error.append(readData(file))
-        errorProcessing = false
+    let errorPipe = Pipe()
+    errorPipe.fileHandleForReading.readabilityHandler = { fh in
+        let data = fh.availableData
+        if data.isEmpty { // EOF on the pipe
+            errorPipe.fileHandleForReading.readabilityHandler = nil
+        } else {
+            results.error.append(String(data: data, encoding: .utf8)!)
+        }
     }
-    (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
+    task.standardOutput = outputPipe
+    task.standardError = errorPipe
 
     do {
         try task.run()
@@ -141,20 +145,20 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
         }
     }
     inPipe.fileHandleForWriting.closeFile()
-    task.waitUntilExit()
-    results.exitcode = Int(task.terminationStatus)
-
-    // wait until all stdout/stderr is processed
-    // use the countdown so we don't wait forever
-    var countdown = 10
-    while countdown > 0, outputProcessing || errorProcessing {
-        usleep(1000)
-        countdown -= 1
+    // task.waitUntilExit()
+    while task.isRunning {
+        // loop until process exits
+        usleep(100)
     }
 
-    // reset the readability handlers
-    (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
-    (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+    while outputPipe.fileHandleForReading.readabilityHandler != nil ||
+        errorPipe.fileHandleForReading.readabilityHandler != nil
+    {
+        // loop until stdout and stderr pipes close
+        usleep(100)
+    }
+
+    results.exitcode = Int(task.terminationStatus)
 
     results.output = trimTrailingNewline(results.output)
     results.error = trimTrailingNewline(results.error)
@@ -247,7 +251,7 @@ class AsyncProcessRunner {
             status.phase = .started
             delegate?.processUpdated()
         }
-        //task.waitUntilExit()
+        // task.waitUntilExit()
         while task.isRunning {
             // loop until process exits
             await Task.yield()
@@ -270,7 +274,7 @@ class AsyncProcessRunner {
         // can be overridden by subclasses
         results.output.append(str)
     }
-    
+
     func processError(_ str: String) {
         // can be overridden by subclasses
         results.error.append(str)
