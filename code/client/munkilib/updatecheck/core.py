@@ -99,9 +99,9 @@ def check(client_id='', localmanifestpath=None):
         # stop precaching_agent if it's running
         download.stop_precaching_agent()
 
-        # prevent idle sleep only if we are on AC power
+        # prevent idle sleep only if we are on AC power or SuspendDisplaySleepDuringBootstrap set
         _caffeinator = None
-        if powermgr.onACPower():
+        if powermgr.onACPower() or prefs.pref('SuspendDisplaySleepDuringBootstrap'):
             _caffeinator = powermgr.Caffeinator(
                 'Munki is checking for new software')
 
