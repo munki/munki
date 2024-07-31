@@ -297,12 +297,14 @@ func importFromPkgutil() async throws {
             group.addTask {
                 await getPkgDataAndAddtoDB(pkgid: pkg)
             }
+            /*
             for await pkgdata in group {
                 if let pkgdata {
                     //displayDetail("Importing \(pkgdata.pkgid)...")
                     PkgProgress.shared.update()
                 }
             }
+             */
         }
     }
     displayPercentDone(current: pkgCount, maximum: pkgCount)

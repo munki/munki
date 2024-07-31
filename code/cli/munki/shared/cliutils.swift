@@ -184,8 +184,6 @@ enum AsyncProcessPhase: Int {
 struct AsyncProcessStatus {
     var phase: AsyncProcessPhase = .notStarted
     var terminationStatus: Int32 = 0
-    var outputProcessing = false
-    var errorProcessing = false
 }
 
 protocol AsyncProcessDelegate: AnyObject {
@@ -203,16 +201,26 @@ class AsyncProcessRunner {
         task.arguments = arguments
 
         // set up our stdout and stderr pipes and handlers
-        task.standardOutput = Pipe()
-        let outputHandler = { (file: FileHandle!) in
-            self.processOutput(file)
+        let outputPipe = Pipe()
+        outputPipe.fileHandleForReading.readabilityHandler = { fh in
+            let data = fh.availableData
+            if data.isEmpty { // EOF on the pipe
+                outputPipe.fileHandleForReading.readabilityHandler = nil
+            } else {
+                self.processOutput(String(data: data, encoding: .utf8)!)
+            }
         }
-        (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
-        task.standardError = Pipe()
-        let errorHandler = { (file: FileHandle!) in
-            self.processError(file)
+        let errorPipe = Pipe()
+        errorPipe.fileHandleForReading.readabilityHandler = { fh in
+            let data = fh.availableData
+            if data.isEmpty { // EOF on the pipe
+                errorPipe.fileHandleForReading.readabilityHandler = nil
+            } else {
+                self.processError(String(data: data, encoding: .utf8)!)
+            }
         }
-        (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
+        task.standardOutput = outputPipe
+        task.standardError = errorPipe
     }
 
     deinit {
@@ -239,20 +247,18 @@ class AsyncProcessRunner {
             status.phase = .started
             delegate?.processUpdated()
         }
-        task.waitUntilExit()
-        /*while task.isRunning {
-            // loop!
-            await Task.yield()
-        }*/
-
-        // wait until all stdout/stderr is processed
-        while status.outputProcessing || status.errorProcessing {
+        //task.waitUntilExit()
+        while task.isRunning {
+            // loop until process exits
             await Task.yield()
         }
 
-        // reset the readability handlers
-        (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
-        (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+        while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
+            (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
+        {
+            // loop until stdout and stderr pipes close
+            await Task.yield()
+        }
 
         status.phase = .ended
         status.terminationStatus = task.terminationStatus
@@ -260,25 +266,14 @@ class AsyncProcessRunner {
         delegate?.processUpdated()
     }
 
-    func readData(_ file: FileHandle) -> String {
-        // read available data from a file handle and return a string
-        let data = file.availableData
-        if data.count > 0 {
-            return String(bytes: data, encoding: .utf8) ?? ""
-        }
-        return ""
+    func processOutput(_ str: String) {
+        // can be overridden by subclasses
+        results.output.append(str)
     }
-
-    func processError(_ file: FileHandle) {
-        status.errorProcessing = true
-        results.error.append(readData(file))
-        status.errorProcessing = false
-    }
-
-    func processOutput(_ file: FileHandle) {
-        status.outputProcessing = true
-        results.output.append(readData(file))
-        status.outputProcessing = false
+    
+    func processError(_ str: String) {
+        // can be overridden by subclasses
+        results.error.append(str)
     }
 }
 

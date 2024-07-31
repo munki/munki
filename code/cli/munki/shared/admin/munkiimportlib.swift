@@ -589,29 +589,23 @@ class HdiUtilCreateFromFolderRunner: AsyncProcessRunner {
         super.init(tool, arguments: arguments)
     }
 
-    override func processError(_ file: FileHandle) {
-        status.errorProcessing = true
-        let errorData = readData(file)
-        print(errorData, terminator: "")
+    override func processError(_ str: String) {
+        super.processError(str)
+        printStderr(str, terminator: "")
         fflush(stderr)
-        results.error.append(errorData)
-        status.errorProcessing = false
     }
-
-    override func processOutput(_ file: FileHandle) {
-        status.outputProcessing = true
-        let outputData = readData(file)
-        print(outputData, terminator: "")
-        fflush(stdout)
-        results.output.append(outputData)
-        status.outputProcessing = false
+    
+    override func processOutput(_ str: String) {
+        super.processOutput(str)
+        print(str, terminator: "")
+        fflush(stderr)
     }
 }
 
 func makeDmg(_ dirPath: String) async -> String {
     // Wraps dirPath (generally an app bundle or bundle-style pkg
     // into a disk image. Returns path to the created dmg file
-    // async because it can take a whilw, depending on the size of the item
+    // async because it can take a while, depending on the size of the item
     let itemname = (dirPath as NSString).lastPathComponent
     print("Making disk image containing \(itemname)...")
     let dmgName = (itemname as NSString).deletingPathExtension + ".dmg"
