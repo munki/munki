@@ -108,7 +108,7 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     let inPipe = Pipe()
 
     let task = Process()
-    task.launchPath = tool
+    task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
 
     task.standardInput = inPipe
@@ -128,7 +128,13 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     }
     (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
 
-    task.launch()
+    do {
+        try task.run()
+    } catch {
+        // task didn't launch
+        results.exitcode = -1
+        return results
+    }
     if stdIn != "" {
         if let data = stdIn.data(using: .utf8) {
             inPipe.fileHandleForWriting.write(data)
@@ -142,7 +148,7 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     // use the countdown so we don't wait forever
     var countdown = 10
     while countdown > 0, outputProcessing || errorProcessing {
-        usleep(100_000)
+        usleep(1000)
         countdown -= 1
     }
 
@@ -193,7 +199,7 @@ class AsyncProcessRunner {
     var delegate: AsyncProcessDelegate?
 
     init(_ tool: String, arguments: [String] = [], stdIn _: String = "") {
-        task.launchPath = tool
+        task.executableURL = URL(fileURLWithPath: tool)
         task.arguments = arguments
 
         // set up our stdout and stderr pipes and handlers
@@ -224,7 +230,7 @@ class AsyncProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("ERROR running \(String(describing: task.launchPath))")
+                displayError("ERROR running \(task.executableURL?.path ?? "")")
                 displayError(error.localizedDescription)
                 status.phase = .ended
                 delegate?.processUpdated()
@@ -234,14 +240,14 @@ class AsyncProcessRunner {
             delegate?.processUpdated()
         }
         task.waitUntilExit()
+        /*while task.isRunning {
+            // loop!
+            await Task.yield()
+        }*/
 
         // wait until all stdout/stderr is processed
         while status.outputProcessing || status.errorProcessing {
-            do {
-                try await Task.sleep(nanoseconds: 100_000_000)
-            } catch {
-                // do nothing
-            }
+            await Task.yield()
         }
 
         // reset the readability handlers

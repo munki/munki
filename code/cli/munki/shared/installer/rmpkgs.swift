@@ -121,11 +121,14 @@ struct PkgData {
     var files: [String] = []
 }
 
-func insertPkgDataIntoPkgDB(
-    connection: SQL3Connection, pkgdata: PkgData
+func insertPkgDataIntoPkgDB(pkgdata: PkgData
 ) throws {
     // inserts a pkg row into the db, returns rowid (which should be an alias for
     // the integer primary key "pkg_key"
+    let connection = try SQL3Connection(pkgDBPath())
+    try connection.execute("PRAGMA journal_mode = WAL;")
+    try connection.execute("PRAGMA synchronous = normal;")
+    try connection.execute("BEGIN TRANSACTION")
     let statementString = "INSERT INTO pkgs (timestamp, owner, pkgid, vers, ppath, pkgname) values (?, ?, ?, ?, ?, ?)"
     let statement = try SQL3Statement(connection: connection)
     try statement.prepare(statementString)
@@ -139,7 +142,10 @@ func insertPkgDataIntoPkgDB(
         throw MunkiError("Could not insert pkg data into db: \(connection.errorMessage())")
     }
     let pkgKey = connection.lastrowid()
+    try statement.finalize()
     try insertFileInfoIntoPkgDB(connection: connection, pkgKey: pkgKey, pkgdata: pkgdata)
+    try connection.execute("END TRANSACTION")
+    try connection.close()
 }
 
 func insertFileInfoIntoPkgDB(
@@ -244,37 +250,61 @@ func getFilesForPkg(_ pkg: String) async throws -> [String] {
     return result.output.components(separatedBy: "\n").filter { !$0.isEmpty }
 }
 
-func getPkgData(connection: SQL3Connection, pkgid: String) async throws -> PkgData {
-    async let tempPkgdata = try getPkgMetaData(pkgid)
-    async let fileList = try getFilesForPkg(pkgid)
-    var pkgdata = try await tempPkgdata
-    pkgdata.files = try await fileList
-    try insertPkgDataIntoPkgDB(connection: connection, pkgdata: pkgdata)
-    return pkgdata
+class PkgProgress {
+    // a Singleton object to display progress
+    static let shared = PkgProgress()
+    
+    var current = 0
+    var total = 100
+    
+    func start(maximum: Int) {
+        total = maximum
+        displayPercentDone(current: current, maximum: total)
+    }
+    
+    func update() {
+        current += 1
+        displayPercentDone(current: current, maximum: total)
+    }
 }
 
-func importFromPkgutil(connection: SQL3Connection) async throws {
+func getPkgDataAndAddtoDB(pkgid: String) async -> PkgData? {
+    do {
+        async let tempPkgdata = try getPkgMetaData(pkgid)
+        async let fileList = try getFilesForPkg(pkgid)
+        var pkgdata = try await tempPkgdata
+        pkgdata.files = try await fileList
+        try insertPkgDataIntoPkgDB(pkgdata: pkgdata)
+        return pkgdata
+    } catch {
+        print("problem with pkgid: '\(pkgid)': \(error)")
+        return nil
+    }
+}
+
+func importFromPkgutil() async throws {
     // Imports package data from pkgutil into our internal package database.
     let result = await runCliAsync("/usr/sbin/pkgutil", arguments: ["--pkgs"])
     if result.exitcode != 0 {
         throw MunkiError("Error calling pkgutil: \(result.error)")
     }
     let pkglist = result.output.components(separatedBy: "\n").filter { !$0.isEmpty }
-    try connection.execute("BEGIN TRANSACTION")
     let pkgCount = pkglist.count
-    var currentIndex = 0
-    await withThrowingTaskGroup(of: PkgData.self) { group in
+    PkgProgress.shared.start(maximum: pkgCount)
+    await withTaskGroup(of: PkgData?.self) { group in
         for pkg in pkglist {
             // TODO: handle user cancellation requests
-            // currentIndex += 1
-            // displayDetail("Importing \(pkg)...")
-            // displayPercentDone(current: currentIndex, maximum: pkgCount)
             group.addTask {
-                try await getPkgData(connection: connection, pkgid: pkg)
+                await getPkgDataAndAddtoDB(pkgid: pkg)
+            }
+            for await pkgdata in group {
+                if let pkgdata {
+                    //displayDetail("Importing \(pkgdata.pkgid)...")
+                    PkgProgress.shared.update()
+                }
             }
         }
     }
-    try connection.execute("END TRANSACTION")
     displayPercentDone(current: pkgCount, maximum: pkgCount)
 }
 
@@ -306,7 +336,8 @@ func initReceiptDB(forcerebuild: Bool = false) async throws {
     try conn.execute("PRAGMA journal_mode = WAL;")
     try conn.execute("PRAGMA synchronous = normal;")
     try createReceiptDBTables(conn)
-    try await importFromPkgutil(connection: conn)
+    try conn.close()
+    try await importFromPkgutil()
 }
 
 func quoteAndJoin(_ stringList: [String]) -> String {
