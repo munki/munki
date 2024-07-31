@@ -594,7 +594,7 @@ class HdiUtilCreateFromFolderRunner: AsyncProcessRunner {
         printStderr(str, terminator: "")
         fflush(stderr)
     }
-    
+
     override func processOutput(_ str: String) {
         super.processOutput(str)
         print(str, terminator: "")
