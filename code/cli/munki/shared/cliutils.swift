@@ -44,111 +44,69 @@ struct CLIResults {
     var error: String = ""
 }
 
-func OLDrunCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
-    // runs a command line tool synchronously, returns CLIResults
-    // not a good choice for tools that might generate a lot of output or error output
-    // this implementation tended to hang when processing a lot of output data; I assume
-    // the pipe was full.
-    // Keeping this implementation aound for a bit while I test the new one.
-
-    let inPipe = Pipe()
-    let outPipe = Pipe()
-    let errorPipe = Pipe()
-
-    let task = Process()
-    task.launchPath = tool
-    task.arguments = arguments
-
-    task.standardInput = inPipe
-    task.standardOutput = outPipe
-    task.standardError = errorPipe
-
-    task.launch()
-    if stdIn != "" {
-        if let data = stdIn.data(using: .utf8) {
-            inPipe.fileHandleForWriting.write(data)
-        }
-    }
-    inPipe.fileHandleForWriting.closeFile()
-    task.waitUntilExit()
-
-    let outputData = outPipe.fileHandleForReading.readDataToEndOfFile()
-    let outputString = trimTrailingNewline(String(data: outputData, encoding: .utf8) ?? "")
-    outPipe.fileHandleForReading.closeFile()
-
-    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-    let errorString = trimTrailingNewline(String(data: errorData, encoding: .utf8) ?? "")
-    errorPipe.fileHandleForReading.closeFile()
-
-    return CLIResults(
-        exitcode: Int(task.terminationStatus),
-        output: outputString,
-        error: errorString
-    )
-}
-
 func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
     // runs a command line tool synchronously, returns CLIResults
     // this implementation attempts to handle scenarios in which a large amount of stdout
     // or sterr output is generated
 
-    func readData(_ file: FileHandle) -> String {
-        // read available data from a file handle and return a string
-        let data = file.availableData
-        if data.count > 0 {
-            return String(bytes: data, encoding: .utf8) ?? ""
-        }
-        return ""
-    }
-
-    var outputProcessing = false
-    var errorProcessing = false
     var results = CLIResults()
 
-    let inPipe = Pipe()
-
     let task = Process()
-    task.launchPath = tool
+    task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
 
+    // set up input pipe
+    let inPipe = Pipe()
     task.standardInput = inPipe
     // set up our stdout and stderr pipes and handlers
-    task.standardOutput = Pipe()
-    let outputHandler = { (file: FileHandle!) in
-        outputProcessing = true
-        results.output.append(readData(file))
-        outputProcessing = false
+    let outputPipe = Pipe()
+    outputPipe.fileHandleForReading.readabilityHandler = { fh in
+        let data = fh.availableData
+        if data.isEmpty { // EOF on the pipe
+            outputPipe.fileHandleForReading.readabilityHandler = nil
+        } else {
+            results.output.append(String(data: data, encoding: .utf8)!)
+        }
     }
-    (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
-    task.standardError = Pipe()
-    let errorHandler = { (file: FileHandle!) in
-        errorProcessing = true
-        results.error.append(readData(file))
-        errorProcessing = false
+    let errorPipe = Pipe()
+    errorPipe.fileHandleForReading.readabilityHandler = { fh in
+        let data = fh.availableData
+        if data.isEmpty { // EOF on the pipe
+            errorPipe.fileHandleForReading.readabilityHandler = nil
+        } else {
+            results.error.append(String(data: data, encoding: .utf8)!)
+        }
     }
-    (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
+    task.standardOutput = outputPipe
+    task.standardError = errorPipe
 
-    task.launch()
+    do {
+        try task.run()
+    } catch {
+        // task didn't launch
+        results.exitcode = -1
+        return results
+    }
     if stdIn != "" {
         if let data = stdIn.data(using: .utf8) {
             inPipe.fileHandleForWriting.write(data)
         }
     }
     inPipe.fileHandleForWriting.closeFile()
-    task.waitUntilExit()
-    results.exitcode = Int(task.terminationStatus)
-
-    // wait until all stdout/stderr is processed
-    // use the countdown so we don't wait forever
-    var countdown = 10
-    while countdown > 0, outputProcessing || errorProcessing {
-        usleep(100_000)
-        countdown -= 1
+    // task.waitUntilExit()
+    while task.isRunning {
+        // loop until process exits
+        usleep(100)
     }
 
-    // reset the readability handlers
-    (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
-    (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+    while outputPipe.fileHandleForReading.readabilityHandler != nil ||
+        errorPipe.fileHandleForReading.readabilityHandler != nil
+    {
+        // loop until stdout and stderr pipes close
+        usleep(100)
+    }
+
+    results.exitcode = Int(task.terminationStatus)
 
     results.output = trimTrailingNewline(results.output)
     results.error = trimTrailingNewline(results.error)
@@ -178,8 +136,6 @@ enum AsyncProcessPhase: Int {
 struct AsyncProcessStatus {
     var phase: AsyncProcessPhase = .notStarted
     var terminationStatus: Int32 = 0
-    var outputProcessing = false
-    var errorProcessing = false
 }
 
 protocol AsyncProcessDelegate: AnyObject {
@@ -193,20 +149,30 @@ class AsyncProcessRunner {
     var delegate: AsyncProcessDelegate?
 
     init(_ tool: String, arguments: [String] = [], stdIn _: String = "") {
-        task.launchPath = tool
+        task.executableURL = URL(fileURLWithPath: tool)
         task.arguments = arguments
 
         // set up our stdout and stderr pipes and handlers
-        task.standardOutput = Pipe()
-        let outputHandler = { (file: FileHandle!) in
-            self.processOutput(file)
+        let outputPipe = Pipe()
+        outputPipe.fileHandleForReading.readabilityHandler = { fh in
+            let data = fh.availableData
+            if data.isEmpty { // EOF on the pipe
+                outputPipe.fileHandleForReading.readabilityHandler = nil
+            } else {
+                self.processOutput(String(data: data, encoding: .utf8)!)
+            }
         }
-        (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = outputHandler
-        task.standardError = Pipe()
-        let errorHandler = { (file: FileHandle!) in
-            self.processError(file)
+        let errorPipe = Pipe()
+        errorPipe.fileHandleForReading.readabilityHandler = { fh in
+            let data = fh.availableData
+            if data.isEmpty { // EOF on the pipe
+                errorPipe.fileHandleForReading.readabilityHandler = nil
+            } else {
+                self.processError(String(data: data, encoding: .utf8)!)
+            }
         }
-        (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = errorHandler
+        task.standardOutput = outputPipe
+        task.standardError = errorPipe
     }
 
     deinit {
@@ -224,7 +190,7 @@ class AsyncProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("ERROR running \(String(describing: task.launchPath))")
+                displayError("ERROR running \(task.executableURL?.path ?? "")")
                 displayError(error.localizedDescription)
                 status.phase = .ended
                 delegate?.processUpdated()
@@ -233,20 +199,18 @@ class AsyncProcessRunner {
             status.phase = .started
             delegate?.processUpdated()
         }
-        task.waitUntilExit()
-
-        // wait until all stdout/stderr is processed
-        while status.outputProcessing || status.errorProcessing {
-            do {
-                try await Task.sleep(nanoseconds: 100_000_000)
-            } catch {
-                // do nothing
-            }
+        // task.waitUntilExit()
+        while task.isRunning {
+            // loop until process exits
+            await Task.yield()
         }
 
-        // reset the readability handlers
-        (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
-        (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler = nil
+        while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
+            (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
+        {
+            // loop until stdout and stderr pipes close
+            await Task.yield()
+        }
 
         status.phase = .ended
         status.terminationStatus = task.terminationStatus
@@ -254,31 +218,19 @@ class AsyncProcessRunner {
         delegate?.processUpdated()
     }
 
-    func readData(_ file: FileHandle) -> String {
-        // read available data from a file handle and return a string
-        let data = file.availableData
-        if data.count > 0 {
-            return String(bytes: data, encoding: .utf8) ?? ""
-        }
-        return ""
+    func processOutput(_ str: String) {
+        // can be overridden by subclasses
+        results.output.append(str)
     }
 
-    func processError(_ file: FileHandle) {
-        status.errorProcessing = true
-        results.error.append(readData(file))
-        status.errorProcessing = false
-    }
-
-    func processOutput(_ file: FileHandle) {
-        status.outputProcessing = true
-        results.output.append(readData(file))
-        status.outputProcessing = false
+    func processError(_ str: String) {
+        // can be overridden by subclasses
+        results.error.append(str)
     }
 }
 
 func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") async -> CLIResults {
-    // a basic wrapper intended to be used just as you would runCLI, but with tasks that
-    // return a lot of output and would overflow the buffer
+    // a basic wrapper intended to be used just as you would runCLI, but async
     let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
     await proc.run()
     return proc.results

@@ -121,11 +121,14 @@ struct PkgData {
     var files: [String] = []
 }
 
-func insertPkgDataIntoPkgDB(
-    connection: SQL3Connection, pkgdata: PkgData
+func insertPkgDataIntoPkgDB(pkgdata: PkgData
 ) throws {
     // inserts a pkg row into the db, returns rowid (which should be an alias for
     // the integer primary key "pkg_key"
+    let connection = try SQL3Connection(pkgDBPath())
+    try connection.execute("PRAGMA journal_mode = WAL;")
+    try connection.execute("PRAGMA synchronous = normal;")
+    try connection.execute("BEGIN TRANSACTION")
     let statementString = "INSERT INTO pkgs (timestamp, owner, pkgid, vers, ppath, pkgname) values (?, ?, ?, ?, ?, ?)"
     let statement = try SQL3Statement(connection: connection)
     try statement.prepare(statementString)
@@ -139,7 +142,10 @@ func insertPkgDataIntoPkgDB(
         throw MunkiError("Could not insert pkg data into db: \(connection.errorMessage())")
     }
     let pkgKey = connection.lastrowid()
+    try statement.finalize()
     try insertFileInfoIntoPkgDB(connection: connection, pkgKey: pkgKey, pkgdata: pkgdata)
+    try connection.execute("END TRANSACTION")
+    try connection.close()
 }
 
 func insertFileInfoIntoPkgDB(
@@ -244,46 +250,35 @@ func getFilesForPkg(_ pkg: String) async throws -> [String] {
     return result.output.components(separatedBy: "\n").filter { !$0.isEmpty }
 }
 
-func getPkgData(connection: SQL3Connection, pkgid: String) async throws -> PkgData {
+func getPkgDataAndAddtoDB(pkgid: String) async throws {
     async let tempPkgdata = try getPkgMetaData(pkgid)
     async let fileList = try getFilesForPkg(pkgid)
     var pkgdata = try await tempPkgdata
     pkgdata.files = try await fileList
-    try insertPkgDataIntoPkgDB(connection: connection, pkgdata: pkgdata)
-    return pkgdata
+    try insertPkgDataIntoPkgDB(pkgdata: pkgdata)
 }
 
-func importFromPkgutil(connection: SQL3Connection) async throws {
+func importFromPkgutil() async throws {
     // Imports package data from pkgutil into our internal package database.
     let result = await runCliAsync("/usr/sbin/pkgutil", arguments: ["--pkgs"])
     if result.exitcode != 0 {
         throw MunkiError("Error calling pkgutil: \(result.error)")
     }
     let pkglist = result.output.components(separatedBy: "\n").filter { !$0.isEmpty }
-    try connection.execute("BEGIN TRANSACTION")
     let pkgCount = pkglist.count
-    var currentIndex = 0
-    await withThrowingTaskGroup(of: PkgData.self) { group in
-        for pkg in pkglist {
-            // TODO: handle user cancellation requests
-            // currentIndex += 1
-            // displayDetail("Importing \(pkg)...")
-            // displayPercentDone(current: currentIndex, maximum: pkgCount)
-            group.addTask {
-                try await getPkgData(connection: connection, pkgid: pkg)
-            }
-        }
+    var current = 0
+    displayPercentDone(current: current, maximum: pkgCount)
+    for pkg in pkglist {
+        // TODO: handle user cancellation requests
+        current += 1
+        displayDetail("Importing \(pkg)...")
+        try await getPkgDataAndAddtoDB(pkgid: pkg)
+        displayPercentDone(current: current, maximum: pkgCount)
     }
-    try connection.execute("END TRANSACTION")
-    displayPercentDone(current: pkgCount, maximum: pkgCount)
 }
 
 func initReceiptDB(forcerebuild: Bool = false) async throws {
     // Builds or rebuilds our internal package database.
-    //
-    // This is currently about 1/3 as fast as the Python version.
-    // Much of the slowdown appears to be in the calling of the various CLI tools
-    // Is this NSTask/Process 's fault?
 
     if !shouldRebuildReceiptDB(), !forcerebuild {
         // we'll use existing db
@@ -306,7 +301,8 @@ func initReceiptDB(forcerebuild: Bool = false) async throws {
     try conn.execute("PRAGMA journal_mode = WAL;")
     try conn.execute("PRAGMA synchronous = normal;")
     try createReceiptDBTables(conn)
-    try await importFromPkgutil(connection: conn)
+    try conn.close()
+    try await importFromPkgutil()
 }
 
 func quoteAndJoin(_ stringList: [String]) -> String {
@@ -382,7 +378,7 @@ func forgetPkgFromAppleDB(_ pkgid: String) {
 func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws {
     // Removes receipt data from our internal package database,
     // and optionally Apple's package database.
-    var taskCount = pkgKeys.count
+    let taskCount = pkgKeys.count
 
     displayMinorStatus("Removing receipt info")
     displayPercentDone(current: 0, maximum: taskCount)
@@ -422,29 +418,194 @@ func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws 
     displayPercentDone(current: taskCount, maximum: taskCount)
 }
 
+func pathIsBundle(_ path: String) -> Bool {
+    // Returns true if path is a bundle-style directory.
+    let bundleExtensions = [".action",
+                            ".app",
+                            ".bundle",
+                            ".clr",
+                            ".colorPicker",
+                            ".component",
+                            ".dictionary",
+                            ".docset",
+                            ".framework",
+                            ".fs",
+                            ".kext",
+                            ".loginPlugin",
+                            ".mdiimporter",
+                            ".monitorPanel",
+                            ".mpkg",
+                            ".osax",
+                            ".pkg",
+                            ".plugin",
+                            ".prefPane",
+                            ".qlgenerator",
+                            ".saver",
+                            ".service",
+                            ".slideSaver",
+                            ".SpeechRecognizer",
+                            ".SpeechSynthesizer",
+                            ".SpeechVoice",
+                            ".spreporter",
+                            ".wdgt"]
+    return pathIsDirectory(path) &&
+        bundleExtensions.contains((path as NSString).pathExtension)
+}
+
+func pathIsInsideBundle(_ path: String) -> Bool {
+    // Check the path to see if it's inside a bundle.
+    var currentPath = path
+    while currentPath.count > 1 {
+        if pathIsBundle(currentPath) {
+            return true
+        }
+        // chop off last item in path
+        currentPath = (currentPath as NSString).deletingLastPathComponent
+    }
+    // if we get here, we didn't find a bundle path
+    return false
+}
+
 func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
     // Attempts to remove all the paths in the pathsToRemove list
+
     var removalErrors = [String]()
     let itemCount = pathsToRemove.count
     displayMajorStatus("Removing \(itemCount) filesystem items")
     let filemanager = FileManager.default
+
+    func removeItemOrRecordError(_ item: String) {
+        do {
+            try filemanager.removeItem(atPath: item)
+        } catch {
+            let msg = "Couldn't remove item \(item): \(error)"
+            displayError(msg)
+            removalErrors.append(msg)
+        }
+    }
 
     var itemIndex = 0
     displayPercentDone(current: itemIndex, maximum: itemCount)
     for item in pathsToRemove.sorted().reversed() {
         itemIndex += 1
         let pathToRemove = "/" + item
-        if pathIsRegularFile(item) || pathIsSymlink(item) {
+        if pathIsRegularFile(pathToRemove) || pathIsSymlink(pathToRemove) {
             displayDetail("Removing : \(pathToRemove)")
-            do {
-                try filemanager.removeItem(atPath: item)
-            } catch {
-                let msg = "Couldn't remove item \(item): \(error)"
+            removeItemOrRecordError(pathToRemove)
+            continue
+        }
+        if !pathIsDirectory(pathToRemove) {
+            // filetype we don't know how to handle
+            let msg = "Couldn't remove item \(item): unsupported filesystem type"
+            displayError(msg)
+            removalErrors.append(msg)
+            continue
+        }
+        // it must be a directory
+        var dirContents = [String]()
+        do {
+            dirContents = try filemanager.contentsOfDirectory(atPath: pathToRemove)
+        } catch {
+            let msg = "Couldn't get contents of directory \(item): \(error)"
+            displayError(msg)
+            removalErrors.append(msg)
+            continue
+        }
+        if dirContents.isEmpty || dirContents == [".DS_Store"] {
+            // directory is empty, so remove it
+            // If there's only a .DS_Store file we'll consider it empty
+            removeItemOrRecordError(pathToRemove)
+            continue
+        }
+        // the directory is marked for deletion but isn't empty.
+        // if so directed, if it's a bundle (like .app), we should
+        // remove it anyway - no use having a broken bundle hanging
+        // around
+        if forceDeleteBundles, pathIsBundle(pathToRemove) {
+            removeItemOrRecordError(pathToRemove)
+        } else {
+            // if this path is inside a bundle, and we've been
+            // directed to force remove bundles,
+            // we don't need to warn because it's going to be
+            // removed with the bundle.
+            // Otherwise, we should warn about non-empty
+            // directories.
+            if !forceDeleteBundles || !pathIsInsideBundle(pathToRemove) {
+                let msg = "Did not remove \(pathToRemove) because it is not empty."
                 displayError(msg)
                 removalErrors.append(msg)
             }
-        } else if pathIsDirectory(item) {
-            // it can't be a symlink to a directory
         }
     }
+    if !removalErrors.isEmpty {
+        displayInfo("---------------------------------------------------")
+        displayInfo("There were problems removing some filesystem items.")
+        displayInfo("---------------------------------------------------")
+        displayInfo(removalErrors.joined(separator: "\n"))
+    }
+}
+
+func removePackages(
+    _ pkgids: [String],
+    forceDeleteBundles: Bool = false,
+    listFiles: Bool = false,
+    rebuildPkgDB: Bool = false,
+    noRemoveReceipts: Bool = false,
+    noUpdateApplePkgDB: Bool = false
+) async -> Int {
+    // Our main function, called to remove items based on receipt info.
+    // if listFiles is true, this is a dry run
+    if pkgids.isEmpty {
+        displayError("You must specify at least one package to remove!")
+        return -2
+    }
+    do {
+        try await initReceiptDB(forcerebuild: rebuildPkgDB)
+    } catch {
+        displayError("Could not initialize receipt database: \(error)")
+        return -3
+    }
+    var pkgKeys = [String]()
+    do {
+        pkgKeys = try getPkgKeysFromPkgDB(pkgids: pkgids)
+        if pkgKeys.isEmpty {
+            throw MunkiError("No matching pkgs found in database")
+        }
+    } catch {
+        displayError("Error retreiving pkg keys: \(error)")
+        return -4
+    }
+    // TODO: handle stop requests
+    // if stopRequested { return -128 }
+    var pathsToRemove = [String]()
+    do {
+        pathsToRemove = try getPathsToRemove(pkgKeys: pkgKeys)
+    } catch {
+        displayError("Error getting paths to remove: \(error)")
+        return -4
+    }
+    if pathsToRemove.isEmpty {
+        displayMinorStatus("Nothing to remove.")
+    } else if listFiles {
+        // only print the paths to be removed; don't actually remove them
+        print("The following filesystem items would be removed:")
+        for path in pathsToRemove.sorted() {
+            print("    /" + path)
+        }
+    } else {
+        // TODO: munkistatus.disableStopButton()
+        removeFilesystemItems(
+            pathsToRemove: pathsToRemove, forceDeleteBundles: forceDeleteBundles
+        )
+        if !noRemoveReceipts {
+            do {
+                try removePkgReceipts(pkgKeys: pkgKeys, updateApplePkgDB: !noUpdateApplePkgDB)
+            } catch {
+                displayError("Failed to remove pkg receipts: \(error)")
+            }
+        }
+        // TODO: munkistatus.enableStopButton()
+        displayMinorStatus("Package removal finished.")
+    }
+    return 0
 }
