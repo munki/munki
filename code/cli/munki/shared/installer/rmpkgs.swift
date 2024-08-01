@@ -588,8 +588,9 @@ func removePackages(
         displayMinorStatus("Nothing to remove.")
     } else if listFiles {
         // only print the paths to be removed; don't actually remove them
+        print("The following filesystem items would be removed:")
         for path in pathsToRemove.sorted() {
-            print("/" + path)
+            print("    /" + path)
         }
     } else {
         // TODO: munkistatus.disableStopButton()
