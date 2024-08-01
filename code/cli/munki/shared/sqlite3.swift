@@ -67,9 +67,7 @@ class SQL3Statement {
     }
 
     deinit {
-        if statement != nil {
-            try? finalize()
-        }
+        try? finalize()
     }
 
     func prepare(_ str: String) throws {
@@ -105,10 +103,12 @@ class SQL3Statement {
     }
 
     func finalize() throws {
-        let resultcode = sqlite3_finalize(statement)
-        statement = nil
-        if resultcode != SQLITE_OK {
-            throw SQL3Error("Could not finalize statement: \(conn.errorMessage())")
+        if statement != nil {
+            let resultcode = sqlite3_finalize(statement)
+            statement = nil
+            if resultcode != SQLITE_OK {
+                throw SQL3Error("Could not finalize statement: \(conn.errorMessage())")
+            }
         }
     }
 
@@ -150,7 +150,7 @@ class SQL3Connection {
         if db != nil {
             try close()
         }
-        let resultcode = sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nil)
+        let resultcode = sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX, nil)
         if resultcode != SQLITE_OK {
             try? close()
             db = nil
