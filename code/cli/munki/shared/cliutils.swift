@@ -44,62 +44,10 @@ struct CLIResults {
     var error: String = ""
 }
 
-func OLDrunCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
-    // runs a command line tool synchronously, returns CLIResults
-    // not a good choice for tools that might generate a lot of output or error output
-    // this implementation tended to hang when processing a lot of output data; I assume
-    // the pipe was full.
-    // Keeping this implementation aound for a bit while I test the new one.
-
-    let inPipe = Pipe()
-    let outPipe = Pipe()
-    let errorPipe = Pipe()
-
-    let task = Process()
-    task.launchPath = tool
-    task.arguments = arguments
-
-    task.standardInput = inPipe
-    task.standardOutput = outPipe
-    task.standardError = errorPipe
-
-    task.launch()
-    if stdIn != "" {
-        if let data = stdIn.data(using: .utf8) {
-            inPipe.fileHandleForWriting.write(data)
-        }
-    }
-    inPipe.fileHandleForWriting.closeFile()
-    task.waitUntilExit()
-
-    let outputData = outPipe.fileHandleForReading.readDataToEndOfFile()
-    let outputString = trimTrailingNewline(String(data: outputData, encoding: .utf8) ?? "")
-    outPipe.fileHandleForReading.closeFile()
-
-    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-    let errorString = trimTrailingNewline(String(data: errorData, encoding: .utf8) ?? "")
-    errorPipe.fileHandleForReading.closeFile()
-
-    return CLIResults(
-        exitcode: Int(task.terminationStatus),
-        output: outputString,
-        error: errorString
-    )
-}
-
 func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
     // runs a command line tool synchronously, returns CLIResults
     // this implementation attempts to handle scenarios in which a large amount of stdout
     // or sterr output is generated
-
-    func readData(_ file: FileHandle) -> String {
-        // read available data from a file handle and return a string
-        let data = file.availableData
-        if data.count > 0 {
-            return String(bytes: data, encoding: .utf8) ?? ""
-        }
-        return ""
-    }
 
     var results = CLIResults()
 
@@ -282,8 +230,7 @@ class AsyncProcessRunner {
 }
 
 func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") async -> CLIResults {
-    // a basic wrapper intended to be used just as you would runCLI, but with tasks that
-    // return a lot of output and would overflow the buffer
+    // a basic wrapper intended to be used just as you would runCLI, but async
     let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
     await proc.run()
     return proc.results
