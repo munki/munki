@@ -189,12 +189,13 @@ class NotificationHandler: NSObject {
 func main() {
     // Initialize our handler object and let NSWorkspace's notification center
     // know we are interested in notifications
-    let notificationHandler = NotificationHandler()
-
-    while true {
-        // listen for notifications forever
-        // give time to the runloop so we can actually get notifications
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+    let handler = NotificationHandler()
+    withExtendedLifetime(handler) {
+        while true {
+            // listen for notifications forever
+            // give time to the runloop so we can actually get notifications
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+        }
     }
 }
 
