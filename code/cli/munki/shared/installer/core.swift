@@ -57,6 +57,7 @@ func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
             displayDetail("Path \(pathToRemove) doesn't exist.")
         }
     }
+    displayMinorStatus("The software was successfully removed.")
     return true
 }
 
@@ -167,7 +168,6 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     // returns an exitcode for the attempted install and a flag to indicate the need to restart
     var needToRestart = false
     let itemName = item["name"] as? String ?? "<unknown>"
-    let displayName = item["display_name"] as? String ?? itemName
     let installerType = item["installer_type"] as? String ?? "pkg_install"
     let installerItem = item["installer_item"] as? String ?? ""
     let managedInstallDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
@@ -560,7 +560,7 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
         }
 
         // now actually attempt to uninstall the item!
-        displayMajorStatus("Removing \(displayName) (\(index) of \(removalList.count)...")
+        displayMajorStatus("Removing \(displayName) (\(index) of \(removalList.count))")
         let (retcode, restartForThisItem) = await uninstallItem(item)
         restartFlag = restartFlag || restartForThisItem
 
