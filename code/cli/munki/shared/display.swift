@@ -21,8 +21,8 @@
 import Darwin.C
 import Foundation
 
-struct DisplayOptions {
-    // a Singleton struct to hold shared config values
+class DisplayOptions {
+    // a Singleton class to hold shared config values
     // this might eventually be replaced by a more encompassing struct
     static let shared = DisplayOptions()
 
@@ -163,7 +163,7 @@ func displayWarning(_ message: String, addToReport: Bool = true) {
     munkiLog(warning, logFile: "warnings.log")
 
     if addToReport {
-        Report.shared.add(warning, to: "Warnings")
+        Report.shared.add(string: warning, to: "Warnings")
     }
 }
 
@@ -177,6 +177,6 @@ func displayError(_ message: String, addToReport: Bool = true) {
     munkiLog(errorMsg, logFile: "errors.log")
 
     if addToReport {
-        Report.shared.add(errorMsg, to: "Errors")
+        Report.shared.add(string: errorMsg, to: "Errors")
     }
 }

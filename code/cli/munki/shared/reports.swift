@@ -34,12 +34,21 @@ class Report {
         report[key] = value
     }
 
-    func add(_ newValue: String, to key: String) {
+    func add(string newValue: String, to key: String) {
         if var value = report[key] as? [String] {
             value.append(newValue)
             report[key] = value
         } else {
-            report[key] = newValue
+            report[key] = [newValue]
+        }
+    }
+
+    func add(dict newValue: PlistDict, to key: String) {
+        if var value = report[key] as? [PlistDict] {
+            value.append(newValue)
+            report[key] = value
+        } else {
+            report[key] = [newValue]
         }
     }
 
