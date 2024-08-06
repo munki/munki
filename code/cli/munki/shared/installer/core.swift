@@ -119,7 +119,7 @@ func requiresRestart(_ item: PlistDict) -> Bool {
 
 func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (Int, Bool) {
     // Process an Apple package for install. Returns retcode, needs_restart
-    if let suppressBundleRelocation = pkginfo["suppress_bundle_relocation"] as? Bool {
+    if pkginfo["suppress_bundle_relocation"] as? Bool ?? false {
         displayWarning("Item has 'suppress_bundle_relocation' attribute. This feature is no longer supported.")
     }
     if hasValidDiskImageExt(itemPath) {
@@ -162,11 +162,86 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
     return (-99, false)
 }
 
-// TODO: break this long confusing function up
+func installItem(_ item: PlistDict) async -> (Int, Bool) {
+    // Attempt to install a single item from the installList
+    // returns an exitcode for the attempted install and a flag to indicate the need to restart
+    var needToRestart = false
+    let itemName = item["name"] as? String ?? "<unknown>"
+    let displayName = item["display_name"] as? String ?? itemName
+    let installerType = item["installer_type"] as? String ?? "pkg_install"
+    let installerItem = item["installer_item"] as? String ?? ""
+    let managedInstallDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    let cachePath = (managedInstallDir as NSString).appendingPathComponent("Cache")
+    let installerItemPath = (cachePath as NSString).appendingPathComponent(installerItem)
+
+    // if installer_type is not nopkg, ensure the payload exists
+    if installerType != "nopkg" {
+        if installerItem.isEmpty {
+            displayError("Item \(installerItem) has no defined installer_item. Skipping.")
+            return (-99, false)
+        }
+        if !pathExists(installerItemPath) {
+            // can't install, so we should stop. Since later items might
+            // depend on this one, we shouldn't continue
+            displayError("Installer item \(installerItem) was not found. Skipping.")
+            return (-99, false)
+        }
+    }
+
+    if item["preinstall_script"] is String {
+        let retcode = await runEmbeddedScript(name: "preinstall_script", pkginfo: item)
+        if retcode != 0 {
+            // if preinstall_script fails, do not proceeed
+            return (retcode, false)
+        }
+    }
+
+    var retcode = 0
+    switch installerType {
+    case "pkg_install":
+        (retcode, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: installerItemPath)
+    case "copy_from_dmg":
+        if let itemList = item["items_to_copy"] as? [PlistDict] {
+            retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
+            if retcode == 0, requiresRestart(item) {
+                needToRestart = true
+            }
+        }
+    case "stage_os_installer":
+        if let itemList = item["items_to_copy"] as? [PlistDict] {
+            retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
+            if retcode == 0 {
+                // TODO: implement osinstaller.record_staged_os_installer
+                // osinstaller.record_staged_os_installer(item)
+            }
+        }
+    case "nopkg":
+        needToRestart = requiresRestart(item)
+    default:
+        // unknown or no longer supported installer type
+        if ["appdmg", "profiles"].contains(installerType) || installerType.hasPrefix("Adobe") {
+            displayError("Installer type '\(installerType)' for \(installerItem) is no longer supported.")
+        } else {
+            displayError("Installer type '\(installerType)' for \(installerItem) is an unknown installer type.")
+        }
+        retcode = -99
+    }
+
+    // if install succeeded, look for a postinstall_script to run
+    if retcode == 0, item["postinstall_script"] is String {
+        let scriptexit = await runEmbeddedScript(name: "postinstall_script", pkginfo: item)
+        if scriptexit != 0 {
+            // we won't consider postinstall script failures as fatal
+            // since the item has been installed via package/disk image
+            // but admin should be notified
+            displayWarning("Postinstall script for \(itemName) returned \(scriptexit)")
+        }
+    }
+    return (retcode, needToRestart)
+}
+
 func installWithInstallInfo(
-    cachePath: String,
-    installList: [PlistDict],
-    onlyUnattended: Bool = false
+    installList: [PlistDict], onlyUnattended: Bool = false
 ) async -> (Bool, [PlistDict]) {
     // Uses the installInfo installs list to install items in the
     // correct order and with additional options
@@ -178,8 +253,11 @@ func installWithInstallInfo(
         // Keep track of when this particular install started.
         let startTime = Date()
         itemIndex += 1
-        let installerType = item["installer_type"] as? String ?? "pkg_install"
         let itemName = item["name"] as? String ?? "<unknown>"
+        let displayName = item["display_name"] as? String ?? itemName
+        let versionToInstall = item["version_to_install"] as? String ?? ""
+        let installerType = item["installer_type"] as? String ?? "pkg_install"
+
         if installerType == "startosinstall" {
             skippedInstalls.append(item)
             displayDebug1("Skipping install of \(itemName) because it's a startosinstall item. Will install later.")
@@ -215,79 +293,11 @@ func installWithInstallInfo(
         // TODO: implement processes.stop_requested()
         // return (restartflag, skipped_installs)
 
-        let displayName = item["display_name"] as? String ?? item["name"] as? String ?? "<unknown>"
-        let versionToInstall = item["version_to_install"] as? String ?? ""
-        let installerItem = item["installer_item"] as? String ?? ""
-        let installerItemPath = (cachePath as NSString).appendingPathComponent(installerItem)
+        // Attempt actual install
         displayMajorStatus("Installing \(displayName) (\(itemIndex) of \(installList.count))")
+        let (retcode, restartNeededForThisItem) = await installItem(item)
+        restartFlag = restartFlag || restartNeededForThisItem
 
-        var retcode = 0
-        if item["preinstall_script"] is String {
-            retcode = await runEmbeddedScript(name: "preinstall_script", pkginfo: item)
-        }
-
-        if retcode == 0 {
-            if installerType != "nopkg" {
-                if installerItem.isEmpty {
-                    displayError("Item \(installerItem) has no defined installer_item. Skipping.")
-                    retcode = -99
-                }
-                if !pathExists(installerItemPath) {
-                    // can't install, so we should stop. Since later items might
-                    // depend on this one, we shouldn't continue
-                    displayError("Installer item \(installerItem) was not found. Skipping.")
-                    retcode = -99
-                }
-            }
-            switch installerType {
-            case "pkg_install":
-                let (result, restartNeeded) = await handleApplePackageInstall(pkginfo: item, itemPath: installerItemPath)
-                retcode = result
-                if restartNeeded {
-                    restartFlag = true
-                }
-            case "copy_from_dmg":
-                if let itemList = item["items_to_copy"] as? [PlistDict] {
-                    retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
-                    if retcode == 0, requiresRestart(item) {
-                        restartFlag = true
-                    }
-                }
-            case "stage_os_installer":
-                if let itemList = item["items_to_copy"] as? [PlistDict] {
-                    retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
-                    if retcode == 0 {
-                        // TODO: implement osinstaller.record_staged_os_installer
-                        // osinstaller.record_staged_os_installer(item)
-                    }
-                }
-            case "nopkg":
-                restartFlag = restartFlag || requiresRestart(item)
-            default:
-                // unknown or no longer supported installer type
-                if ["appdmg", "profiles"].contains(installerType) || installerType.hasPrefix("Adobe") {
-                    displayError("Installer type '\(installerType)' for \(installerItem) is no longer supported.")
-                } else {
-                    displayError("Installer type '\(installerType)' for \(installerItem) is an unknown installer type.")
-                }
-                retcode = -99
-            }
-        }
-        // If install failed, add to skippedInstalls so that any item later in the list
-        // that requires this item is skipped as well.
-        if retcode != 0 {
-            skippedInstalls.append(item)
-        }
-        // if install succeeded, look for a postinstall_script to run
-        if retcode == 0, item["postinstall_script"] is String {
-            let scriptexit = await runEmbeddedScript(name: "postinstall_script", pkginfo: item)
-            if scriptexit != 0 {
-                // we won't consider postinstall script failures as fatal
-                // since the item has been installed via package/disk image
-                // but admin should be notified
-                displayWarning("Postinstall script for \(itemName) returned \(scriptexit)")
-            }
-        }
         // if install was successful and this is a SelfService OnDemand install
         // remove the item from the SelfServeManifest's managed_installs
         if retcode == 0,
@@ -301,6 +311,8 @@ func installWithInstallInfo(
         if retcode == 0 {
             logMessage += "SUCCESSFUL"
         } else {
+            // if we failed, add to skippedInstalls since later items might rely on this
+            skippedInstalls.append(item)
             logMessage += "FAILED with return code: \(retcode)"
         }
         munkiLog(logMessage, logFile: "Install.log")
@@ -328,6 +340,11 @@ func installWithInstallInfo(
         // this might happen if there are multiple things being installed
         // with choicesXML files applied to a distribution package or
         // multiple packages being installed from a single DMG
+        let installerItem = item["installer_item"] as? String ?? ""
+        let managedInstallDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+        let cachePath = (managedInstallDir as NSString).appendingPathComponent("Cache")
+        let installerItemPath = (cachePath as NSString).appendingPathComponent(installerItem)
+
         var stillNeeded = false
         let currentInstallerItem = installerItem
         // are we at the end of the installlist?
@@ -408,13 +425,108 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
     return matchedSkippedItems
 }
 
+func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
+    // Attempts to uninstall a single item from the removalList
+    // returns an exitcode for the attempted install and a flag to indicate the need to restart
+
+    var needToRestart = false
+    let itemName = item["display_name"] as? String ?? "<unknown>"
+    let displayName = item["display_name"] as? String ?? itemName
+
+    // run preuninstall_script if it exists
+    if item["preuninstall_script"] is String {
+        let retcode = await runEmbeddedScript(name: "preuninstall_script", pkginfo: item)
+        if retcode != 0 {
+            // if preuninstall_script fails, do not proceeed
+            return (retcode, false)
+        }
+    }
+
+    guard let uninstallMethod = item["uninstall_method"] as? String else {
+        displayError("\(itemName) has no defined uninstall_method")
+        return (-99, false)
+    }
+
+    var retcode = 0
+    switch uninstallMethod {
+    case "removepackages":
+        if let packages = item["packages"] as? [String] {
+            retcode = await removePackages(packages)
+            if retcode == 0 {
+                munkiLog("Uninstall of \(displayName) was successful.")
+            } else if retcode == -128 {
+                displayError("Uninstall of \(displayName) was cancelled.")
+                return (retcode, false)
+            } else {
+                displayError("Uninstall of \(displayName) failed.")
+                return (retcode, false)
+            }
+        } else {
+            // error! no packages defined
+            displayError("Uninstall of \(displayName) failed: no packages to remove.")
+            return (-99, false)
+        }
+    case "uninstall_package":
+        // install a package to remove the software
+        guard let uninstallerItem = item["uninstaller_item"] as? String else {
+            displayError("No uninstall item specified for \(itemName)")
+            return (-99, false)
+        }
+        let managedInstallDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+        let uninstallerItemPath = (managedInstallDir as NSString).appendingPathComponent("Cache/" + uninstallerItem)
+        if !pathExists(uninstallerItemPath) {
+            displayError("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
+            return (-99, false)
+        }
+        (retcode, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: uninstallerItemPath)
+    case "remove_copied_items":
+        if let itemsToRemove = item["items_to_remove"] as? [PlistDict] {
+            if !removeCopiedItems(itemsToRemove) {
+                return (-99, false)
+            }
+        } else {
+            displayError("No valid 'items_to_remove' in pkginfo for \(itemName)")
+            return (-99, false)
+        }
+    case "uninstall_script":
+        retcode = await runEmbeddedScript(name: "uninstall_script", pkginfo: item)
+    default:
+        if pathExists(uninstallMethod) {
+            // it's a script or program to uninstall
+            retcode = await runScript(uninstallMethod, itemName: itemName, scriptName: "uninstall script")
+        } else if ["remove_app", "remove_profile"].contains(uninstallMethod) || uninstallMethod.hasPrefix("Adobe") {
+            displayError("'\(uninstallMethod)' is no longer a supported uninstall method")
+            return (-99, false)
+        } else {
+            displayError("'\(uninstallMethod)' is not a valid uninstall method")
+            return (-99, false)
+        }
+    }
+
+    // run postuninstall_script if present and main uninstall_method was successful
+    if retcode == 0, item["postuninstall_script"] is String {
+        let result = await runEmbeddedScript(name: "postuninstall_script", pkginfo: item)
+        if result != 0 {
+            // we won't consider postuninstall script failures as fatal
+            // since the item has been uninstalled
+            // but admin should be notified
+            displayWarning("Postuninstall script for \(itemName) returned \(result)")
+        }
+    }
+    return (retcode, needToRestart)
+}
+
 func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) async -> (Bool, [PlistDict]) {
     // Processes removals from the removal list
     var restartFlag = false
     var index = 0
     var skippedRemovals = [PlistDict]()
+
     for item in removalList {
         let itemName = item["name"] as? String ?? "<unknown>"
+        let displayName = item["display_name"] as? String ?? itemName
+        index += 1
+
         if onlyUnattended {
             let unattendedUninstall = item["unattended_uninstall"] as? Bool ?? false
             if !unattendedUninstall {
@@ -443,96 +555,14 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
 
         if (item["installed"] as? Bool ?? false) == false {
             // not installed, so skip it (this shouldn't happen...)
+            displayDetail("Skipping removal of \(itemName) because does not seem to be installed.")
             continue
         }
 
-        index += 1
-        let displayName = item["display_name"] as? String ?? itemName
+        // now actually attempt to uninstall the item!
         displayMajorStatus("Removing \(displayName) (\(index) of \(removalList.count)...")
-
-        var retcode = 0
-        // run preuninstall_script if it exists
-        if item["preuninstall_script"] is String {
-            retcode = await runEmbeddedScript(name: "preuninstall_script", pkginfo: item)
-        }
-
-        if retcode == 0,
-           let uninstallMethod = item["uninstall_method"] as? String
-        {
-            switch uninstallMethod {
-            case "removepackages":
-                if let packages = item["packages"] as? [String] {
-                    restartFlag = restartFlag || requiresRestart(item)
-                    retcode = await removePackages(packages)
-                    if retcode == 0 {
-                        munkiLog("Uninstall of \(displayName) was successful.")
-                    } else if retcode == -128 {
-                        displayError("Uninstall of \(displayName) was cancelled.")
-                    } else {
-                        displayError("Uninstall of \(displayName) failed.")
-                    }
-                } else {
-                    // error! no packages defined
-                    retcode = -99
-                    displayError("Uninstall of \(displayName) failed: no packages to remove.")
-                }
-            case "uninstall_package":
-                // install a package to remove the software
-                guard let uninstallerItem = item["uninstaller_item"] as? String else {
-                    displayError("No uninstall item specified for \(itemName)")
-                    retcode = -99
-                    continue
-                }
-                let managedInstallBase = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
-                let uninstallerItemPath = (managedInstallBase as NSString).appendingPathComponent("Cache/" + uninstallerItem)
-                if !pathExists(uninstallerItemPath) {
-                    displayError("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
-                    retcode = -99
-                    continue
-                }
-                let (result, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: uninstallerItemPath)
-                restartFlag = restartFlag || needToRestart
-            case "remove_copied_items":
-                if let itemsToRemove = item["items_to_remove"] as? [PlistDict] {
-                    if !removeCopiedItems(itemsToRemove) {
-                        retcode = -99
-                    }
-                } else {
-                    displayError("No valid 'items_to_remove' in pkginfo for \(itemName)")
-                    retcode = -99
-                }
-            case "uninstall_script":
-                retcode = await runEmbeddedScript(name: "uninstall_script", pkginfo: item)
-                if retcode == 0, requiresRestart(item) {
-                    restartFlag = true
-                }
-            default:
-                if pathExists(uninstallMethod) {
-                    // it's a script or program to uninstall
-                    retcode = await runScript(uninstallMethod, itemName: itemName, scriptName: "uninstall script")
-                    if retcode == 0, requiresRestart(item) {
-                        restartFlag = true
-                    }
-                } else if ["remove_app", "remove_profile"].contains(uninstallMethod) || uninstallMethod.hasPrefix("Adobe") {
-                    displayError("'\(uninstallMethod)' is no longer a supported uninstall method")
-                    retcode = -99
-                } else {
-                    displayError("'\(uninstallMethod)' is not a valid uninstall method")
-                    retcode = -99
-                }
-            }
-        }
-
-        // run postuninstall_script if present
-        if retcode == 0, item["postuninstall_script"] is String {
-            let result = await runEmbeddedScript(name: "postuninstall_script", pkginfo: item)
-            if result != 0 {
-                // we won't consider postuninstall script failures as fatal
-                // since the item has been uninstalled
-                // but admin should be notified
-                displayWarning("Postuninstall script for \(itemName) returned \(result)")
-            }
-        }
+        let (retcode, restartForThisItem) = await uninstallItem(item)
+        restartFlag = restartFlag || restartForThisItem
 
         // log removal success/failure
         if retcode == 0 {
