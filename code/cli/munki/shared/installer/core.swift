@@ -381,3 +381,177 @@ func installWithInstallInfo(
     }
     return (restartFlag, skippedInstalls)
 }
+
+func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -> [String] {
+    // Looks for items in the skipped_items that require or are update_for
+    // the current item. Returns a list of matches.
+
+    var matchedSkippedItems = [String]()
+    if skippedItems.isEmpty {
+        return matchedSkippedItems
+    }
+    let thisItemName = thisItem["name"] as? String ?? "<unknown>"
+    displayDebug1("Checking for skipped items that require \(thisItemName)")
+    for skippedItem in skippedItems {
+        // get list of prerequisites for this skipped_item
+        var prerequisites = skippedItem["requires"] as? [String] ?? [String]()
+        prerequisites += skippedItem["update_for"] as? [String] ?? [String]()
+        let skippedItemName = skippedItem["name"] as? String ?? "<unknown>"
+        displayDebug1("\(skippedItemName) has these prerequisites: \(prerequisites.joined(separator: ", "))")
+        for prereq in prerequisites {
+            let (prereqName, _) = nameAndVersion(prereq, onlySplitOnHyphens: true)
+            if prereqName == thisItemName {
+                matchedSkippedItems.append(skippedItemName)
+            }
+        }
+    }
+    return matchedSkippedItems
+}
+
+func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) async -> (Bool, [PlistDict]) {
+    // Processes removals from the removal list
+    var restartFlag = false
+    var index = 0
+    var skippedRemovals = [PlistDict]()
+    for item in removalList {
+        let itemName = item["name"] as? String ?? "<unknown>"
+        if onlyUnattended {
+            let unattendedUninstall = item["unattended_uninstall"] as? Bool ?? false
+            if !unattendedUninstall {
+                skippedRemovals.append(item)
+                displayDetail("Skipping removal of \(itemName) because it's not unattended.")
+                continue
+            }
+            if blockingApplicationsRunning(item) {
+                skippedRemovals.append(item)
+                displayDetail("Skipping unattended removal of \(itemName) because blocking applications are running.")
+                continue
+            }
+        }
+        let dependentSkippedItems = skippedItemsThatRequire(item, skippedItems: skippedRemovals)
+        if !dependentSkippedItems.isEmpty {
+            // one or more skipped items require this item, so we should
+            // skip this one, too
+            skippedRemovals.append(item)
+            displayDetail("Skipping removal of \(itemName) because these skipped items require it: \(dependentSkippedItems.joined(separator: ", "))")
+            continue
+        }
+        // TODO: implement stopRequested
+        // if stopRequested() {
+        //     return (restartFlag, skippedRemovals)
+        // }
+
+        if (item["installed"] as? Bool ?? false) == false {
+            // not installed, so skip it (this shouldn't happen...)
+            continue
+        }
+
+        index += 1
+        let displayName = item["display_name"] as? String ?? itemName
+        displayMajorStatus("Removing \(displayName) (\(index) of \(removalList.count)...")
+
+        var retcode = 0
+        // run preuninstall_script if it exists
+        if item["preuninstall_script"] is String {
+            retcode = await runEmbeddedScript(name: "preuninstall_script", pkginfo: item)
+        }
+
+        if retcode == 0,
+           let uninstallMethod = item["uninstall_method"] as? String
+        {
+            switch uninstallMethod {
+            case "removepackages":
+                if let packages = item["packages"] as? [String] {
+                    restartFlag = restartFlag || requiresRestart(item)
+                    retcode = await removePackages(packages)
+                    if retcode == 0 {
+                        munkiLog("Uninstall of \(displayName) was successful.")
+                    } else if retcode == -128 {
+                        displayError("Uninstall of \(displayName) was cancelled.")
+                    } else {
+                        displayError("Uninstall of \(displayName) failed.")
+                    }
+                } else {
+                    // error! no packages defined
+                    retcode = -99
+                    displayError("Uninstall of \(displayName) failed: no packages to remove.")
+                }
+            case "uninstall_package":
+                // install a package to remove the software
+                guard let uninstallerItem = item["uninstaller_item"] as? String else {
+                    displayError("No uninstall item specified for \(itemName)")
+                    retcode = -99
+                    continue
+                }
+                let managedInstallBase = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+                let uninstallerItemPath = (managedInstallBase as NSString).appendingPathComponent("Cache/" + uninstallerItem)
+                if !pathExists(uninstallerItemPath) {
+                    displayError("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
+                    retcode = -99
+                    continue
+                }
+                let (result, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: uninstallerItemPath)
+                restartFlag = restartFlag || needToRestart
+            case "remove_copied_items":
+                if let itemsToRemove = item["items_to_remove"] as? [PlistDict] {
+                    if !removeCopiedItems(itemsToRemove) {
+                        retcode = -99
+                    }
+                } else {
+                    displayError("No valid 'items_to_remove' in pkginfo for \(itemName)")
+                    retcode = -99
+                }
+            case "uninstall_script":
+                retcode = await runEmbeddedScript(name: "uninstall_script", pkginfo: item)
+                if retcode == 0, requiresRestart(item) {
+                    restartFlag = true
+                }
+            default:
+                if pathExists(uninstallMethod) {
+                    // it's a script or program to uninstall
+                    retcode = await runScript(uninstallMethod, itemName: itemName, scriptName: "uninstall script")
+                    if retcode == 0, requiresRestart(item) {
+                        restartFlag = true
+                    }
+                } else if ["remove_app", "remove_profile"].contains(uninstallMethod) || uninstallMethod.hasPrefix("Adobe") {
+                    displayError("'\(uninstallMethod)' is no longer a supported uninstall method")
+                    retcode = -99
+                } else {
+                    displayError("'\(uninstallMethod)' is not a valid uninstall method")
+                    retcode = -99
+                }
+            }
+        }
+
+        // run postuninstall_script if present
+        if retcode == 0, item["postuninstall_script"] is String {
+            let result = await runEmbeddedScript(name: "postuninstall_script", pkginfo: item)
+            if result != 0 {
+                // we won't consider postuninstall script failures as fatal
+                // since the item has been uninstalled
+                // but admin should be notified
+                displayWarning("Postuninstall script for \(itemName) returned \(result)")
+            }
+        }
+
+        // log removal success/failure
+        if retcode == 0 {
+            munkiLog("Removal of \(displayName): SUCCESSFUL", logFile: "Install.log")
+            // TODO: manifestutils.remove_from_selfserve_uninstalls(item['name'])
+        } else {
+            munkiLog("Removal of \(displayName): FAILED with return code: \(retcode)", logFile: "Install.log")
+            // append failed removal to skipped_removals so dependencies
+            // aren't removed yet.
+            skippedRemovals.append(item)
+        }
+        let removalResult: PlistDict = [
+            "display_name": displayName,
+            "name": itemName,
+            "status": retcode,
+            "time": Date(),
+            "unattended": onlyUnattended,
+        ]
+        Report.shared.add(dict: removalResult, to: "RemovalResults")
+    }
+    return (restartFlag, skippedRemovals)
+}
