@@ -182,7 +182,7 @@ func makeStageOSInstallerPkgInfo(_ appPath: String) throws -> PlistDict {
     // describing a stage_os_installer item
 
     // calculate the size of the installer app
-    let appSize = getSizeOfDirectory(appPath)
+    let appSize = getSizeOfDirectory(appPath) / 1024 // this value is kbytes
     let appName = (appPath as NSString).lastPathComponent
     let appInfo = try getInfoFromInstallMacOSApp(appPath)
     guard let version = appInfo["version"] as? String else {

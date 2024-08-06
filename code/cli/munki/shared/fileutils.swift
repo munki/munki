@@ -72,37 +72,38 @@ class TempDir {
     }
 }
 
+func pathExists(_ path: String) -> Bool {
+    // Returns true if path exists
+    return FileManager.default.fileExists(atPath: path)
+}
+
+func fileType(_ path: String) -> String? {
+    // FileAttributeType is really a String
+    return try? (FileManager.default.attributesOfItem(atPath: path) as NSDictionary).fileType()
+}
+
 func pathIsRegularFile(_ path: String) -> Bool {
     // Returns true if path is a regular file
-    let filemanager = FileManager.default
-    do {
-        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+    if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeRegular.rawValue
-    } catch {
-        return false
     }
+    return false
 }
 
 func pathIsSymlink(_ path: String) -> Bool {
     // Returns true if path is a symlink
-    let filemanager = FileManager.default
-    do {
-        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+    if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeSymbolicLink.rawValue
-    } catch {
-        return false
     }
+    return false
 }
 
 func pathIsDirectory(_ path: String) -> Bool {
     // Returns true if path is a directory
-    let filemanager = FileManager.default
-    do {
-        let fileType = try (filemanager.attributesOfItem(atPath: path) as NSDictionary).fileType()
+    if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeDirectory.rawValue
-    } catch {
-        return false
     }
+    return false
 }
 
 func getSizeOfDirectory(_ path: String) -> Int {
@@ -116,7 +117,7 @@ func getSizeOfDirectory(_ path: String) -> Int {
         if pathIsRegularFile(fullpath) {
             if let attributes = try? filemanager.attributesOfItem(atPath: fullpath) {
                 let filesize = (attributes as NSDictionary).fileSize()
-                totalSize += Int(filesize / 1024)
+                totalSize += Int(filesize)
             }
         }
     }
@@ -126,9 +127,9 @@ func getSizeOfDirectory(_ path: String) -> Int {
 func getAbsolutePath(_ path: String) -> String {
     // returns absolute path to item referred to by path
     if (path as NSString).isAbsolutePath {
-        return path
+        return ((path as NSString).standardizingPath as NSString).resolvingSymlinksInPath
     }
     let cwd = FileManager.default.currentDirectoryPath
     let composedPath = (cwd as NSString).appendingPathComponent(path)
-    return (composedPath as NSString).standardizingPath
+    return ((composedPath as NSString).standardizingPath as NSString).resolvingSymlinksInPath
 }

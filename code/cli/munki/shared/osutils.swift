@@ -19,6 +19,7 @@
 //  limitations under the License.
 
 import Foundation
+import SystemConfiguration
 
 func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     let version = ProcessInfo().operatingSystemVersion
@@ -28,4 +29,9 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     } else {
         return "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
     }
+}
+
+func getConsoleUser() -> String {
+    // Return console user
+    return SCDynamicStoreCopyConsoleUser(nil, nil, nil) as? String ?? ""
 }

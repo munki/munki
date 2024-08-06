@@ -148,10 +148,22 @@ class AsyncProcessRunner {
     var results = CLIResults()
     var delegate: AsyncProcessDelegate?
 
-    init(_ tool: String, arguments: [String] = [], stdIn _: String = "") {
+    // TODO: implement a timeout in the run() method
+
+    init(_ tool: String,
+         arguments: [String] = [],
+         environment: [String: String] = [:],
+         stdIn _: String = "")
+    {
         task.executableURL = URL(fileURLWithPath: tool)
         task.arguments = arguments
+        if !environment.isEmpty {
+            task.environment = environment
+        }
 
+        // set up input pipe
+        let inPipe = Pipe()
+        task.standardInput = inPipe
         // set up our stdout and stderr pipes and handlers
         let outputPipe = Pipe()
         outputPipe.fileHandleForReading.readabilityHandler = { fh in

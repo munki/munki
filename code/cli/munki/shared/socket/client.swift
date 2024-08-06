@@ -1,5 +1,5 @@
 //
-//  socketclient.swift
+//  socket/client.swift
 //
 //  Created by Greg Neagle on 7/23/18.
 //  Copyright © 2018-2024 The Munki Project. All rights reserved.
@@ -38,26 +38,6 @@ class UNIXDomainSocketClient {
             CFSocketInvalidate(socket)
             socketRef = nil
         }
-    }
-
-    private func addrRefCreate(_ path: String) -> CFData? {
-        // make a sockaddr struct (this is ugly), wrap it in a CFData obj
-        var socketAdr = sockaddr_un()
-        socketAdr.sun_family = sa_family_t(AF_UNIX)
-        socketAdr.sun_len = __uint8_t(MemoryLayout<sockaddr_un>.size)
-        if var cstring_path = path.cString(using: .utf8) {
-            if cstring_path.count > MemoryLayout.size(
-                ofValue: socketAdr.sun_path)
-            {
-                // path is too long for this 1970s era struct
-                return nil
-            }
-            memcpy(&socketAdr.sun_path, &cstring_path, cstring_path.count)
-        } else {
-            return nil
-        }
-        return NSData(bytes: &socketAdr,
-                      length: MemoryLayout.size(ofValue: socketAdr)) as CFData
     }
 
     func connect(to path: String) {
