@@ -210,10 +210,15 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     if let choicesXML = options["installer_choices_xml"] as? PlistDict,
        let tempDir = TempDir.shared.path
     {
-        // choices_xml_file was already built by pkgNeedsRestart(),
-        // just re-use it
         let choicesXMLPath = (tempDir as NSString).appendingPathComponent("choices.xml")
-        arguments += ["-applyChoiceChangesXML", choicesXMLPath]
+        do {
+            try writePlist(choicesXML, toFile: choicesXMLPath)
+            arguments += ["-applyChoiceChangesXML", choicesXMLPath]
+        } catch {
+            // could not write choices.xml, should not proceed
+            displayError("Could not write choices.xml for \(packageName)")
+            return (-1, false)
+        }
     }
     if let allowUntrusted = options["allow_untrusted"] as? Bool,
        allowUntrusted == true
