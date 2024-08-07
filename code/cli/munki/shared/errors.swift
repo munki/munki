@@ -33,3 +33,7 @@ struct MunkiError: Error, CustomStringConvertible {
         return message
     }
 }
+
+struct UserCancelled: Error {
+    // an exception to throw when user cancels
+}
