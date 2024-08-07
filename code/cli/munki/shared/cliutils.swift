@@ -114,15 +114,16 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     return results
 }
 
-enum CalledProcessError: Error {
+enum ProcessError: Error {
     case error(description: String)
+    case timeout
 }
 
 func checkCall(_ tool: String, arguments: [String] = [], stdIn: String = "") throws -> String {
     // like Python's subprocess.check_call
     let result = runCLI(tool, arguments: arguments, stdIn: stdIn)
     if result.exitcode != 0 {
-        throw CalledProcessError.error(description: result.error)
+        throw ProcessError.error(description: result.error)
     }
     return result.output
 }
@@ -147,8 +148,6 @@ class AsyncProcessRunner {
     var status = AsyncProcessStatus()
     var results = CLIResults()
     var delegate: AsyncProcessDelegate?
-
-    // TODO: implement a timeout in the run() method
 
     init(_ tool: String,
          arguments: [String] = [],
@@ -202,8 +201,9 @@ class AsyncProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("ERROR running \(task.executableURL?.path ?? "")")
+                displayError("error running \(task.executableURL?.path ?? "")")
                 displayError(error.localizedDescription)
+                results.exitcode = -1
                 status.phase = .ended
                 delegate?.processUpdated()
                 return
@@ -214,6 +214,57 @@ class AsyncProcessRunner {
         // task.waitUntilExit()
         while task.isRunning {
             // loop until process exits
+            await Task.yield()
+        }
+
+        while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
+            (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
+        {
+            // loop until stdout and stderr pipes close
+            await Task.yield()
+        }
+
+        status.phase = .ended
+        status.terminationStatus = task.terminationStatus
+        results.exitcode = Int(task.terminationStatus)
+        delegate?.processUpdated()
+    }
+
+    // making this a seperate method so the non-timeout calls
+    // don't need to worry about catching exceptions
+    // NOTE: the timeout here is _not_ an idle timeout;
+    // it's the maximum time the process can run
+    func run(timeout: Int = -1) async throws {
+        var deadline: Date?
+        if !task.isRunning {
+            do {
+                if timeout > 0 {
+                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                }
+                try task.run()
+            } catch {
+                // task didn't start
+                displayError("ERROR running \(task.executableURL?.path ?? "")")
+                displayError(error.localizedDescription)
+                results.exitcode = -1
+                status.phase = .ended
+                delegate?.processUpdated()
+                return
+            }
+            status.phase = .started
+            delegate?.processUpdated()
+        }
+        // task.waitUntilExit()
+        while task.isRunning {
+            // loop until process exits
+            if let deadline {
+                if Date() >= deadline {
+                    displayError("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                    task.terminate()
+                    results.exitcode = Int.max // maybe we should
+                    throw ProcessError.timeout
+                }
+            }
             await Task.yield()
         }
 
@@ -245,5 +296,14 @@ func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") a
     // a basic wrapper intended to be used just as you would runCLI, but async
     let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
     await proc.run()
+    return proc.results
+}
+
+func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "", timeout: Int) async throws -> CLIResults {
+    // a basic wrapper intended to be used just as you would runCLI, but async and with
+    // a timeout
+    // throws ProcessError.timeout if the process times out
+    let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
+    try await proc.run(timeout: timeout)
     return proc.results
 }
