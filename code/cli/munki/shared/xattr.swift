@@ -24,7 +24,7 @@ func listXattrs(atPath path: String) throws -> [String] {
         throw MunkiError("Could not get list of xattrs for \(path): \(errString)")
     }
 
-    var names = NSString(bytes: buf, length: bufLength, encoding: String.Encoding.utf8.rawValue)?.components(separatedBy: "\0").filter { !$0.isEmpty }
+    let names = NSString(bytes: buf, length: bufLength, encoding: String.Encoding.utf8.rawValue)?.components(separatedBy: "\0").filter { !$0.isEmpty }
     return names ?? [String]()
 }
 
