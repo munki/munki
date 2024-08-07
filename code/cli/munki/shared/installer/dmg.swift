@@ -16,22 +16,23 @@ func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
     // So we're just going to call `chown` and `chmod`. This also allow us to easily
     // set these attributes recursively.
 
+    let itemName = (path as NSString).lastPathComponent
     // set owner and group
     let user = itemInfo["user"] as? String ?? "root"
     let group = itemInfo["group"] as? String ?? "admin"
-    displayDetail("Setting owner and group for '\(path)' to '\(user):\(group)'")
+    displayDetail("Setting owner and group for '\(itemName)' to '\(user):\(group)'")
     let chownResult = runCLI("/usr/sbin/chown", arguments: ["-R", user + ":" + group, path])
     if chownResult.exitcode != 0 {
-        displayError("Error setting owner and group for \(path): (\(chownResult.exitcode)) \(chownResult.error)")
+        displayError("Error setting owner and group for \(itemName): (\(chownResult.exitcode)) \(chownResult.error)")
         return chownResult.exitcode
     }
 
     // set mode
     let mode = itemInfo["mode"] as? String ?? "o-w,go+rX"
-    displayDetail("Setting mode for '\(path)' to '\(mode)'")
+    displayDetail("Setting mode for '\(itemName)' to '\(mode)'")
     let chmodResult = runCLI("/bin/chmod", arguments: ["-R", mode, path])
     if chmodResult.exitcode != 0 {
-        displayError("Error setting mode for \(path): \(chmodResult.error)")
+        displayError("Error setting mode for \(itemName): \(chmodResult.error)")
         return chownResult.exitcode
     }
 
