@@ -18,6 +18,5 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
-
+// one single place to define a version for CLI tools
 let CLI_TOOLS_VERSION = "7.0.0"
