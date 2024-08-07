@@ -128,7 +128,7 @@ class NotificationHandler: NSObject {
         var appVersion = "0"
 
         if let url = appObject.bundleURL {
-            appPath = url.path()
+            appPath = url.path
         }
         if let _bundleID = appObject.bundleIdentifier {
             bundleID = _bundleID
