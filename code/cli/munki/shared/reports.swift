@@ -34,6 +34,10 @@ class Report {
         report[key] = value
     }
 
+    func retreive(key: String) -> Any? {
+        return report[key]
+    }
+
     func add(string newValue: String, to key: String) {
         if var value = report[key] as? [String] {
             value.append(newValue)
