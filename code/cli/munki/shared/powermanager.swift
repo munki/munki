@@ -126,21 +126,18 @@ func assertIOPM(name: CFString, reason: CFString) -> IOPMAssertionID? {
 
 func assertNoIdleSleep(reason: String) -> IOPMAssertionID? {
     // Uses IOKit functions to prevent idle sleep.
-    displayInfo("Preventing idle sleep")
     let kIOPMAssertPreventUserIdleSystemSleep = "PreventUserIdleSystemSleep" as CFString
     return assertIOPM(name: kIOPMAssertPreventUserIdleSystemSleep, reason: reason as CFString)
 }
 
 func assertNoDisplaySleep(reason: String) -> IOPMAssertionID? {
     // Uses IOKit functions to prevent idle sleep.
-    displayInfo("Preventing display sleep")
     let kIOPMAssertPreventUserDisplaySystemSleep = "PreventUserDisplaySystemSleep" as CFString
     return assertIOPM(name: kIOPMAssertPreventUserDisplaySystemSleep, reason: reason as CFString)
 }
 
 func removeNoSleepAssertion(_ id: IOPMAssertionID?) {
     if let id {
-        displayInfo("Allowing idle/display sleep")
         IOPMAssertionRelease(id)
     }
 }
@@ -152,10 +149,12 @@ class Caffeinator {
     var assertionID: IOPMAssertionID?
 
     init(reason: String = "Munki is installing software") {
+        displayInfo("Preventing idle sleep")
         assertionID = assertNoIdleSleep(reason: reason)
     }
 
     deinit {
+        displayInfo("Allowing idle sleep")
         removeNoSleepAssertion(assertionID)
     }
 }
