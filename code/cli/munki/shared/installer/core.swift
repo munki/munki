@@ -250,6 +250,9 @@ func installWithInstallInfo(
     var itemIndex = 0
     var skippedInstalls = [PlistDict]()
     for item in installList {
+        if stopRequested() {
+            return (restartFlag, skippedInstalls)
+        }
         // Keep track of when this particular install started.
         let startTime = Date()
         itemIndex += 1
@@ -289,9 +292,6 @@ func installWithInstallInfo(
             displayDetail("Skipping unattended install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
             continue
         }
-
-        // TODO: implement processes.stop_requested()
-        // return (restartflag, skipped_installs)
 
         // Attempt actual install
         displayMajorStatus("Installing \(displayName) (\(itemIndex) of \(installList.count))")
@@ -548,10 +548,9 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
             displayDetail("Skipping removal of \(itemName) because these skipped items require it: \(dependentSkippedItems.joined(separator: ", "))")
             continue
         }
-        // TODO: implement stopRequested
-        // if stopRequested() {
-        //     return (restartFlag, skippedRemovals)
-        // }
+        if stopRequested() {
+            return (restartFlag, skippedRemovals)
+        }
 
         if (item["installed"] as? Bool ?? false) == false {
             // not installed, so skip it (this shouldn't happen...)
@@ -584,4 +583,153 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
         Report.shared.add(dict: removalResult, to: "RemovalResults")
     }
     return (restartFlag, skippedRemovals)
+}
+
+func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
+    // Runs the install/removal session.
+    //
+    // Args:
+    // only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
+    let managedInstallDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    var removalsNeedRestart = false
+    var installsNeedRestart = false
+
+    if onlyUnattended {
+        munkiLog("### Beginning unattended installer session ###")
+    } else {
+        munkiLog("### Beginning managed installer session ###")
+    }
+
+    // no sleep assertion
+    let caffeinator = Caffeinator()
+
+    let installInfoPath = (managedInstallDir as NSString).appendingPathComponent("InstallInfo.plist")
+    if pathExists(installInfoPath),
+       let installInfo = try? readPlist(fromFile: installInfoPath) as? PlistDict
+    {
+        var updatedInstallInfo = installInfo
+        if pref("SuppressStopButtonOnInstall") as? Bool ?? false {
+            munkiStatusHideStopButton()
+        }
+        // process removals
+        if let removals = installInfo["removals"] as? [PlistDict] {
+            // filter list to items that need to be removed
+            let removalList = removals.filter {
+                $0["installed"] as? Bool ?? false
+            }
+            Report.shared.record(removalList, to: "ItemsToRemove")
+            if !removalList.isEmpty {
+                if removalList.count == 1 {
+                    munkiStatusMessage("Removing 1 item...")
+                } else {
+                    munkiStatusMessage("Removing \(removalList.count) items...")
+                }
+                munkiStatusDetail("")
+                // set indeterminate progress bar
+                munkiStatusPercent(-1)
+                munkiLog("Processing removals")
+                var skippedRemovals = [PlistDict]()
+                (removalsNeedRestart, skippedRemovals) = await processRemovals(
+                    removalList, onlyUnattended: onlyUnattended
+                )
+                // if any removals were skipped, record them for later
+                updatedInstallInfo["removals"] = skippedRemovals
+            }
+        }
+        // process installs
+        if let managedInstalls = installInfo["managed_installs"] as? [PlistDict] {
+            // filter list to items that need to be installed
+            let installList = managedInstalls.filter {
+                !($0["installed"] as? Bool ?? false)
+            }
+            Report.shared.record(installList, to: "ItemsToInstall")
+            if !installList.isEmpty {
+                if installList.count == 1 {
+                    munkiStatusMessage("Installing 1 item...")
+                } else {
+                    munkiStatusMessage("Installing \(installList.count) items...")
+                }
+                munkiStatusDetail("")
+                munkiLog("Processing installs")
+                var skippedInstalls = [PlistDict]()
+                (installsNeedRestart, skippedInstalls) = await installWithInstallInfo(
+                    installList: installList, onlyUnattended: onlyUnattended
+                )
+                // if any installs were skipped record them for later
+                updatedInstallInfo["managed_installs"] = skippedInstalls
+            }
+        }
+        // update optional_installs with new installation/removal status
+        // this is janky because it relies on stuff being recorded to the report
+        var optionalInstalls = installInfo["optional_installs"] as? [PlistDict] ?? [PlistDict]()
+        if !optionalInstalls.isEmpty {
+            if let removalResults = Report.shared.retreive(key: "RemovalResults") as? [PlistDict] {
+                for (index, optionalInstall) in optionalInstalls.enumerated() {
+                    let optionalInstallName = optionalInstall["name"] as? String ?? "<unknown>"
+                    for removal in removalResults {
+                        let removalName = removal["name"] as? String ?? "<unknown>"
+                        if optionalInstallName == removalName {
+                            // this optional install may have just been removed
+                            if (removal["status"] as? Int ?? 0) != 0 {
+                                // a removal error occurred
+                                optionalInstalls[index]["removal_error"] = true
+                                optionalInstalls[index]["will_be_removed"] = false
+                            } else {
+                                // was just removed
+                                optionalInstalls[index]["installed"] = false
+                                optionalInstalls[index]["will_be_removed"] = false
+                            }
+                        }
+                    }
+                }
+            }
+            if let installResults = Report.shared.retreive(key: "InstallResults") as? [PlistDict] {
+                for (index, optionalInstall) in optionalInstalls.enumerated() {
+                    let optionalInstallName = optionalInstall["name"] as? String ?? "<unknown>"
+                    let optionalInstallVersion = optionalInstall["version_to_install"] as? String ?? ""
+                    for install in installResults {
+                        let installName = install["name"] as? String ?? "<unknown>"
+                        let installVersion = install["version"] as? String ?? "0"
+                        if optionalInstallName == installName,
+                           optionalInstallVersion == installVersion
+                        {
+                            // this optional install may have just been installed
+                            if (install["status"] as? Int ?? 0) != 0 {
+                                optionalInstalls[index]["install_error"] = true
+                                optionalInstalls[index]["will_be_installed"] = false
+                            } else if optionalInstall["OnDemand"] as? Bool ?? false {
+                                optionalInstalls[index]["installed"] = false
+                                optionalInstalls[index]["needs_update"] = false
+                                optionalInstalls[index]["will_be_installed"] = false
+                            } else {
+                                optionalInstalls[index]["installed"] = true
+                                optionalInstalls[index]["needs_update"] = false
+                                optionalInstalls[index]["will_be_installed"] = false
+                            }
+                        }
+                    }
+                }
+            }
+            updatedInstallInfo["optional_installs"] = optionalInstalls
+        }
+        // write updated installinfo back to disk to reflect current state
+        do {
+            try writePlist(updatedInstallInfo, toFile: installInfoPath)
+        } catch {
+            displayWarning("Could not write to \(installInfoPath)")
+        }
+    } else {
+        munkiLog("Missing or invalid \(installInfoPath).")
+    }
+    if onlyUnattended {
+        munkiLog("###    End unattended installer session    ###")
+    } else {
+        munkiLog("###    End managed installer session    ###")
+    }
+    Report.shared.save()
+
+    if removalsNeedRestart || installsNeedRestart {
+        return POSTACTION_RESTART
+    }
+    return POSTACTION_NONE
 }
