@@ -601,7 +601,8 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
     }
 
     // no sleep assertion
-    let caffeinator = Caffeinator()
+    let caffeinator = Caffeinator(
+        reason: "managedsoftwareupdate is installing software")
 
     let installInfoPath = (managedInstallDir as NSString).appendingPathComponent("InstallInfo.plist")
     if pathExists(installInfoPath),

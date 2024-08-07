@@ -148,7 +148,7 @@ class Caffeinator {
 
     var assertionID: IOPMAssertionID?
 
-    init(reason: String = "Munki is installing software") {
+    init(reason: String = "") {
         displayInfo("Preventing idle sleep")
         assertionID = assertNoIdleSleep(reason: reason)
     }
