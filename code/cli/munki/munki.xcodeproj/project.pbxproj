@@ -22,6 +22,8 @@
 		C01364552C321FE7008DB215 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
 		C01364582C3265D6008DB215 /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
 		C01364592C3265D6008DB215 /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
+		C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
+		C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9902C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9972C3A2E18007F0B34 /* makepkginfo.swift */; };
@@ -266,6 +268,7 @@
 		C013644C2C30F5D8008DB215 /* RepoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoFactory.swift; sourceTree = "<group>"; };
 		C01364532C321FE7008DB215 /* dmgutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dmgutils.swift; sourceTree = "<group>"; };
 		C01364572C3265D6008DB215 /* display.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = display.swift; sourceTree = "<group>"; };
+		C0209B852C63C9FD007664A0 /* stoprequested.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stoprequested.swift; sourceTree = "<group>"; };
 		C030A98E2C39C135007F0B34 /* munkihash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkihash.swift; sourceTree = "<group>"; };
 		C030A9952C3A2E18007F0B34 /* makepkginfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makepkginfo; sourceTree = BUILT_PRODUCTS_DIR; };
 		C030A9972C3A2E18007F0B34 /* makepkginfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfo.swift; sourceTree = "<group>"; };
@@ -542,6 +545,7 @@
 				C0D9C2A22C61939E0019A067 /* scriptutils.swift */,
 				C0D9C2A52C62C12E0019A067 /* munkistatus.swift */,
 				C0D9C2AF2C62D4120019A067 /* powermanager.swift */,
+				C0209B852C63C9FD007664A0 /* stoprequested.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -903,6 +907,7 @@
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
 				C030A9BF2C409738007F0B34 /* iconutils.swift in Sources */,
 				C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */,
+				C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C07074DF2C33B9A000B86310 /* reports.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -924,6 +929,7 @@
 				C0D00FB12C458EAA0021DA9C /* version.swift in Sources */,
 				C030A9C32C41B581007F0B34 /* pkginfoOptions.swift in Sources */,
 				C01364552C321FE7008DB215 /* dmgutils.swift in Sources */,
+				C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C0D9C29B2C607D390019A067 /* xattr.swift in Sources */,
 				C030A9BC2C3F4CF4007F0B34 /* munkiimportlib.swift in Sources */,
 				C0D9C29E2C6151350019A067 /* core.swift in Sources */,
