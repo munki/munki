@@ -239,9 +239,11 @@ func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) asy
     // the directory.
     // Returns a tuple containing the exit code of the installer process and a boolean
     // indicating if a restart is needed
+    if stopRequested() {
+        return (0, false)
+    }
     if let items = try? FileManager.default.contentsOfDirectory(atPath: directoryPath) {
         for item in items {
-            // TODO: support user stop requests
             let itempath = (directoryPath as NSString).appendingPathComponent(item)
             if hasValidDiskImageExt(item) {
                 displayInfo("Mounting disk image \(item)")
