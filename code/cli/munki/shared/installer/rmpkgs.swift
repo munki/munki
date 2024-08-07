@@ -269,7 +269,9 @@ func importFromPkgutil() async throws {
     var current = 0
     displayPercentDone(current: current, maximum: pkgCount)
     for pkg in pkglist {
-        // TODO: handle user cancellation requests
+        if stopRequested() {
+            throw UserCancelled()
+        }
         current += 1
         displayDetail("Importing \(pkg)...")
         try await getPkgDataAndAddtoDB(pkgid: pkg)
@@ -334,9 +336,7 @@ func getPathsToRemove(pkgKeys: [String]) throws -> [String] {
         SELECT path FROM paths WHERE (
             path_key IN (\(selectedPkgs)) AND path_key NOT IN (\(otherPkgs)))
     """
-    // TODO: move this output to a calling function. This is the wrong place for this
-    displayMinorStatus("Determining which filesystem items to remove")
-    // TODO: add munkistatus output
+
     let connection = try SQL3Connection(pkgDBPath())
     let query = try SQL3Statement(connection: connection, SQLString: combinedQuerySQL)
     while query.step() == SQL3Status.row {
@@ -561,6 +561,8 @@ func removePackages(
     }
     do {
         try await initReceiptDB(forcerebuild: rebuildPkgDB)
+    } catch let err as UserCancelled {
+        return -128
     } catch {
         displayError("Could not initialize receipt database: \(error)")
         return -3
@@ -575,10 +577,13 @@ func removePackages(
         displayError("Error retreiving pkg keys: \(error)")
         return -4
     }
-    // TODO: handle stop requests
-    // if stopRequested { return -128 }
+    if stopRequested() {
+        return -128
+    }
     var pathsToRemove = [String]()
     do {
+        displayMinorStatus("Determining which filesystem items to remove")
+        munkiStatusPercent(-1)
         pathsToRemove = try getPathsToRemove(pkgKeys: pkgKeys)
     } catch {
         displayError("Error getting paths to remove: \(error)")
