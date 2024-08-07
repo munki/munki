@@ -45,8 +45,7 @@ func displayPercentDone(current: Int, maximum: Int) {
     }
 
     if DisplayOptions.shared.munkistatusoutput {
-        // TODO: implement munkistatus stuff
-        // munkistatusPercentDone(percentDone)
+        munkiStatusPercent(percentDone)
     }
 
     if DisplayOptions.shared.verbose > 0 {
@@ -72,10 +71,9 @@ func displayMajorStatus(_ message: String) {
 
     munkiLog(message)
     if DisplayOptions.shared.munkistatusoutput {
-        // TODO: implement munkistatus stuff
-        // munkistatusMessage(message)
-        // munkistatusDetail("")
-        // munkistatusPercent(-1)
+        munkiStatusMessage(message)
+        munkiStatusDetail("")
+        munkiStatusPercent(-1)
     }
     if DisplayOptions.shared.verbose > 0 {
         if message.hasSuffix(".") || message.hasSuffix("…") {
@@ -93,8 +91,7 @@ func displayMinorStatus(_ message: String) {
 
     munkiLog("    \(message)")
     if DisplayOptions.shared.munkistatusoutput {
-        // TODO: implement munkistatus stuff
-        // munkistatusDetail(message)
+        munkiStatusDetail(message)
     }
     if DisplayOptions.shared.verbose > 0 {
         if message.hasSuffix(".") || message.hasSuffix("…") {

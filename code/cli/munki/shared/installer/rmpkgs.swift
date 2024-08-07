@@ -593,7 +593,7 @@ func removePackages(
             print("    /" + path)
         }
     } else {
-        // TODO: munkistatus.disableStopButton()
+        munkiStatusDisableStopButton()
         removeFilesystemItems(
             pathsToRemove: pathsToRemove, forceDeleteBundles: forceDeleteBundles
         )
@@ -604,7 +604,7 @@ func removePackages(
                 displayError("Failed to remove pkg receipts: \(error)")
             }
         }
-        // TODO: munkistatus.enableStopButton()
+        munkiStatusEnableStopButton()
         displayMinorStatus("Package removal finished.")
     }
     return 0
