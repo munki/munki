@@ -50,9 +50,8 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
         displayMinorStatus("Running \(scriptName) for \(itemName)")
     }
     if DisplayOptions.shared.munkistatusoutput {
-        // TODO: munkistatus
         // set indeterminate progress bar
-        // munkistatus.percent(-1)
+        munkiStatusPercent(-1)
     }
 
     let proc = ScriptRunner(path)
@@ -71,9 +70,8 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     }
 
     if DisplayOptions.shared.munkistatusoutput {
-        // TODO: munkistatus
         // clear indeterminate progress bar
-        // munkistatus.percent(0)
+        munkiStatusPercent(0)
     }
 
     return result.exitcode

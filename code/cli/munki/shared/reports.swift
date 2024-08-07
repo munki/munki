@@ -21,7 +21,7 @@
 import Foundation
 
 class Report {
-    // a Singleton struct to manage reports
+    // a Singleton class to manage reports
     static let shared = Report()
 
     var report: PlistDict
