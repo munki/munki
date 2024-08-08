@@ -320,6 +320,13 @@ func getOSBuild() -> String {
 func getMachineFacts() async -> PlistDict {
     // Gets some facts about this machine we use to determine if a given
     // installer is applicable to this OS or hardware
+
+    // these all call system_profiler so see if we can do
+    // them concurrently
+    async let ip4addresses = await getIPAddresses("IPv4")
+    async let ip6addresses = await getIPAddresses("IPv6")
+    async let iBridgeInfo = await getIBridgeInfo()
+
     var machine = PlistDict()
 
     machine["hostname"] = hostname()
@@ -337,18 +344,19 @@ func getMachineFacts() async -> PlistDict {
     if arch == "x86_64" {
         machine["x86_64_capable"] = true
     } else if arch == "i386" {
+        // I don't think current Swift is even supported on 32-bit Intel
+        // so this is probably useless
         machine["x86_64_capable"] = hasIntel64Support()
     }
     machine["os_vers"] = getOSVersion(onlyMajorMinor: false)
     machine["os_build_number"] = getOSBuild()
     machine["machine_model"] = hardwareModel()
     machine["munki_version"] = getVersion()
-    machine["ipv4_address"] = await getIPAddresses("IPv4")
-    machine["ipv6_address"] = await getIPAddresses("IPv6")
+    machine["ipv4_address"] = await ip4addresses
+    machine["ipv6_address"] = await ip6addresses
     machine["serial_number"] = serialNumber()
     machine["product_name"] = productName()
-    let iBridgeInfo = await getIBridgeInfo()
-    machine["ibridge_model_name"] = iBridgeInfo["ibridge_model_name"] as? String ?? "NO IBRIDGE CHIP"
+    machine["ibridge_model_name"] = await iBridgeInfo["ibridge_model_name"] as? String ?? "NO IBRIDGE CHIP"
     machine["board_id"] = boardID()
     machine["device_id"] = deviceID()
 
