@@ -6,6 +6,7 @@
 //
 
 import CoreServices.LaunchServices
+import Darwin
 import Foundation
 import IOKit
 
@@ -256,4 +257,19 @@ func hasIntel64Support() -> Bool {
         return false
     }
     return buffer[0] == 1
+}
+
+func availableDiskSpace(volumePath _: String = "/") -> Int {
+    // Returns available diskspace in KBytes.
+    // Value should be very close to `df -k` output
+    // Returns negative values of there is an error
+    let buffer = UnsafeMutablePointer<statvfs>.allocate(capacity: 1024)
+    defer { buffer.deallocate() }
+    let err = statvfs("/", buffer)
+    if err != 0 {
+        return -1
+    }
+    let f_frsize = Int(buffer.pointee.f_frsize)
+    let f_bavail = Int(buffer.pointee.f_bavail)
+    return Int(f_frsize * f_bavail / 1024)
 }
