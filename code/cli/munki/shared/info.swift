@@ -273,3 +273,17 @@ func availableDiskSpace(volumePath _: String = "/") -> Int {
     let f_bavail = Int(buffer.pointee.f_bavail)
     return Int(f_frsize * f_bavail / 1024)
 }
+
+func getOSBuild() -> String {
+    // Returns the OS Build "number" (example 16G1212).
+    do {
+        if let systemVersion = try readPlist(
+            fromFile: "/System/Library/CoreServices/SystemVersion.plist"
+        ) as? PlistDict {
+            return systemVersion["ProductBuildVersion"] as? String ?? ""
+        }
+    } catch {
+        // fall through
+    }
+    return ""
+}
