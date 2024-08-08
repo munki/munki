@@ -10,18 +10,46 @@ import Darwin
 import Foundation
 import IOKit
 
-func platform() -> String {
-    // returns platform ("x86_64", "arm64")
+func hostname() -> String {
+    // returns uname's version of hostname
     var systemInfo = utsname()
     uname(&systemInfo)
-    let size = Int(_SYS_NAMELEN) // is 32, but posix AND its init is 256....
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
 
-    let s = withUnsafeMutablePointer(to: &systemInfo.machine) { p in
+    let str = withUnsafeMutablePointer(to: &systemInfo.nodename) { p in
         p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
             return String(cString: p2)
         }
     }
-    return s
+    return str
+}
+
+func platform() -> String {
+    // returns platform (arch) ("x86_64", "arm64")
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.machine) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
+}
+
+func uname_version() -> String {
+    // returns uname's version string
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.version) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
 }
 
 func isAppleSilicon() -> Bool {
@@ -190,7 +218,7 @@ func serialNumber() -> String {
     if let serial = serial?.takeRetainedValue() {
         return (serial as! CFString) as String
     }
-    return ""
+    return "UNKNOWN"
 }
 
 func productName() -> String {
@@ -198,7 +226,7 @@ func productName() -> String {
     return stringValueForIOServiceProperty(
         service: serviceNameMatching("product"),
         key: "product-name"
-    ) ?? ""
+    ) ?? "Intel Mac"
 }
 
 func boardID() -> String {
@@ -225,7 +253,7 @@ func hardwareModel() -> String {
     // call sysctlbyname to get the size of the returned string
     let err1 = sysctlbyname("hw.model", nil, &size, nil, 0)
     if err1 != 0 {
-        return ""
+        return "UNKNOWN"
     }
     // allocate a buffer large enough for model name
     let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: size)
@@ -233,11 +261,12 @@ func hardwareModel() -> String {
     // call sysctlbyname again with the buffer
     let err2 = sysctlbyname("hw.model", buffer, &size, nil, 0)
     if err2 != 0 {
-        return ""
+        return "UNKNOWN"
     }
-    return NSString(bytes: buffer,
-                    length: size,
-                    encoding: String.Encoding.utf8.rawValue) as? String ?? ""
+    let str = buffer.withMemoryRebound(to: CChar.self, capacity: size) { ptr in
+        return String(cString: ptr)
+    }
+    return str
 }
 
 func hasIntel64Support() -> Bool {
@@ -286,4 +315,42 @@ func getOSBuild() -> String {
         // fall through
     }
     return ""
+}
+
+func getMachineFacts() async -> PlistDict {
+    // Gets some facts about this machine we use to determine if a given
+    // installer is applicable to this OS or hardware
+    var machine = PlistDict()
+
+    machine["hostname"] = hostname()
+    var arch = platform()
+    if arch == "x86_64" {
+        // we might be natively Intel64, or running under Rosetta.
+        // uname's 'platform' returns the current execution arch, which under Rosetta
+        // will be x86_64. Since what we want here is the _native_ arch, we're
+        // going to use a hack for now to see if we're natively arm64
+        if uname_version().contains("ARM64") {
+            arch = "arm64"
+        }
+    }
+    machine["arch"] = arch
+    if arch == "x86_64" {
+        machine["x86_64_capable"] = true
+    } else if arch == "i386" {
+        machine["x86_64_capable"] = hasIntel64Support()
+    }
+    machine["os_vers"] = getOSVersion(onlyMajorMinor: false)
+    machine["os_build_number"] = getOSBuild()
+    machine["machine_model"] = hardwareModel()
+    machine["munki_version"] = getVersion()
+    machine["ipv4_address"] = await getIPAddresses("IPv4")
+    machine["ipv6_address"] = await getIPAddresses("IPv6")
+    machine["serial_number"] = serialNumber()
+    machine["product_name"] = productName()
+    let iBridgeInfo = await getIBridgeInfo()
+    machine["ibridge_model_name"] = iBridgeInfo["ibridge_model_name"] as? String ?? "NO IBRIDGE CHIP"
+    machine["board_id"] = boardID()
+    machine["device_id"] = deviceID()
+
+    return machine
 }
