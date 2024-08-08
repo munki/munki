@@ -176,6 +176,8 @@ private func stringValueForIOServiceProperty(service: io_registry_entry_t, key: 
                   encoding: .utf8)?.trimmingCharacters(in: ["\0"])
 }
 
+// info functions that call IOKit
+
 func serialNumber() -> String {
     // Returns the serial number of this Mac
     let serial = IORegistryEntryCreateCFProperty(
@@ -212,4 +214,46 @@ func deviceID() -> String {
         service: serviceMatching("IOPlatformExpertDevice"),
         key: "target-sub-type"
     ) ?? "<none>"
+}
+
+// info functions that use sysctlbyname
+
+func hardwareModel() -> String {
+    // returns model (Mac1,2)
+    var size = 0
+    // call sysctlbyname to get the size of the returned string
+    let err1 = sysctlbyname("hw.model", nil, &size, nil, 0)
+    if err1 != 0 {
+        return ""
+    }
+    // allocate a buffer large enough for model name
+    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: size)
+    defer { buffer.deallocate() }
+    // call sysctlbyname again with the buffer
+    let err2 = sysctlbyname("hw.model", buffer, &size, nil, 0)
+    if err2 != 0 {
+        return ""
+    }
+    return NSString(bytes: buffer,
+                    length: size,
+                    encoding: String.Encoding.utf8.rawValue) as? String ?? ""
+}
+
+func hasIntel64Support() -> Bool {
+    // returns true if this Mac has an Intel processor that supports 64bit code
+    var size = 0
+    // call sysctlbyname to get the size of the returned value
+    let err1 = sysctlbyname("hw.optional.x86_64", nil, &size, nil, 0)
+    if err1 != 0 {
+        return false
+    }
+    // allocate a buffer large enough for model name
+    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: size)
+    defer { buffer.deallocate() }
+    // call sysctlbyname again with the buffer
+    let err2 = sysctlbyname("hw.optional.x86_64", buffer, &size, nil, 0)
+    if err2 != 0 {
+        return false
+    }
+    return buffer[0] == 1
 }
