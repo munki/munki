@@ -173,6 +173,11 @@ func pref(_ prefName: String) -> Any? {
     return prefValue
 }
 
+func managedInstallsDir() -> String {
+    // convenience function to return the path to the Managed Installs dir
+    return pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+}
+
 struct prefsDomain {
     var file: String
     var domain: CFString

@@ -57,9 +57,75 @@ func isAppleSilicon() -> Bool {
     return platform() == "arm64"
 }
 
+func findAppsInDirs(_ dirList: [String]) -> [[String: String]] {
+    // Do spotlight search for type applications within the
+    // list of directories provided. Returns a list of paths to applications
+    // dirList is actually a list of NSMetadataQuery search scopes, which
+    // can be paths, or certain constants
+    // Typically we'll use NSMetadataQueryLocalComputerScope to search the
+    // local computer (skipping mounted network volumes)
+    var appList = [[String: String]]()
+    let query = NSMetadataQuery()
+    query.predicate = NSPredicate(format: "(kMDItemKind = \"Application\")")
+    query.searchScopes = dirList
+    query.start()
+    // Spotlight isGathering phase - this is the initial search. After the
+    // isGathering phase Spotlight keeps running returning live results from
+    // filesystem changes. We are not interested in that phase.
+    // Run for 0.1 seconds then check if isGathering has completed.
+    let maxRuntime = 20.0
+    var runtime = 0.0
+    while query.isGathering, runtime <= maxRuntime {
+        runtime += 0.1
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+    }
+    query.stop()
+
+    if runtime >= maxRuntime {
+        displayWarning(
+            "Spotlight search for applications terminated due to excessive time. Possible causes: Spotlight indexing is turned off for a volume; Spotlight is reindexing a volume."
+        )
+    }
+
+    let count = query.resultCount
+    for index in 0 ..< count {
+        if let result = query.result(at: index) as? NSMetadataItem,
+           let path = result.value(forAttribute: NSMetadataItemPathKey) as? String,
+           !path.hasPrefix("/Volumes")
+        {
+            let name = result.value(forAttribute: NSMetadataItemFSNameKey) as? String ?? ""
+            let bundleID = result.value(forAttribute: NSMetadataItemCFBundleIdentifierKey) as? String ?? ""
+            let version = result.value(forAttribute: NSMetadataItemVersionKey) as? String ?? ""
+
+            if bundleID.isEmpty, version.isEmpty {
+                // both bundleid and version are missing. is this really an app?
+                if pathIsRegularFile(path), !pathIsExecutableFile(path) {
+                    // it's a file, but not executable, so can't really be an app
+                    continue
+                }
+            }
+
+            appList.append(
+                ["name": name,
+                 "path": path,
+                 "bundleid": bundleID,
+                 "version": version]
+            )
+        }
+    }
+    return appList
+}
+
+func spotlightInstalledApps() -> [[String: String]] {
+    // Get paths of currently installed applications per Spotlight.
+    // Return value is list of paths.
+    // Currently searches only the local computer, but not network volumes
+    return findAppsInDirs([NSMetadataQueryLocalComputerScope])
+}
+
 // private, undocumented LaunchServices function
 @_silgen_name("_LSCopyAllApplicationURLs") func LSCopyAllApplicationURLs(_: UnsafeMutablePointer<NSMutableArray?>) -> OSStatus
-func launchServicesInstalledApps() -> [String]? {
+func launchServicesInstalledApps() -> [String] {
     var apps: NSMutableArray?
     if LSCopyAllApplicationURLs(&apps) == 0 {
         if let appURLs = (apps! as NSArray) as? [URL] {
@@ -67,7 +133,7 @@ func launchServicesInstalledApps() -> [String]? {
             return pathsArray
         }
     }
-    return nil
+    return [String]()
 }
 
 func spApplicationData() async -> PlistDict {
@@ -110,6 +176,71 @@ func spApplicationData() async -> PlistDict {
     }
 
     return applicationData
+}
+
+func appData() -> [[String: String]] {
+    // Gets info on currently installed apps.
+    // Returns a list of dicts containing path, name, version and bundleid
+
+    // one thing I'm not at all sure about is what iOS/iPadOS apps
+    // installed on Apple silicon Macs look like and how/if
+    // Launch Services, Spotlight, and system_profiler report them
+
+    displayDebug1("Getting info on currently installed applications...")
+    // async let spAppData = spApplicationData()
+    let lsApps = launchServicesInstalledApps()
+    // print("LaunchServices found \(lsApps.count) apps")
+    let spotlightApps = spotlightInstalledApps()
+    // print("Spotlight found \(spotlightApps.count) apps")
+    // print("system_profiler found \(await spAppData.count) apps")
+
+    // find apps that are unique to the LaunchServices list
+    let spotlightAppPaths = spotlightApps.map { $0["path"] ?? "" }.filter { !$0.isEmpty }
+    let uniqueToLS = Set(lsApps).subtracting(Set(spotlightAppPaths))
+
+    var applicationData = spotlightApps
+    // add apps found by Launch Services that Spotlight didn't return
+    for appPath in uniqueToLS {
+        var item = [String: String]()
+        item["path"] = appPath
+        applicationData.append(item)
+    }
+    // now make sure as much additional data is populated as possible
+    for (index, item) in applicationData.enumerated() {
+        if (item["name"] ?? "").isEmpty || (item["version"] ?? "").isEmpty ||
+            (item["bundleid"] ?? "").isEmpty
+        {
+            var updatedItem = item
+            let path = item["path"] ?? ""
+            updatedItem["name"] = (path as NSString).lastPathComponent
+            if let bundleInfo = getBundleInfo(path) {
+                updatedItem["bundleid"] = bundleInfo["CFBundleIdentifier"] as? String ?? ""
+                if let cfBundleName = bundleInfo["CFBundleName"] as? String,
+                   !cfBundleName.isEmpty
+                {
+                    updatedItem["name"] = cfBundleName
+                }
+                updatedItem["version"] = getBundleVersion(path)
+                if (updatedItem["version"] ?? "").isEmpty {
+                    updatedItem["version"] = "0.0.0.0.0"
+                }
+            } else {
+                // no Info.plist? Should we use system_profiler info?
+                // it's not clear that calling system_profiler here will
+                // help us get enough better data to be worth it.
+            }
+            applicationData[index] = updatedItem
+        }
+    }
+    return applicationData
+}
+
+func filteredAppData() -> [[String: String]] {
+    // Returns a filtered version of app_data, filtering out apps in user
+    // home directories for use by compare_application_version()
+    return appData().filter {
+        !(($0["path"] ?? "").hasPrefix("/Users") && !($0["path"] ?? "").hasPrefix("/Users/Shared"))
+    }
 }
 
 func getSystemProfilerData(_ dataType: String) async -> PlistDict {
@@ -361,4 +492,65 @@ func getMachineFacts() async -> PlistDict {
     machine["device_id"] = deviceID()
 
     return machine
+}
+
+private func conditionalScriptsDir() -> String {
+    // returns the path to the conditional scripts dir
+    // TODO: make this relative to the managedsoftwareupdate binary
+    return "/usr/local/munki/conditions"
+}
+
+func getConditions() async -> PlistDict {
+    // Fetches key/value pairs from condition scripts
+    // which can be placed into /usr/local/munki/conditions
+
+    let conditionalScriptDir = conditionalScriptsDir()
+    let conditionalItemsPath = (managedInstallsDir() as NSString).appendingPathComponent("ConditionalItems.plist")
+    let filemanager = FileManager.default
+    try? filemanager.removeItem(atPath: conditionalItemsPath)
+
+    if pathExists(conditionalScriptDir), !pathIsDirectory(conditionalScriptDir) {
+        displayWarning("\(conditionalScriptDir) exists but is not a directory.")
+        return PlistDict()
+    }
+
+    if let scriptDirItems = try? filemanager.contentsOfDirectory(atPath: conditionalScriptDir) {
+        for item in scriptDirItems {
+            if item.hasPrefix(".") {
+                // skip it
+                continue
+            }
+            let itemPath = (conditionalScriptDir as NSString).appendingPathComponent(item)
+            if pathIsDirectory(itemPath) {
+                // skip it
+                continue
+            }
+            do {
+                let _ = try await runExternalScript(itemPath, timeout: 60)
+            } catch {
+                displayError(error.localizedDescription)
+            }
+        }
+        if pathExists(conditionalItemsPath) {
+            do {
+                if let conditions = try readPlist(fromFile: conditionalItemsPath) as? PlistDict {
+                    // success!!
+                    try? filemanager.removeItem(atPath: conditionalItemsPath)
+                    return conditions
+                } else {
+                    // data is in wrong formet
+                    displayWarning("\(conditionalItemsPath) contents are in an unexpected format.")
+                }
+            } catch {
+                // file was invalid
+                displayWarning("\(conditionalItemsPath) contents are invalid.")
+            }
+        } else {
+            // file doesn't exist. Not an error to warn about
+        }
+    } else {
+        // could not get script items from dir
+        displayWarning("Unexpected filesyem issue getting contents of \(conditionalScriptDir)")
+    }
+    return PlistDict() // empty results
 }
