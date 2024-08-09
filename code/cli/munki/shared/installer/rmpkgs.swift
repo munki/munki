@@ -54,7 +54,7 @@ import Foundation
 
 func pkgDBPath() -> String {
     // returns path to our package DB
-    // let dbDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    // let dbDir = managedInstallsDir()
     let dbDir = "/tmp"
     return (dbDir as NSString).appendingPathComponent("b.receiptdb")
 }
