@@ -126,3 +126,100 @@ func getConditions() async -> PlistDict {
     }
     return PlistDict() // empty results
 }
+
+func subtractTzoffsetFromDate(_ date: Date) -> Date {
+    // Input: NSDate object
+    // Output: NSDate object with same date and time as the UTC.
+    // In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
+    // '2011-06-20 12:00:00 -0700'.
+    // In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
+    // This allows a pkginfo item to reference a time in UTC that
+    // gets translated to the same relative local time.
+    // A force_install_after_date for '2011-06-20T12:00:00Z' will happen
+    // after 2011-06-20 12:00:00 local time.
+
+    // find our time zone offset in seconds
+    let timezone = NSTimeZone.default
+    let secondsOffset = Double(timezone.secondsFromGMT(for: date))
+    // return new Date minus the offset
+    return Date(timeInterval: -secondsOffset, since: date)
+}
+
+func addTzoffsetToDate(_ date: Date) -> Date {
+    // Input: NSDate object
+    // Output: NSDate object with timezone difference added
+    // to the date. This allows conditional_item conditions to
+    // be written like so:
+    //
+    // <key>condition</key>
+    // <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
+    //
+    // with the intent being that the comparison is against local time.
+
+    // find our time zone offset in seconds
+    let timezone = NSTimeZone.default
+    let secondsOffset = Double(timezone.secondsFromGMT(for: date))
+    // return new Date plus the offset
+    return Date(timeInterval: secondsOffset, since: date)
+}
+
+func predicateInfoObject() async -> PlistDict {
+    // Returns our info object used for predicate comparisons
+
+    async let machine = getMachineFacts()
+    async let conditions = getConditions()
+    var infoObject = await machine
+    await infoObject.merge(conditions) { _, new in new }
+
+    // use our start time for "current" date (if we have it)
+    // and add the timezone offset to it so we can compare
+    // UTC dates as though they were local dates.
+    infoObject["date"] = addTzoffsetToDate(Date())
+
+    // generate additional OS version info to use in comparisons
+    let osVersComponents = (getOSVersion(onlyMajorMinor: false) + ".0.0").components(separatedBy: ".")
+    infoObject["os_vers_major"] = osVersComponents[0]
+    infoObject["os_vers_minor"] = osVersComponents[1]
+    infoObject["os_vers_patch"] = osVersComponents[2]
+
+    // TODO: get last build number component for easier predicate comparison
+    // let build = getOSBuild()
+    // infoObject["os_build_last_component"] = <something clever>
+
+    // laptop or desktop?
+    if hasInternalBattery() {
+        infoObject["machine_type"] = "laptop"
+    } else {
+        infoObject["machine_type"] = "desktop"
+    }
+
+    // add installed applications
+    infoObject["applications"] = appData()
+
+    return infoObject
+}
+
+func predicateEvaluatesAsTrue(
+    _ predicateString: String,
+    infoObject: PlistDict,
+    additionalInfo: PlistDict? = nil
+) -> Bool {
+    // Evaluates predicate against the info object; returns a boolean
+
+    // TODO: a badly-formed predicateString can trigger an NSException
+    // which is not caught by Swift and instead causes a crash. Need to
+    // figure out a solution, since the admin can provide _any_ predicateString
+    // To trigger such an exception , use this predicateString:
+    //      "os-vers = \"14.6.1\""
+    // (Hint: it's the hyphen in the attribute name that triggers the crash)
+
+    var ourObject = infoObject
+    if let additionalInfo {
+        ourObject.merge(additionalInfo) { _, new in new }
+    }
+    displayDebug1("Evaluating predicate: \(predicateString)")
+    let predicate = NSPredicate(format: predicateString)
+    let result = predicate.evaluate(with: ourObject)
+    displayDebug1("Predicate \(predicateString) is \(result)")
+    return result
+}
