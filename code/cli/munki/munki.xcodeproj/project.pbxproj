@@ -153,7 +153,6 @@
 		C0D9C2852C5EA3410019A067 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2812C5EA2A00019A067 /* common.swift */; };
 		C0D9C28D2C5EDFAE0019A067 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C28C2C5EDFAE0019A067 /* main.swift */; };
 		C0D9C2912C5EDFD70019A067 /* launchd.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2562C5D391C0019A067 /* launchd.swift */; };
-		C0D9C2922C5EE0A80019A067 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C0D9C2942C5F08CA0019A067 /* pkg.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2932C5F08CA0019A067 /* pkg.swift */; };
 		C0D9C2952C5F08CA0019A067 /* pkg.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2932C5F08CA0019A067 /* pkg.swift */; };
 		C0D9C2972C6012C80019A067 /* dmg.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2962C6012C80019A067 /* dmg.swift */; };
@@ -551,26 +550,18 @@
 		C07A6FD02C2B631800090743 /* shared */ = {
 			isa = PBXGroup;
 			children = (
+				C07AED682C66D1AE00DE6119 /* utils */,
 				C0D9C27E2C5EA22D0019A067 /* socket */,
 				C043ED212C483ED40047C025 /* installer */,
 				C01364472C2F8EC0008DB215 /* munkirepo */,
 				C013643A2C2DC50E008DB215 /* admin */,
 				C07A6FAF2C2B22A400090743 /* prefs.swift */,
 				C07A6FB12C2B22D300090743 /* constants.swift */,
-				C07A6FD12C2B654300090743 /* utils.swift */,
-				C07A6FD92C2CF19600090743 /* cliutils.swift */,
-				C01364422C2DD1BA008DB215 /* plistutils.swift */,
-				C01364532C321FE7008DB215 /* dmgutils.swift */,
 				C01364572C3265D6008DB215 /* display.swift */,
 				C07074DB2C33AE5F00B86310 /* munkilog.swift */,
 				C07074DE2C33B9A000B86310 /* reports.swift */,
-				C07074E42C34910F00B86310 /* osutils.swift */,
-				C07074E72C34932400B86310 /* pkgutils.swift */,
-				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 				C030A98E2C39C135007F0B34 /* munkihash.swift */,
 				C030A9B12C3DB88E007F0B34 /* osinstaller.swift */,
-				C030A9B52C3DF6D0007F0B34 /* fileutils.swift */,
-				C030A9BE2C409738007F0B34 /* iconutils.swift */,
 				C030A9EE2C43505B007F0B34 /* munkitester-Bridging-Header.h */,
 				C030A9EF2C43505B007F0B34 /* munkiimport-Bridging-Header.h */,
 				C0D00FAF2C458EAA0021DA9C /* version.swift */,
@@ -580,7 +571,6 @@
 				C0D9C2582C5D4E570019A067 /* appusage.swift */,
 				C0D9C2992C607D390019A067 /* xattr.swift */,
 				C0D9C29F2C6175A10019A067 /* processes.swift */,
-				C0D9C2A22C61939E0019A067 /* scriptutils.swift */,
 				C0D9C2A52C62C12E0019A067 /* munkistatus.swift */,
 				C0D9C2AF2C62D4120019A067 /* powermanager.swift */,
 				C0209B852C63C9FD007664A0 /* stoprequested.swift */,
@@ -589,6 +579,23 @@
 				C07AED652C66D0A000DE6119 /* facts.swift */,
 			);
 			path = shared;
+			sourceTree = "<group>";
+		};
+		C07AED682C66D1AE00DE6119 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				C07A6FD92C2CF19600090743 /* cliutils.swift */,
+				C01364532C321FE7008DB215 /* dmgutils.swift */,
+				C030A9B52C3DF6D0007F0B34 /* fileutils.swift */,
+				C030A9BE2C409738007F0B34 /* iconutils.swift */,
+				C07074E42C34910F00B86310 /* osutils.swift */,
+				C07074E72C34932400B86310 /* pkgutils.swift */,
+				C01364422C2DD1BA008DB215 /* plistutils.swift */,
+				C0D9C2A22C61939E0019A067 /* scriptutils.swift */,
+				C07A6FD12C2B654300090743 /* utils.swift */,
+				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
+			);
+			path = utils;
 			sourceTree = "<group>";
 		};
 		C0D9C24C2C5C5C920019A067 /* app_usage_monitor */ = {
@@ -1083,7 +1090,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0D9C2922C5EE0A80019A067 /* cliutils.swift in Sources */,
 				C0D9C28D2C5EDFAE0019A067 /* main.swift in Sources */,
 				C0D9C2912C5EDFD70019A067 /* launchd.swift in Sources */,
 			);
