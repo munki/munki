@@ -101,3 +101,85 @@ func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = f
         return -1
     }
 }
+
+enum ExternalScriptError: Error {
+    case general
+    case notFound
+    case statusError(detail: String)
+    case insecurePermissions(detail: String)
+}
+
+func verifyFileOnlyWritableByMunkiAndRoot(_ path: String) throws {
+    // Check the permissions on a given file path; fail if owner or group
+    // does not match the munki process (default: root/admin) or the group is not
+    // 'wheel', or if other users are able to write to the file. This prevents
+    // escalated execution of arbitrary code.
+    let filemanager = FileManager.default
+    let thisProcessOwner = NSUserName()
+    var attributes: NSDictionary
+    do {
+        attributes = try filemanager.attributesOfItem(atPath: path) as NSDictionary
+    } catch {
+        throw ExternalScriptError.statusError(
+            detail: "\(path): could not get filesystem attributes")
+    }
+    let owner = attributes.fileOwnerAccountName()
+    let group = attributes.fileGroupOwnerAccountName()
+    let mode = attributes.filePosixPermissions()
+    if !["root", thisProcessOwner].contains(owner) {
+        throw ExternalScriptError.insecurePermissions(
+            detail: "\(path) owner is not root or owner of munki process!")
+    }
+    if !["admin", "wheel"].contains(group) {
+        throw ExternalScriptError.insecurePermissions(
+            detail: "\(path) group is not in wheel or admin!")
+    }
+    if UInt16(mode) & S_IWOTH != 0 {
+        throw ExternalScriptError.insecurePermissions(
+            detail: "\(path) is world writable!")
+    }
+}
+
+func verifyExecutable(_ path: String) throws {
+    // verifies path is executable
+    let filemanager = FileManager.default
+    var attributes: NSDictionary
+    do {
+        attributes = try filemanager.attributesOfItem(atPath: path) as NSDictionary
+    } catch {
+        throw ExternalScriptError.statusError(
+            detail: "\(path): could not get filesystem attributes")
+    }
+    let mode = attributes.filePosixPermissions()
+    if Int32(mode) & X_OK == 0 {
+        throw ExternalScriptError.statusError(
+            detail: "\(path) is not executable")
+    }
+}
+
+func runExternalScript(_ scriptPath: String, arguments: [String] = [], allowInsecure: Bool = false, timeout: Int = 60) async throws -> CLIResults {
+    // Run a script (e.g. preflight/postflight) and return a result.
+
+    if !pathExists(scriptPath) {
+        throw ExternalScriptError.notFound
+    }
+    if !allowInsecure {
+        do {
+            try verifyFileOnlyWritableByMunkiAndRoot(scriptPath)
+        } catch let ExternalScriptError.insecurePermissions(detail) {
+            throw ProcessError.error(
+                description: "Skipping execution: \(detail)")
+        } catch let ExternalScriptError.statusError(detail) {
+            throw ProcessError.error(
+                description: "Skipping execution: \(detail)")
+        }
+    }
+    do {
+        try verifyExecutable(scriptPath)
+    } catch let ExternalScriptError.statusError(detail) {
+        throw ProcessError.error(
+            description: "Skipping execution: \(detail)")
+    }
+
+    return try await runCliAsync(scriptPath, arguments: arguments, timeout: timeout)
+}

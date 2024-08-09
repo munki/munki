@@ -106,6 +106,21 @@ func pathIsDirectory(_ path: String) -> Bool {
     return false
 }
 
+func pathIsExecutableFile(_ path: String) -> Bool {
+    // returns true if path is a file and is executable
+    if pathIsDirectory(path) {
+        return false
+    }
+    do {
+        let attributes = try FileManager.default.attributesOfItem(atPath: path) as NSDictionary
+        let mode = attributes.filePosixPermissions()
+        return Int32(mode) & X_OK != 0
+    } catch {
+        // fall through
+    }
+    return false
+}
+
 func getSizeOfDirectory(_ path: String) -> Int {
     // returns size of directory in Kbytes by recursively adding
     // up the size of all files within
