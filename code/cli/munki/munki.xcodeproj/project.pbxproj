@@ -116,6 +116,10 @@
 		C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C07A6FDB2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C07A6FDC2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C07AED632C66CFBD00DE6119 /* appinventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED622C66CFBD00DE6119 /* appinventory.swift */; };
+		C07AED642C66CFBD00DE6119 /* appinventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED622C66CFBD00DE6119 /* appinventory.swift */; };
+		C07AED662C66D0A000DE6119 /* facts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED652C66D0A000DE6119 /* facts.swift */; };
+		C07AED672C66D0A000DE6119 /* facts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED652C66D0A000DE6119 /* facts.swift */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA22C457E4E0021DA9C /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
@@ -318,6 +322,8 @@
 		C07A6FD12C2B654300090743 /* utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = utils.swift; sourceTree = "<group>"; };
 		C07A6FD52C2B7F2100090743 /* FileRepo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRepo.swift; sourceTree = "<group>"; };
 		C07A6FD92C2CF19600090743 /* cliutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cliutils.swift; sourceTree = "<group>"; };
+		C07AED622C66CFBD00DE6119 /* appinventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appinventory.swift; sourceTree = "<group>"; };
+		C07AED652C66D0A000DE6119 /* facts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = facts.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
@@ -579,6 +585,8 @@
 				C0D9C2AF2C62D4120019A067 /* powermanager.swift */,
 				C0209B852C63C9FD007664A0 /* stoprequested.swift */,
 				C0209B882C63DDF1007664A0 /* info.swift */,
+				C07AED622C66CFBD00DE6119 /* appinventory.swift */,
+				C07AED652C66D0A000DE6119 /* facts.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -948,6 +956,7 @@
 				C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */,
 				C0D9C2A02C6175A10019A067 /* processes.swift in Sources */,
 				C01364432C2DD1BA008DB215 /* plistutils.swift in Sources */,
+				C07AED662C66D0A000DE6119 /* facts.swift in Sources */,
 				C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */,
 				C0D00FB62C45BCB90021DA9C /* errors.swift in Sources */,
 				C07A6FB02C2B22A400090743 /* prefs.swift in Sources */,
@@ -969,6 +978,7 @@
 				C07A6FD22C2B654300090743 /* utils.swift in Sources */,
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
 				C030A9BF2C409738007F0B34 /* iconutils.swift in Sources */,
+				C07AED632C66CFBD00DE6119 /* appinventory.swift in Sources */,
 				C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */,
 				C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C07074DF2C33B9A000B86310 /* reports.swift in Sources */,
@@ -986,6 +996,7 @@
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
 				C0D9C2A12C6175A10019A067 /* processes.swift in Sources */,
 				C030A9F62C435183007F0B34 /* readline.swift in Sources */,
+				C07AED672C66D0A000DE6119 /* facts.swift in Sources */,
 				C0D9C2572C5D391C0019A067 /* launchd.swift in Sources */,
 				C0D9C2952C5F08CA0019A067 /* pkg.swift in Sources */,
 				C0D9C2592C5D4E570019A067 /* appusage.swift in Sources */,
@@ -1022,6 +1033,7 @@
 				C07A6FD32C2B659300090743 /* utils.swift in Sources */,
 				C07A6FD72C2B7F2100090743 /* FileRepo.swift in Sources */,
 				C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */,
+				C07AED642C66CFBD00DE6119 /* appinventory.swift in Sources */,
 				C01364592C3265D6008DB215 /* display.swift in Sources */,
 				C0D9C2A72C62C12E0019A067 /* munkistatus.swift in Sources */,
 				C0209B8A2C63DDF1007664A0 /* info.swift in Sources */,
