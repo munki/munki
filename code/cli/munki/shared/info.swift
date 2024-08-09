@@ -10,52 +10,7 @@ import Darwin
 import Foundation
 import IOKit
 
-func hostname() -> String {
-    // returns uname's version of hostname
-    var systemInfo = utsname()
-    uname(&systemInfo)
-    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
-
-    let str = withUnsafeMutablePointer(to: &systemInfo.nodename) { p in
-        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
-            return String(cString: p2)
-        }
-    }
-    return str
-}
-
-func platform() -> String {
-    // returns platform (arch) ("x86_64", "arm64")
-    var systemInfo = utsname()
-    uname(&systemInfo)
-    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
-
-    let str = withUnsafeMutablePointer(to: &systemInfo.machine) { p in
-        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
-            return String(cString: p2)
-        }
-    }
-    return str
-}
-
-func uname_version() -> String {
-    // returns uname's version string
-    var systemInfo = utsname()
-    uname(&systemInfo)
-    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
-
-    let str = withUnsafeMutablePointer(to: &systemInfo.version) { p in
-        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
-            return String(cString: p2)
-        }
-    }
-    return str
-}
-
-func isAppleSilicon() -> Bool {
-    // Returns true if we're running on Apple silicon"
-    return platform() == "arm64"
-}
+// MARK: application inventory functions
 
 func findAppsInDirs(_ dirList: [String]) -> [[String: String]] {
     // Do spotlight search for type applications within the
@@ -207,30 +162,24 @@ func appData() -> [[String: String]] {
     }
     // now make sure as much additional data is populated as possible
     for (index, item) in applicationData.enumerated() {
-        if (item["name"] ?? "").isEmpty || (item["version"] ?? "").isEmpty ||
-            (item["bundleid"] ?? "").isEmpty
-        {
-            var updatedItem = item
-            let path = item["path"] ?? ""
-            updatedItem["name"] = (path as NSString).lastPathComponent
-            if let bundleInfo = getBundleInfo(path) {
-                updatedItem["bundleid"] = bundleInfo["CFBundleIdentifier"] as? String ?? ""
-                if let cfBundleName = bundleInfo["CFBundleName"] as? String,
-                   !cfBundleName.isEmpty
-                {
-                    updatedItem["name"] = cfBundleName
-                }
-                updatedItem["version"] = getBundleVersion(path)
-                if (updatedItem["version"] ?? "").isEmpty {
-                    updatedItem["version"] = "0.0.0.0.0"
-                }
+        var updatedItem = item
+        let path = item["path"] ?? ""
+        if let bundleInfo = getBundleInfo(path) {
+            updatedItem["bundleid"] = bundleInfo["CFBundleIdentifier"] as? String ?? ""
+            if let cfBundleName = bundleInfo["CFBundleName"] as? String,
+               !cfBundleName.isEmpty
+            {
+                updatedItem["name"] = cfBundleName
             } else {
-                // no Info.plist? Should we use system_profiler info?
-                // it's not clear that calling system_profiler here will
-                // help us get enough better data to be worth it.
+                let name = ((item["path"] ?? "") as NSString).lastPathComponent
+                updatedItem["name"] = (name as NSString).deletingPathExtension
             }
-            applicationData[index] = updatedItem
+            updatedItem["version"] = getBundleVersion(path)
+            if (updatedItem["version"] ?? "").isEmpty {
+                updatedItem["version"] = item["version"] ?? "0.0.0.0.0"
+            }
         }
+        applicationData[index] = updatedItem
     }
     return applicationData
 }
@@ -242,6 +191,33 @@ func filteredAppData() -> [[String: String]] {
         !(($0["path"] ?? "").hasPrefix("/Users") && !($0["path"] ?? "").hasPrefix("/Users/Shared"))
     }
 }
+
+func saveAppData() {
+    // Save installed application data
+    // data from appData() is meant for use by updatecheck
+    // we need to massage it a bit for more general usage
+    munkiLog("Saving application inventory...")
+    var appInventory = [[String: String]]()
+    for item in appData() {
+        var inventoryItem = [String: String]()
+        inventoryItem["CFBundleName"] = item["name"] ?? ""
+        inventoryItem["bundleid"] = item["bundleid"] ?? ""
+        inventoryItem["version"] = item["version"] ?? ""
+        inventoryItem["path"] = item["path"] ?? ""
+        // use last path item (minus '.app' if present) as name
+        let name = ((item["path"] ?? "") as NSString).lastPathComponent
+        inventoryItem["name"] = (name as NSString).deletingPathExtension
+        appInventory.append(inventoryItem)
+    }
+    do {
+        let appInventoryPath = (managedInstallsDir() as NSString).appendingPathComponent("ApplicationInventory.plist")
+        try writePlist(appInventory, toFile: appInventoryPath)
+    } catch {
+        displayWarning("Unable to save application inventory: \(error.localizedDescription)")
+    }
+}
+
+// MARK: other info functions
 
 func getSystemProfilerData(_ dataType: String) async -> PlistDict {
     // Uses system profiler to get info of data_type for this machine
@@ -432,6 +408,53 @@ func availableDiskSpace(volumePath _: String = "/") -> Int {
     let f_frsize = Int(buffer.pointee.f_frsize)
     let f_bavail = Int(buffer.pointee.f_bavail)
     return Int(f_frsize * f_bavail / 1024)
+}
+
+func hostname() -> String {
+    // returns uname's version of hostname
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.nodename) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
+}
+
+func platform() -> String {
+    // returns platform (arch) ("x86_64", "arm64")
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.machine) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
+}
+
+func uname_version() -> String {
+    // returns uname's version string
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.version) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
+}
+
+func isAppleSilicon() -> Bool {
+    // Returns true if we're running on Apple silicon"
+    return platform() == "arm64"
 }
 
 func getOSBuild() -> String {
