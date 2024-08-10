@@ -120,6 +120,8 @@
 		C07AED642C66CFBD00DE6119 /* appinventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED622C66CFBD00DE6119 /* appinventory.swift */; };
 		C07AED662C66D0A000DE6119 /* facts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED652C66D0A000DE6119 /* facts.swift */; };
 		C07AED672C66D0A000DE6119 /* facts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED652C66D0A000DE6119 /* facts.swift */; };
+		C07AED6B2C66F56C00DE6119 /* manifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED6A2C66F56C00DE6119 /* manifests.swift */; };
+		C07AED6C2C66F56C00DE6119 /* manifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED6A2C66F56C00DE6119 /* manifests.swift */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA22C457E4E0021DA9C /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
@@ -323,6 +325,7 @@
 		C07A6FD92C2CF19600090743 /* cliutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cliutils.swift; sourceTree = "<group>"; };
 		C07AED622C66CFBD00DE6119 /* appinventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appinventory.swift; sourceTree = "<group>"; };
 		C07AED652C66D0A000DE6119 /* facts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = facts.swift; sourceTree = "<group>"; };
+		C07AED6A2C66F56C00DE6119 /* manifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifests.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
@@ -550,6 +553,7 @@
 		C07A6FD02C2B631800090743 /* shared */ = {
 			isa = PBXGroup;
 			children = (
+				C07AED692C66F54800DE6119 /* updatecheck */,
 				C07AED682C66D1AE00DE6119 /* utils */,
 				C0D9C27E2C5EA22D0019A067 /* socket */,
 				C043ED212C483ED40047C025 /* installer */,
@@ -596,6 +600,14 @@
 				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 			);
 			path = utils;
+			sourceTree = "<group>";
+		};
+		C07AED692C66F54800DE6119 /* updatecheck */ = {
+			isa = PBXGroup;
+			children = (
+				C07AED6A2C66F56C00DE6119 /* manifests.swift */,
+			);
+			path = updatecheck;
 			sourceTree = "<group>";
 		};
 		C0D9C24C2C5C5C920019A067 /* app_usage_monitor */ = {
@@ -968,6 +980,7 @@
 				C0D00FB62C45BCB90021DA9C /* errors.swift in Sources */,
 				C07A6FB02C2B22A400090743 /* prefs.swift in Sources */,
 				C0D9C2972C6012C80019A067 /* dmg.swift in Sources */,
+				C07AED6B2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
 				C0D9C2A32C61939E0019A067 /* scriptutils.swift in Sources */,
 				C0D9C29D2C6151350019A067 /* core.swift in Sources */,
@@ -1025,6 +1038,7 @@
 				C07A6FBF2C2B5AF400090743 /* constants.swift in Sources */,
 				C030A9902C39C135007F0B34 /* munkihash.swift in Sources */,
 				C07074E02C33B9A000B86310 /* reports.swift in Sources */,
+				C07AED6C2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07074E62C34910F00B86310 /* osutils.swift in Sources */,
 				C030A9C12C419565007F0B34 /* osinstaller.swift in Sources */,
 				C0D9C2B12C62D4120019A067 /* powermanager.swift in Sources */,
