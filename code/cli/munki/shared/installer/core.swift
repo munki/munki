@@ -302,7 +302,7 @@ func installWithInstallInfo(
         if retcode == 0,
            item["OnDemand"] as? Bool ?? false
         {
-            // TODO: manifestutils.remove_from_selfserve_installs(item['name'])
+            removeFromSelfServeInstalls(itemName)
         }
 
         // log install success/failure
@@ -563,7 +563,7 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
         // log removal success/failure
         if retcode == 0 {
             munkiLog("Removal of \(displayName): SUCCESSFUL", logFile: "Install.log")
-            // TODO: manifestutils.remove_from_selfserve_uninstalls(item['name'])
+            removeFromSelfServeUninstalls(itemName)
         } else {
             munkiLog("Removal of \(displayName): FAILED with return code: \(retcode)", logFile: "Install.log")
             // append failed removal to skipped_removals so dependencies
