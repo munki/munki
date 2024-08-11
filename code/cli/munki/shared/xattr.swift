@@ -4,6 +4,19 @@
 //
 //  Created by Greg Neagle on 8/4/24.
 //
+//  Copyright 2024 Greg Neagle.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Darwin
 import Foundation
@@ -35,4 +48,25 @@ func removeXattr(_ name: String, atPath path: String) throws {
         let errString = String(utf8String: strerror(errno)) ?? String(errno)
         throw MunkiError("Failed to remove xattr \(name) from \(path): \(errString)")
     }
+}
+
+func setXattr(named name: String, data: Data, atPath path: String) throws {
+    // A simple implementation sufficient for Munki's needs
+    // Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
+    if setxattr(path, name, (data as NSData).bytes, data.count, 0, 0) == -1 {
+        let errString = String(utf8String: strerror(errno)) ?? String(errno)
+        throw MunkiError("Failed to set xattr \(name) at \(path): \(errString)")
+    }
+}
+
+func getXattr(named name: String, atPath path: String) throws -> Data {
+    // A simple implementation sufficient for Munki's needs
+    // Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
+    let bufLength = getxattr(path, name, nil, 0, 0, 0)
+
+    guard bufLength != -1, let buf = malloc(bufLength), getxattr(path, name, buf, bufLength, 0, 0) != -1 else {
+        let errString = String(utf8String: strerror(errno)) ?? String(errno)
+        throw MunkiError("Failed to get xattr \(name) at \(path): \(errString)")
+    }
+    return Data(bytes: buf, count: bufLength)
 }
