@@ -9,78 +9,30 @@
 
 import Foundation
 
-/*
- do {
-     let repo = try FileRepo("file:///Users/Shared/munki_repo")
-     let pkgsinfo = try repo.itemlist("pkgsinfo")
-     print(pkgsinfo)
-     let data = try repo.get("manifests/site_default")
-     if let plist = NSString(data: data, encoding: NSUTF8StringEncoding) {
-         print(plist)
-     }
-     try repo.get("manifests/site_default", toFile: "/tmp/sitr_default")
- } catch {
-     print(error)
- }
- */
+DisplayOptions.shared.verbose = 3
+let options = GurlOptions(
+    url: "https://github.com/macadmins/munki-builds/releases/download/v6.5.1.4661/munkitools-6.5.1.4661.pkg",
+    destinationPath: "/tmp/munkitools-6.5.1.4661.pkg",
+    followRedirects: "all",
+    canResume: true,
+    downloadOnlyIfChanged: true
+)
 
-/*
- do {
-     let repo = try FileRepo("file:///Users/Shared/munki_repo")
-     print(repo.baseurl)
-     print(repo.root)
-     let catalogsmaker = try CatalogsMaker(repo: repo)
-     let errors = catalogsmaker.makecatalogs()
-     if !errors.isEmpty {
-         print(catalogsmaker.errors)
-     }
- } catch {
-     print(error)
- }
- */
+let connection = Gurl(options: options)
+connection.start()
+while true {
+    let done = connection.isDone()
+    if String(connection.status).hasPrefix("2"),
+       connection.percentComplete != -1 {
+        displayPercentDone(current: connection.percentComplete, maximum: 100)
+    } else if connection.bytesReceived > 0 {
+        displayDetail("Bytes received: \(connection.bytesReceived)")
+    }
+    if done {
+        break
+    }
+}
 
-/*
- let options = MakeCatalogOptions(
-     skip_payload_check: true,
-     force: false,
-     verbose: true
- )
-
- do {
-     let repo = try repoConnect(url: "file:///Users/Shared/munki_repo")
-     var catalogsmaker = try CatalogsMaker(repo: repo, options: options)
-     let errors = catalogsmaker.makecatalogs()
-     if !errors.isEmpty {
-         for error in errors {
-             printStderr(error)
-         }
-         exit(-1)
-     }
- } catch RepoError.error(let description) {
-     printStderr("Repo error: \(description)")
-     exit(-1)
- } catch MakeCatalogsError.PkginfoAccessError(let description) {
-     printStderr("Pkginfo read error: \(description)")
-     exit(-1)
- } catch MakeCatalogsError.CatalogWriteError(let description) {
-     printStderr("Catalog write error: \(description)")
-     exit(-1)
- } catch {
-     printStderr("Unexpected error: \(error)")
-     exit(-1)
- }
- */
-
-do {
-    let repo = try repoConnect(
-        url: "file:///Users/Shared/munki_repo",
-        plugin: "GitFileRepo"
-    )
-    let localFilePath = "/Users/Shared/munki_repo/manifests/site_default"
-    let identifier = "manifests/foo"
-    try repo.put(identifier, content: Data())
-    try repo.put(identifier, fromFile: localFilePath)
-    try repo.delete(identifier)
-} catch {
+if let error = connection.error {
     print(error)
 }
