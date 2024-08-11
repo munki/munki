@@ -316,6 +316,7 @@
 		C07074E42C34910F00B86310 /* osutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osutils.swift; sourceTree = "<group>"; };
 		C07074E72C34932400B86310 /* pkgutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkgutils.swift; sourceTree = "<group>"; };
 		C07074EA2C34A6AD00B86310 /* versionutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = versionutils.swift; sourceTree = "<group>"; };
+		C0759C2A2C6848610032928F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C07A6FA52C2A82B400090743 /* managedsoftwareupdate */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = managedsoftwareupdate; sourceTree = BUILT_PRODUCTS_DIR; };
 		C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = managedsoftwareupdate.swift; sourceTree = "<group>"; };
 		C07A6FAF2C2B22A400090743 /* prefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = prefs.swift; sourceTree = "<group>"; };
@@ -544,6 +545,7 @@
 			isa = PBXGroup;
 			children = (
 				C07A6FB92C2B5ADE00090743 /* main.swift */,
+				C0759C2A2C6848610032928F /* Info.plist */,
 			);
 			path = munkitester;
 			sourceTree = "<group>";
@@ -1388,8 +1390,10 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = munkitester/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "shared/munkitester-Bridging-Header.h";
@@ -1403,8 +1407,10 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = munkitester/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "shared/munkitester-Bridging-Header.h";

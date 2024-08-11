@@ -31,7 +31,7 @@ struct GurlOptions {
     var ignoreSystemProxy: Bool = false
     var canResume: Bool = false
     var downloadOnlyIfChanged: Bool = false
-    var cacheData: Any? // TODO: figure this type out
+    var cacheData: [String: String]?
     var connectionTimeout: Double = 60.0
     var minimumTLSprotocol = tls_protocol_version_t.TLSv10
 }
@@ -44,19 +44,18 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
 
     var options: GurlOptions
     var resume = false
-    var response: URLResponse?
     var headers: [String: String]? = nil
     var status: Int = 0 // HTTP(S) status code
     var error: NSError?
     var SSLerror: Int = 0
     var done = false
-    // var redirection: Any? // TODO: figure this type out
     var destination: FileHandle?
     var bytesReceived = 0
     var expectedSize = -1
-    var percentComplete = 0
+    var percentComplete = -1
     var session: URLSession?
     var task: URLSessionTask?
+    var restartFailedResume = false
 
     init(options: GurlOptions) {
         self.options = options
@@ -85,8 +84,37 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
                 request.setValue(value, forHTTPHeaderField: header)
             }
         }
-        // TODO: support resuming partial downloads
-        // TODO: support last-modified/etag
+
+        // does the file already exist? See if we can resume a partial download
+        if options.canResume,
+           let storedData = getStoredHeaders(),
+           storedData["expected-length"] != nil,
+           storedData.keys.contains("last-modified") || storedData.keys.contains("etag")
+        {
+            // we're allowed to resume and we have a partial file with enough
+            // data to attempt a resume
+            if let attributes = try? FileManager.default.attributesOfItem(atPath: options.destinationPath) {
+                resume = true
+                let filesize = (attributes as NSDictionary).fileSize()
+                let byteRange = "bytes=\(filesize)-"
+                request.setValue(byteRange, forHTTPHeaderField: "Range")
+            }
+        }
+
+        // if downloadOnlyIfChanged is true, set up appropriate headers
+        if !resume,
+           options.downloadOnlyIfChanged,
+           let storedData = (options.cacheData ?? getStoredHeaders()),
+           !storedData.keys.contains("expected-length")
+        {
+            if let lastModified = storedData["last-modified"] {
+                request.setValue(lastModified, forHTTPHeaderField: "if-modified-since")
+            }
+            if let eTag = storedData["etag"] {
+                request.setValue(eTag, forHTTPHeaderField: "if-none-match")
+            }
+        }
+
         let configuration = URLSessionConfiguration.default
         if options.ignoreSystemProxy {
             configuration.connectionProxyDictionary = [
@@ -130,6 +158,10 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     func getStoredHeaders() -> [String: String]? {
         // Returns any stored headers for destinationPath
         if options.destinationPath.isEmpty {
+            displayDebug1("destination path is not defined")
+            return nil
+        }
+        if !pathExists(options.destinationPath) {
             displayDebug1("\(options.destinationPath) does not exist")
             return nil
         }
@@ -204,15 +236,64 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     @objc func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: (any Error)?) {
         // URLSessionTaskDelegate method
         print("urlSession:task:didCompleteWithError:")
+        if task != task {
+            return
+        }
         if let destination, !options.destinationPath.isEmpty {
             try? destination.close()
         }
         if let error {
+            if let urlError = error as? URLError {
+                if restartFailedResume, urlError.errorCode == -999 {
+                    // we canceled a resume attempt; start over with a fresh attempt
+                    session = nil
+                    restartFailedResume = false
+                    start()
+                    return
+                }
+            }
             recordError(error as NSError)
         } else {
             removeExpectedSizeFromStoredHeaders()
         }
         done = true
+    }
+
+    func okToResume(downloadData: [String: String]) -> Bool {
+        // returns a boolean
+        guard let storedData = getStoredHeaders() else {
+            print("No stored headers")
+            return false
+        }
+        let storedEtag = storedData["etag"] ?? ""
+        let downloadEtag = downloadData["etag"] ?? ""
+        if storedEtag != downloadEtag {
+            print("Etag doesn't match")
+            print("storedEtag: \(storedEtag)")
+            print("downloadEtag: \(downloadEtag)")
+            return false
+        }
+        let storedLastModified = storedData["last-modified"] ?? ""
+        let downloadLastModified = downloadData["last-modified"] ?? ""
+        if storedLastModified != downloadLastModified {
+            print("last-modified doesn't match")
+            print("storedLastModified: \(storedLastModified)")
+            print("downloadLastModified: \(downloadLastModified)")
+            return false
+        }
+        let storedExpectedLength = Int(storedData["expected-length"] ?? "") ?? 0
+        var downloadExpectedLength = Int(downloadData["expected-length"] ?? "") ?? 0
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: options.destinationPath) {
+            let partialDownloadSize = Int((attributes as NSDictionary).fileSize())
+            downloadExpectedLength += partialDownloadSize
+        }
+        if storedExpectedLength != downloadExpectedLength {
+            print("expected-length doesn't match")
+            print("storedExpectedLength: \(storedExpectedLength)")
+            print("downloadExpectedLength: \(downloadExpectedLength)")
+            return false
+        }
+        return true
     }
 
     @objc func urlSession(
@@ -223,7 +304,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     ) {
         print("urlSession:dataTask:didReceive:completionHandler:")
         // URLSessionDataDelegate method
-        self.response = response
+        // self.response = response // doesn't appear to be actually used
         bytesReceived = 0
         percentComplete = -1
         expectedSize = Int(response.expectedContentLength)
@@ -231,9 +312,10 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         var downloadData = [String: String]()
         if let response = response as? HTTPURLResponse {
             // Headers and status code only available for HTTP/S transfers
+            print("reponse is HTTPURLResponse")
             status = response.statusCode
-            headers = response.allHeaderFields as? [String: String]
-            if let headers {
+            print("HTTP status code: \(status)")
+            if let headers = response.allHeaderFields as? [String: String] {
                 let normalizedHeaders = normalizeHeaderDict(headers)
                 if let lastModified = normalizedHeaders["last-modified"] {
                     downloadData["last-modified"] = lastModified
@@ -246,9 +328,40 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
         if destination == nil, !options.destinationPath.isEmpty {
             if resume, status == 206 {
-                // TODO: implement download resume
+                if okToResume(downloadData: downloadData),
+                   let attributes = try? FileManager.default.attributesOfItem(atPath: options.destinationPath)
+                {
+                    // try to resume
+                    // TODO: log
+                    print("Resuming download for \(options.destinationPath)")
+                    // add existing file size to bytesReceived so far
+                    let filesize = Int((attributes as NSDictionary).fileSize())
+                    bytesReceived = filesize
+                    expectedSize += filesize
+                    // open file for append
+                    destination = FileHandle(forWritingAtPath: options.destinationPath)
+                    destination?.seekToEndOfFile()
+                } else {
+                    resume = false
+                }
+                if !resume {
+                    // file on server is different than the one
+                    // we have a partial for, or there was some issue
+                    // cancel this and restart from the beginning
+                    // TODO: log
+                    print("Can't resume download; file on server has changed")
+                    completionHandler(.cancel)
+                    restartFailedResume = true
+                    // TODO: log
+                    print("Removing destination path")
+                    try? FileManager.default.removeItem(atPath: options.destinationPath)
+                    return
+                }
             } else if String(status).hasPrefix("2") {
                 // not resuming, just open the file for writing
+                // TODO: remove the file if it exists?
+                // TODO: set the POSIX mode to something like 0o644
+                FileManager.default.createFile(atPath: options.destinationPath, contents: nil)
                 destination = FileHandle(forWritingAtPath: options.destinationPath)
                 // store some headers with the file for use if we need to resume
                 // the download and for future checking if the file on the server
@@ -311,7 +424,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         let realm = protectionSpace.realm
         let authenticationMethod = protectionSpace.authenticationMethod
         // TODO: log "Authentication challenge for Host: \(host) Realm: \(realm) AuthMethod: \(authenticationMethod)"
-        print("Authentication challenge for Host: \(host) Realm: \(realm) AuthMethod: \(authenticationMethod)")
+        print("Authentication challenge for Host: \(host) Realm: \(realm ?? "") AuthMethod: \(authenticationMethod)")
         if challenge.previousFailureCount > 0 {
             // we have the wrong credentials. just fail
             // TODO: log "Previous authentication attempt failed."
@@ -348,7 +461,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     }
 
     @objc func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive data: Data) {
-        print("urlSession:dataTask:didReceive:")
         // URLSessionDataDelegate method
         // Handle received data
         if let destination {
