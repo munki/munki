@@ -256,6 +256,36 @@ func uname_version() -> String {
     return str
 }
 
+func uname_sysname() -> String {
+    // returns uname's system string
+    // Pretty much always returns "Darwin"
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.sysname) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
+}
+
+func uname_release() -> String {
+    // returns uname's system string
+    // Pretty much always returns "Darwin"
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let size = Int(_SYS_NAMELEN) // is 256 on Darwin
+
+    let str = withUnsafeMutablePointer(to: &systemInfo.release) { p in
+        p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
+            return String(cString: p2)
+        }
+    }
+    return str
+}
+
 func isAppleSilicon() -> Bool {
     // Returns true if we're running on Apple silicon"
     return platform() == "arm64"
