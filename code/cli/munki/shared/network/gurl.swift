@@ -21,6 +21,10 @@
 import Foundation
 import Security
 
+func defaultLogger(_ message: String) {
+    print(message)
+}
+
 struct GurlOptions {
     var url: String
     var destinationPath: String
@@ -34,6 +38,7 @@ struct GurlOptions {
     var cacheData: [String: String]?
     var connectionTimeout: Double = 60.0
     var minimumTLSprotocol = tls_protocol_version_t.TLSv10
+    var log: (String) -> Void = defaultLogger // logging function
 }
 
 class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
@@ -65,12 +70,12 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     func start() {
         // Start the connection
         guard !options.destinationPath.isEmpty else {
-            printStderr("No output file specified") // TODO: fix the logging
+            options.log("No output file specified")
             done = true
             return
         }
         guard let url = URL(string: options.url) else {
-            printStderr("Invalid URL specified") // TODO: fix the logging
+            options.log("Invalid URL specified")
             done = true
             return
         }
@@ -138,7 +143,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     func cancel() {
         // Cancel the session
         if let session {
-            // TODO: preserve resume data?
             session.invalidateAndCancel()
         }
         done = true
@@ -182,7 +186,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     func storeHeaders(_ headers: [String: String]) {
         // Store headers dictionary as an xattr for options.destinationPath
         guard let data = try? plistToData(headers) else {
-            displayDebug1("header convert to plist data failure")
+            options.log("header convert to plist data failure")
             return
         }
         do {
@@ -192,8 +196,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
                 atPath: options.destinationPath
             )
         } catch {
-            displayDebug1("xattr write failure for \(options.destinationPath)")
-            // TODO: proper error logging
+            options.log("xattr write failure for \(options.destinationPath)")
         }
     }
 
@@ -235,7 +238,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
 
     @objc func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: (any Error)?) {
         // URLSessionTaskDelegate method
-        print("urlSession:task:didCompleteWithError:")
         if task != task {
             return
         }
@@ -262,23 +264,23 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     func okToResume(downloadData: [String: String]) -> Bool {
         // returns a boolean
         guard let storedData = getStoredHeaders() else {
-            print("No stored headers")
+            options.log("No stored headers")
             return false
         }
         let storedEtag = storedData["etag"] ?? ""
         let downloadEtag = downloadData["etag"] ?? ""
         if storedEtag != downloadEtag {
-            print("Etag doesn't match")
-            print("storedEtag: \(storedEtag)")
-            print("downloadEtag: \(downloadEtag)")
+            options.log("Etag doesn't match")
+            options.log("storedEtag: \(storedEtag)")
+            options.log("downloadEtag: \(downloadEtag)")
             return false
         }
         let storedLastModified = storedData["last-modified"] ?? ""
         let downloadLastModified = downloadData["last-modified"] ?? ""
         if storedLastModified != downloadLastModified {
-            print("last-modified doesn't match")
-            print("storedLastModified: \(storedLastModified)")
-            print("downloadLastModified: \(downloadLastModified)")
+            options.log("last-modified doesn't match")
+            options.log("storedLastModified: \(storedLastModified)")
+            options.log("downloadLastModified: \(downloadLastModified)")
             return false
         }
         let storedExpectedLength = Int(storedData["expected-length"] ?? "") ?? 0
@@ -288,9 +290,9 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             downloadExpectedLength += partialDownloadSize
         }
         if storedExpectedLength != downloadExpectedLength {
-            print("expected-length doesn't match")
-            print("storedExpectedLength: \(storedExpectedLength)")
-            print("downloadExpectedLength: \(downloadExpectedLength)")
+            options.log("expected-length doesn't match")
+            options.log("storedExpectedLength: \(storedExpectedLength)")
+            options.log("downloadExpectedLength: \(downloadExpectedLength)")
             return false
         }
         return true
@@ -302,7 +304,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         didReceive response: URLResponse,
         completionHandler: @escaping @Sendable (URLSession.ResponseDisposition) -> Void
     ) {
-        print("urlSession:dataTask:didReceive:completionHandler:")
         // URLSessionDataDelegate method
         // self.response = response // doesn't appear to be actually used
         bytesReceived = 0
@@ -312,9 +313,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         var downloadData = [String: String]()
         if let response = response as? HTTPURLResponse {
             // Headers and status code only available for HTTP/S transfers
-            print("reponse is HTTPURLResponse")
             status = response.statusCode
-            print("HTTP status code: \(status)")
             if let headers = response.allHeaderFields as? [String: String] {
                 let normalizedHeaders = normalizeHeaderDict(headers)
                 if let lastModified = normalizedHeaders["last-modified"] {
@@ -332,8 +331,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
                    let attributes = try? FileManager.default.attributesOfItem(atPath: options.destinationPath)
                 {
                     // try to resume
-                    // TODO: log
-                    print("Resuming download for \(options.destinationPath)")
+                    options.log("Resuming download for \(options.destinationPath)")
                     // add existing file size to bytesReceived so far
                     let filesize = Int((attributes as NSDictionary).fileSize())
                     bytesReceived = filesize
@@ -348,20 +346,22 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
                     // file on server is different than the one
                     // we have a partial for, or there was some issue
                     // cancel this and restart from the beginning
-                    // TODO: log
-                    print("Can't resume download; file on server has changed")
+                    options.log("Can't resume download; file on server has changed")
                     completionHandler(.cancel)
                     restartFailedResume = true
-                    // TODO: log
-                    print("Removing destination path")
+                    options.log("Removing destination path")
                     try? FileManager.default.removeItem(atPath: options.destinationPath)
                     return
                 }
             } else if String(status).hasPrefix("2") {
                 // not resuming, just open the file for writing
-                // TODO: remove the file if it exists?
-                // TODO: set the POSIX mode to something like 0o644
-                FileManager.default.createFile(atPath: options.destinationPath, contents: nil)
+                if pathExists(options.destinationPath) {
+                    try? FileManager.default.removeItem(atPath: options.destinationPath)
+                }
+                let attrs = [
+                    FileAttributeKey.posixPermissions: 0o644,
+                ] as [FileAttributeKey: Any]
+                FileManager.default.createFile(atPath: options.destinationPath, contents: nil, attributes: attrs)
                 destination = FileHandle(forWritingAtPath: options.destinationPath)
                 // store some headers with the file for use if we need to resume
                 // the download and for future checking if the file on the server
@@ -379,7 +379,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         newRequest request: URLRequest,
         completionHandler: @escaping @Sendable (URLRequest?) -> Void
     ) {
-        print("urlSession:task:willPerformHTTPRedirection:newRequest:completionHandler:")
         // URLSessionTaskDelegate method
         guard let newURL = request.url else {
             // deny the redirect
@@ -387,8 +386,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             return
         }
         if options.followRedirects == "all" {
-            // TODO: log "Allowing redirect to \(newURL)"
-            print("Allowing redirect to \(newURL)")
+            options.log("Allowing redirect to \(newURL)")
             // allow redirect
             completionHandler(request)
             return
@@ -399,8 +397,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
         // If we're here either the preference was set to 'none' (or not set)
         // or the url we're forwarding on to isn't https
-        // TODO: log "Denying redirect to \(newURL)"
-        print("Denying redirect to \(newURL)")
+        options.log("Denying redirect to \(newURL)")
         completionHandler(nil)
     }
 
@@ -423,12 +420,10 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         let host = protectionSpace.host
         let realm = protectionSpace.realm
         let authenticationMethod = protectionSpace.authenticationMethod
-        // TODO: log "Authentication challenge for Host: \(host) Realm: \(realm) AuthMethod: \(authenticationMethod)"
-        print("Authentication challenge for Host: \(host) Realm: \(realm ?? "") AuthMethod: \(authenticationMethod)")
+        options.log("Authentication challenge for Host: \(host) Realm: \(realm ?? "") AuthMethod: \(authenticationMethod)")
         if challenge.previousFailureCount > 0 {
             // we have the wrong credentials. just fail
-            // TODO: log "Previous authentication attempt failed."
-            print("Previous authentication attempt failed.")
+            options.log("Previous authentication attempt failed.")
             completionHandler(.cancelAuthenticationChallenge, nil)
         }
         // Handle HTTP Basic and Digest challenge
@@ -436,14 +431,12 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
            let password = options.password,
            supportedAuthMethods.contains(authenticationMethod)
         {
-            // TODO: log "Will attempt to authenticate."
-            print("Will attempt to authenticate.")
-            // TODO: log "Username: \(username) Password: \(String(repeating: "*", count: password.count))"
-            print("Username: \(username) Password: \(String(repeating: "*", count: password.count))")
+            options.log("Will attempt to authenticate.")
+            options.log("Username: \(username) Password: \(String(repeating: "*", count: password.count))")
             let credential = URLCredential(user: username, password: password, persistence: .none)
             completionHandler(.useCredential, credential)
         } else if authenticationMethod == NSURLAuthenticationMethodClientCertificate {
-            // TODO: log "Client certificate required"
+            options.log("Client certificate required")
             // get issuers info from the response
             if let distingusihedNames = protectionSpace.distinguishedNames {
                 // distingusihedNames is an array of Data blobs
@@ -454,8 +447,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             completionHandler(.cancelAuthenticationChallenge, nil)
         } else {
             // fall back to system-provided default behavior
-            // TODO: log("Allowing OS to handle authentication request")
-            print("Allowing OS to handle authentication request")
+            options.log("Allowing OS to handle authentication request")
             completionHandler(.performDefaultHandling, nil)
         }
     }
@@ -466,8 +458,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         if let destination {
             destination.write(data)
         } else if let str = String(data: data, encoding: String.Encoding.utf8) {
-            // TODO: log(str)
-            print(str)
+            options.log(str)
         }
         bytesReceived += data.count
         // NSURLResponseUnknownLength = -1
