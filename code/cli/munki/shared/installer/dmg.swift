@@ -12,7 +12,7 @@ func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
     // Returns 0 on success, non-zero otherwise.
     // Yes, we could call FileManager methods like setAttributes(_:ofItemAtPath:),
     // But the user and group might be names or numbers, and the mode is
-    // supported to be symbolic (but could also be in the format of "777",
+    // supposed to be symbolic (but could also be in the format of "777",
     // So we're just going to call `chown` and `chmod`. This also allow us to easily
     // set these attributes recursively.
 
