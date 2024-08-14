@@ -20,7 +20,7 @@
 
 import Foundation
 
-struct MunkiError: Error, CustomStringConvertible {
+class MunkiError: Error, CustomStringConvertible {
     // General error class for errors
     public internal(set) var message: String
 
