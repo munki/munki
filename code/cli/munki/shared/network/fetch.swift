@@ -8,7 +8,7 @@
 import Foundation
 
 // XATTR name storing the ETAG of the file when downloaded via http(s).
-//let XATTR_ETAG = "com.googlecode.munki.etag"
+// let XATTR_ETAG = "com.googlecode.munki.etag"
 // XATTR name storing the sha256 of the file after original download by munki.
 let XATTR_SHA = "com.googlecode.munki.sha256"
 
@@ -44,11 +44,10 @@ class PackageVerificationError: DownloadError {
 }
 
 func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
-    var fhash: String
-    if let hash {
-        fhash = hash
+    var fhash: String = if let hash {
+        hash
     } else {
-        fhash = sha256hash(file: path)
+        sha256hash(file: path)
     }
     if fhash.count == 64, let data = fhash.data(using: .utf8) {
         do {
@@ -61,13 +60,75 @@ func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
     return nil
 }
 
-func headerDictFromList(_ strList: [String]?) -> [String:String] {
+func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, alwaysHash: Bool = false) -> (Bool, String) {
+    // Verifies the integrity of the given software package.
+
+    // The feature is controlled through the PackageVerificationMode key in
+    // Munki's preferences. Following modes currently exist:
+    //     none: No integrity check is performed.
+    //     hash: Integrity check is performed by calculating a SHA-256 hash of
+    //         the given file and comparing it against the reference value in
+    //         catalog. Only applies for package plists that contain the
+    //         item_key; for packages without the item_key, verification always
+    //         returns true.
+    //     hash_strict: Same as hash, but returns false for package plists that
+    //         do not contain the item_key.
+    //
+    // Args:
+    //     path: The file to check integrity on.
+    //     expectedHash: the sha256 hash expected.
+    //     alwaysHash: Boolean. Always check and return the hash even if not
+    //                 necessary for this function.
+    //
+    // Returns:
+    //     (true/false, sha256-hash)
+    //     true if the package integrity could be validated. Otherwise, false.
+    let mode = pref("PackageVerificationMode") as? String ?? "hash"
+    let itemName = (path as NSString).lastPathComponent
+    var calculatedHash = ""
+    if alwaysHash {
+        calculatedHash = sha256hash(file: path)
+    }
+    switch mode.lowercased() {
+    case "none":
+        displayWarning("Package integrity checking is disabled.")
+        return (true, calculatedHash)
+    case "hash", "hash_strict":
+        if !expectedHash.isEmpty {
+            displayMinorStatus("Verifying package integrity...")
+            if calculatedHash.isEmpty {
+                calculatedHash = sha256hash(file: path)
+            }
+            if expectedHash == calculatedHash {
+                return (true, calculatedHash)
+            }
+            // expectedHash != calculatedHash
+            displayError("Hash value integrity check for \(itemName) failed.")
+            return (false, calculatedHash)
+        } else {
+            // no expected hash
+            if mode.lowercased() == "hash_strict" {
+                displayError("Expected hash value for \(itemName) is missing in catalog.")
+                return (false, calculatedHash)
+            }
+            // mode is "hash"
+            displayWarning(
+                "Expected hash value missing for \(itemName) -- package integrity verification skipped.")
+            return (true, calculatedHash)
+        }
+    default:
+        displayError("The PackageVerificationMode in the ManagedInstalls preferences has an illegal value: \(mode)")
+    }
+    return (false, calculatedHash)
+}
+
+func headerDictFromList(_ strList: [String]?) -> [String: String] {
     // Given a list of strings in http header format, return a dict.
     // A User-Agent header is added if none is present in the list.
     // If strList is nil, returns a dict with only the User-Agent header.
-    var headerDict = [String:String]()
+    var headerDict = [String: String]()
     headerDict["User-Agent"] = DEFAULT_USER_AGENT
-    
+
     if let strList {
         for item in strList {
             if item.contains(":") {
@@ -84,14 +145,13 @@ func headerDictFromList(_ strList: [String]?) -> [String:String] {
 func getURL(
     _ url: String,
     destinationPath: String,
-    customHeaders: [String:String]? = nil,
+    customHeaders: [String]? = nil,
     message: String = "",
     onlyIfNewer: Bool = false,
     resume: Bool = false,
     followRedirects: String = "none",
     pkginfo: PlistDict? = nil
-) throws -> [String:String]
-{
+) throws -> [String: String] {
     // Gets an HTTP or HTTPS URL and stores it in
     // destination path. Returns a dictionary of headers, which includes
     // http_result_code and http_result_description.
@@ -107,21 +167,22 @@ func getURL(
     if pathExists(tempDownloadPath), !resume {
         try? FileManager.default.removeItem(atPath: tempDownloadPath)
     }
-    
-    var cacheData: [String:String]? = nil
+
+    var cacheData: [String: String]?
     if onlyIfNewer, pathExists(destinationPath) {
         // create a temporary Gurl object so we can extract the
         // stored caching data so we can download only if the
         // file has changed on the server
-        let temp = Gurl.init(options: GurlOptions(url: url, destinationPath: destinationPath))
+        let temp = Gurl(options: GurlOptions(url: url, destinationPath: destinationPath))
         cacheData = temp.getStoredHeaders()
     }
-    
+
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
-    
+
     let options = GurlOptions(
         url: url,
         destinationPath: tempDownloadPath,
+        additionalHeaders: headerDictFromList(customHeaders),
         followRedirects: followRedirects,
         ignoreSystemProxy: ignoreSystemProxy,
         canResume: resume,
@@ -129,9 +190,10 @@ func getURL(
         cacheData: cacheData,
         log: displayDebug2
     )
-    
+
     // TODO: middleware support
-    
+    // (which will use pkginfo)
+
     let session = Gurl(options: options)
     var displayMessage = message
     var storedPercentComplete = -1
@@ -164,7 +226,7 @@ func getURL(
             break
         }
     }
-    
+
     if let error = session.error {
         // gurl had an NSError
         var errorCode = 0
@@ -189,16 +251,16 @@ func getURL(
         }
         throw ConnectionError("\(errorCode): \(errorDescription)")
     }
-    
+
     displayDebug1("Status: \(session.status)")
     displayDebug1("Headers: \(session.headers ?? [:])")
     // TODO: (maybe) track and display redirection info
-    
+
     var returnedHeaders = session.headers ?? [:]
     returnedHeaders["http_result_code"] = String(session.status)
     let statusDescription = HTTPURLResponse.localizedString(forStatusCode: session.status)
     returnedHeaders["http_result_description"] = statusDescription
-    
+
     if String(session.status).hasPrefix("2"), pathIsRegularFile(tempDownloadPath) {
         do {
             if pathIsRegularFile(destinationPath) {
@@ -225,13 +287,12 @@ func getURL(
 func getHTTPfileIfChangedAtomically(
     _ url: String,
     destinationPath: String,
-    customHeaders: [String:String]? = nil,
+    customHeaders: [String]? = nil,
     message: String = "",
     resume: Bool = false,
     followRedirects: String = "none",
     pkginfo: PlistDict? = nil
-) throws -> Bool
-{
+) throws -> Bool {
     // Gets file from HTTP URL, checking first to see if it has changed on the
     // server.
 
@@ -239,23 +300,23 @@ func getHTTPfileIfChangedAtomically(
     // item is already in the local cache.
 
     // Raises GurlDownloadError if there is an error.
-    //var eTag = ""
+    // var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
         getOnlyIfNewer = true
         /*
-        // see if we have an etag attribute
-        do {
-            let data = try getXattr(named: XATTR_ETAG, atPath: destinationPath)
-            eTag = String(data: data, encoding: .utf8) ?? ""
-        } catch {
-            // fall through
-        }
-        if eTag.isEmpty {
-            getOnlyIfNewer = false
-        }*/
+         // see if we have an etag attribute
+         do {
+             let data = try getXattr(named: XATTR_ETAG, atPath: destinationPath)
+             eTag = String(data: data, encoding: .utf8) ?? ""
+         } catch {
+             // fall through
+         }
+         if eTag.isEmpty {
+             getOnlyIfNewer = false
+         }*/
     }
-    var headers: [String:String]
+    var headers: [String: String]
     do {
         headers = try getURL(
             url,
@@ -275,7 +336,7 @@ func getHTTPfileIfChangedAtomically(
     } catch let err as GurlError {
         throw GurlDownloadError(err.description)
     }
-    
+
     if (headers["http_result_code"] ?? "") == "304" {
         // not modified, return existing file
         displayDebug1("\(destinationPath) already exists and is up-to-date.")
@@ -290,35 +351,98 @@ func getHTTPfileIfChangedAtomically(
         dateformatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
         if let modDate = dateformatter.date(from: lastModified) {
             let attrs = [
-                FileAttributeKey.modificationDate: modDate
+                FileAttributeKey.modificationDate: modDate,
             ]
             try? FileManager.default.setAttributes(attrs, ofItemAtPath: destinationPath)
         }
     }
     /*
-     // not sure why we're storing the etag in yet another xattr since gurl
-     // is doing it already in a different xattr. Wondering if this is leftover
-     // logic from when we were using curl
-    if let eTag = headers["etag"], let data = eTag.data(using: .utf8) {
-        // store etag in extended attribute for future use
-        try? setXattr(named: XATTR_ETAG, data: data, atPath: destinationPath)
+      // not sure why we're storing the etag in yet another xattr since gurl
+      // is doing it already in a different xattr. Wondering if this is leftover
+      // logic from when we were using curl
+     if let eTag = headers["etag"], let data = eTag.data(using: .utf8) {
+         // store etag in extended attribute for future use
+         try? setXattr(named: XATTR_ETAG, data: data, atPath: destinationPath)
+     }
+      */
+    return true
+}
+
+func getFileIfChangedAtomically(_ path: String, destinationPath: String) throws -> Bool {
+    // Gets file from path, checking first to see if it has changed on the
+    // source.
+
+    // Returns true if a new copy was required; false if the
+    // item is already in the local cache.
+
+    // Throws FileCopyError if there is an error.
+    let filemanager = FileManager.default
+    if !pathExists(path) {
+        throw FileCopyError("Source does not exist: \(path)")
     }
-     */
+    guard let sourceAttrs = try? filemanager.attributesOfItem(atPath: path) else {
+        throw FileCopyError("Could not get file attributes for: \(path)")
+    }
+    if let destAttrs = try? filemanager.attributesOfItem(atPath: destinationPath) {
+        // destinationPath exists. We should check the attributes to see if they
+        // match
+        if (sourceAttrs as NSDictionary).fileModificationDate() == (destAttrs as NSDictionary).fileModificationDate(),
+           (sourceAttrs as NSDictionary).fileSize() == (destAttrs as NSDictionary).fileSize()
+        {
+            // modification dates and sizes are the same, we'll say they are the same
+            // file -- return false to say it hasn't changed
+            return false
+        }
+    }
+    // copy to a temporary destination
+    let tempDestinationPath = destinationPath + ".download"
+
+    if pathExists(tempDestinationPath) {
+        do {
+            try filemanager.removeItem(atPath: tempDestinationPath)
+        } catch {
+            throw FileCopyError("Removing \(tempDestinationPath) failed: \(error.localizedDescription)")
+        }
+    }
+    do {
+        try filemanager.copyItem(atPath: path, toPath: tempDestinationPath)
+    } catch {
+        throw FileCopyError("Copying \(path) to \(tempDestinationPath) failed: \(error.localizedDescription)")
+    }
+
+    if pathExists(destinationPath) {
+        do {
+            try filemanager.removeItem(atPath: destinationPath)
+        } catch {
+            throw FileCopyError("Could not remove previous \(destinationPath): \(error.localizedDescription)")
+        }
+    }
+    do {
+        try filemanager.moveItem(atPath: tempDestinationPath, toPath: destinationPath)
+    } catch {
+        throw FileCopyError("Could not move \(tempDestinationPath) to \(destinationPath): \(error.localizedDescription)")
+    }
+    // set modification date of destinationPath to the same as the source
+    if let modDate = (sourceAttrs as NSDictionary).fileModificationDate() {
+        let attrs = [
+            FileAttributeKey.modificationDate: modDate,
+        ]
+        try? filemanager.setAttributes(attrs, ofItemAtPath: destinationPath)
+    }
     return true
 }
 
 func getResourceIfChangedAtomically(
     _ url: String,
     destinationPath: String,
-    customHeaders: [String:String]? = nil,
+    customHeaders: [String]? = nil,
     expectedHash: String? = nil,
     message: String = "",
     resume: Bool = false,
     verify: Bool = false,
     followRedirects: String? = nil,
     pkginfo: PlistDict? = nil
-) throws -> Bool
-{
+) throws -> Bool {
     // Gets file from a URL.
     // Checks first if there is already a file with the necessary checksum.
     // Then checks if the file has changed on the server, resuming or
@@ -332,14 +456,14 @@ func getResourceIfChangedAtomically(
     // item is already in the local cache.
 
     // Raises a FetchError derived exception if there is an error.
-    
+
     guard let resolvedURL = URL(string: url) else {
         throw MunkiError("Invalid URL: \(url)")
     }
-    
+
     var changed = false
     let verificationMode = (pref("PackageVerificationMode") as? String ?? "").lowercased()
-    
+
     // If we already have a downloaded file & its (cached) hash matches what
     // we need, do nothing, return unchanged.
     if resume, let expectedHash, pathIsRegularFile(destinationPath) {
@@ -360,15 +484,15 @@ func getResourceIfChangedAtomically(
         }
         munkiLog("Cached item does not match hash in catalog, will check if changed and redownload: \(destinationPath)")
     }
-    var resolvedFollowRedirects: String
-    if let followRedirects {
-        resolvedFollowRedirects = followRedirects
+    var resolvedFollowRedirects: String = if let followRedirects {
+        followRedirects
     } else {
-        // If we haven't explicitly said to follow redirects,
+        // If we haven't explicitly specified followRedirects,
         // the preference decides
-        resolvedFollowRedirects = pref("FollowHTTPRedirects") as? String ?? "none"
+        pref("FollowHTTPRedirects") as? String ?? "none"
     }
-    
+    displayDebug1("FollowHTTPRedirects is: \(resolvedFollowRedirects)")
+
     if ["http", "https"].contains(resolvedURL.scheme) {
         changed = try getHTTPfileIfChangedAtomically(
             url,
@@ -380,13 +504,58 @@ func getResourceIfChangedAtomically(
             pkginfo: pkginfo
         )
     } else if resolvedURL.scheme == "file" {
-        //changed = getFileIfChangedAtomically(resolvedURL.path, destinationPath)
+        changed = try getFileIfChangedAtomically(
+            resolvedURL.path, destinationPath: destinationPath
+        )
     } else {
         throw MunkiError("Unsupported url scheme: \(String(describing: resolvedURL.scheme)) in \(url)")
     }
-    
+
     if changed, verify {
-        
+        let (verifyOK, calculatedHash) = verifySoftwarePackageIntegrity(
+            destinationPath, expectedHash: expectedHash ?? ""
+        )
+        if !verifyOK {
+            try? FileManager.default.removeItem(atPath: destinationPath)
+            throw PackageVerificationError("")
+        }
+        if !calculatedHash.isEmpty {
+            let _ = storeCachedChecksum(toPath: destinationPath, hash: calculatedHash)
+        }
     }
     return changed
+}
+
+func munkiResource(
+    _ url: String,
+    destinationPath: String,
+    message: String = "",
+    resume: Bool = false,
+    expectedHash: String? = nil,
+    verify: Bool = false,
+    pkginfo: PlistDict? = nil
+) throws -> Bool {
+    // The high-level function for getting resources from the Munki repo.
+    // Gets a given URL from the Munki server.
+    // Adds any additional headers to the request if present
+
+    // Add any additional headers specified in ManagedInstalls.plist.
+    // AdditionalHttpHeaders must be an array of strings with valid HTTP
+    // header format. For example:
+    // <key>AdditionalHttpHeaders</key>
+    // <array>
+    //   <string>Key-With-Optional-Dashes: Foo Value</string>
+    //   <string>another-custom-header: bar value</string>
+    // </array>
+    let customHeaders = pref(ADDITIONAL_HTTP_HEADERS_KEY) as? [String]
+    return try getResourceIfChangedAtomically(
+        url,
+        destinationPath: destinationPath,
+        customHeaders: customHeaders,
+        expectedHash: expectedHash,
+        message: message,
+        resume: resume,
+        verify: verify,
+        pkginfo: pkginfo
+    )
 }
