@@ -8,7 +8,7 @@
 import Foundation
 
 // XATTR name storing the ETAG of the file when downloaded via http(s).
-let XATTR_ETAG = "com.googlecode.munki.etag"
+//let XATTR_ETAG = "com.googlecode.munki.etag"
 // XATTR name storing the sha256 of the file after original download by munki.
 let XATTR_SHA = "com.googlecode.munki.sha256"
 
@@ -239,10 +239,11 @@ func getHTTPfileIfChangedAtomically(
     // item is already in the local cache.
 
     // Raises GurlDownloadError if there is an error.
-    var eTag = ""
+    //var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
         getOnlyIfNewer = true
+        /*
         // see if we have an etag attribute
         do {
             let data = try getXattr(named: XATTR_ETAG, atPath: destinationPath)
@@ -250,9 +251,9 @@ func getHTTPfileIfChangedAtomically(
         } catch {
             // fall through
         }
-        if !eTag.isEmpty {
+        if eTag.isEmpty {
             getOnlyIfNewer = false
-        }
+        }*/
     }
     var headers: [String:String]
     do {
@@ -294,10 +295,15 @@ func getHTTPfileIfChangedAtomically(
             try? FileManager.default.setAttributes(attrs, ofItemAtPath: destinationPath)
         }
     }
+    /*
+     // not sure why we're storing the etag in yet another xattr since gurl
+     // is doing it already in a different xattr. Wondering if this is leftover
+     // logic from when we were using curl
     if let eTag = headers["etag"], let data = eTag.data(using: .utf8) {
         // store etag in extended attribute for future use
         try? setXattr(named: XATTR_ETAG, data: data, atPath: destinationPath)
     }
+     */
     return true
 }
 
@@ -384,6 +390,3 @@ func getResourceIfChangedAtomically(
     }
     return changed
 }
-
-// it's redownloading the file even if not changed
-
