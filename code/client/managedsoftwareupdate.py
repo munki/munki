@@ -660,6 +660,9 @@ def main():
         '--show-config', action='store_true',
         help='Print the current configuration and exit.')
     config_options.add_option(
+        '--show-config-plist', action='store_true',
+        help='Print the current configuration as a plist and exit.')
+    config_options.add_option(
         '--id', default=u'',
         help='String to use as ClientIdentifier for this run only.')
     config_options.add_option(
@@ -721,6 +724,11 @@ def main():
 
     if options.show_config:
         prefs.print_config()
+        sys.exit(0)
+
+
+    if options.show_config_plist:
+        prefs.print_config_plist()
         sys.exit(0)
 
     if options.set_bootstrap_mode:
