@@ -391,7 +391,9 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             // allow redirect
             completionHandler(request)
             return
-        } else if options.followRedirects == "all", newURL.scheme == "https" {
+        } else if newURL.scheme == "https",
+                  (options.followRedirects == "all" ||  options.followRedirects == "https")
+        {
             // allow redirects to https URLs
             completionHandler(request)
             return
