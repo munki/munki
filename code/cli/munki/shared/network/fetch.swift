@@ -44,7 +44,7 @@ class PackageVerificationError: DownloadError {
 }
 
 func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
-    var fhash: String = if let hash {
+    let fhash: String = if let hash {
         hash
     } else {
         sha256hash(file: path)
@@ -484,7 +484,7 @@ func getResourceIfChangedAtomically(
         }
         munkiLog("Cached item does not match hash in catalog, will check if changed and redownload: \(destinationPath)")
     }
-    var resolvedFollowRedirects: String = if let followRedirects {
+    let resolvedFollowRedirects: String = if let followRedirects {
         followRedirects
     } else {
         // If we haven't explicitly specified followRedirects,
