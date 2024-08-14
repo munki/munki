@@ -136,7 +136,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         if let task = session?.dataTask(with: request as URLRequest) {
             self.task = task
             task.resume()
-            print("Started dataTask")
         }
     }
 
@@ -410,7 +409,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        print("urlSession:task:didReceive:completionHandler:")
         // URLSessionTaskDelegate method
         // Handle an authentication challenge
         let supportedAuthMethods = [
