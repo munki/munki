@@ -53,7 +53,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     var status: Int = 0 // HTTP(S) status code
     var error: NSError?
     var SSLerror: Int = 0
-    private var done = false  // call isDone() instead of reading this directly
+    private var done = false // call isDone() instead of reading this directly
     var destination: FileHandle?
     var bytesReceived = 0
     var expectedSize = -1
@@ -392,7 +392,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             completionHandler(request)
             return
         } else if newURL.scheme == "https",
-                  (options.followRedirects == "all" ||  options.followRedirects == "https")
+                  options.followRedirects == "all" || options.followRedirects == "https"
         {
             // allow redirects to https URLs
             completionHandler(request)
