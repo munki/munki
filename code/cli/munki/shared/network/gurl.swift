@@ -53,7 +53,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     var status: Int = 0 // HTTP(S) status code
     var error: NSError?
     var SSLerror: Int = 0
-    var done = false
+    private var done = false  // call isDone() instead of reading this directly
     var destination: FileHandle?
     var bytesReceived = 0
     var expectedSize = -1
@@ -316,6 +316,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             status = response.statusCode
             if let headers = response.allHeaderFields as? [String: String] {
                 let normalizedHeaders = normalizeHeaderDict(headers)
+                self.headers = normalizedHeaders
                 if let lastModified = normalizedHeaders["last-modified"] {
                     downloadData["last-modified"] = lastModified
                 }
