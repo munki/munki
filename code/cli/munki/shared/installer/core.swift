@@ -170,7 +170,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     let itemName = item["name"] as? String ?? "<unknown>"
     let installerType = item["installer_type"] as? String ?? "pkg_install"
     let installerItem = item["installer_item"] as? String ?? ""
-    let cachePath = (managedInstallsDir() as NSString).appendingPathComponent("Cache")
+    let cachePath = managedInstallsDir(subpath: "Cache")
     let installerItemPath = (cachePath as NSString).appendingPathComponent(installerItem)
 
     // if installer_type is not nopkg, ensure the payload exists
@@ -340,7 +340,7 @@ func installWithInstallInfo(
         // with choicesXML files applied to a distribution package or
         // multiple packages being installed from a single DMG
         let installerItem = item["installer_item"] as? String ?? ""
-        let cachePath = (managedInstallsDir() as NSString).appendingPathComponent("Cache")
+        let cachePath = managedInstallsDir(subpath: "Cache")
         let installerItemPath = (cachePath as NSString).appendingPathComponent(installerItem)
 
         var stillNeeded = false
@@ -470,7 +470,7 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             displayError("No uninstall item specified for \(itemName)")
             return (-99, false)
         }
-        let uninstallerItemPath = (managedInstallsDir() as NSString).appendingPathComponent("Cache/" + uninstallerItem)
+        let uninstallerItemPath = managedInstallsDir(subpath: "Cache/" + uninstallerItem)
         if !pathExists(uninstallerItemPath) {
             displayError("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
             return (-99, false)
@@ -600,7 +600,7 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
     let caffeinator = Caffeinator(
         reason: "managedsoftwareupdate is installing software")
 
-    let installInfoPath = (managedInstallsDir() as NSString).appendingPathComponent("InstallInfo.plist")
+    let installInfoPath = managedInstallsDir(subpath: "InstallInfo.plist")
     if pathExists(installInfoPath),
        let installInfo = try? readPlist(fromFile: installInfoPath) as? PlistDict
     {

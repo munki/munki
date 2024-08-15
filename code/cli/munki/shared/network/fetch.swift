@@ -494,9 +494,16 @@ func getResourceIfChangedAtomically(
             pkginfo: pkginfo
         )
     } else if resolvedURL.scheme == "file" {
-        changed = try getFileIfChangedAtomically(
-            resolvedURL.path, destinationPath: destinationPath
-        )
+        if let sourcePath = resolvedURL.path.removingPercentEncoding {
+            changed = try getFileIfChangedAtomically(
+                sourcePath, destinationPath: destinationPath
+            )
+        } else {
+            throw FetchError.connection(
+                errorCode: -1,
+                description: "Invalid path in URL \(url)"
+            )
+        }
     } else {
         throw FetchError.connection(
             errorCode: -1,
@@ -586,7 +593,7 @@ func checkServer(_ urlString: String) -> (Int, String) {
         if let host = url.host, host != "localhost" {
             return (-1, "Non-local hostnames not supported for file:// URLs")
         }
-        if pathExists(url.path) {
+        if let path = url.path.removingPercentEncoding, pathExists(path) {
             return (0, "OK")
         }
         return (-1, "Path \(url.path) does not exist")
