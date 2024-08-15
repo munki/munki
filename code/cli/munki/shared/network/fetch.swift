@@ -15,32 +15,12 @@ let XATTR_SHA = "com.googlecode.munki.sha256"
 // default value for User-Agent header
 let DEFAULT_USER_AGENT = "managedsoftwareupdate/\(getVersion()) Darwin/\(uname_release())"
 
-class GurlError: MunkiError {
-    // General exception for gurl errors
-}
-
-class ConnectionError: GurlError {
-    // General exception for gurl connection errors
-}
-
-class HTTPError: GurlError {
-    // General exception for http/https errors
-}
-
-class DownloadError: MunkiError {
-    // Base exception for download errors
-}
-
-class GurlDownloadError: DownloadError {
-    // Gurl failed to download the item
-}
-
-class FileCopyError: DownloadError {
-    // Download failed because of file copy errors
-}
-
-class PackageVerificationError: DownloadError {
-    // Package failed verification
+enum FetchError: Error {
+    case connection(errorCode: Int, description: String)
+    case http(errorCode: Int, description: String)
+    case download(errorCode: Int, description: String)
+    case fileSystem(_ description: String)
+    case verification
 }
 
 func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
@@ -155,13 +135,13 @@ func getURL(
     // Gets an HTTP or HTTPS URL and stores it in
     // destination path. Returns a dictionary of headers, which includes
     // http_result_code and http_result_description.
-    // Will raise ConnectionError if Gurl has a connection error.
-    // Will raise HTTPError if HTTP Result code is not 2xx or 304.
-    // Will raise GurlError if Gurl has some other error.
+    // Will throw FetchError.connection if Gurl has a connection error.
+    // Will throw FetchError.http if HTTP Result code is not 2xx or 304.
+    // Will throw FetchError.fileSystem if Gurl has a filesystem error.
     // If destinationpath already exists, you can set 'onlyifnewer' to true to
     // indicate you only want to download the file only if it's newer on the
     // server.
-    // If you set resume to True, Gurl will attempt to resume an
+    // If you set resume to true, Gurl will attempt to resume an
     // interrupted download.
     let tempDownloadPath = destinationPath + ".download"
     if pathExists(tempDownloadPath), !resume {
@@ -249,7 +229,7 @@ func getURL(
         if pathExists(tempDownloadPath) {
             try? FileManager.default.removeItem(atPath: tempDownloadPath)
         }
-        throw ConnectionError("\(errorCode): \(errorDescription)")
+        throw FetchError.connection(errorCode: errorCode, description: errorDescription)
     }
 
     displayDebug1("Status: \(session.status)")
@@ -268,7 +248,7 @@ func getURL(
             }
             try FileManager.default.moveItem(atPath: tempDownloadPath, toPath: destinationPath)
         } catch {
-            throw GurlError(error.localizedDescription)
+            throw FetchError.fileSystem(error.localizedDescription)
         }
         return returnedHeaders
     }
@@ -281,7 +261,7 @@ func getURL(
     if pathExists(tempDownloadPath) {
         try? FileManager.default.removeItem(atPath: tempDownloadPath)
     }
-    throw HTTPError("\(session.status): statusDescription")
+    throw FetchError.http(errorCode: session.status, description: statusDescription)
 }
 
 func getHTTPfileIfChangedAtomically(
@@ -299,7 +279,7 @@ func getHTTPfileIfChangedAtomically(
     // Returns True if a new download was required; False if the
     // item is already in the local cache.
 
-    // Raises GurlDownloadError if there is an error.
+    // Throws a FetchError if there is an error (.connection or .download)
     // var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
@@ -328,13 +308,23 @@ func getHTTPfileIfChangedAtomically(
             followRedirects: followRedirects,
             pkginfo: pkginfo
         )
-    } catch let err as ConnectionError {
-        // just rethrow it
-        throw err
-    } catch let err as HTTPError {
-        throw GurlDownloadError(err.description)
-    } catch let err as GurlError {
-        throw GurlDownloadError(err.description)
+    } catch let err as FetchError {
+        switch err {
+        case .connection:
+            // just rethrow it
+            throw err
+        case let .http(errorCode, description):
+            // rethrow as download error
+            throw FetchError.download(errorCode: errorCode, description: description)
+        case let .fileSystem(description):
+            // rethrow as download error
+            throw FetchError.download(errorCode: -1, description: description)
+        default:
+            // these can't actually happen, but makes compiler happy
+            throw err
+        }
+    } catch {
+        throw FetchError.download(errorCode: -1, description: error.localizedDescription)
     }
 
     if (headers["http_result_code"] ?? "") == "304" {
@@ -375,13 +365,13 @@ func getFileIfChangedAtomically(_ path: String, destinationPath: String) throws 
     // Returns true if a new copy was required; false if the
     // item is already in the local cache.
 
-    // Throws FileCopyError if there is an error.
+    // Throws FetchError.fileSystem if there is an error.
     let filemanager = FileManager.default
     if !pathExists(path) {
-        throw FileCopyError("Source does not exist: \(path)")
+        throw FetchError.fileSystem("Source does not exist: \(path)")
     }
     guard let sourceAttrs = try? filemanager.attributesOfItem(atPath: path) else {
-        throw FileCopyError("Could not get file attributes for: \(path)")
+        throw FetchError.fileSystem("Could not get file attributes for: \(path)")
     }
     if let destAttrs = try? filemanager.attributesOfItem(atPath: destinationPath) {
         // destinationPath exists. We should check the attributes to see if they
@@ -401,26 +391,26 @@ func getFileIfChangedAtomically(_ path: String, destinationPath: String) throws 
         do {
             try filemanager.removeItem(atPath: tempDestinationPath)
         } catch {
-            throw FileCopyError("Removing \(tempDestinationPath) failed: \(error.localizedDescription)")
+            throw FetchError.fileSystem("Removing \(tempDestinationPath) failed: \(error.localizedDescription)")
         }
     }
     do {
         try filemanager.copyItem(atPath: path, toPath: tempDestinationPath)
     } catch {
-        throw FileCopyError("Copying \(path) to \(tempDestinationPath) failed: \(error.localizedDescription)")
+        throw FetchError.fileSystem("Copying \(path) to \(tempDestinationPath) failed: \(error.localizedDescription)")
     }
 
     if pathExists(destinationPath) {
         do {
             try filemanager.removeItem(atPath: destinationPath)
         } catch {
-            throw FileCopyError("Could not remove previous \(destinationPath): \(error.localizedDescription)")
+            throw FetchError.fileSystem("Could not remove previous \(destinationPath): \(error.localizedDescription)")
         }
     }
     do {
         try filemanager.moveItem(atPath: tempDestinationPath, toPath: destinationPath)
     } catch {
-        throw FileCopyError("Could not move \(tempDestinationPath) to \(destinationPath): \(error.localizedDescription)")
+        throw FetchError.fileSystem("Could not move \(tempDestinationPath) to \(destinationPath): \(error.localizedDescription)")
     }
     // set modification date of destinationPath to the same as the source
     if let modDate = (sourceAttrs as NSDictionary).fileModificationDate() {
@@ -452,13 +442,13 @@ func getResourceIfChangedAtomically(
 
     // Supported schemes are http, https, file.
 
-    // Returns True if a new download was required; False if the
+    // Returns true if a new download was required; False if the
     // item is already in the local cache.
 
-    // Raises a FetchError derived exception if there is an error.
+    // Throws a FetchError if there is an error.
 
     guard let resolvedURL = URL(string: url) else {
-        throw MunkiError("Invalid URL: \(url)")
+        throw FetchError.connection(errorCode: -1, description: "Invalid URL: \(url)")
     }
 
     var changed = false
@@ -508,7 +498,10 @@ func getResourceIfChangedAtomically(
             resolvedURL.path, destinationPath: destinationPath
         )
     } else {
-        throw MunkiError("Unsupported url scheme: \(String(describing: resolvedURL.scheme)) in \(url)")
+        throw FetchError.connection(
+            errorCode: -1,
+            description: "Unsupported url scheme: \(String(describing: resolvedURL.scheme)) in \(url)"
+        )
     }
 
     if changed, verify {
@@ -517,7 +510,7 @@ func getResourceIfChangedAtomically(
         )
         if !verifyOK {
             try? FileManager.default.removeItem(atPath: destinationPath)
-            throw PackageVerificationError("")
+            throw FetchError.verification
         }
         if !calculatedHash.isEmpty {
             let _ = storeCachedChecksum(toPath: destinationPath, hash: calculatedHash)
@@ -538,6 +531,7 @@ func munkiResource(
     // The high-level function for getting resources from the Munki repo.
     // Gets a given URL from the Munki server.
     // Adds any additional headers to the request if present
+    // Throws a FetchError if there's an error
 
     // Add any additional headers specified in ManagedInstalls.plist.
     // AdditionalHttpHeaders must be an array of strings with valid HTTP
@@ -558,4 +552,64 @@ func munkiResource(
         verify: verify,
         pkginfo: pkginfo
     )
+}
+
+func getDataFromURL(_ url: String) throws -> Data? {
+    // Returns data from url as string. We use the existing
+    // munkiResource function so any custom
+    // authentication/authorization headers are used
+    // (including, eventually, middleware-generated headers)
+    // May throw a FetchError
+
+    guard let tmpDir = TempDir.shared.makeTempDir() else {
+        displayError("Could not create temporary directory")
+        return nil
+    }
+    defer { try? FileManager.default.removeItem(atPath: tmpDir) }
+    let urlDataPath = (tmpDir as NSString).appendingPathComponent("urldata")
+    _ = try munkiResource(url, destinationPath: urlDataPath)
+    return FileManager.default.contents(atPath: urlDataPath)
+}
+
+func checkServer(_ urlString: String) -> (Int, String) {
+    // A function we can call to check to see if the server is
+    // available before we kick off a full run. This can be fooled by
+    // ISPs that return results for non-existent web servers...
+    // Returns a tuple (errorCode, errorDescription)
+
+    guard let url = URL(string: urlString) else {
+        return (-1, "Invalid url string")
+    }
+    if ["http", "https"].contains(url.scheme) {
+        // pass
+    } else if url.scheme == "file" {
+        if let host = url.host, host != "localhost" {
+            return (-1, "Non-local hostnames not supported for file:// URLs")
+        }
+        if pathExists(url.path) {
+            return (0, "OK")
+        }
+        return (-1, "Path \(url.path) does not exist")
+    } else {
+        return (-1, "Unsupported URL scheme")
+    }
+    do {
+        _ = try getDataFromURL(urlString)
+    } catch let err as FetchError {
+        switch err {
+        case let .connection(errorCode, description):
+            return (errorCode, description)
+        case .http:
+            return (0, "OK")
+        case .download:
+            return (0, "OK")
+        case .fileSystem:
+            return (0, "OK")
+        default:
+            return (-1, err.localizedDescription)
+        }
+    } catch {
+        return (-1, error.localizedDescription)
+    }
+    return (0, "OK")
 }
