@@ -77,7 +77,7 @@ func getConditions() async -> PlistDict {
     // which can be placed into /usr/local/munki/conditions
 
     let conditionalScriptDir = conditionalScriptsDir()
-    let conditionalItemsPath = (managedInstallsDir() as NSString).appendingPathComponent("ConditionalItems.plist")
+    let conditionalItemsPath = managedInstallsDir(subpath: "ConditionalItems.plist")
     let filemanager = FileManager.default
     try? filemanager.removeItem(atPath: conditionalItemsPath)
 

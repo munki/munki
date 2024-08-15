@@ -45,7 +45,7 @@ func removeItemFromSelfServeSection(itemname: String, section: String) {
     // Remove the given itemname from the self-serve manifest's
     // managed_uninstalls list
     displayDebug1("Removing \(itemname) from SelfServeManifest's \(section)...")
-    let manifestPath = (managedInstallsDir() as NSString).appendingPathComponent("manifests/SelfServeManifest")
+    let manifestPath = managedInstallsDir(subpath: "manifests/SelfServeManifest")
     if !pathExists(manifestPath) {
         displayDebug1("\(manifestPath) doesn't exist.")
         return

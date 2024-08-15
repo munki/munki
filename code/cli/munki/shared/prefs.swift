@@ -173,9 +173,14 @@ func pref(_ prefName: String) -> Any? {
     return prefValue
 }
 
-func managedInstallsDir() -> String {
+func managedInstallsDir(subpath: String?) -> String {
     // convenience function to return the path to the Managed Installs dir
-    return pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    // or a subpath of that directory
+    let managedInstallsDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    if let subpath {
+        return (managedInstallsDir as NSString).appendingPathComponent(subpath)
+    }
+    return managedInstallsDir
 }
 
 struct prefsDomain {

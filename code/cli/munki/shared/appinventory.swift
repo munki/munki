@@ -218,7 +218,7 @@ func saveAppData() {
         appInventory.append(inventoryItem)
     }
     do {
-        let appInventoryPath = (managedInstallsDir() as NSString).appendingPathComponent("ApplicationInventory.plist")
+        let appInventoryPath = managedInstallsDir(subpath: "ApplicationInventory.plist")
         try writePlist(appInventory, toFile: appInventoryPath)
     } catch {
         displayWarning("Unable to save application inventory: \(error.localizedDescription)")
