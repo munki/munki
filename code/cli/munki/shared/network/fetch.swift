@@ -575,7 +575,7 @@ func checkServer(_ urlString: String) -> (Int, String) {
     // A function we can call to check to see if the server is
     // available before we kick off a full run. This can be fooled by
     // ISPs that return results for non-existent web servers...
-    // Returns a tuple (errorCode, errorDescription)
+    // Returns a tuple (exitCode, exitDescription)
 
     guard let url = URL(string: urlString) else {
         return (-1, "Invalid url string")
@@ -591,7 +591,7 @@ func checkServer(_ urlString: String) -> (Int, String) {
         }
         return (-1, "Path \(url.path) does not exist")
     } else {
-        return (-1, "Unsupported URL scheme")
+        return (-1, "Unsupported URL scheme: \(url.scheme ?? "<none>")")
     }
     do {
         _ = try getDataFromURL(urlString)
