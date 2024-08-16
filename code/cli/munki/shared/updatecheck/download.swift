@@ -322,7 +322,6 @@ func downloadClientResources() {
     let message = "Getting client resources..."
     var downloadedResourcePath = ""
     for filename in filenames {
-        let resourceURL = munkiRepoURL("client_resources", resource: filename)
         do {
             _ = try fetchMunkiResource(
                 kind: .clientResource,
@@ -368,4 +367,72 @@ func downloadCatalog(_ catalogName: String) -> String {
     return ""
 }
 
-// TODO: precaching support
+// TODO: precaching support (in progress)
+
+private func getInstallInfo() -> PlistDict {
+    // Get the install info from InstallInfo.plist
+    let installInfoPlist = managedInstallsDir(subpath: "InstallInfo.plist")
+    return (try? readPlist(fromFile: installInfoPlist) as? PlistDict) ?? PlistDict()
+}
+
+private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
+    // Returns a list of items from InstallInfo.plist's optional_installs
+    // that have precache=true and (installed=false or needs_update=true)
+    func boolValueFor(_ item: PlistDict, key: String) -> Bool {
+        return item[key] as? Bool ?? false
+    }
+    if let optionalInstalls = installInfo["optional_installs"] as? [PlistDict] {
+        return optionalInstalls.filter {
+            ($0["precache"] as? Bool ?? false) &&
+                (($0["installed"] as? Bool ?? false) ||
+                    ($0["needs_update"] as? Bool ?? false))
+        }
+    }
+    return [PlistDict]()
+}
+
+func precache() {
+    // Download any applicable precache items into our Cache folder
+    displayInfo("###   Beginning precaching session   ###")
+    let installInfo = getInstallInfo()
+    for item in itemsToPrecache(installInfo) {
+        do {
+            _ = try downloadInstallerItem(
+                item, installInfo: installInfo, precaching: true
+            )
+        } catch {
+            let itemName = item["name"] as? String ?? "<unknown>"
+            displayWarning("Failed to precache the installer for \(itemName) because \(error.localizedDescription)")
+        }
+    }
+    displayInfo("###   Ending precaching session   ###")
+}
+
+func uncache(_: Int) {
+    // Discard precached items to free up space for managed installs
+    let installInfo = getInstallInfo()
+
+    // make a list of names of precachable items
+    let precachableItems = itemsToPrecache(installInfo).filter {
+        $0["installer_item_location"] != nil
+    }.map {
+        $0["installer_item_location"] as? String ?? ""
+    }.map {
+        ($0 as NSString).lastPathComponent
+    }
+    if precachableItems.isEmpty {
+        return
+    }
+
+    let cacheDir = managedInstallsDir(subpath: "Cache")
+    let itemsInCache = (try? FileManager.default.contentsOfDirectory(atPath: cacheDir)) ?? [String]()
+    // now filter our list to items actually downloaded
+    let precachedItems = precachableItems.filter {
+        itemsInCache.contains($0)
+    }
+    if precachedItems.isEmpty {
+        return
+    }
+
+    // more to do here
+}
