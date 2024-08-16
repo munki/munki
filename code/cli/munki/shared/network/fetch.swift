@@ -23,6 +23,23 @@ enum FetchError: Error {
     case verification
 }
 
+extension FetchError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case let .connection(errorCode, description):
+            return "Connection error \(errorCode): \(description)"
+        case let .http(errorCode, description):
+            return "HTTP error \(errorCode): \(description)"
+        case let .download(errorCode, description):
+            return "Download error \(errorCode): \(description)"
+        case let .fileSystem(description):
+            return "File system error: \(description)"
+        case .verification:
+            return "Checksum verification error"
+        }
+    }
+}
+
 func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
     let fhash: String = if let hash {
         hash
@@ -122,6 +139,11 @@ func headerDictFromList(_ strList: [String]?) -> [String: String] {
     return headerDict
 }
 
+func runMiddleware(options: GurlOptions, pkginfo _: PlistDict?) -> GurlOptions {
+    // placeholder function
+    return options
+}
+
 func getURL(
     _ url: String,
     destinationPath: String,
@@ -159,7 +181,7 @@ func getURL(
 
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
 
-    let options = GurlOptions(
+    var options = GurlOptions(
         url: url,
         destinationPath: tempDownloadPath,
         additionalHeaders: headerDictFromList(customHeaders),
@@ -172,7 +194,7 @@ func getURL(
     )
 
     // TODO: middleware support
-    // (which will use pkginfo)
+    options = runMiddleware(options: options, pkginfo: pkginfo)
 
     let session = Gurl(options: options)
     var displayMessage = message
@@ -526,7 +548,7 @@ func getResourceIfChangedAtomically(
     return changed
 }
 
-func munkiResource(
+func fetchMunkiResourceByURL(
     _ url: String,
     destinationPath: String,
     message: String = "",
@@ -535,7 +557,7 @@ func munkiResource(
     verify: Bool = false,
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    // The high-level function for getting resources from the Munki repo.
+    // A high-level function for getting resources from the Munki repo.
     // Gets a given URL from the Munki server.
     // Adds any additional headers to the request if present
     // Throws a FetchError if there's an error
@@ -549,6 +571,7 @@ func munkiResource(
     //   <string>another-custom-header: bar value</string>
     // </array>
     let customHeaders = pref(ADDITIONAL_HTTP_HEADERS_KEY) as? [String]
+
     return try getResourceIfChangedAtomically(
         url,
         destinationPath: destinationPath,
@@ -561,9 +584,45 @@ func munkiResource(
     )
 }
 
-func getDataFromURL(_ url: String) throws -> Data? {
-    // Returns data from url as string. We use the existing
-    // munkiResource function so any custom
+enum MunkiResourceType: String {
+    case catalog = "catalogs"
+    case clientResource = "client_resources"
+    case icon = "icons"
+    case manifest = "manifests"
+    case package = "pkgs"
+}
+
+func fetchMunkiResource(
+    kind: MunkiResourceType,
+    name: String,
+    destinationPath: String,
+    message: String = "",
+    resume: Bool = false,
+    expectedHash: String? = nil,
+    verify: Bool = false,
+    pkginfo: PlistDict? = nil
+) throws -> Bool {
+    // An even higher-level function for getting resources from the Munki repo.
+    guard let url = munkiRepoURL(kind.rawValue, resource: name) else {
+        throw FetchError.connection(
+            errorCode: -1,
+            description: "Could not encode all characters in URL"
+        )
+    }
+    return try fetchMunkiResourceByURL(
+        url,
+        destinationPath: destinationPath,
+        message: message,
+        resume: resume,
+        expectedHash: expectedHash,
+        verify: verify,
+        pkginfo: pkginfo
+    )
+}
+
+func getDataFromServer(_ url: String) throws -> Data? {
+    // Returns data from server as string.
+    // We use the existing fetchMunkiResource function so any custom
     // authentication/authorization headers are used
     // (including, eventually, middleware-generated headers)
     // May throw a FetchError
@@ -573,20 +632,29 @@ func getDataFromURL(_ url: String) throws -> Data? {
         return nil
     }
     defer { try? FileManager.default.removeItem(atPath: tmpDir) }
-    let urlDataPath = (tmpDir as NSString).appendingPathComponent("urldata")
-    _ = try munkiResource(url, destinationPath: urlDataPath)
-    return FileManager.default.contents(atPath: urlDataPath)
+    let tempDataPath = (tmpDir as NSString).appendingPathComponent("urldata")
+    _ = try fetchMunkiResourceByURL(
+        url, destinationPath: tempDataPath
+    )
+    return FileManager.default.contents(atPath: tempDataPath)
 }
 
-func checkServer(_ urlString: String) -> (Int, String) {
+func checkServer(_ urlString: String = "") -> (Int, String) {
     // A function we can call to check to see if the server is
     // available before we kick off a full run. This can be fooled by
     // ISPs that return results for non-existent web servers...
     // Returns a tuple (exitCode, exitDescription)
 
-    guard let url = URL(string: urlString) else {
-        return (-1, "Invalid url string")
+    let serverURL: String = if !urlString.isEmpty {
+        urlString
+    } else {
+        munkiRepoURL() ?? ""
     }
+
+    guard let url = URL(string: serverURL) else {
+        return (-1, "Invalid URL")
+    }
+
     if ["http", "https"].contains(url.scheme) {
         // pass
     } else if url.scheme == "file" {
@@ -601,7 +669,7 @@ func checkServer(_ urlString: String) -> (Int, String) {
         return (-1, "Unsupported URL scheme: \(url.scheme ?? "<none>")")
     }
     do {
-        _ = try getDataFromURL(urlString)
+        _ = try getDataFromServer(url.absoluteString)
     } catch let err as FetchError {
         switch err {
         case let .connection(errorCode, description):

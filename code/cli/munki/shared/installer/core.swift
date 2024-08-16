@@ -660,7 +660,7 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
         // this is janky because it relies on stuff being recorded to the report
         var optionalInstalls = installInfo["optional_installs"] as? [PlistDict] ?? [PlistDict]()
         if !optionalInstalls.isEmpty {
-            if let removalResults = Report.shared.retreive(key: "RemovalResults") as? [PlistDict] {
+            if let removalResults = Report.shared.retrieve(key: "RemovalResults") as? [PlistDict] {
                 for (index, optionalInstall) in optionalInstalls.enumerated() {
                     let optionalInstallName = optionalInstall["name"] as? String ?? "<unknown>"
                     for removal in removalResults {
@@ -680,7 +680,7 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
                     }
                 }
             }
-            if let installResults = Report.shared.retreive(key: "InstallResults") as? [PlistDict] {
+            if let installResults = Report.shared.retrieve(key: "InstallResults") as? [PlistDict] {
                 for (index, optionalInstall) in optionalInstalls.enumerated() {
                     let optionalInstallName = optionalInstall["name"] as? String ?? "<unknown>"
                     let optionalInstallVersion = optionalInstall["version_to_install"] as? String ?? ""

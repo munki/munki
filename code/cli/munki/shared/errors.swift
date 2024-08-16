@@ -34,6 +34,13 @@ class MunkiError: Error, CustomStringConvertible {
     }
 }
 
+extension MunkiError: LocalizedError {
+    // cheap hack
+    var errorDescription: String? {
+        return message
+    }
+}
+
 struct UserCancelled: Error {
     // an exception to throw when user cancels
 }

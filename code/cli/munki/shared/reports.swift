@@ -34,7 +34,7 @@ class Report {
         report[key] = value
     }
 
-    func retreive(key: String) -> Any? {
+    func retrieve(key: String) -> Any? {
         return report[key]
     }
 
