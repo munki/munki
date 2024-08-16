@@ -24,6 +24,17 @@ enum PlistError: Error {
     case writeError(description: String)
 }
 
+extension PlistError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case let .readError(description):
+            return description
+        case let .writeError(description):
+            return description
+        }
+    }
+}
+
 func deserialize(_ data: Data?) throws -> Any? {
     if data != nil {
         do {
