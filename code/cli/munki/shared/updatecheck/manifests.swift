@@ -7,6 +7,8 @@
 
 import Foundation
 
+let PRIMARY_MANIFEST_TAG = "_primary_manifest_"
+
 enum ManifestError: Error {
     case invalid(_ description: String)
     case notRetrieved(_ description: String)
@@ -56,14 +58,13 @@ class Manifests {
     }
 }
 
-func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String? {
+func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String {
     // Gets a manifest from the server.
     //
     // Returns:
     //    string local path to the downloaded manifest
     // Throws:
-    //    FetchError if we can't connect to the server
-    //    ManifestError if we can't get the manifest
+    //    ManifestError
 
     // have we already retrieved it this session?
     if let manifestLocalPath = Manifests.shared.get(name) {
@@ -116,6 +117,100 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String?
     displayDetail("Retreived manifest \(name)")
     Manifests.shared.set(name, path: manifestLocalPath)
     return manifestLocalPath
+}
+
+func getPrimaryManifest(alternateIdentifier: String = "") throws -> String {
+    // Gets the primary client manifest from the server.
+    // Can throw all the same errors as getManifest
+    var clientIdentifier = ""
+    if !alternateIdentifier.isEmpty {
+        clientIdentifier = alternateIdentifier
+    } else if pref("UseClientCertificate") as? Bool ?? false,
+              pref("UseClientCertificateCNAsClientIdentifier") as? Bool ?? false
+    {
+        // TODO: implement using client cert common name as ClientIdentifier
+    } else {
+        clientIdentifier = pref("ClientIdentifier") as? String ?? ""
+    }
+
+    var manifest = ""
+    if !clientIdentifier.isEmpty {
+        manifest = try getManifest(clientIdentifier)
+    } else {
+        // no clientIdentifer specified. Try a variety of possible identifiers
+        displayDetail("No client identifier specified. Trying default manifest resolution...")
+        var identifiers = [String]()
+
+        let uname_hostname = hostname()
+        identifiers.append(uname_hostname) // append hostname
+
+        let shortHostname = uname_hostname.components(separatedBy: ".")[0]
+        if !shortHostname.isEmpty, shortHostname != uname_hostname {
+            identifiers.append(shortHostname)
+        }
+        let sn = serialNumber()
+        if sn != "UNKNOWN" {
+            identifiers.append(sn)
+        }
+        identifiers.append("site_default")
+
+        for (index, identifier) in identifiers.enumerated() {
+            displayDetail("Requesting manifest \(identifier)...")
+            do {
+                manifest = try getManifest(identifier, suppressErrors: true)
+            } catch {
+                if error is ManifestError,
+                   index < identifiers.count
+                {
+                    displayDetail("Manifest \(identifier) not found...")
+                    continue // try the next identifier
+                } else {
+                    // juse rethrow it
+                    throw error
+                }
+            }
+            if !manifest.isEmpty {
+                clientIdentifier = identifier
+                break
+            }
+        }
+    }
+
+    // record info and return the path to the manifest
+    Manifests.shared.set(PRIMARY_MANIFEST_TAG, path: manifest)
+    Report.shared.record(clientIdentifier, to: "ManifestName")
+    displayDetail("Using primary manifest: \(clientIdentifier)")
+    return manifest
+}
+
+func cleanUpManifests() {
+    // Removes any manifest files that are no longer in use by this client
+    let manifestDir = managedInstallsDir(subpath: "manifests")
+    let exceptions = ["SelfServeManifest"]
+    let filemanager = FileManager.default
+    let dirEnum = filemanager.enumerator(atPath: manifestDir)
+    var foundDirectories = [String]()
+    while let file = dirEnum?.nextObject() as? String {
+        if exceptions.contains(file) {
+            continue
+        }
+        let fullPath = (manifestDir as NSString).appendingPathComponent(file)
+        if pathIsDirectory(fullPath) {
+            foundDirectories.append(fullPath)
+            continue
+        }
+        if Manifests.shared.get(file) == nil {
+            try? filemanager.removeItem(atPath: fullPath)
+        }
+    }
+    // clean up any empty directories
+    for directory in foundDirectories.reversed() {
+        if let contents = try? filemanager.contentsOfDirectory(atPath: directory),
+           contents.isEmpty
+        {
+            try? filemanager.removeItem(atPath: directory)
+        }
+    }
 }
 
 func manifestData(_ path: String) -> PlistDict? {
