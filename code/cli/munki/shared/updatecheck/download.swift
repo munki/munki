@@ -191,17 +191,23 @@ func cleanUpIconsDir(keepList: [String] = []) {
     let iconsDir = managedInstallsDir(subpath: "icons")
     let filemanager = FileManager.default
     let dirEnum = filemanager.enumerator(atPath: iconsDir)
+    var foundDirectories = [String]()
     while let file = dirEnum?.nextObject() as? String {
         let fullPath = (iconsDir as NSString).appendingPathComponent(file)
-        if !pathIsDirectory(fullPath) {
-            if !itemsToKeep.contains(file) {
-                try? filemanager.removeItem(atPath: fullPath)
-            }
-        } else if let dirContents = try? filemanager.contentsOfDirectory(atPath: fullPath),
-                  dirContents.isEmpty
-        {
-            // remove any empty directories as well
+        if pathIsDirectory(fullPath) {
+            foundDirectories.append(fullPath)
+            continue
+        }
+        if !itemsToKeep.contains(file) {
             try? filemanager.removeItem(atPath: fullPath)
+        }
+    }
+    // clean up any empty directories
+    for directory in foundDirectories.reversed() {
+        if let contents = try? filemanager.contentsOfDirectory(atPath: directory),
+           contents.isEmpty
+        {
+            try? filemanager.removeItem(atPath: directory)
         }
     }
 }
