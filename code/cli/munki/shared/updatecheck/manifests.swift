@@ -7,6 +7,117 @@
 
 import Foundation
 
+enum ManifestError: Error {
+    case invalid(_ description: String)
+    case notRetrieved(_ description: String)
+    case connection(errorCode: Int, description: String)
+    case http(errorCode: Int, description: String)
+}
+
+extension ManifestError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case let .invalid(description):
+            return "Manifest is invalid: \(description)"
+        case let .notRetrieved(description):
+            return "Manifest was not retreived: \(description)"
+        case let .connection(errorCode, description):
+            return "There was a connection error: \(errorCode): \(description)"
+        case let .http(errorCode, description):
+            return "There was an HTTP error: \(errorCode): \(description)"
+        }
+    }
+}
+
+class Manifests {
+    // a Singleton class to track manifest_name -> local path
+    static let shared = Manifests()
+
+    var db: [String: String]
+
+    private init() {
+        db = [String: String]()
+    }
+
+    func set(_ name: String, path: String) {
+        db[name] = path
+    }
+
+    func get(_ name: String) -> String? {
+        return db[name]
+    }
+
+    func getAll() -> [String: String] {
+        return db
+    }
+
+    func delete(_ name: String) {
+        db[name] = nil
+    }
+}
+
+func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String? {
+    // Gets a manifest from the server.
+    //
+    // Returns:
+    //    string local path to the downloaded manifest
+    // Throws:
+    //    FetchError if we can't connect to the server
+    //    ManifestError if we can't get the manifest
+
+    // have we already retrieved it this session?
+    if let manifestLocalPath = Manifests.shared.get(name) {
+        return manifestLocalPath
+    }
+
+    let manifestLocalPath = managedInstallsDir(subpath: "manifests/\(name)")
+    // make sure the directory exists to store it
+    let manifestLocalPathDir = (manifestLocalPath as NSString).deletingLastPathComponent
+    if !createMissingDirs(manifestLocalPathDir) {
+        throw ManifestError.notRetrieved(
+            "Could not create a local directory to store manifest")
+    }
+
+    // try to get the manifest from the server
+    displayDetail("Getting manifest \(name)...")
+    let message = "Retrieving list of software for this machine..."
+    do {
+        _ = try fetchMunkiResource(
+            kind: .manifest,
+            name: name,
+            destinationPath: manifestLocalPath,
+            message: message
+        )
+    } catch let FetchError.connection(errorCode, description) {
+        throw ManifestError.connection(errorCode: errorCode, description: description)
+    } catch let FetchError.http(errorCode, description) {
+        if !suppressErrors {
+            displayError("Could not retrieve manifest \(name) from the server. HTTP error \(errorCode): \(description)")
+        }
+        throw ManifestError.http(errorCode: errorCode, description: description)
+    } catch {
+        if !suppressErrors {
+            displayError("Could not retrieve manifest \(name) from the server: \(error.localizedDescription)")
+        }
+        throw ManifestError.notRetrieved(error.localizedDescription)
+    }
+
+    // validate the plist
+    do {
+        _ = try readPlist(fromFile: manifestLocalPath)
+    } catch {
+        displayError("Manifest returned for \(name) is invalid.")
+        try? FileManager.default.removeItem(atPath: manifestLocalPath)
+        throw ManifestError.invalid(
+            "Manifest returned for \(name) is invalid: \(error.localizedDescription)")
+    }
+
+    // got a valid plist
+    displayDetail("Retreived manifest \(name)")
+    Manifests.shared.set(name, path: manifestLocalPath)
+    return manifestLocalPath
+}
+
 func manifestData(_ path: String) -> PlistDict? {
     // Reads a manifest file, returns a dictionary.
     if pathExists(path) {
