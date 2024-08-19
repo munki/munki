@@ -700,9 +700,9 @@ func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, 
     return (str, "")
 }
 
-func getInstalledPackages() async -> PlistDict {
+func getInstalledPackages() async -> [String: String] {
     // Builds a dictionary of installed receipts and their version number
-    var installedpkgs = PlistDict()
+    var installedpkgs = [String: String]()
 
     let results = await runCliAsync(
         "/usr/sbin/pkgutil", arguments: ["--regexp", "--pkg-info-plist", ".*"]
