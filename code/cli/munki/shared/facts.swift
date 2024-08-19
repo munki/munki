@@ -163,7 +163,7 @@ func addTzoffsetToDate(_ date: Date) -> Date {
     return Date(timeInterval: secondsOffset, since: date)
 }
 
-func predicateInfoObject() async -> PlistDict {
+func generatePredicateInfo() async -> PlistDict {
     // Returns our info object used for predicate comparisons
 
     async let machine = getMachineFacts()
@@ -197,6 +197,29 @@ func predicateInfoObject() async -> PlistDict {
     infoObject["applications"] = appData()
 
     return infoObject
+}
+
+class PredicateInfo {
+    // a Singleton class for predicate info, since it's expensive
+    // to generate
+    static let shared = PredicateInfo()
+
+    var info: PlistDict
+
+    private init() {
+        info = PlistDict()
+    }
+
+    func get() async -> PlistDict {
+        if info.isEmpty {
+            info = await generatePredicateInfo()
+        }
+        return info
+    }
+}
+
+func predicateInfoObject() async -> PlistDict {
+    return await PredicateInfo.shared.get()
 }
 
 func predicateEvaluatesAsTrue(
