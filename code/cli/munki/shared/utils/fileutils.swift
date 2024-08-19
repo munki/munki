@@ -148,3 +148,31 @@ func getAbsolutePath(_ path: String) -> String {
     let composedPath = (cwd as NSString).appendingPathComponent(path)
     return ((composedPath as NSString).standardizingPath as NSString).resolvingSymlinksInPath
 }
+
+func cleanUpDir(_ dirPath: String, keep keepList: [String]) {
+    // Remove items in dirPath that aren't in the keepList
+    if !pathIsDirectory(dirPath) {
+        return
+    }
+    let filemanager = FileManager.default
+    let dirEnum = filemanager.enumerator(atPath: dirPath)
+    var foundDirectories = [String]()
+    while let file = dirEnum?.nextObject() as? String {
+        let fullPath = (dirPath as NSString).appendingPathComponent(file)
+        if pathIsDirectory(fullPath) {
+            foundDirectories.append(fullPath)
+            continue
+        }
+        if !keepList.contains(file) {
+            try? filemanager.removeItem(atPath: fullPath)
+        }
+    }
+    // clean up any empty directories
+    for directory in foundDirectories.reversed() {
+        if let contents = try? filemanager.contentsOfDirectory(atPath: directory),
+           contents.isEmpty
+        {
+            try? filemanager.removeItem(atPath: directory)
+        }
+    }
+}
