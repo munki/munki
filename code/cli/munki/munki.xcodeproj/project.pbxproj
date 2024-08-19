@@ -28,6 +28,8 @@
 		C01792D72C6E58D1008CBC22 /* download.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792D52C6E58D1008CBC22 /* download.swift */; };
 		C01792D92C6EC09C008CBC22 /* urls.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792D82C6EC09C008CBC22 /* urls.swift */; };
 		C01792DA2C6EC09C008CBC22 /* urls.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792D82C6EC09C008CBC22 /* urls.swift */; };
+		C01792DC2C6FFAC6008CBC22 /* catalogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792DB2C6FFAC6008CBC22 /* catalogs.swift */; };
+		C01792DD2C6FFAC6008CBC22 /* catalogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792DB2C6FFAC6008CBC22 /* catalogs.swift */; };
 		C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0209B892C63DDF1007664A0 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
@@ -298,6 +300,7 @@
 		C01792D22C6BC81B008CBC22 /* fetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fetch.swift; sourceTree = "<group>"; };
 		C01792D52C6E58D1008CBC22 /* download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = download.swift; sourceTree = "<group>"; };
 		C01792D82C6EC09C008CBC22 /* urls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = urls.swift; sourceTree = "<group>"; };
+		C01792DB2C6FFAC6008CBC22 /* catalogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = catalogs.swift; sourceTree = "<group>"; };
 		C0209B852C63C9FD007664A0 /* stoprequested.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stoprequested.swift; sourceTree = "<group>"; };
 		C0209B882C63DDF1007664A0 /* info.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
 		C0209B8F2C63E3B7007664A0 /* launchapp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launchapp; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -625,6 +628,7 @@
 			children = (
 				C07AED6A2C66F56C00DE6119 /* manifests.swift */,
 				C01792D52C6E58D1008CBC22 /* download.swift */,
+				C01792DB2C6FFAC6008CBC22 /* catalogs.swift */,
 			);
 			path = updatecheck;
 			sourceTree = "<group>";
@@ -1029,6 +1033,7 @@
 				C030A9B62C3DF6D0007F0B34 /* fileutils.swift in Sources */,
 				C01364582C3265D6008DB215 /* display.swift in Sources */,
 				C07A6FD22C2B654300090743 /* utils.swift in Sources */,
+				C01792DC2C6FFAC6008CBC22 /* catalogs.swift in Sources */,
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
 				C030A9BF2C409738007F0B34 /* iconutils.swift in Sources */,
 				C07AED6F2C67DF6B00DE6119 /* gurl.swift in Sources */,
@@ -1050,6 +1055,7 @@
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
 				C07AED702C67DF6B00DE6119 /* gurl.swift in Sources */,
+				C01792DD2C6FFAC6008CBC22 /* catalogs.swift in Sources */,
 				C0D9C2A12C6175A10019A067 /* processes.swift in Sources */,
 				C030A9F62C435183007F0B34 /* readline.swift in Sources */,
 				C07AED672C66D0A000DE6119 /* facts.swift in Sources */,
