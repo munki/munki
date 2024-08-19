@@ -20,7 +20,7 @@
 
 import Foundation
 
-func getMachineFacts() async -> PlistDict {
+func generateMachineFacts() async -> PlistDict {
     // Gets some facts about this machine we use to determine if a given
     // installer is applicable to this OS or hardware
 
@@ -64,6 +64,30 @@ func getMachineFacts() async -> PlistDict {
     machine["device_id"] = deviceID()
 
     return machine
+}
+
+class MachineFacts {
+    // a Singleton class for machine facts, since they are expensive
+    // to generate
+    static let shared = MachineFacts()
+
+    var facts: PlistDict
+
+    private init() {
+        facts = PlistDict()
+    }
+
+    func get() async -> PlistDict {
+        if facts.isEmpty {
+            facts = await generateMachineFacts()
+        }
+        return facts
+    }
+}
+
+func getMachineFacts() async -> PlistDict {
+    // return 'facts' about this machine
+    return await MachineFacts.shared.get()
 }
 
 private func conditionalScriptsDir() -> String {
