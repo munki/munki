@@ -141,7 +141,7 @@ func spApplicationData() async -> PlistDict {
     return applicationData
 }
 
-func appData() -> [[String: String]] {
+func getAppData() -> [[String: String]] {
     // Gets info on currently installed apps.
     // Returns a list of dicts containing path, name, version and bundleid
 
@@ -190,6 +190,31 @@ func appData() -> [[String: String]] {
         applicationData[index] = updatedItem
     }
     return applicationData
+}
+
+class ApplicationInventory {
+    // a Singleton class for application inventory info, since it's expensive
+    // to generate
+    static let shared = ApplicationInventory()
+
+    var inventory: [[String: String]]
+
+    private init() {
+        inventory = getAppData()
+    }
+
+    func get() -> [[String: String]] {
+        return inventory
+    }
+
+    func rescan() {
+        // force a rescan of app inventory
+        inventory = getAppData()
+    }
+}
+
+func appData() -> [[String: String]] {
+    return ApplicationInventory.shared.get()
 }
 
 func filteredAppData() -> [[String: String]] {
