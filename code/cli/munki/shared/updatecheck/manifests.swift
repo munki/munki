@@ -41,6 +41,10 @@ class Manifests {
         db = [String: String]()
     }
 
+    func list() -> [String] {
+        return Array(db.keys)
+    }
+
     func set(_ name: String, path: String) {
         db[name] = path
     }
@@ -160,7 +164,7 @@ func getPrimaryManifest(alternateIdentifier: String = "") throws -> String {
                 manifest = try getManifest(identifier, suppressErrors: true)
             } catch {
                 if error is ManifestError,
-                   index < identifiers.count
+                   index + 1 < identifiers.count // not last attempt
                 {
                     displayDetail("Manifest \(identifier) not found...")
                     continue // try the next identifier
@@ -187,30 +191,8 @@ func cleanUpManifests() {
     // Removes any manifest files that are no longer in use by this client
     let manifestDir = managedInstallsDir(subpath: "manifests")
     let exceptions = ["SelfServeManifest"]
-    let filemanager = FileManager.default
-    let dirEnum = filemanager.enumerator(atPath: manifestDir)
-    var foundDirectories = [String]()
-    while let file = dirEnum?.nextObject() as? String {
-        if exceptions.contains(file) {
-            continue
-        }
-        let fullPath = (manifestDir as NSString).appendingPathComponent(file)
-        if pathIsDirectory(fullPath) {
-            foundDirectories.append(fullPath)
-            continue
-        }
-        if Manifests.shared.get(file) == nil {
-            try? filemanager.removeItem(atPath: fullPath)
-        }
-    }
-    // clean up any empty directories
-    for directory in foundDirectories.reversed() {
-        if let contents = try? filemanager.contentsOfDirectory(atPath: directory),
-           contents.isEmpty
-        {
-            try? filemanager.removeItem(atPath: directory)
-        }
-    }
+    let keepList = Manifests.shared.list() + exceptions
+    cleanUpDir(manifestDir, keep: keepList)
 }
 
 func manifestData(_ path: String) -> PlistDict? {
