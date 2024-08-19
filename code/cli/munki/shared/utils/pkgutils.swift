@@ -640,7 +640,7 @@ func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict]? {
     return choices
 }
 
-func getInstalledPackageVersion(_ pkgid: String) -> String {
+func getInstalledPackageVersion(_ pkgid: String) -> String? {
     // Checks a package id against the receipts to determine if a
     // package is already installed.
     // Returns the version string of the installed pkg if it exists, or
@@ -650,19 +650,27 @@ func getInstalledPackageVersion(_ pkgid: String) -> String {
         "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid]
     )
     if results.exitcode == 0 {
-        guard let plist = try? readPlist(fromString: results.output),
-              let receipt = plist as? PlistDict else { return "" }
-        guard let foundpkgid = receipt["pkgid"] as? String else { return "" }
-        guard let foundversion = receipt["version"] as? String else { return "" }
+        guard let receipt = (try? readPlist(fromString: results.output)) as? PlistDict else {
+            displayDebug2("Unable to parse output from pkgutil")
+            return nil
+        }
+        guard let foundpkgid = receipt["pkgid"] as? String else {
+            displayDebug2("No pkgid in pkgutil output")
+            return nil
+        }
+        guard let foundversion = receipt["pkg-version"] as? String else {
+            displayDebug2("No version in pkgutil output")
+            return nil
+        }
         if foundpkgid == pkgid {
-            displayDebug2(
+            displayDebug1(
                 "\tThis machine has \(pkgid), version \(foundversion)")
             return foundversion
         }
     }
     // This package does not appear to be currently installed
-    displayDebug2("\tThis machine does not have \(pkgid)")
-    return ""
+    displayDebug1("\tThis machine does not have \(pkgid)")
+    return nil
 }
 
 func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, String) {
@@ -700,7 +708,7 @@ func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, 
     return (str, "")
 }
 
-func getInstalledPackages() async -> [String: String] {
+func generateInstalledPackages() async -> [String: String] {
     // Builds a dictionary of installed receipts and their version number
     var installedpkgs = [String: String]()
 
@@ -725,6 +733,31 @@ func getInstalledPackages() async -> [String: String] {
         }
     }
     return installedpkgs
+}
+
+class Receipts {
+    // a Singleton class for receipts, since they are expensive
+    // to generate
+    static let shared = Receipts()
+
+    var receipts: [String: String]
+
+    private init() {
+        receipts = [String: String]()
+    }
+
+    func get() async -> [String: String] {
+        if receipts.isEmpty {
+            receipts = await generateInstalledPackages()
+        }
+        return receipts
+    }
+}
+
+func getInstalledPackages() async -> [String: String] {
+    // uses the singleton Receipts since getting the info
+    // is expensive
+    return await Receipts.shared.get()
 }
 
 // This function doesn't really have anything to do with packages or receipts
