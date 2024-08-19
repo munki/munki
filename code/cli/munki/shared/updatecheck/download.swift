@@ -189,27 +189,7 @@ func cleanUpIconsDir(keepList: [String] = []) {
     // to keep
     let itemsToKeep = keepList + [ICON_HASHES_PLIST_NAME]
     let iconsDir = managedInstallsDir(subpath: "icons")
-    let filemanager = FileManager.default
-    let dirEnum = filemanager.enumerator(atPath: iconsDir)
-    var foundDirectories = [String]()
-    while let file = dirEnum?.nextObject() as? String {
-        let fullPath = (iconsDir as NSString).appendingPathComponent(file)
-        if pathIsDirectory(fullPath) {
-            foundDirectories.append(fullPath)
-            continue
-        }
-        if !itemsToKeep.contains(file) {
-            try? filemanager.removeItem(atPath: fullPath)
-        }
-    }
-    // clean up any empty directories
-    for directory in foundDirectories.reversed() {
-        if let contents = try? filemanager.contentsOfDirectory(atPath: directory),
-           contents.isEmpty
-        {
-            try? filemanager.removeItem(atPath: directory)
-        }
-    }
+    cleanUpDir(iconsDir, keep: itemsToKeep)
 }
 
 func getIconHashes() -> [String: String] {
@@ -353,7 +333,7 @@ func downloadClientResources() {
     }
 }
 
-func downloadCatalog(_ catalogName: String) -> String {
+func downloadCatalog(_ catalogName: String) -> String? {
     // Attempt to download a catalog from the Munki server, Returns the path to
     // the downloaded catalog file
     let catalogPath = managedInstallsDir(subpath: "catalogs/\(catalogName)")
@@ -370,7 +350,7 @@ func downloadCatalog(_ catalogName: String) -> String {
     } catch {
         displayError("Could not retrieve catalog \(catalogName) from server: \(error.localizedDescription)")
     }
-    return ""
+    return nil
 }
 
 // TODO: precaching support (in progress)
