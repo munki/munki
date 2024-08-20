@@ -36,6 +36,8 @@
 		C01792E32C73B590008CBC22 /* compare.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E12C73B590008CBC22 /* compare.swift */; };
 		C01792E52C73FFD4008CBC22 /* installationstate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E42C73FFD4008CBC22 /* installationstate.swift */; };
 		C01792E62C73FFD4008CBC22 /* installationstate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E42C73FFD4008CBC22 /* installationstate.swift */; };
+		C01792E82C74F989008CBC22 /* selfservice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E72C74F989008CBC22 /* selfservice.swift */; };
+		C01792E92C74F989008CBC22 /* selfservice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E72C74F989008CBC22 /* selfservice.swift */; };
 		C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0209B892C63DDF1007664A0 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
@@ -310,6 +312,7 @@
 		C01792DE2C73B1D3008CBC22 /* analyze.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = analyze.swift; sourceTree = "<group>"; };
 		C01792E12C73B590008CBC22 /* compare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = compare.swift; sourceTree = "<group>"; };
 		C01792E42C73FFD4008CBC22 /* installationstate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installationstate.swift; sourceTree = "<group>"; };
+		C01792E72C74F989008CBC22 /* selfservice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = selfservice.swift; sourceTree = "<group>"; };
 		C0209B852C63C9FD007664A0 /* stoprequested.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stoprequested.swift; sourceTree = "<group>"; };
 		C0209B882C63DDF1007664A0 /* info.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
 		C0209B8F2C63E3B7007664A0 /* launchapp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launchapp; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -641,6 +644,7 @@
 				C01792DE2C73B1D3008CBC22 /* analyze.swift */,
 				C01792E12C73B590008CBC22 /* compare.swift */,
 				C01792E42C73FFD4008CBC22 /* installationstate.swift */,
+				C01792E72C74F989008CBC22 /* selfservice.swift */,
 			);
 			path = updatecheck;
 			sourceTree = "<group>";
@@ -1049,6 +1053,7 @@
 				C07A6FD22C2B654300090743 /* utils.swift in Sources */,
 				C01792DC2C6FFAC6008CBC22 /* catalogs.swift in Sources */,
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
+				C01792E82C74F989008CBC22 /* selfservice.swift in Sources */,
 				C030A9BF2C409738007F0B34 /* iconutils.swift in Sources */,
 				C07AED6F2C67DF6B00DE6119 /* gurl.swift in Sources */,
 				C07AED632C66CFBD00DE6119 /* appinventory.swift in Sources */,
@@ -1090,6 +1095,7 @@
 				C01792E62C73FFD4008CBC22 /* installationstate.swift in Sources */,
 				C01792D42C6BC81B008CBC22 /* fetch.swift in Sources */,
 				C043ED202C4822C70047C025 /* sqlite3.swift in Sources */,
+				C01792E92C74F989008CBC22 /* selfservice.swift in Sources */,
 				C0D00FA82C45814F0021DA9C /* repoutils.swift in Sources */,
 				C013644E2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FBE2C2B5AF000090743 /* prefs.swift in Sources */,
