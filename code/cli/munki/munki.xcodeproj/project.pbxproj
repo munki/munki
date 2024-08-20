@@ -38,6 +38,10 @@
 		C01792E62C73FFD4008CBC22 /* installationstate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E42C73FFD4008CBC22 /* installationstate.swift */; };
 		C01792E82C74F989008CBC22 /* selfservice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E72C74F989008CBC22 /* selfservice.swift */; };
 		C01792E92C74F989008CBC22 /* selfservice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792E72C74F989008CBC22 /* selfservice.swift */; };
+		C01792EB2C75089F008CBC22 /* licensing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792EA2C75089F008CBC22 /* licensing.swift */; };
+		C01792EC2C75089F008CBC22 /* licensing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792EA2C75089F008CBC22 /* licensing.swift */; };
+		C01792EE2C75187E008CBC22 /* autoconfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792ED2C75187E008CBC22 /* autoconfig.swift */; };
+		C01792EF2C75187E008CBC22 /* autoconfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01792ED2C75187E008CBC22 /* autoconfig.swift */; };
 		C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0209B892C63DDF1007664A0 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
@@ -313,6 +317,8 @@
 		C01792E12C73B590008CBC22 /* compare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = compare.swift; sourceTree = "<group>"; };
 		C01792E42C73FFD4008CBC22 /* installationstate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installationstate.swift; sourceTree = "<group>"; };
 		C01792E72C74F989008CBC22 /* selfservice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = selfservice.swift; sourceTree = "<group>"; };
+		C01792EA2C75089F008CBC22 /* licensing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = licensing.swift; sourceTree = "<group>"; };
+		C01792ED2C75187E008CBC22 /* autoconfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = autoconfig.swift; sourceTree = "<group>"; };
 		C0209B852C63C9FD007664A0 /* stoprequested.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stoprequested.swift; sourceTree = "<group>"; };
 		C0209B882C63DDF1007664A0 /* info.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
 		C0209B8F2C63E3B7007664A0 /* launchapp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launchapp; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -645,6 +651,8 @@
 				C01792E12C73B590008CBC22 /* compare.swift */,
 				C01792E42C73FFD4008CBC22 /* installationstate.swift */,
 				C01792E72C74F989008CBC22 /* selfservice.swift */,
+				C01792EA2C75089F008CBC22 /* licensing.swift */,
+				C01792ED2C75187E008CBC22 /* autoconfig.swift */,
 			);
 			path = updatecheck;
 			sourceTree = "<group>";
@@ -1020,6 +1028,7 @@
 			files = (
 				C0209B892C63DDF1007664A0 /* info.swift in Sources */,
 				C0D9C2A62C62C12E0019A067 /* munkistatus.swift in Sources */,
+				C01792EB2C75089F008CBC22 /* licensing.swift in Sources */,
 				C07074E82C34932400B86310 /* pkgutils.swift in Sources */,
 				C07074E52C34910F00B86310 /* osutils.swift in Sources */,
 				C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */,
@@ -1041,6 +1050,7 @@
 				C0D9C29A2C607D390019A067 /* xattr.swift in Sources */,
 				C0D9C2942C5F08CA0019A067 /* pkg.swift in Sources */,
 				C01792E52C73FFD4008CBC22 /* installationstate.swift in Sources */,
+				C01792EE2C75187E008CBC22 /* autoconfig.swift in Sources */,
 				C0D00FB02C458EAA0021DA9C /* version.swift in Sources */,
 				C043ED1F2C4822C70047C025 /* sqlite3.swift in Sources */,
 				C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */,
@@ -1071,6 +1081,7 @@
 			files = (
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C01364462C2E051F008DB215 /* makecatalogslib.swift in Sources */,
+				C01792EC2C75089F008CBC22 /* licensing.swift in Sources */,
 				C0D00FB72C45BCB90021DA9C /* errors.swift in Sources */,
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
@@ -1114,6 +1125,7 @@
 				C030A9C22C41B556007F0B34 /* pkginfolib.swift in Sources */,
 				C07074E92C34932400B86310 /* pkgutils.swift in Sources */,
 				C07074EC2C34A6AD00B86310 /* versionutils.swift in Sources */,
+				C01792EF2C75187E008CBC22 /* autoconfig.swift in Sources */,
 				C013644A2C2F8EFE008DB215 /* GitFileRepo.swift in Sources */,
 				C0D9C2A42C61939E0019A067 /* scriptutils.swift in Sources */,
 				C01792E02C73B1D3008CBC22 /* analyze.swift in Sources */,

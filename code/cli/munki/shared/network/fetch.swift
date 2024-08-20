@@ -620,8 +620,8 @@ func fetchMunkiResource(
     )
 }
 
-func getDataFromServer(_ url: String) throws -> Data? {
-    // Returns data from server as string.
+func getDataFromURL(_ url: String) throws -> Data? {
+    // Returns data from URL.
     // We use the existing fetchMunkiResource function so any custom
     // authentication/authorization headers are used
     // (including, eventually, middleware-generated headers)
@@ -669,7 +669,7 @@ func checkServer(_ urlString: String = "") -> (Int, String) {
         return (-1, "Unsupported URL scheme: \(url.scheme ?? "<none>")")
     }
     do {
-        _ = try getDataFromServer(url.absoluteString)
+        _ = try getDataFromURL(url.absoluteString)
     } catch let err as FetchError {
         switch err {
         case let .connection(errorCode, description):
