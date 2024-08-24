@@ -202,9 +202,9 @@ func generatePredicateInfo() async -> PlistDict {
 
     // generate additional OS version info to use in comparisons
     let osVersComponents = (getOSVersion(onlyMajorMinor: false) + ".0.0").components(separatedBy: ".")
-    infoObject["os_vers_major"] = osVersComponents[0]
-    infoObject["os_vers_minor"] = osVersComponents[1]
-    infoObject["os_vers_patch"] = osVersComponents[2]
+    infoObject["os_vers_major"] = Int(osVersComponents[0])
+    infoObject["os_vers_minor"] = Int(osVersComponents[1])
+    infoObject["os_vers_patch"] = Int(osVersComponents[2])
 
     // TODO: get last build number component for easier predicate comparison
     // let build = getOSBuild()
