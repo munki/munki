@@ -173,10 +173,29 @@ func pref(_ prefName: String) -> Any? {
     return prefValue
 }
 
-func managedInstallsDir(subpath: String?) -> String {
+func stringPref(_ prefName: String) -> String? {
+    // returns preference as a String if possible
+    return pref(prefName) as? String
+}
+
+func boolPref(_ prefName: String) -> Bool? {
+    // returns preference as a Bool if possible
+    return pref(prefName) as? Bool
+}
+
+func intPref(_ prefName: String) -> Int? {
+    // returns preference as an Int if possible
+    return pref(prefName) as? Int
+}
+
+func managedInstallsDir(subpath: String? = nil) -> String {
     // convenience function to return the path to the Managed Installs dir
     // or a subpath of that directory
-    let managedInstallsDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    let managedInstallsDir: String = if pref("DeveloperDebug") as? Bool ?? false {
+        "/Users/Shared/Managed Installs"
+    } else {
+        pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    }
     if let subpath {
         return (managedInstallsDir as NSString).appendingPathComponent(subpath)
     }
