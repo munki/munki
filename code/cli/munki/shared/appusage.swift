@@ -9,9 +9,7 @@ import Foundation
 
 func appUsageDBPath() -> String {
     // returns path to our appusage DB
-    // let dbDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
-    let dbDir = "/tmp"
-    return (dbDir as NSString).appendingPathComponent("application_usage.sqlite")
+    return managedInstallsDir(subpath: "application_usage.sqlite")
 }
 
 class ApplicationUsageRecorder {
