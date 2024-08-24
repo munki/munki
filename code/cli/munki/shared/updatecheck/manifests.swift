@@ -269,3 +269,142 @@ func removeFromSelfServeUninstalls(_ itemName: String) {
     // managed_uninstalls list
     removeItemFromSelfServeSection(itemname: itemName, section: "managed_uninstalls")
 }
+
+func processManifest(
+    _ manifestdata: PlistDict,
+    forKey key: String,
+    installInfo: inout PlistDict,
+    parentCatalogs: [String] = [],
+    manifestName: String = "embedded manifest"
+) async throws {
+    // Processes keys in manifests to build the lists of items to install and
+    // remove.
+
+    // Can be recursive if manifests include other manifests.
+    // Probably doesn't handle circular manifest references well.
+
+    // manifest can be a path to a manifest file or a dictionary object.
+
+    let manifestCatalogs = manifestdata["catalogs"] as? [String] ?? []
+    let catalogList: [String] = if !manifestCatalogs.isEmpty {
+        manifestCatalogs
+    } else if !parentCatalogs.isEmpty {
+        parentCatalogs
+    } else {
+        []
+    }
+    if catalogList.isEmpty {
+        displayWarning("Manifest \(manifestName) has no catalogs")
+        return
+    }
+
+    // process all included manifests first
+    for manifestName in manifestdata["included_manifests"] as? [String] ?? [] {
+        if manifestName.isEmpty {
+            continue
+        }
+        let nestedManifestPath = try getManifest(manifestName)
+        if stopRequested() {
+            return // maybe should throw a StopRequestedException?
+        }
+        try await processManifest(
+            atPath: nestedManifestPath,
+            forKey: key,
+            installInfo: &installInfo,
+            parentCatalogs: catalogList
+        )
+    }
+
+    // process conditional items
+    if let conditionalItems = manifestdata["conditional_items"] as? [PlistDict] {
+        displayDebug1("** Processing conditional_items in \(manifestName)")
+        // conditionalitems should be an array of dicts
+        // each dict has a predicate; the rest consists of the
+        // same keys as a manifest
+        for item in conditionalItems {
+            guard let predicate = item["condition"] as? String else {
+                displayWarning("Missing predicate for conditional_item \(item)")
+                continue
+            }
+            if await predicateEvaluatesAsTrue(
+                predicate,
+                infoObject: predicateInfoObject(),
+                additionalInfo: ["catalogs": catalogList]
+            ) {
+                // use item as the embedded manifest
+                try await processManifest(
+                    item,
+                    forKey: key,
+                    installInfo: &installInfo,
+                    parentCatalogs: catalogList
+                )
+            }
+        }
+    }
+
+    if key == "default_installs",
+       let itemList = manifestdata[key] as? [String]
+    {
+        processDefaultInstalls(itemList)
+    } else if key == "featured_items",
+              let itemList = manifestdata[key] as? [String]
+    {
+        var featuredItems = installInfo["featured_items"] as? [String] ?? []
+        featuredItems += itemList
+        featuredItems = Array(Set(featuredItems))
+        installInfo["featured_items"] = featuredItems
+    } else if let itemList = manifestdata[key] as? [String] {
+        for item in itemList {
+            if stopRequested() {
+                return // or throw?
+            }
+            if key == "managed_installs" {
+                _ = await processInstall(
+                    item,
+                    catalogList: catalogList,
+                    installInfo: &installInfo
+                )
+            }
+            if key == "managed_updates" {
+                _ = await processManagedUpdate(
+                    item,
+                    catalogList: catalogList,
+                    installInfo: &installInfo
+                )
+            }
+            if key == "optional_installs" {
+                _ = await processOptionalInstall(
+                    item,
+                    catalogList: catalogList,
+                    installInfo: &installInfo
+                )
+            }
+            if key == "managed_uninstalls" {
+                _ = await processRemoval(
+                    item,
+                    catalogList: catalogList,
+                    installInfo: &installInfo
+                )
+            }
+        }
+    }
+}
+
+func processManifest(
+    atPath manifestPath: String,
+    forKey key: String,
+    installInfo: inout PlistDict,
+    parentCatalogs: [String] = []
+) async throws {
+    // processe a manifest _file_
+    displayDebug1("** Processing manifest \(baseName(manifestPath)) for \(key)")
+    if let manifestdata = manifestData(manifestPath) {
+        try await processManifest(
+            manifestdata,
+            forKey: key,
+            installInfo: &installInfo,
+            parentCatalogs: parentCatalogs,
+            manifestName: baseName(manifestPath)
+        )
+    }
+}
