@@ -58,8 +58,7 @@ class Report {
 
     func reportFile() -> String {
         // returns path to report file
-        let reportDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
-        return (reportDir as NSString).appendingPathComponent("ManagedInstallReport.plist")
+        return managedInstallsDir(subpath: "ManagedInstallReport.plist")
     }
 
     func save() {
