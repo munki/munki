@@ -3,4 +3,6 @@
 //
 #include <readline/readline.h>
 #include <histedit.h>
+#include "predicates.h"
+
 
