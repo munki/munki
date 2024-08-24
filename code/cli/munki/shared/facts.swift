@@ -252,21 +252,19 @@ func predicateEvaluatesAsTrue(
     additionalInfo: PlistDict? = nil
 ) -> Bool {
     // Evaluates predicate against the info object; returns a boolean
-
-    // TODO: a badly-formed predicateString can trigger an NSException
-    // which is not caught by Swift and instead causes a crash. Need to
-    // figure out a solution, since the admin can provide _any_ predicateString
-    // To trigger such an exception , use this predicateString:
-    //      "os-vers = \"14.6.1\""
-    // (Hint: it's the hyphen in the attribute name that triggers the crash)
+    // Calls out to an Objective-C function because NSPrediacte methods can
+    // raise NSExecption, whcih Swift cannot catch
 
     var ourObject = infoObject
     if let additionalInfo {
         ourObject.merge(additionalInfo) { _, new in new }
     }
-    displayDebug1("Evaluating predicate: \(predicateString)")
-    let predicate = NSPredicate(format: predicateString)
-    let result = predicate.evaluate(with: ourObject)
-    displayDebug1("Predicate \(predicateString) is \(result)")
-    return result
+    displayDebug1("Evaluating predicate: `\(predicateString)`")
+    let result = objCpredicateEvaluatesAsTrue(predicateString, ourObject)
+    displayDebug1("Predicate `\(predicateString)` is \(result == 1)")
+    if result == -1 {
+        // exception
+        displayError("Predicate `\(predicateString)` raised an NSException")
+    }
+    return result == 1
 }
