@@ -260,11 +260,13 @@ func predicateEvaluatesAsTrue(
         ourObject.merge(additionalInfo) { _, new in new }
     }
     displayDebug1("Evaluating predicate: `\(predicateString)`")
-    let result = objCpredicateEvaluatesAsTrue(predicateString, ourObject)
+    var err: NSError?
+    let result = objCpredicateEvaluatesAsTrue(predicateString, ourObject, &err)
     displayDebug1("Predicate `\(predicateString)` is \(result == 1)")
     if result == -1 {
         // exception
-        displayError("Predicate `\(predicateString)` raised an NSException")
+        let description = err?.localizedDescription ?? ""
+        displayError("Predicate `\(predicateString)` raised an NSException: \(description)")
     }
     return result == 1
 }

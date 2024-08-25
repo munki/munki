@@ -8,11 +8,12 @@
 #import <Foundation/Foundation.h>
 
 int objCpredicateEvaluatesAsTrue(NSString *predicateString,
-                                 NSDictionary *infoObject)
+                                 NSDictionary *infoObject,
+                                 NSError **errorPtr)
 {
     // Evaluates predicate against the info object; returns a boolean
     // Written in Objective-C because NSPredicate methods can throw NSExceptions, which
-    // Swift can't catch
+    // Swift can't catch. Error reason is returned in NSError
     @try {
         NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateString];
         BOOL result = [predicate evaluateWithObject: infoObject];
@@ -21,8 +22,13 @@ int objCpredicateEvaluatesAsTrue(NSString *predicateString,
         }
     }
     @catch(NSException *exception) {
-        // TODO: maybe extact info from the exception
-        // and set an NSError
+        if (errorPtr != NULL) {
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [exception reason] };
+            *errorPtr = [NSError errorWithDomain: @"com.googlecode.munki.ErrorDomain"
+                                 code: -1
+                                 userInfo: userInfo
+            ];
+        }
         return -1;
     }
     return 0;
