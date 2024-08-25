@@ -286,13 +286,14 @@ func processManifest(
     // manifest can be a path to a manifest file or a dictionary object.
 
     let manifestCatalogs = manifestdata["catalogs"] as? [String] ?? []
-    let catalogList: [String] = if !manifestCatalogs.isEmpty {
-        manifestCatalogs
+    var catalogList = [String]()
+    if !manifestCatalogs.isEmpty {
+        catalogList = manifestCatalogs
+        getCatalogs(catalogList)
     } else if !parentCatalogs.isEmpty {
-        parentCatalogs
-    } else {
-        []
+        catalogList = parentCatalogs
     }
+
     if catalogList.isEmpty {
         displayWarning("Manifest \(manifestName) has no catalogs")
         return
