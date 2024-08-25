@@ -14,5 +14,6 @@
 #import <Foundation/Foundation.h>
 
 int objCpredicateEvaluatesAsTrue(NSString *predicateString,
-                                 NSDictionary *infoObject);
+                                 NSDictionary *infoObject,
+                                 NSError **errorPtr);
 
