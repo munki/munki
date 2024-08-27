@@ -505,7 +505,9 @@ func processInstall(
             _ = await processInstall(
                 updateItem,
                 catalogList: catalogList,
-                installInfo: &installInfo
+                installInfo: &installInfo,
+                isManagedUpdate: isManagedUpdate,
+                isOptionalInstall: isOptionalInstall
             )
         }
     }
@@ -696,11 +698,11 @@ func processOptionalInstall(
         "icon_hash",
         "requires",
         "RestartAction",
-        "licensed_seat_info_available",
     ] {
         processedItem[key] = pkginfo[key]
     }
     processedItem["installed"] = isCurrentlyInstalled
+    processedItem["licensed_seat_info_available"] = pkginfo["licensed_seat_info_available"] as? Bool ?? false
     processedItem["uninstallable"] = (pkginfo["uninstallable"] as? Bool ?? false) && !(pkginfo["uninstall_method"] as? String ?? "").isEmpty
     // If the item is a precache item, record the precache flag
     // and also the installer item location (as long as item doesn't have a note
@@ -720,24 +722,24 @@ func processOptionalInstall(
         ] {
             processedItem[key] = pkginfo[key]
         }
-        let installerSize = pkginfo["installer_item_size"] as? Int ?? 0
-        processedItem["installer_item_size"] = installerSize
-        processedItem["installed_size"] = pkginfo["installed_size"] as? Int ?? installerSize
-        if let pkgInfoNote = pkginfo["note"] as? String,
-           processedItem["note"] == nil
-        {
-            processedItem["note"] = pkgInfoNote
-        } else if needsUpdate || !isCurrentlyInstalled {
-            if !enoughDiskSpaceFor(
-                pkginfo,
-                installList: installInfo["managed_installs"] as? [PlistDict] ?? [],
-                warn: true
-            ) {
-                processedItem["note"] = "Insufficient disk space to download and install."
-                if needsUpdate {
-                    processedItem["needs_update"] = false
-                    processedItem["update_available"] = true
-                }
+    }
+    let installerSize = pkginfo["installer_item_size"] as? Int ?? 0
+    processedItem["installer_item_size"] = installerSize
+    processedItem["installed_size"] = pkginfo["installed_size"] as? Int ?? installerSize
+    if let pkgInfoNote = pkginfo["note"] as? String,
+       processedItem["note"] == nil
+    {
+        processedItem["note"] = pkgInfoNote
+    } else if needsUpdate || !isCurrentlyInstalled {
+        if !enoughDiskSpaceFor(
+            pkginfo,
+            installList: installInfo["managed_installs"] as? [PlistDict] ?? [],
+            warn: true
+        ) {
+            processedItem["note"] = "Insufficient disk space to download and install."
+            if needsUpdate {
+                processedItem["needs_update"] = false
+                processedItem["update_available"] = true
             }
         }
     }

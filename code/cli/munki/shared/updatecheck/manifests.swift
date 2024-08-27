@@ -123,11 +123,11 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     return manifestLocalPath
 }
 
-func getPrimaryManifest(alternateIdentifier: String = "") throws -> String {
+func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
     // Gets the primary client manifest from the server.
     // Can throw all the same errors as getManifest
     var clientIdentifier = ""
-    if !alternateIdentifier.isEmpty {
+    if let alternateIdentifier, !alternateIdentifier.isEmpty {
         clientIdentifier = alternateIdentifier
     } else if pref("UseClientCertificate") as? Bool ?? false,
               pref("UseClientCertificateCNAsClientIdentifier") as? Bool ?? false

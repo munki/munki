@@ -40,9 +40,13 @@ func updateSelfServeManifest() {
     // read the user-generated manifest to ensure it's valid, then write it
     // to the system manifest location
     do {
-        let plist = try readPlist(fromFile: userManifest)
-        try writePlist(plist, toFile: systemManifest)
-        try? FileManager.default.removeItem(atPath: userManifest)
+        if let plist = try readPlist(fromFile: userManifest) {
+            try writePlist(plist, toFile: systemManifest)
+            try? FileManager.default.removeItem(atPath: userManifest)
+        } else {
+            displayError("Could not read \(userManifest): data was nil")
+            try? FileManager.default.removeItem(atPath: userManifest)
+        }
     } catch let PlistError.readError(description) {
         displayError("Could not read \(userManifest): \(description)")
         try? FileManager.default.removeItem(atPath: userManifest)

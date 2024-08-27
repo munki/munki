@@ -18,19 +18,20 @@
 
 import Foundation
 
-func updateAvailableLicenseSeats(_ installInfo: PlistDict) {
+func updateAvailableLicenseSeats(_ optionalInstalls: [PlistDict]) -> [PlistDict] {
     // Records # of available seats for each optional install
-    guard let licenseInfoURL = pref("LicenseInfoURL") as? String,
-          var optionalInstalls = installInfo["optional_installs"] as? [PlistDict]
-    else {
+    // returns an updated list of optional_installs with license info
+    guard let licenseInfoURL = pref("LicenseInfoURL") as? String else {
         // nothing to do
-        return
+        return optionalInstalls
     }
+
+    var mutableOptionalInstalls = optionalInstalls
 
     var licenseInfo = PlistDict()
     let itemsToCheck: [String]
-    itemsToCheck = optionalInstalls.filter {
-        $0["licensed_seat_info_available"] != nil &&
+    itemsToCheck = mutableOptionalInstalls.filter {
+        ($0["licensed_seat_info_available"] as? Bool ?? false) &&
             !($0["installed"] as? Bool ?? false)
     }.map {
         $0["name"] as? String ?? ""
@@ -77,7 +78,7 @@ func updateAvailableLicenseSeats(_ installInfo: PlistDict) {
     }
 
     // use licenseInfo to update remaining seats
-    for (index, item) in optionalInstalls.enumerated() {
+    for (index, item) in mutableOptionalInstalls.enumerated() {
         guard let itemName = item["name"] as? String else {
             continue
         }
@@ -86,7 +87,11 @@ func updateAvailableLicenseSeats(_ installInfo: PlistDict) {
             var seatsAvailable = false
             let seatInfo = licenseInfo[itemName] as? Int ?? 0
             displayDebug1("\(seatInfo) seats available for \(itemName)")
-            optionalInstalls[index]["licensed_seats_available"] = seatsAvailable
+            if seatInfo > 0 {
+                seatsAvailable = true
+            }
+            mutableOptionalInstalls[index]["licensed_seats_available"] = seatsAvailable
         }
     }
+    return mutableOptionalInstalls
 }
