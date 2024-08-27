@@ -35,3 +35,42 @@ func getConsoleUser() -> String {
     // Return console user
     return SCDynamicStoreCopyConsoleUser(nil, nil, nil) as? String ?? ""
 }
+
+func getIdleSeconds() -> Int {
+    // Returns the number of seconds since the last mouse
+    // or keyboard event.
+    return Int(hidIdleTime() / 1_000_000_000)
+}
+
+func networkUp() -> Bool {
+    // Determine if the network is up by looking for any non-loopback
+    // internet network interfaces.
+    //
+    // Returns:
+    // Boolean. true if non-loopback is found (network is up), false otherwise.
+    // TODO: replace this with something better that also handles IPv6
+    let result = runCLI("/sbin/ifconfig", arguments: ["-a", "inet"])
+    if result.exitcode == 0 {
+        for line in result.output.components(separatedBy: .newlines) {
+            if line.contains("inet") {
+                let parts = line.components(separatedBy: .whitespaces)
+                if parts.count > 2 {
+                    let ip = parts[2]
+                    if ip.components(separatedBy: ".").count == 4,
+                       !["127.0.0.1", "0.0.0.0"].contains(ip)
+                    {
+                        // found an IPv4 address that's not a loopback address
+                        return true
+                    }
+                }
+            }
+        }
+    }
+    return false
+}
+
+func detectNetworkHardware() {
+    // Trigger the detection of new network hardware,
+    // like a USB-to-Ethernet adapter
+    _ = runCLI("/usr/sbin/networksetup", arguments: ["-detectnewhardware"])
+}

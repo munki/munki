@@ -118,6 +118,22 @@ private func stringValueForIOServiceProperty(service: io_registry_entry_t, key: 
 
 // info functions that call IOKit
 
+func hidIdleTime() -> Int {
+    // returns mouse/keyboard idel time in nanoseconds
+    // (1/1000000000) of a second
+    let idleTime = IORegistryEntryCreateCFProperty(
+        serviceMatching("IOHIDSystem"),
+        "HIDIdleTime" as CFString,
+        kCFAllocatorDefault,
+        0
+    )
+    if idleTime == nil {
+        return 0
+    }
+    let nanoSeconds = idleTime?.takeRetainedValue() as! CFNumber
+    return nanoSeconds as! Int
+}
+
 func serialNumber() -> String {
     // Returns the serial number of this Mac
     let serial = IORegistryEntryCreateCFProperty(
