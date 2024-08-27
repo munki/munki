@@ -119,8 +119,8 @@ enum ProcessError: Error {
     case timeout
 }
 
-func checkCall(_ tool: String, arguments: [String] = [], stdIn: String = "") throws -> String {
-    // like Python's subprocess.check_call
+func checkOutput(_ tool: String, arguments: [String] = [], stdIn: String = "") throws -> String {
+    // like Python's subprocess.check_output
     let result = runCLI(tool, arguments: arguments, stdIn: stdIn)
     if result.exitcode != 0 {
         throw ProcessError.error(description: result.error)
