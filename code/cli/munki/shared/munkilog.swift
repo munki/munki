@@ -35,7 +35,11 @@ func munkiLog(_ message: String, logFile: String = "") {
     dateformatter.dateFormat = "MMM dd yyyy HH:mm:ss Z"
     let timestamp = dateformatter.string(from: Date())
     let logString = "\(timestamp) \(message)\n"
-    let defaultLogPath = pref("LogFile") as? String ?? managedInstallsDir(subpath: "Logs/ManagedSoftwareUpdate.log")
+    #if DEBUG
+        let defaultLogPath = "/Users/Shared/Managed Installs/Logs/ManagedSoftwareUpdate.log"
+    #else
+        let defaultLogPath = pref("LogFile") as? String ?? managedInstallsDir(subpath: "Logs/ManagedSoftwareUpdate.log")
+    #endif
     var logPath = ""
     if logFile.isEmpty {
         logPath = defaultLogPath
@@ -44,6 +48,9 @@ func munkiLog(_ message: String, logFile: String = "") {
         logPath = (logPath as NSString).appendingPathComponent(logFile)
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
+        if !pathExists(logPath) {
+            FileManager.default.createFile(atPath: logPath, contents: nil)
+        }
         if let fh = FileHandle(forUpdatingAtPath: logPath) {
             let _ = fh.seekToEndOfFile()
             fh.write(logData)

@@ -191,11 +191,11 @@ func intPref(_ prefName: String) -> Int? {
 func managedInstallsDir(subpath: String? = nil) -> String {
     // convenience function to return the path to the Managed Installs dir
     // or a subpath of that directory
-    let managedInstallsDir: String = if pref("DeveloperDebug") as? Bool ?? false {
-        "/Users/Shared/Managed Installs"
-    } else {
-        pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
-    }
+    #if DEBUG
+        let managedInstallsDir = "/Users/Shared/Managed Installs"
+    #else
+        let managedInstallsDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
+    #endif
     if let subpath {
         return (managedInstallsDir as NSString).appendingPathComponent(subpath)
     }

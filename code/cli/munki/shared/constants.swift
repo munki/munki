@@ -33,7 +33,11 @@ let EXIT_STATUS_INVALID_PARAMETERS = 200
 let EXIT_STATUS_ROOT_REQUIRED = 201
 
 let BUNDLE_ID = "ManagedInstalls" as CFString
-let DEFAULT_MANAGED_INSTALLS_DIR = "/Library/Managed Installs"
+#if DEBUG
+    let DEFAULT_MANAGED_INSTALLS_DIR = "/Users/Shared/Managed Installs"
+#else
+    let DEFAULT_MANAGED_INSTALLS_DIR = "/Library/Managed Installs"
+#endif
 let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
 
