@@ -1,5 +1,5 @@
 //
-//  core.swift
+//  installer.swift
 //  munki
 //
 //  Created by Greg Neagle on 8/5/24.

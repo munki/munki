@@ -35,7 +35,7 @@ func munkiLog(_ message: String, logFile: String = "") {
     dateformatter.dateFormat = "MMM dd yyyy HH:mm:ss Z"
     let timestamp = dateformatter.string(from: Date())
     let logString = "\(timestamp) \(message)\n"
-    let defaultLogPath = pref("LogFile") as? String ?? "\(DEFAULT_MANAGED_INSTALLS_DIR)/Logs/ManagedSoftwareUpdate.log"
+    let defaultLogPath = pref("LogFile") as? String ?? managedInstallsDir(subpath: "Logs/ManagedSoftwareUpdate.log")
     var logPath = ""
     if logFile.isEmpty {
         logPath = defaultLogPath

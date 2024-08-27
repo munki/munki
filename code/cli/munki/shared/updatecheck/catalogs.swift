@@ -105,7 +105,7 @@ func makeCatalogDB(_ catalogItems: [PlistDict]) -> PlistDict {
     pkgdb["named"] = nameTable // [String:[String:[Int]]]
     pkgdb["receipts"] = pkgidTable // [String:[String:[Int]]]
     pkgdb["updaters"] = updaters // [PlistDict]
-    pkgdb["autoremoveItems"] = autoremoveItems // [String]
+    pkgdb["autoremoveitems"] = autoremoveItems // [String]
     pkgdb["items"] = catalogItems // [PlistDict]
 
     return pkgdb
@@ -487,7 +487,8 @@ func getItemDetail(
         }
         // Is the current OS version >= minimum_os_version for the item?
         if !skipMinimumOSCheck,
-           let minimumOSVersion = item["minimum_os_version"] as? String
+           let minimumOSVersion = item["minimum_os_version"] as? String,
+           !minimumOSVersion.isEmpty
         {
             displayDebug1("Considering item \(name), version \(version) with minimum os version required \(minimumOSVersion)")
             displayDebug1("Our OS version is \(osVersion)")
@@ -499,7 +500,9 @@ func getItemDetail(
             }
         }
         // current OS version <= maximum_os_version?
-        if let maximumOSVersion = item["maximum_os_version"] as? String {
+        if let maximumOSVersion = item["maximum_os_version"] as? String,
+           !maximumOSVersion.isEmpty
+        {
             displayDebug1("Considering item \(name), version \(version) with maximum os version required \(maximumOSVersion)")
             displayDebug1("Our OS version is \(osVersion)")
             if MunkiVersion(osVersion) > MunkiVersion(maximumOSVersion) {
@@ -523,7 +526,9 @@ func getItemDetail(
             displayError("Unexpected error getting item name or version or getting machine architecture")
             return false
         }
-        if let supportedArchitectures = item["supported_architectures"] as? [String] {
+        if let supportedArchitectures = item["supported_architectures"] as? [String],
+           !supportedArchitectures.isEmpty
+        {
             displayDebug1("Considering item \(name), version \(version) with supported architectures: \(supportedArchitectures)")
             displayDebug1("Our architecture is \(currentArch)")
             if supportedArchitectures.contains(currentArch) {

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CAD2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
+		C0011CB22C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
+		C0011CB32C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
 		C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
 		C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
 		C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -187,8 +189,8 @@
 		C0D9C2982C6012C80019A067 /* dmg.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2962C6012C80019A067 /* dmg.swift */; };
 		C0D9C29A2C607D390019A067 /* xattr.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2992C607D390019A067 /* xattr.swift */; };
 		C0D9C29B2C607D390019A067 /* xattr.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2992C607D390019A067 /* xattr.swift */; };
-		C0D9C29D2C6151350019A067 /* core.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C29C2C6151350019A067 /* core.swift */; };
-		C0D9C29E2C6151350019A067 /* core.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C29C2C6151350019A067 /* core.swift */; };
+		C0D9C29D2C6151350019A067 /* installer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C29C2C6151350019A067 /* installer.swift */; };
+		C0D9C29E2C6151350019A067 /* installer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C29C2C6151350019A067 /* installer.swift */; };
 		C0D9C2A02C6175A10019A067 /* processes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C29F2C6175A10019A067 /* processes.swift */; };
 		C0D9C2A12C6175A10019A067 /* processes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C29F2C6175A10019A067 /* processes.swift */; };
 		C0D9C2A32C61939E0019A067 /* scriptutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A22C61939E0019A067 /* scriptutils.swift */; };
@@ -307,6 +309,7 @@
 		C0011CAB2C7A64F30004ED70 /* Predicates.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Predicates.m; sourceTree = "<group>"; };
 		C0011CAE2C7A98280004ED70 /* Predicates.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Predicates.h; sourceTree = "<group>"; };
 		C0011CAF2C7A990B0004ED70 /* managedsoftwareupdate-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "managedsoftwareupdate-Bridging-Header.h"; sourceTree = "<group>"; };
+		C0011CB12C7CDEC40004ED70 /* updatecheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = updatecheck.swift; sourceTree = "<group>"; };
 		C013643B2C2DC529008DB215 /* makecatalogslib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makecatalogslib.swift; sourceTree = "<group>"; };
 		C013643E2C2DCA5C008DB215 /* admincommon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = admincommon.swift; sourceTree = "<group>"; };
 		C01364422C2DD1BA008DB215 /* plistutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = plistutils.swift; sourceTree = "<group>"; };
@@ -383,7 +386,7 @@
 		C0D9C2932C5F08CA0019A067 /* pkg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkg.swift; sourceTree = "<group>"; };
 		C0D9C2962C6012C80019A067 /* dmg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dmg.swift; sourceTree = "<group>"; };
 		C0D9C2992C607D390019A067 /* xattr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = xattr.swift; sourceTree = "<group>"; };
-		C0D9C29C2C6151350019A067 /* core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = core.swift; sourceTree = "<group>"; };
+		C0D9C29C2C6151350019A067 /* installer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installer.swift; sourceTree = "<group>"; };
 		C0D9C29F2C6175A10019A067 /* processes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processes.swift; sourceTree = "<group>"; };
 		C0D9C2A22C61939E0019A067 /* scriptutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = scriptutils.swift; sourceTree = "<group>"; };
 		C0D9C2A52C62C12E0019A067 /* munkistatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkistatus.swift; sourceTree = "<group>"; };
@@ -540,7 +543,7 @@
 				C043ED222C483EEE0047C025 /* rmpkgs.swift */,
 				C0D9C2932C5F08CA0019A067 /* pkg.swift */,
 				C0D9C2962C6012C80019A067 /* dmg.swift */,
-				C0D9C29C2C6151350019A067 /* core.swift */,
+				C0D9C29C2C6151350019A067 /* installer.swift */,
 			);
 			path = installer;
 			sourceTree = "<group>";
@@ -669,6 +672,7 @@
 				C01792E72C74F989008CBC22 /* selfservice.swift */,
 				C01792EA2C75089F008CBC22 /* licensing.swift */,
 				C01792ED2C75187E008CBC22 /* autoconfig.swift */,
+				C0011CB12C7CDEC40004ED70 /* updatecheck.swift */,
 			);
 			path = updatecheck;
 			sourceTree = "<group>";
@@ -1056,13 +1060,14 @@
 				C07AED722C67F77000DE6119 /* sslerrors.swift in Sources */,
 				C01792D62C6E58D1008CBC22 /* download.swift in Sources */,
 				C0D00FB62C45BCB90021DA9C /* errors.swift in Sources */,
+				C0011CB22C7CDEC40004ED70 /* updatecheck.swift in Sources */,
 				C01792E22C73B590008CBC22 /* compare.swift in Sources */,
 				C07A6FB02C2B22A400090743 /* prefs.swift in Sources */,
 				C0D9C2972C6012C80019A067 /* dmg.swift in Sources */,
 				C07AED6B2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
 				C0D9C2A32C61939E0019A067 /* scriptutils.swift in Sources */,
-				C0D9C29D2C6151350019A067 /* core.swift in Sources */,
+				C0D9C29D2C6151350019A067 /* installer.swift in Sources */,
 				C0D9C29A2C607D390019A067 /* xattr.swift in Sources */,
 				C0D9C2942C5F08CA0019A067 /* pkg.swift in Sources */,
 				C01792E52C73FFD4008CBC22 /* installationstate.swift in Sources */,
@@ -1116,10 +1121,11 @@
 				C01364552C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C01792E32C73B590008CBC22 /* compare.swift in Sources */,
 				C01792D72C6E58D1008CBC22 /* download.swift in Sources */,
+				C0011CB32C7CDEC40004ED70 /* updatecheck.swift in Sources */,
 				C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C0D9C29B2C607D390019A067 /* xattr.swift in Sources */,
 				C030A9BC2C3F4CF4007F0B34 /* munkiimportlib.swift in Sources */,
-				C0D9C29E2C6151350019A067 /* core.swift in Sources */,
+				C0D9C29E2C6151350019A067 /* installer.swift in Sources */,
 				C07A6FDB2C2CF19600090743 /* cliutils.swift in Sources */,
 				C01792E62C73FFD4008CBC22 /* installationstate.swift in Sources */,
 				C01792D42C6BC81B008CBC22 /* fetch.swift in Sources */,
