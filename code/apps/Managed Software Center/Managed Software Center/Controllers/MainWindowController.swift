@@ -208,6 +208,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         // blur everything behind the MSC window
         blurBackground()
+
+        // seems redundant, but ensures the window is visible
+        // in front of the blurred background even if it was minimized
+        // previously
+        self.showWindow(self)
     }
     
     func weShouldBeObnoxious() -> Bool {
