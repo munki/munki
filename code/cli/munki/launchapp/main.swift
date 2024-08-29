@@ -48,12 +48,12 @@ func main() {
         }
         task.waitUntilExit()
         // sleep 10 secs to make launchd happy
-        usleep(10 * 1_000_000)
+        usleep(10_000_000)
         exit(0)
     } else {
         // we aren't in the current GUI session
         // sleep 10 secs to make launchd happy
-        usleep(10 * 1_000_000)
+        usleep(10_000_000)
         exit(0)
     }
 }

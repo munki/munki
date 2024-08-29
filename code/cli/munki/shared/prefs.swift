@@ -125,14 +125,20 @@ func reloadPrefs() {
     CFPreferencesAppSynchronize(BUNDLE_ID)
 }
 
-func setPref(_ prefName: String, _ prefValue: Any) {
+func setPref(_ prefName: String, _ prefValue: Any?) {
     /* Sets a preference, writing it to
      /Library/Preferences/ManagedInstalls.plist.
      This should normally be used only for 'bookkeeping' values;
      values that control the behavior of munki may be overridden
      elsewhere (by MCX, for example) */
     if let key = prefName as CFString? {
-        if let value = prefValue as CFPropertyList? {
+        if prefValue == nil {
+            CFPreferencesSetValue(
+                key, nil, BUNDLE_ID,
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost
+            )
+            CFPreferencesAppSynchronize(BUNDLE_ID)
+        } else if let value = prefValue as CFPropertyList? {
             CFPreferencesSetValue(
                 key, value, BUNDLE_ID,
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost
@@ -186,6 +192,20 @@ func boolPref(_ prefName: String) -> Bool? {
 func intPref(_ prefName: String) -> Int? {
     // returns preference as an Int if possible
     return pref(prefName) as? Int
+}
+
+func datePref(_ prefName: String) -> Date? {
+    // returns preference as a Date if possible
+    if let date = pref(prefName) as? Date {
+        return date
+    }
+    if let str = pref(prefName) as? String {
+        let dateFormatter = ISO8601DateFormatter()
+        if let date = dateFormatter.date(from: str) {
+            return date
+        }
+    }
+    return nil
 }
 
 func managedInstallsDir(subpath: String? = nil) -> String {
