@@ -85,12 +85,18 @@ class BackgroundBlurrer {
             blurredScreen[index].showWindow(self)
         }
     }
-    
+
     deinit {
-        for screen in blurredScreen {
-            screen.close()
+        for controller in blurredScreen {
+            controller.close()
         }
         blurredScreen = [BlurWindowController]()
+    }
+
+    func lowerWindowLevels() {
+        for controller in blurredScreen {
+            controller.window?.level = .normal
+        }
     }
 
     
