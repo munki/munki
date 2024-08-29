@@ -11,6 +11,10 @@
 		C0011CAD2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CB22C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
 		C0011CB32C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
+		C0011CB52C7EC5B60004ED70 /* msuutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB42C7EC5B60004ED70 /* msuutils.swift */; };
+		C0011CB62C7EC5B60004ED70 /* msuutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB42C7EC5B60004ED70 /* msuutils.swift */; };
+		C0011CB82C7F86480004ED70 /* distributednotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB72C7F86480004ED70 /* distributednotifications.swift */; };
+		C0011CB92C7F86480004ED70 /* distributednotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB72C7F86480004ED70 /* distributednotifications.swift */; };
 		C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
 		C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
 		C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -310,6 +314,8 @@
 		C0011CAE2C7A98280004ED70 /* Predicates.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Predicates.h; sourceTree = "<group>"; };
 		C0011CAF2C7A990B0004ED70 /* managedsoftwareupdate-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "managedsoftwareupdate-Bridging-Header.h"; sourceTree = "<group>"; };
 		C0011CB12C7CDEC40004ED70 /* updatecheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = updatecheck.swift; sourceTree = "<group>"; };
+		C0011CB42C7EC5B60004ED70 /* msuutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msuutils.swift; sourceTree = "<group>"; };
+		C0011CB72C7F86480004ED70 /* distributednotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = distributednotifications.swift; sourceTree = "<group>"; };
 		C013643B2C2DC529008DB215 /* makecatalogslib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makecatalogslib.swift; sourceTree = "<group>"; };
 		C013643E2C2DCA5C008DB215 /* admincommon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = admincommon.swift; sourceTree = "<group>"; };
 		C01364422C2DD1BA008DB215 /* plistutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = plistutils.swift; sourceTree = "<group>"; };
@@ -586,6 +592,8 @@
 			isa = PBXGroup;
 			children = (
 				C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */,
+				C0011CB42C7EC5B60004ED70 /* msuutils.swift */,
+				C0011CB72C7F86480004ED70 /* distributednotifications.swift */,
 			);
 			path = managedsoftwareupdate;
 			sourceTree = "<group>";
@@ -1074,7 +1082,9 @@
 				C01792EE2C75187E008CBC22 /* autoconfig.swift in Sources */,
 				C0D00FB02C458EAA0021DA9C /* version.swift in Sources */,
 				C043ED1F2C4822C70047C025 /* sqlite3.swift in Sources */,
+				C0011CB52C7EC5B60004ED70 /* msuutils.swift in Sources */,
 				C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */,
+				C0011CB82C7F86480004ED70 /* distributednotifications.swift in Sources */,
 				C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C0D9C2B02C62D4120019A067 /* powermanager.swift in Sources */,
 				C07A6FB22C2B22D300090743 /* constants.swift in Sources */,
@@ -1101,6 +1111,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0011CB92C7F86480004ED70 /* distributednotifications.swift in Sources */,
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C01364462C2E051F008DB215 /* makecatalogslib.swift in Sources */,
 				C01792EC2C75089F008CBC22 /* licensing.swift in Sources */,
@@ -1148,6 +1159,7 @@
 				C0D9C2982C6012C80019A067 /* dmg.swift in Sources */,
 				C030A9C22C41B556007F0B34 /* pkginfolib.swift in Sources */,
 				C07074E92C34932400B86310 /* pkgutils.swift in Sources */,
+				C0011CB62C7EC5B60004ED70 /* msuutils.swift in Sources */,
 				C07074EC2C34A6AD00B86310 /* versionutils.swift in Sources */,
 				C01792EF2C75187E008CBC22 /* autoconfig.swift in Sources */,
 				C013644A2C2F8EFE008DB215 /* GitFileRepo.swift in Sources */,

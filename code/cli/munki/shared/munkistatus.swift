@@ -52,7 +52,7 @@ func munkiStatusLaunch() {
 
     let launchfile = "/var/run/com.googlecode.munki.MunkiStatus"
     if FileManager.default.createFile(atPath: launchfile, contents: nil) {
-        usleep(100_000)
+        usleep(1_000_000)
         try? FileManager.default.removeItem(atPath: launchfile)
     } else {
         printStderr("Couldn't create launchpath \(launchfile)")
