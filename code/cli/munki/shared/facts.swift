@@ -151,7 +151,7 @@ func getConditions() async -> PlistDict {
     return PlistDict() // empty results
 }
 
-func subtractTzoffsetFromDate(_ date: Date) -> Date {
+func subtractTZOffsetFromDate(_ date: Date) -> Date {
     // Input: NSDate object
     // Output: NSDate object with same date and time as the UTC.
     // In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
@@ -169,7 +169,7 @@ func subtractTzoffsetFromDate(_ date: Date) -> Date {
     return Date(timeInterval: -secondsOffset, since: date)
 }
 
-func addTzoffsetToDate(_ date: Date) -> Date {
+func addTZOffsetToDate(_ date: Date) -> Date {
     // Input: NSDate object
     // Output: NSDate object with timezone difference added
     // to the date. This allows conditional_item conditions to
@@ -198,7 +198,7 @@ func generatePredicateInfo() async -> PlistDict {
     // use our start time for "current" date (if we have it)
     // and add the timezone offset to it so we can compare
     // UTC dates as though they were local dates.
-    infoObject["date"] = addTzoffsetToDate(Date())
+    infoObject["date"] = addTZOffsetToDate(Date())
 
     // generate additional OS version info to use in comparisons
     let osVersComponents = (getOSVersion(onlyMajorMinor: false) + ".0.0").components(separatedBy: ".")
