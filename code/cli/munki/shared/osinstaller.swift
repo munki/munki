@@ -232,3 +232,127 @@ func makeStageOSInstallerPkgInfo(_ appPath: String) throws -> PlistDict {
 
     return pkginfo
 }
+
+func verifyStagedOSInstaller(_ appPath: String) {
+    // Attempts to trigger a "verification" process against the staged macOS
+    // installer. This improves the launch time.
+    displayMinorStatus("Verifying macOS installer...")
+    displayPercentDone(current: -1, maximum: 100)
+    let startOSInstallPath = (appPath as NSString).appendingPathComponent("Contents/Resources/startosinstall")
+    let result = runCLI(startOSInstallPath, arguments: ["--usage"])
+    if result.exitcode != 0 {
+        displayWarning("Error verifying macOS installer: \(result.error)")
+    }
+}
+
+func stagedOSInstallerInfoPath() -> String {
+    // returns the path to the StagedOSInstaller.plist
+    // (which may or may not actually exist)
+    return managedInstallsDir(subpath: "StagedOSInstaller.plist")
+}
+
+func getOSInstallerPath(_ iteminfo: PlistDict) -> String? {
+    // Returns the expected path to the locally staged macOS installer
+    guard let itemsToCopy = iteminfo["items_to_copy"] as? [PlistDict],
+          itemsToCopy.count > 0
+    else {
+        return nil
+    }
+    let copiedItem = itemsToCopy[0]
+    let sourceItem = copiedItem["source_item"] as? String ?? ""
+    let destinationPath = copiedItem["destination_path"] as? String ?? ""
+    let destinationItem = copiedItem["destination_item"] as? String ?? ""
+    if destinationPath.isEmpty {
+        // destinationItem better contain a full path to the destination
+        return destinationItem
+    }
+    // destinationPath should path to the directory the item should be copied to
+    if destinationItem.isEmpty {
+        return (destinationPath as NSString).appendingPathComponent(baseName(sourceItem))
+    }
+    return (destinationPath as NSString).appendingPathComponent(baseName(destinationItem))
+}
+
+func createOSInstallerInfo(_ iteminfo: PlistDict) -> PlistDict? {
+    // Creates a dict describing a staged OS installer
+    guard let osInstallerPath = getOSInstallerPath(iteminfo) else {
+        return nil
+    }
+    var osInstallerInfo = PlistDict()
+    osInstallerInfo["osinstaller_path"] = osInstallerPath
+    osInstallerInfo["name"] = iteminfo["name"] as? String ?? ""
+    osInstallerInfo["display_name"] = iteminfo["display_name_staged"] as? String ?? iteminfo["display_name"] as? String ?? iteminfo["name"] as? String ?? ""
+    osInstallerInfo["description"] = iteminfo["description_staged"] as? String ?? iteminfo["description"] as? String ?? ""
+    osInstallerInfo["installed_size"] = iteminfo["installed_size_staged"] as? Int ?? iteminfo["installed_size"] as? Int ?? iteminfo["installer_item_size"] as? Int ?? 0
+    osInstallerInfo["installed"] = false
+    osInstallerInfo["version_to_install"] = iteminfo["version_to_install"] as? String ?? iteminfo["version"] as? String ?? "UNKNOWN"
+    osInstallerInfo["developer"] = iteminfo["developer"] as? String ?? "Apple"
+    // optional keys to copy if they exist
+    for key in ["category", "icon_name", "localized_strings"] {
+        osInstallerInfo[key] = iteminfo[key]
+    }
+    return osInstallerInfo
+}
+
+func recordStagedOSInstaller(_ iteminfo: PlistDict) {
+    // Records info on a staged macOS installer. This includes info for
+    // managedsoftwareupdate and Managed Software Center to display, and the
+    // path to the staged installer.
+    let infoPath = stagedOSInstallerInfoPath()
+    guard let stagedOSInstallerInfo = createOSInstallerInfo(iteminfo) else {
+        displayError("Error recording staged macOS installer: could not get os installer path")
+        return
+    }
+    do {
+        try writePlist(stagedOSInstallerInfo, toFile: infoPath)
+    } catch {
+        displayError("Error recording staged macOS installer: \(error.localizedDescription)")
+    }
+    // finally, trigger a verification
+    if let osInstallerPath = stagedOSInstallerInfo["osinstaller_path"] as? String {
+        verifyStagedOSInstaller(osInstallerPath)
+    }
+}
+
+func getStagedOSInstallerInfo() -> PlistDict? {
+    // Returns any info we may have on a staged OS installer
+    let infoPath = stagedOSInstallerInfoPath()
+    if !pathExists(infoPath) {
+        return nil
+    }
+    do {
+        guard let osInstallerInfo = try readPlist(fromFile: infoPath) as? PlistDict else {
+            displayError("Error reading \(infoPath): wrong format")
+            return nil
+        }
+        let appPath = osInstallerInfo["osinstaller_path"] as? String ?? ""
+        if appPath.isEmpty || !pathExists(appPath) {
+            try? FileManager.default.removeItem(atPath: infoPath)
+            return nil
+        }
+        return osInstallerInfo
+    } catch {
+        displayError("Error reading \(infoPath): \(error.localizedDescription)")
+        return nil
+    }
+}
+
+func removeStagedOSInstallerInfo() {
+    // Removes any staged OS installer we may have
+    let infoPath = stagedOSInstallerInfoPath()
+    try? FileManager.default.removeItem(atPath: infoPath)
+}
+
+func displayStagedOSInstallerInfo() {
+    // Prints staged macOS installer info and updates ManagedInstallReport.
+    guard let item = getStagedOSInstallerInfo() else { return }
+    Report.shared.record(item, to: "StagedOSInstaller")
+    displayInfo("")
+    displayInfo("The following macOS upgrade is available to install:")
+    let name = item["display_name"] as? String ?? item["name"] as? String ?? ""
+    let version = item["version_to_install"] as? String ?? ""
+    displayInfo("    + \(name)-\(version)")
+    displayInfo("       *Must be manually installed")
+}
+
+// MARK: functions for determining if a user is a volume owner
