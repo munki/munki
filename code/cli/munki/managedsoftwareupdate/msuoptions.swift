@@ -41,7 +41,11 @@ struct MSUCommonOptions: ParsableArguments {
     var munkiPkgsOnly = false
 }
 
-struct MSUConfigOptions {
+struct MSUConfigOptions: ParsableArguments {
+    @Option(name: .long,
+            help: "String to use as ClientIdentifier for this run only.")
+    var id: String
+
     @Flag(name: .long,
           help: "Print the current configuration and exit.")
     var showConfig = false
@@ -50,11 +54,40 @@ struct MSUConfigOptions {
           help: "Print the current configuration in XML plist format and exit.")
     var showConfigPlist = false
 
-    @Option(name: .long,
-            help: "String to use as ClientIdentifier for this run only.")
-    var id: String
-
     @Flag(name: .long,
           help: "Set up 'bootstrapping' mode for managedsoftwareupdate and exit. See the Munki wiki for details on 'bootstrapping'  mode.")
     var setBootstrapMode = false
+
+    @Flag(name: .long,
+          help: "Clear 'bootstrapping' mode for managedsoftwareupdate and exit.")
+    var clearBootstrapMode = false
+}
+
+struct MSUOtherOptions: ParsableArguments {
+    @Flag(name: .shortAndLong,
+          help: "Used by launchd LaunchDaemon for scheduled/background runs. No user feedback or interaction. Not tested or supported with any other option. This is a safer option to use than --installonly when using managedsoftwareupdate to install pending updates, since only unattended updates are installed if there is an active user. There is no progress feedback at the command-line.")
+    var auto = false
+
+    @Flag(name: .shortAndLong,
+          help: "Used by launchd LaunchAgent when running at the loginwindow. Not for general use.")
+    var logoutinstall = false
+
+    @Flag(name: .long,
+          help: "Used by Managed Software Center.app when user triggers an install without logging out. Not for general use.")
+    var installwithnologout = false
+
+    @Flag(name: .long, help: "Used internally. Not for general use.")
+    var launchosinstaller = false
+
+    @Flag(name: .long,
+          help: "Used by launchd LaunchAgent when checking manually. Not for general use.")
+    var manualcheck = false
+
+    @Flag(name: .shortAndLong,
+          help: "Uses MunkiStatus.app for progress feedback when installing. Not for general use.")
+    var munkistatusoutput = false
+
+    @Flag(name: .shortAndLong,
+          help: "Quiet mode. Logs messages, but nothing to stdout. --verbose is ignored if --quiet is used.")
+    var quiet = false
 }

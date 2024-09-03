@@ -25,24 +25,25 @@ import Foundation
 struct ManagedSoftwareUpdate: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "managedsoftwareupdate",
-        usage: "maangedsoftwareupdate [options]"
+        usage: "mangedsoftwareupdate [options]"
     )
 
     @Flag(name: [.long, .customShort("V")],
           help: "Print the version of the munki tools and exit.")
     var version = false
 
-    @Flag(name: .long,
-          help: "Print the current configuration and exit.")
-    var showConfig = false
+    @OptionGroup(title: "Commonly used options")
+    var commonOptions: MSUCommonOptions
+
+    @OptionGroup(title: "Configuration options")
+    var configOptions: MSUConfigOptions
+
+    @OptionGroup(title: "Other options")
+    var otherOptions: MSUOtherOptions
 
     mutating func run() throws {
         if version {
             print(getVersion())
-            return
-        }
-        if showConfig {
-            printConfig()
             return
         }
         print("Nothing much implemented yet!")
