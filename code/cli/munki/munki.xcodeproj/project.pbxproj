@@ -144,6 +144,10 @@
 		C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C07A6FDB2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C07A6FDC2C2CF19600090743 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C07A9D9A2C83DDD000D5D4B2 /* installinfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A9D992C83DDD000D5D4B2 /* installinfo.swift */; };
+		C07A9D9B2C83DDD000D5D4B2 /* installinfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A9D992C83DDD000D5D4B2 /* installinfo.swift */; };
+		C07A9D9D2C86CB3A00D5D4B2 /* msuoptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A9D9C2C86CB3A00D5D4B2 /* msuoptions.swift */; };
+		C07A9D9E2C86CB3A00D5D4B2 /* msuoptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A9D9C2C86CB3A00D5D4B2 /* msuoptions.swift */; };
 		C07AED632C66CFBD00DE6119 /* appinventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED622C66CFBD00DE6119 /* appinventory.swift */; };
 		C07AED642C66CFBD00DE6119 /* appinventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED622C66CFBD00DE6119 /* appinventory.swift */; };
 		C07AED662C66D0A000DE6119 /* facts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED652C66D0A000DE6119 /* facts.swift */; };
@@ -372,6 +376,8 @@
 		C07A6FD12C2B654300090743 /* utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = utils.swift; sourceTree = "<group>"; };
 		C07A6FD52C2B7F2100090743 /* FileRepo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileRepo.swift; sourceTree = "<group>"; };
 		C07A6FD92C2CF19600090743 /* cliutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cliutils.swift; sourceTree = "<group>"; };
+		C07A9D992C83DDD000D5D4B2 /* installinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installinfo.swift; sourceTree = "<group>"; };
+		C07A9D9C2C86CB3A00D5D4B2 /* msuoptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msuoptions.swift; sourceTree = "<group>"; };
 		C07AED622C66CFBD00DE6119 /* appinventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appinventory.swift; sourceTree = "<group>"; };
 		C07AED652C66D0A000DE6119 /* facts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = facts.swift; sourceTree = "<group>"; };
 		C07AED6A2C66F56C00DE6119 /* manifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifests.swift; sourceTree = "<group>"; };
@@ -594,6 +600,7 @@
 				C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */,
 				C0011CB42C7EC5B60004ED70 /* msuutils.swift */,
 				C0011CB72C7F86480004ED70 /* distributednotifications.swift */,
+				C07A9D9C2C86CB3A00D5D4B2 /* msuoptions.swift */,
 			);
 			path = managedsoftwareupdate;
 			sourceTree = "<group>";
@@ -647,6 +654,7 @@
 				C07AED622C66CFBD00DE6119 /* appinventory.swift */,
 				C07AED652C66D0A000DE6119 /* facts.swift */,
 				C0011CAB2C7A64F30004ED70 /* Predicates.m */,
+				C07A9D992C83DDD000D5D4B2 /* installinfo.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1054,6 +1062,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C07A9D9D2C86CB3A00D5D4B2 /* msuoptions.swift in Sources */,
 				C0209B892C63DDF1007664A0 /* info.swift in Sources */,
 				C0D9C2A62C62C12E0019A067 /* munkistatus.swift in Sources */,
 				C01792EB2C75089F008CBC22 /* licensing.swift in Sources */,
@@ -1094,6 +1103,7 @@
 				C01364582C3265D6008DB215 /* display.swift in Sources */,
 				C07A6FD22C2B654300090743 /* utils.swift in Sources */,
 				C01792DC2C6FFAC6008CBC22 /* catalogs.swift in Sources */,
+				C07A9D9A2C83DDD000D5D4B2 /* installinfo.swift in Sources */,
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
 				C01792E82C74F989008CBC22 /* selfservice.swift in Sources */,
 				C030A9BF2C409738007F0B34 /* iconutils.swift in Sources */,
@@ -1112,10 +1122,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0011CB92C7F86480004ED70 /* distributednotifications.swift in Sources */,
+				C07A9D9B2C83DDD000D5D4B2 /* installinfo.swift in Sources */,
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
 				C01364462C2E051F008DB215 /* makecatalogslib.swift in Sources */,
 				C01792EC2C75089F008CBC22 /* licensing.swift in Sources */,
 				C0D00FB72C45BCB90021DA9C /* errors.swift in Sources */,
+				C07A9D9E2C86CB3A00D5D4B2 /* msuoptions.swift in Sources */,
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
 				C07AED702C67DF6B00DE6119 /* gurl.swift in Sources */,

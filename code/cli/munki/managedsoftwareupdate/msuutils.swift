@@ -87,26 +87,6 @@ func doCleanupTasks(runType _: String) {
     // TODO: implement this
 }
 
-private func getInstallInfo() -> PlistDict? {
-    // gets info from InstallInfo.plist
-    // TODO: there is at least one other similar function elsewhere; de-dup
-    let installInfoPath = managedInstallsDir(subpath: "InstallInfo.plist")
-    if pathExists(installInfoPath) {
-        do {
-            if let plist = try readPlist(fromFile: installInfoPath) as? PlistDict {
-                return plist
-            } else {
-                displayError("\(installInfoPath) does not have the expected format")
-            }
-        } catch {
-            displayError("Could not read \(installInfoPath): \(error.localizedDescription)")
-        }
-    } else {
-        displayInfo("\(installInfoPath) does not exist")
-    }
-    return nil
-}
-
 func munkiUpdatesAvailable() -> Int {
     // Return count of available updates.
     if let plist = getInstallInfo() {
@@ -277,7 +257,7 @@ func doRestart(shutdown: Bool = false) {
     }
 }
 
-func doInstallTasks(doAppleUpdates _: Bool = false, onlyUnattended: Bool = false) async -> Bool {
+func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) async -> Int {
     // Perform our installation/removal tasks.
     //
     // Args:
@@ -285,7 +265,7 @@ func doInstallTasks(doAppleUpdates _: Bool = false, onlyUnattended: Bool = false
     //    onlyUnattended:  Bool. If true, only do unattended_(un)install items.
     //
     // Returns:
-    //    Bool. True if a restart is required, false otherwise.
+    //    Int. One of POSTACTION_NONE, POSTACTION_LOGOUT, POSTACTION_RESTART, POSTACTION_SHUTDOWN
     if !onlyUnattended {
         // first, clear the last notified date so we can get notified of new
         // changes after this round of installs
@@ -295,14 +275,67 @@ func doInstallTasks(doAppleUpdates _: Bool = false, onlyUnattended: Bool = false
     var munkiItemsRestartAction = POSTACTION_NONE
     var appleItemsRestartAction = POSTACTION_NONE
 
-    if munkiUpdatesAvailable() > 0 {}
-    return true
+    if munkiUpdatesAvailable() > 0 {
+        // install Munki updates
+        munkiItemsRestartAction = await doInstallsAndRemovals(onlyUnattended: onlyUnattended)
+        if !onlyUnattended {
+            if munkiUpdatesContainItemWithInstallerType("startosinstall") {
+                Report.shared.save()
+                // install macOS
+                // TODO: implement this (install macOS)
+            }
+        }
+    }
+    if doAppleUpdates {
+        // install Apple updates
+        // TODO: implement? appleItemsRestartAction = installAppleUpdates(onlyUnattended: onlyUnattended)
+    }
+
+    Report.shared.save()
+
+    return max(appleItemsRestartAction, munkiItemsRestartAction)
 }
 
 func startLogoutHelper() {
     // Handle the need for a forced logout. Start our logouthelper
+    let result = runCLI("/bin/launchctl",
+                        arguments: ["start", "com.googlecode.munki.logouthelper"])
+    if result.exitcode != 0 {
+        displayError("Could not start com.googlecode.munki.logouthelper")
+    }
 }
 
-func doFinishingTasks(runtype _: String = "") {
+func doFinishingTasks(runtype: String = "") async {
     // A collection of tasks to do as we finish up
+
+    // finish our report
+    Report.shared.record(Date(), to: "EndTime")
+    Report.shared.record(getVersion(), to: "ManagedInstallVersion")
+    Report.shared.record(availableDiskSpace(), to: "AvailableDiskSpace")
+    var consoleUser = getConsoleUser()
+    if consoleUser.isEmpty {
+        consoleUser = "<None>"
+    }
+    Report.shared.record(consoleUser, to: "ConsoleUser")
+    Report.shared.save()
+
+    // store the current pending update count and other data for munki-notifier
+    savePendingUpdateTimes()
+    let updateInfo = getPendingUpdateInfo()
+    setPref("PendingUpdateCount", updateInfo.pendingUpdateCount)
+    setPref("OldestUpdateDays", updateInfo.oldestUpdateDays)
+    setPref("ForcedUpdateDueDate", updateInfo.forcedUpdateDueDate)
+
+    // save application inventory data
+    saveAppData()
+
+    // run the Munki postflight script if it exists
+    let postflightPath = "/usr/local/munki/postflight" // TODO: find relative to managedsoftwareupdate binary
+    // if runtype is not defined -- we're being called by osinstall
+    let postflightRuntype: String = if !runtype.isEmpty {
+        runtype
+    } else {
+        "osinstall"
+    }
+    _ = await runPreOrPostScript(postflightRuntype, displayName: "postflight", runType: postflightRuntype)
 }
