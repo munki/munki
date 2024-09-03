@@ -439,8 +439,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         } else if authenticationMethod == NSURLAuthenticationMethodClientCertificate {
             options.log("Client certificate required")
             // get issuers info from the response
-            if let distingusihedNames = protectionSpace.distinguishedNames {
-                // distingusihedNames is an array of Data blobs
+            if let distinguishedNames = protectionSpace.distinguishedNames {
+                // distinguishedNames is an array of Data blobs
                 // each blob is DER encoded
                 // TODO: decode this stuff and handle it
             }
