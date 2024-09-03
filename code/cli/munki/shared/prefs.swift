@@ -359,7 +359,7 @@ func printConfigPlist() {
         plist.append([
             "preference": prefName,
             "value": reprValue,
-            "source": level
+            "source": level,
         ])
     }
     print((try? plistToString(plist)) ?? "")
