@@ -22,7 +22,7 @@ import ArgumentParser
 import Foundation
 
 @main
-struct ManagedSoftwareUpdate: ParsableCommand {
+struct ManagedSoftwareUpdate: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "managedsoftwareupdate",
         usage: "mangedsoftwareupdate [options]"
@@ -46,6 +46,44 @@ struct ManagedSoftwareUpdate: ParsableCommand {
             print(getVersion())
             return
         }
+        // check to see if we're root
+        if NSUserName() != "root" {
+            printStderr("You must run this as root!")
+            throw ExitCode(EXIT_STATUS_ROOT_REQUIRED)
+        }
+        try handleConfigOptions(configOptions)
+
         print("Nothing much implemented yet!")
+    }
+}
+
+func handleConfigOptions(_ options: MSUConfigOptions) throws {
+    if options.showConfig {
+        printConfig()
+        throw ExitCode(0)
+    }
+    if options.showConfigPlist {
+        printConfigPlist()
+        throw ExitCode(0)
+    }
+    if options.setBootstrapMode {
+        do {
+            try setBootstrapMode()
+        } catch {
+            printStderr(error.localizedDescription)
+            throw ExitCode(-1)
+        }
+        print("Bootstrap mode is set.")
+        throw ExitCode(0)
+    }
+    if options.clearBootstrapMode {
+        do {
+            try clearBootstrapMode()
+        } catch {
+            printStderr(error.localizedDescription)
+            throw ExitCode(-1)
+        }
+        print("Bootstrap mode cleared.")
+        throw ExitCode(0)
     }
 }

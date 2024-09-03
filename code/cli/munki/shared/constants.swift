@@ -22,15 +22,15 @@ import Foundation
 
 // NOTE: it's very important that defined exit codes are never changed!
 // Preflight exit codes
-let EXIT_STATUS_PREFLIGHT_FAILURE = 1
+let EXIT_STATUS_PREFLIGHT_FAILURE: Int32 = 1
 // Client config exit codes.
-let EXIT_STATUS_OBJC_MISSING = 100 // no longer relevant
-let EXIT_STATUS_MUNKI_DIRS_FAILURE = 101
+let EXIT_STATUS_OBJC_MISSING: Int32 = 100 // no longer relevant
+let EXIT_STATUS_MUNKI_DIRS_FAILURE: Int32 = 101
 // Server connection exit codes.
-let EXIT_STATUS_SERVER_UNAVAILABLE = 150
+let EXIT_STATUS_SERVER_UNAVAILABLE: Int32 = 150
 // User related exit codes.
-let EXIT_STATUS_INVALID_PARAMETERS = 200
-let EXIT_STATUS_ROOT_REQUIRED = 201
+let EXIT_STATUS_INVALID_PARAMETERS: Int32 = 200
+let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
 let BUNDLE_ID = "ManagedInstalls" as CFString
 #if DEBUG
