@@ -247,10 +247,10 @@ func isEqual(_ a: CFPropertyList, _ b: CFPropertyList) -> Bool {
 func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> String {
     // Returns a string indicating where the given preference is defined
     if value == nil {
-        return "[not set]"
+        return "not set"
     }
     if CFPreferencesAppValueIsForced(prefName as CFString, domain as CFString) {
-        return "[MANAGED]"
+        return "MANAGED"
     }
     // define all the places we need to search, in priority order
     let levels: [prefsDomain] = [
@@ -300,17 +300,17 @@ func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> Stri
         ) {
             if let ourValue = value as? CFPropertyList {
                 if isEqual(ourValue, levelValue) {
-                    return "[\(level.file)]"
+                    return level.file
                 }
             }
         }
     }
     if let value = value as? CFPropertyList, let defaultValue = DEFAULT_PREFS["pref_name"] as? CFPropertyList {
         if isEqual(value, defaultValue) {
-            return "[default]"
+            return "default"
         }
     }
-    return "[unknown]"
+    return "unknown"
 }
 
 func printConfig() {
@@ -322,8 +322,8 @@ func printConfig() {
         let value = pref(prefName)
         let level = getConfigLevel(BUNDLE_ID as String, prefName, value)
         var reprValue = "None"
-        // it's hard to distinguish a boolean from a number in a CFPropertyList item, so
-        // we look at the type of the default value if defined
+        // it's hard to distinguish a boolean from a number in a CFPropertyList item,
+        // so we look at the type of the default value if defined
         if let numberValue = value as? NSNumber {
             if DEFAULT_PREFS[prefName] is Bool {
                 if numberValue != 0 {
@@ -342,6 +342,25 @@ func printConfig() {
         // print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
         //       pref_name, repr_value, level))
         let paddedPrefName = (padding + prefName).suffix(maxPrefNameLen)
-        print("\(paddedPrefName): \(reprValue) \(level)")
+        print("\(paddedPrefName): \(reprValue) [\(level)]")
     }
+}
+
+func printConfigPlist() {
+    // Prints the current Munki configuration in plist format
+    var plist = [PlistDict]()
+    for prefName in CONFIG_KEY_NAMES.sorted() {
+        let value = pref(prefName)
+        let level = getConfigLevel(BUNDLE_ID as String, prefName, value)
+        var reprValue: Any = "None"
+        if let value {
+            reprValue = value
+        }
+        plist.append([
+            "preference": prefName,
+            "value": reprValue,
+            "source": level
+        ])
+    }
+    print((try? plistToString(plist)) ?? "")
 }
