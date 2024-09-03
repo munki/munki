@@ -285,7 +285,8 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
         }
     }
     if let itemName = pkginfo["name"] as? String,
-       let receipts = pkginfo["receipts"] as? [PlistDict]
+       let receipts = pkginfo["receipts"] as? [PlistDict],
+       !receipts.isEmpty
     {
         displayDebug2("Checking receipts...")
         let pkgdata = await analyzeInstalledPkgs()
