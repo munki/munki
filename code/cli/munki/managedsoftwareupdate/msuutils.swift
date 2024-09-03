@@ -337,5 +337,5 @@ func doFinishingTasks(runtype: String = "") async {
     } else {
         "osinstall"
     }
-    _ = await runPreOrPostScript(postflightRuntype, displayName: "postflight", runType: postflightRuntype)
+    _ = await runPreOrPostScript(postflightPath, displayName: "postflight", runType: postflightRuntype)
 }
