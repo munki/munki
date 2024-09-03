@@ -401,7 +401,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         }
 
         // verify available license seats for optional installs
-        if var optionalInstalls = installInfo["optional_installs"] as? [PlistDict],
+        if let optionalInstalls = installInfo["optional_installs"] as? [PlistDict],
            !optionalInstalls.isEmpty
         {
             installInfo["optional_installs"] = updateAvailableLicenseSeats(optionalInstalls)

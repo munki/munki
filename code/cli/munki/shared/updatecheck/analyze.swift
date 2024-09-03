@@ -1011,8 +1011,8 @@ func processRemoval(
     if !packagesToRemove.isEmpty {
         // remove references for each package
         var packagesToReallyRemove = [String]()
-        var pkgdata = await analyzeInstalledPkgs()
-        var pkgReferences = pkgdata["pkg_references"] as? [String: [String]] ?? [:]
+        let pkgdata = await analyzeInstalledPkgs()
+        let pkgReferences = pkgdata["pkg_references"] as? [String: [String]] ?? [:]
         var pkgReferencesMessages = [String]()
         for pkg in packagesToRemove {
             displayDebug1("Considering \(pkg) for removal...")
