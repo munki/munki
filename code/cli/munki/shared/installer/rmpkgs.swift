@@ -561,7 +561,7 @@ func removePackages(
     }
     do {
         try await initReceiptDB(forcerebuild: rebuildPkgDB)
-    } catch let err as UserCancelled {
+    } catch _ as UserCancelled {
         return -128
     } catch {
         displayError("Could not initialize receipt database: \(error)")

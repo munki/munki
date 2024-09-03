@@ -254,7 +254,9 @@ func displayUpdateInfo() {
         displayInfo("The following items will be installed or upgraded:")
     }
     for item in managedInstalls {
-        if let installerItem = item["installer_item"] as? String {
+        if let installerItem = item["installer_item"] as? String,
+           !installerItem.isEmpty
+        {
             let name = item["name"] as? String ?? "UNKNOWN"
             let version = item["version_to_install"] as? String ?? "UNKNOWN"
             displayInfo("    + \(name)-\(version)")
