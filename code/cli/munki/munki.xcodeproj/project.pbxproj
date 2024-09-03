@@ -117,6 +117,8 @@
 		C043ED202C4822C70047C025 /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
 		C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
 		C043ED242C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
+		C06C21342C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
+		C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DD2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DF2C33B9A000B86310 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
@@ -358,6 +360,7 @@
 		C030A9F52C435183007F0B34 /* readline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readline.swift; sourceTree = "<group>"; };
 		C043ED1E2C4822C70047C025 /* sqlite3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sqlite3.swift; sourceTree = "<group>"; };
 		C043ED222C483EEE0047C025 /* rmpkgs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rmpkgs.swift; sourceTree = "<group>"; };
+		C06C21332C8793720023E9D9 /* bootstrapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bootstrapping.swift; sourceTree = "<group>"; };
 		C07074DB2C33AE5F00B86310 /* munkilog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkilog.swift; sourceTree = "<group>"; };
 		C07074DE2C33B9A000B86310 /* reports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reports.swift; sourceTree = "<group>"; };
 		C07074E12C3489FA00B86310 /* pkginfolib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkginfolib.swift; sourceTree = "<group>"; };
@@ -655,6 +658,7 @@
 				C07AED652C66D0A000DE6119 /* facts.swift */,
 				C0011CAB2C7A64F30004ED70 /* Predicates.m */,
 				C07A9D992C83DDD000D5D4B2 /* installinfo.swift */,
+				C06C21332C8793720023E9D9 /* bootstrapping.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1106,6 +1110,7 @@
 				C07A9D9A2C83DDD000D5D4B2 /* installinfo.swift in Sources */,
 				C07074EB2C34A6AD00B86310 /* versionutils.swift in Sources */,
 				C01792E82C74F989008CBC22 /* selfservice.swift in Sources */,
+				C06C21342C8793720023E9D9 /* bootstrapping.swift in Sources */,
 				C030A9BF2C409738007F0B34 /* iconutils.swift in Sources */,
 				C07AED6F2C67DF6B00DE6119 /* gurl.swift in Sources */,
 				C07AED632C66CFBD00DE6119 /* appinventory.swift in Sources */,
@@ -1167,6 +1172,7 @@
 				C07AED6C2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07074E62C34910F00B86310 /* osutils.swift in Sources */,
 				C030A9C12C419565007F0B34 /* osinstaller.swift in Sources */,
+				C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */,
 				C0D9C2B12C62D4120019A067 /* powermanager.swift in Sources */,
 				C0D9C2982C6012C80019A067 /* dmg.swift in Sources */,
 				C030A9C22C41B556007F0B34 /* pkginfolib.swift in Sources */,
