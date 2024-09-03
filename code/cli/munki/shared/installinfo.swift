@@ -83,20 +83,20 @@ func oldestPendingUpdateInDays() -> Double {
     return Date().timeIntervalSince(oldestDate) / (24 * 60 * 60)
 }
 
-func getPendingUpdateInfo() -> PlistDict {
+struct PendingUpdateInfo {
+    var pendingUpdateCount: Int
+    var oldestUpdateDays: Double
+    var forcedUpdateDueDate: Date?
+}
+
+func getPendingUpdateInfo() -> PendingUpdateInfo {
     // Returns a dict with some data that
     // managedsoftwareupdate records at the end of a run
-    var data = PlistDict()
     let installInfo = getInstallInfo()
     let managedInstalls = installInfo?["managed_installs"] as? [PlistDict] ?? []
     let removals = installInfo?["removals"] as? [PlistDict] ?? []
-    data["install_count"] = managedInstalls.count
-    data["removal_count"] = removals.count
     let appleUpdateInfo = getAppleUpdates()
     let appleUpdates = appleUpdateInfo?["AppleUpdates"] as? [PlistDict] ?? []
-    data["apple_update_count"] = appleUpdates.count
-    data["PendingUpdateCount"] = managedInstalls.count + removals.count + appleUpdates.count
-    data["OldestUpdateDays"] = oldestPendingUpdateInDays()
 
     // calculate earliest date a forced install (if any) is due
     var earliestForcedDate: Date? = nil
@@ -112,8 +112,12 @@ func getPendingUpdateInfo() -> PlistDict {
             }
         }
     }
-    data["ForcedUpdateDueDate"] = earliestForcedDate
-    return data
+
+    return PendingUpdateInfo(
+        pendingUpdateCount: managedInstalls.count + removals.count + appleUpdates.count,
+        oldestUpdateDays: oldestPendingUpdateInDays(),
+        forcedUpdateDueDate: earliestForcedDate
+    )
 }
 
 func getAppleUpdatesWithHistory() -> [String: Date] {
