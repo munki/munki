@@ -26,8 +26,6 @@
 
 import Foundation
 
-typealias PkgInfoGenerationError = MunkiError
-
 func pkginfoMetadata() -> PlistDict {
     // Helps us record  information about the environment in which the pkginfo was
     // created so we have a bit of an audit trail. Returns a dictionary.
@@ -160,7 +158,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
         }
     }
     guard !dragNDropItem.isEmpty else {
-        throw PkgInfoGenerationError("No application found on disk image.")
+        throw MunkiError("No application found on disk image.")
     }
     // check to see if item is a macOS installer and we can generate a startosinstall item
     let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
@@ -263,10 +261,10 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     do {
         mountpoint = try mountdmg(dmgpath, useExistingMounts: true)
     } catch let error as DiskImageError {
-        throw PkgInfoGenerationError("Could not mount \(dmgpath): \(error.description)")
+        throw MunkiError("Could not mount \(dmgpath): \(error.description)")
     }
     guard !mountpoint.isEmpty else {
-        throw PkgInfoGenerationError("No mountpoint for \(dmgpath)")
+        throw MunkiError("No mountpoint for \(dmgpath)")
     }
     if let pkgname = options.pkg.pkgname {
         // a package was specified
@@ -326,7 +324,7 @@ func makepkginfo(_ filepath: String?,
 
     if !installeritem.isEmpty {
         if !FileManager.default.fileExists(atPath: installeritem) {
-            throw PkgInfoGenerationError("File \(installeritem) does not exist")
+            throw MunkiError("File \(installeritem) does not exist")
         }
 
         // is this the mountpoint for a mounted disk image?
@@ -342,7 +340,7 @@ func makepkginfo(_ filepath: String?,
         if hasValidDiskImageExt(installeritem) {
             pkginfo = try createPkgInfoFromDmg(installeritem, options: options)
             if pkginfo.isEmpty {
-                throw PkgInfoGenerationError("Could not find a supported installer item in \(installeritem)")
+                throw MunkiError("Could not find a supported installer item in \(installeritem)")
             }
             if dmgIsWritable(installeritem), options.hidden.printWarnings {
                 printStderr("WARNING: \(installeritem) is a writable disk image. Checksum verification is not supported.")
@@ -355,13 +353,13 @@ func makepkginfo(_ filepath: String?,
             }
             pkginfo = try createPkgInfoFromPkg(installeritem, options: options)
             if pkginfo.isEmpty {
-                throw PkgInfoGenerationError("\(installeritem) doesn't appear to be a valid installer item.")
+                throw MunkiError("\(installeritem) doesn't appear to be a valid installer item.")
             }
             if pathIsDirectory(installeritem), options.hidden.printWarnings {
                 printStderr("WARNING: \(installeritem) is a bundle-style package!\nTo use it with Munki, you should encapsulate it in a disk image.")
             }
         } else {
-            throw PkgInfoGenerationError("\(installeritem) is not a supported installer item!")
+            throw MunkiError("\(installeritem) is not a supported installer item!")
         }
 
         // try to generate the correct item location if item was imported from
@@ -379,7 +377,7 @@ func makepkginfo(_ filepath: String?,
                 pkginfo["minimum_munki_version"] = "6.2"
             }
             if !FileManager.default.fileExists(atPath: uninstalleritem) {
-                throw PkgInfoGenerationError("No uninstaller item at \(uninstalleritem)")
+                throw MunkiError("No uninstaller item at \(uninstalleritem)")
             }
             // TODO: remove start of path if it refers to the Munki repo pkgs dir
             // for now, just the filename

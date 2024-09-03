@@ -20,8 +20,6 @@
 
 import Foundation
 
-typealias DiskImageError = MunkiError
-
 func hdiutilData(arguments: [String], stdIn: String = "") throws -> PlistDict {
     // runs an hdiutil <command> on a dmg and attempts to return a plist data structure
     var hdiUtilArgs = arguments
@@ -30,7 +28,7 @@ func hdiutilData(arguments: [String], stdIn: String = "") throws -> PlistDict {
     }
     let results = runCLI("/usr/bin/hdiutil", arguments: hdiUtilArgs, stdIn: stdIn)
     if results.exitcode != 0 {
-        throw DiskImageError("hdiutil error \(results.error) with arguments \(arguments)")
+        throw MunkiError("hdiutil error \(results.error) with arguments \(arguments)")
     }
     let (plistStr, _) = parseFirstPlist(fromString: results.output)
     if !plistStr.isEmpty {
@@ -200,7 +198,7 @@ func mountdmg(_ dmgPath: String,
             }
         }
     }
-    throw DiskImageError("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
+    throw MunkiError("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
 }
 
 func unmountdmg(_ mountpoint: String) {
