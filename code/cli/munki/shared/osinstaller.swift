@@ -69,12 +69,12 @@ func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
         } catch {
             // nothing
         }
-        throw PkgInfoGenerationError("Could not get info from Contents/SharedSupport/InstallInfo.plist")
+        throw MunkiError("Could not get info from Contents/SharedSupport/InstallInfo.plist")
     }
     let sharedSupportDmg = (appPath as NSString).appendingPathComponent("Contents/SharedSupport/SharedSupport.dmg")
     if pathIsRegularFile(sharedSupportDmg) {
         guard let mountpoint = try? mountdmg(sharedSupportDmg) else {
-            throw PkgInfoGenerationError("Could not mount Contents/SharedSupport/SharedSupport.dmg")
+            throw MunkiError("Could not mount Contents/SharedSupport/SharedSupport.dmg")
         }
         let plistPath = (mountpoint as NSString).appendingPathComponent("com_apple_MobileAsset_MacSoftwareUpdate/com_apple_MobileAsset_MacSoftwareUpdate.xml")
         do {
@@ -97,10 +97,10 @@ func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
             unmountdmg(mountpoint)
         } catch {
             unmountdmg(mountpoint)
-            throw PkgInfoGenerationError("Could not parse com_apple_MobileAsset_MacSoftwareUpdate.xml")
+            throw MunkiError("Could not parse com_apple_MobileAsset_MacSoftwareUpdate.xml")
         }
     }
-    throw PkgInfoGenerationError("Could not parse info from \((appPath as NSString).lastPathComponent)")
+    throw MunkiError("Could not parse info from \((appPath as NSString).lastPathComponent)")
 }
 
 func generateInstallableCondition(_ models: [String]) -> String {
@@ -125,12 +125,12 @@ func makeStartOSInstallPkgInfo(mountpoint: String, item: String) throws -> Plist
     // image, using the startosinstall installation method
     let appPath = (mountpoint as NSString).appendingPathComponent(item)
     guard pathIsInstallMacOSApp(appPath) else {
-        throw PkgInfoGenerationError("Disk image item \(item) doesn't appear to be a macOS installer app")
+        throw MunkiError("Disk image item \(item) doesn't appear to be a macOS installer app")
     }
     let appName = (item as NSString).lastPathComponent
     let appInfo = try getInfoFromInstallMacOSApp(appPath)
     guard let version = appInfo["version"] as? String else {
-        throw PkgInfoGenerationError("Could not parse version from \(item)")
+        throw MunkiError("Could not parse version from \(item)")
     }
     let displayName = (appName as NSString).deletingPathExtension
     let munkiItemName = displayName.replacingOccurrences(of: " ", with: "_")
@@ -186,7 +186,7 @@ func makeStageOSInstallerPkgInfo(_ appPath: String) throws -> PlistDict {
     let appName = (appPath as NSString).lastPathComponent
     let appInfo = try getInfoFromInstallMacOSApp(appPath)
     guard let version = appInfo["version"] as? String else {
-        throw PkgInfoGenerationError("Could not parse version from \(appName)")
+        throw MunkiError("Could not parse version from \(appName)")
     }
 
     let displayNameStaged = (appName as NSString).deletingPathExtension

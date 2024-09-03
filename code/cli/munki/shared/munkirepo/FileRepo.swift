@@ -21,8 +21,6 @@
 import Foundation
 import NetFS
 
-typealias RepoError = MunkiError
-
 protocol Repo {
     // Defines methods all repo classes must implement
     init(_ url: String) throws
@@ -174,12 +172,12 @@ class FileRepo: Repo {
                 root = try mountShareURL(baseurl)
                 weMountedTheRepo = true
             } catch is ShareMountError {
-                throw RepoError("Error mounting repo file share")
+                throw MunkiError("Error mounting repo file share")
             }
         }
         // does root dir exist now?
         if !pathIsDirectory(root) {
-            throw RepoError("Repo path does not exist")
+            throw MunkiError("Repo path does not exist")
         }
     }
 
@@ -221,7 +219,7 @@ class FileRepo: Repo {
         if let data = FileManager.default.contents(atPath: repoFilePath) {
             return data
         }
-        throw RepoError("Error getting contents from \(repoFilePath)")
+        throw MunkiError("Error getting contents from \(repoFilePath)")
     }
 
     func get(_ identifier: String, toFile local_file_path: String) throws {
@@ -254,7 +252,7 @@ class FileRepo: Repo {
             )
         }
         if !((content as NSData).write(toFile: fullPath(identifier), atomically: true)) {
-            throw RepoError("Write to \(identifier) failed")
+            throw MunkiError("Write to \(identifier) failed")
         }
     }
 

@@ -355,11 +355,11 @@ func downloadCatalog(_ catalogName: String) -> String? {
 
 // TODO: precaching support (in progress)
 
-private func getInstallInfo() -> PlistDict {
-    // Get the install info from InstallInfo.plist
-    let installInfoPlist = managedInstallsDir(subpath: "InstallInfo.plist")
-    return (try? readPlist(fromFile: installInfoPlist) as? PlistDict) ?? PlistDict()
-}
+/* private func getInstallInfo() -> PlistDict {
+     // Get the install info from InstallInfo.plist
+     let installInfoPlist = managedInstallsDir(subpath: "InstallInfo.plist")
+     return (try? readPlist(fromFile: installInfoPlist) as? PlistDict) ?? PlistDict()
+ } */
 
 private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
     // Returns a list of items from InstallInfo.plist's optional_installs
@@ -379,8 +379,11 @@ private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
 
 func precache() {
     // Download any applicable precache items into our Cache folder
+    guard let installInfo = getInstallInfo() else {
+        // nothing to do
+        return
+    }
     displayInfo("###   Beginning precaching session   ###")
-    let installInfo = getInstallInfo()
     for item in itemsToPrecache(installInfo) {
         do {
             _ = try downloadInstallerItem(
@@ -396,8 +399,9 @@ func precache() {
 
 func uncache(_: Int) {
     // Discard precached items to free up space for managed installs
-    let installInfo = getInstallInfo()
-
+    guard let installInfo = getInstallInfo() else {
+        return
+    }
     // make a list of names of precachable items
     let precachableItems = itemsToPrecache(installInfo).filter {
         $0["installer_item_location"] != nil
