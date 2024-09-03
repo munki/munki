@@ -164,7 +164,7 @@ struct MunkiImport: AsyncParsableCommand {
         var repo: Repo
         do {
             repo = try repoConnect(url: repoURL, plugin: plugin)
-        } catch let error as RepoError {
+        } catch let error as MunkiError {
             printStderr("Repo connection error: \(error.description)")
             throw ExitCode(-1)
         }
@@ -329,7 +329,7 @@ struct MunkiImport: AsyncParsableCommand {
         {
             do {
                 let _ = try convertAndInstallIcon(repo, name: name, iconPath: iconPath)
-            } catch let error as MunkiImportError {
+            } catch let error as MunkiError {
                 printStderr("Error importing \(iconPath): \(error.description)")
             }
         } else if !munkiImportOptions.extractIcon,
@@ -352,7 +352,7 @@ struct MunkiImport: AsyncParsableCommand {
                 } else {
                     print("No icons found for import.")
                 }
-            } catch let error as MunkiImportError {
+            } catch let error as MunkiError {
                 printStderr("Error importing icons: \(error.description)")
             } catch {
                 printStderr("Error importing icons: \(error)")
@@ -367,7 +367,7 @@ struct MunkiImport: AsyncParsableCommand {
             let version = pkginfo["version"] as? String ?? "UNKNOWN"
             uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: installerItem, version: version, subdirectory: subdir)
             print("Copied \(installerItemName) to \(uploadedPkgPath).")
-        } catch let error as MunkiImportError {
+        } catch let error as MunkiError {
             printStderr("Error importing \(installerItem): \(error.description)")
             throw ExitCode(-1)
         } catch {
@@ -384,7 +384,7 @@ struct MunkiImport: AsyncParsableCommand {
                 let version = pkginfo["version"] as? String ?? "UNKNOWN"
                 uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: uninstallerItem, version: version, subdirectory: subdir)
                 print("Copied \(uninstallerItemName) to \(uploadedPkgPath).")
-            } catch let error as MunkiImportError {
+            } catch let error as MunkiError {
                 printStderr("Error importing \(uninstallerItem): \(error.description)")
                 throw ExitCode(-1)
             } catch {
