@@ -44,7 +44,7 @@ struct MSUCommonOptions: ParsableArguments {
 struct MSUConfigOptions: ParsableArguments {
     @Option(name: .long,
             help: "String to use as ClientIdentifier for this run only.")
-    var id: String
+    var id: String = ""
 
     @Flag(name: .long,
           help: "Print the current configuration and exit.")
