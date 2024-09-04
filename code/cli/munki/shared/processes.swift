@@ -8,12 +8,38 @@
 import Foundation
 
 func getRunningProcesses() -> [String] {
-    // Returns a list of paths of running processes
-    let result = runCLI("/bin/ps", arguments: ["-axo", "comm="])
-    if result.exitcode == 0 {
-        return result.output.components(separatedBy: .newlines).filter { $0.hasPrefix("/") }
+    // returns a list of paths of running processes
+    let procList = UNIXProcessList()
+    var processPaths = [String]()
+    for proc in procList {
+        if proc.pid != 0,
+           let data = argumentData(for: proc.pid)
+        {
+            let args = (try? parseArgumentData(data)) ?? []
+            if !args.isEmpty {
+                processPaths.append(args[0])
+            }
+        }
     }
-    return [String]()
+    return processPaths
+}
+
+func runningProcessesWithPids() -> [(pid: Int32, path: String)] {
+    // returns a list of tuples containing the pid and executable path
+    // of running processes
+    let procList = UNIXProcessList()
+    var processTuples = [(Int32, String)]()
+    for proc in procList {
+        if proc.pid != 0,
+           let data = argumentData(for: proc.pid)
+        {
+            let args = (try? parseArgumentData(data)) ?? []
+            if !args.isEmpty {
+                processTuples.append((pid: proc.pid, path: args[0]))
+            }
+        }
+    }
+    return processTuples
 }
 
 func isAppRunning(_ appName: String) -> Bool {
@@ -76,4 +102,64 @@ func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
         return true
     }
     return false
+}
+
+func pythonScriptRunning(_ scriptName: String) -> Int? {
+    // Returns Process ID for a running python script
+    // this is used to see if the managedsoftwareupdate script is already running
+    let processTuples = runningProcessesWithPids()
+    for item in processTuples {
+        let executable = (item.path as NSString).lastPathComponent
+        if executable.contains("python") || executable.contains("Python") {
+            // get all the args for this pid
+            if var args = executableAndArgsForPid(item.pid) {
+                // first value is executable path, drop it
+                // next value is command, drop it
+                args = Array(args.dropFirst(2))
+                // drop leading args that start with a hyphen
+                args = Array(args.drop(while: { $0.hasPrefix("-") }))
+                if args[0].hasSuffix(scriptName) {
+                    return Int(item.pid)
+                }
+            }
+        }
+    }
+    return nil
+}
+
+func executableRunning(_ name: String) -> Int? {
+    // Returns Process ID for a running executable
+    let processTuples = runningProcessesWithPids()
+    for item in processTuples {
+        if name.hasPrefix("/") {
+            // full path, so exact comparison
+            if item.path == name {
+                return Int(item.pid)
+            }
+        } else {
+            // does executable path end with the name?
+            if item.path.hasSuffix(name) {
+                return Int(item.pid)
+            }
+        }
+    }
+    return nil
+}
+
+func managedsoftwareupdateInstanceRunning() -> Int? {
+    // A Python version of managedsoftwareupdate might be running,
+    // or a compiled version
+    if let pid = executableRunning("managedsoftwareupdate") {
+        return pid
+    }
+    if let pid = pythonScriptRunning(".managedsoftwareupdate.py") {
+        return pid
+    }
+    if let pid = pythonScriptRunning("managedsoftwareupdate.py") {
+        return pid
+    }
+    if let pid = pythonScriptRunning("managedsoftwareupdate") {
+        return pid
+    }
+    return nil
 }
