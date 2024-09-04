@@ -28,6 +28,6 @@ func repoConnect(url: String, plugin: String = "FileRepo") throws -> Repo {
     case "GitFileRepo":
         return try GitFileRepo(url)
     default:
-        throw RepoError("No repo plugin named \"\(plugin)\"")
+        throw MunkiError("No repo plugin named \"\(plugin)\"")
     }
 }

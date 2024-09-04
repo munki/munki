@@ -56,7 +56,7 @@ struct CatalogsMaker {
         // returns a list of pkginfo identifiers
         do {
             pkgsinfoList = try listItemsOfKind(repo, "pkgsinfo")
-        } catch is RepoError {
+        } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
                 description: "Error getting list of pkgsinfo items")
         }
@@ -66,7 +66,7 @@ struct CatalogsMaker {
         // returns a list of pkg identifiers
         do {
             pkgsList = try listItemsOfKind(repo, "pkgs")
-        } catch is RepoError {
+        } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
                 description: "Error getting list of pkgs items")
         }
@@ -90,7 +90,7 @@ struct CatalogsMaker {
                 do {
                     let icondata = try repo.get("icons/" + icon)
                     iconHashes[icon] = sha256hash(data: icondata)
-                } catch let error as RepoError {
+                } catch let error as MunkiError {
                     errors.append("Error reading icons/\(icon): \(error.description)")
                 } catch {
                     errors.append("Unexpected error reading icons/\(icon): \(error)")
@@ -296,7 +296,7 @@ struct CatalogsMaker {
                     }
                 } catch let PlistError.writeError(description) {
                     errors.append("Could not serialize catalog \(key): \(description)")
-                } catch let error as RepoError {
+                } catch let error as MunkiError {
                     errors.append("Failed to create catalog \(key): \(error.description)")
                 } catch {
                     errors.append("Unexpected error creating catalog \(key): \(error)")
@@ -317,7 +317,7 @@ struct CatalogsMaker {
                 }
             } catch let PlistError.writeError(description) {
                 errors.append("Could not serialize icon hashes: \(description)")
-            } catch let error as RepoError {
+            } catch let error as MunkiError {
                 errors.append("Failed to create \(iconHashesIdentifier): \(error.description)")
             } catch {
                 errors.append("Unexpected error creating \(iconHashesIdentifier): \(error)")
