@@ -36,6 +36,21 @@ func getConsoleUser() -> String {
     return SCDynamicStoreCopyConsoleUser(nil, nil, nil) as? String ?? ""
 }
 
+func currentGUIUsers() -> [String] {
+    // Gets a list of GUI users by parsing the output of /usr/bin/who
+    var guiUsers = [String]()
+    let result = runCLI("/usr/bin/who")
+    for line in result.output.components(separatedBy: .newlines) {
+        let parts = line.components(separatedBy: .whitespaces).filter {
+            !$0.isEmpty
+        }
+        if parts.count > 1, parts[1] == "console" {
+            guiUsers.append(parts[0])
+        }
+    }
+    return guiUsers
+}
+
 func getIdleSeconds() -> Int {
     // Returns the number of seconds since the last mouse
     // or keyboard event.
