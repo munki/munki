@@ -260,7 +260,7 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     var mountpoint = ""
     do {
         mountpoint = try mountdmg(dmgpath, useExistingMounts: true)
-    } catch let error as DiskImageError {
+    } catch let error as MunkiError {
         throw MunkiError("Could not mount \(dmgpath): \(error.description)")
     }
     guard !mountpoint.isEmpty else {
