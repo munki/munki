@@ -104,11 +104,16 @@ func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
     return false
 }
 
-func pythonScriptRunning(_ scriptName: String) -> Int? {
-    // Returns Process ID for a running python script
+func pythonScriptRunning(_ scriptName: String) -> Int32? {
+    // Returns ProcessID for a running python script matching the scriptName
+    // as long as the pid is not the same as ours
     // this is used to see if the managedsoftwareupdate script is already running
+    let ourPid = ProcessInfo().processIdentifier
     let processTuples = runningProcessesWithPids()
     for item in processTuples {
+        if item.pid == ourPid {
+            continue
+        }
         let executable = (item.path as NSString).lastPathComponent
         if executable.contains("python") || executable.contains("Python") {
             // get all the args for this pid
@@ -119,7 +124,7 @@ func pythonScriptRunning(_ scriptName: String) -> Int? {
                 // drop leading args that start with a hyphen
                 args = Array(args.drop(while: { $0.hasPrefix("-") }))
                 if args[0].hasSuffix(scriptName) {
-                    return Int(item.pid)
+                    return item.pid
                 }
             }
         }
@@ -127,26 +132,31 @@ func pythonScriptRunning(_ scriptName: String) -> Int? {
     return nil
 }
 
-func executableRunning(_ name: String) -> Int? {
-    // Returns Process ID for a running executable
+func executableRunning(_ name: String) -> Int32? {
+    // Returns Process ID for a running executable matching the name
+    // as long as it isn't our pid
+    let ourPid = ProcessInfo().processIdentifier
     let processTuples = runningProcessesWithPids()
     for item in processTuples {
+        if item.pid == ourPid {
+            continue
+        }
         if name.hasPrefix("/") {
             // full path, so exact comparison
             if item.path == name {
-                return Int(item.pid)
+                return item.pid
             }
         } else {
             // does executable path end with the name?
             if item.path.hasSuffix(name) {
-                return Int(item.pid)
+                return item.pid
             }
         }
     }
     return nil
 }
 
-func managedsoftwareupdateInstanceRunning() -> Int? {
+func anotherManagedsoftwareupdateInstanceRunning() -> Int32? {
     // A Python version of managedsoftwareupdate might be running,
     // or a compiled version
     if let pid = executableRunning("managedsoftwareupdate") {
