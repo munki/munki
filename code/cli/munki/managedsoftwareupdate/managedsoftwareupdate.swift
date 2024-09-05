@@ -93,7 +93,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         var updateCheckResult: UpdateCheckResult? = nil
         if !skipMunkiCheck {
             do {
-                try await updateCheckResult = checkForUpdates(
+                updateCheckResult = try await checkForUpdates(
                     clientID: configOptions.id
                 )
             } catch {
