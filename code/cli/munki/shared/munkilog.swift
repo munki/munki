@@ -58,4 +58,14 @@ func munkiLog(_ message: String, logFile: String = "") {
     }
 }
 
-// TODO: implement log rotation
+func munkiLogResetErrors() {
+    // TODO: implement this
+}
+
+func munkiLogResetWarnings() {
+    // TODO: implement this
+}
+
+func munkiLogRotateMainLog() {
+    // TODO: implement this
+}
