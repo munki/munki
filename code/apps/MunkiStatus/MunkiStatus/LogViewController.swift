@@ -112,7 +112,8 @@ class LogViewController: NSViewController {
         }
         if atLoginWindow() {
             logWindow.canBecomeVisibleWithoutLogin = true
-            logWindow.level = statusWindowLevel
+            // make sure the log window is above the blurred background windows
+            logWindow.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow) + 1))
         }
         var windowRect = NSScreen.main!.frame
         windowRect.origin.x = 100.0
@@ -125,7 +126,7 @@ class LogViewController: NSViewController {
         logWindow.setFrame(windowRect, display: false)
         logWindow.makeKeyAndOrderFront(self)
         watchLogFile(logFileURL)
-        logView.setDraggingSourceOperationMask(.all, forLocal: false)
+        logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }
     
     func watchLogFile(_ logFileURL: URL) {
