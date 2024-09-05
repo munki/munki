@@ -52,31 +52,33 @@ func initMunkiDirs() -> Bool {
     return success
 }
 
-func runPreOrPostScript(_ scriptPath: String, displayName: String, runType: String) async -> Int {
+func runPreOrPostScript(name: String, runType: String) async -> Int {
     // Run an external script. Do not run if the permissions on the external
     // script file are weaker than the current executable.
+    let scriptdir = "/usr/local/munki" as NSString
+    let scriptPath = scriptdir.appendingPathComponent(name)
     if !pathExists(scriptPath) {
         return 0
     }
-    displayMinorStatus("Performing \(displayName) tasks...")
+    displayMinorStatus("Performing \(name) tasks...")
     do {
         let result = try await runExternalScript(
             scriptPath, arguments: [runType]
         )
         if result.exitcode != 0 {
-            displayInfo("\(displayName) return code: \(result.exitcode)")
+            displayInfo("\(name) return code: \(result.exitcode)")
         }
         if !result.output.isEmpty {
-            displayInfo("\(displayName) stdout: \(result.output)")
+            displayInfo("\(name) stdout: \(result.output)")
         }
         if !result.error.isEmpty {
-            displayInfo("\(displayName) stderr: \(result.error)")
+            displayInfo("\(name) stderr: \(result.error)")
         }
         return result.exitcode
     } catch ExternalScriptError.notFound {
         // not required, so pass
     } catch {
-        displayWarning("Unexpected error when attempting to run \(displayName): \(error.localizedDescription)")
+        displayWarning("Unexpected error when attempting to run \(name): \(error.localizedDescription)")
     }
     return 0
 }
@@ -136,11 +138,11 @@ func munkiUpdatesContainAppleItems() -> Bool {
     return false
 }
 
-func recordUpdateCheckResult(_ result: Int) {
+func recordUpdateCheckResult(_ result: UpdateCheckResult) {
     // Record last check date and result
     let now = Date()
     setPref("LastCheckDate", now)
-    setPref("LastCheckResult", result)
+    setPref("LastCheckResult", result.rawValue)
 }
 
 func notifyUserOfUpdates(force: Bool = false) -> Bool {
@@ -186,15 +188,11 @@ func notifyUserOfUpdates(force: Bool = false) -> Bool {
     return userWasNotified
 }
 
-func warnIfServerIsDefault(_ url: String) {
+func warnIfServerIsDefault() {
     // Munki defaults to using http://munki/repo as the base URL.
     // This is useful as a bootstrapping default, but is insecure.
     // Warn the admin if Munki is using an insecure default.
-    if url.isEmpty {
-        // hasn't been defined yet; will be auto-detected later
-        return
-    }
-    var server = url
+    var server = stringPref("ManifestURL") ?? stringPref("SoftwareRepoURL") ?? DEFAULT_INSECURE_REPO_URL
     if server.last == "/" {
         server = String(server.dropLast())
     }
@@ -330,12 +328,11 @@ func doFinishingTasks(runtype: String = "") async {
     saveAppData()
 
     // run the Munki postflight script if it exists
-    let postflightPath = "/usr/local/munki/postflight" // TODO: find relative to managedsoftwareupdate binary
     // if runtype is not defined -- we're being called by osinstall
     let postflightRuntype: String = if !runtype.isEmpty {
         runtype
     } else {
         "osinstall"
     }
-    _ = await runPreOrPostScript(postflightPath, displayName: "postflight", runType: postflightRuntype)
+    _ = await runPreOrPostScript(name: "postflight", runType: postflightRuntype)
 }
