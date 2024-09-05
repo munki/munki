@@ -225,6 +225,7 @@ func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistD
 }
 
 enum UpdateCheckResult: Int {
+    case checkDidntStart = -2
     case finishedWithErrors = -1
     case noUpdatesAvailable = 0
     case updatesAvailable = 1
