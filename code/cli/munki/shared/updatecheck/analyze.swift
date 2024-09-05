@@ -734,7 +734,7 @@ func processOptionalInstall(
         if !enoughDiskSpaceFor(
             pkginfo,
             installList: installInfo["managed_installs"] as? [PlistDict] ?? [],
-            warn: true
+            warn: false
         ) {
             processedItem["note"] = "Insufficient disk space to download and install."
             if needsUpdate {
