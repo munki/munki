@@ -160,7 +160,7 @@ func downloadInstallerItem(
     if alternatePkgURL.isEmpty {
         return try fetchMunkiResource(
             kind: .package,
-            name: pkgName,
+            name: location,
             destinationPath: destinationPath,
             message: downloadMessage,
             resume: true,
