@@ -90,24 +90,19 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             print("NOTE: managedsoftwareupdate is configured to process Apple Software Updates only.")
         }
 
-        var updateCheckResult: UpdateCheckResult? = nil
-        if !skipMunkiCheck {
-            do {
-                updateCheckResult = try await checkForUpdates(
-                    clientID: configOptions.id
-                )
-            } catch {
-                displayError("Error during updatecheck: \(error.localizedDescription)")
-                Report.shared.save()
-                throw ExitCode(-1) // TODO: better exit code
-            }
-        }
-        if let updateCheckResult {
-            recordUpdateCheckResult(updateCheckResult)
-        }
+        let updateCheckResult = try await doMunkiUpdateCheck(skipCheck: skipMunkiCheck)
+        let appleUpdatesAvailable = doAppleUpdateCheckIfAppropriate(
+            appleUpdatesOnly: appleupdatesonly)
 
-        let updatesAvailable = munkiUpdatesAvailable()
-        var appleUpdatesAvailable = 0
+        // display any available update info
+        if updateCheckResult == .updatesAvailable {
+            displayUpdateInfo()
+        }
+        if let stagedOSInstallerInfo = getStagedOSInstallerInfo() {
+            displayStagedOSInstallerInfo(info: stagedOSInstallerInfo)
+        } else if appleUpdatesAvailable > 0 {
+            // TODO: displayAppleUpdateInfo()
+        }
     }
 
     private func handleConfigOptions() throws {
@@ -305,5 +300,52 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         // tell status app we're done sending status
         munkiStatusQuit()
         throw ExitCode(EXIT_STATUS_PREFLIGHT_FAILURE)
+    }
+
+    private func doMunkiUpdateCheck(skipCheck: Bool) async throws -> UpdateCheckResult? {
+        if !skipCheck {
+            do {
+                let updateCheckResult = try await checkForUpdates(
+                    clientID: configOptions.id
+                )
+                recordUpdateCheckResult(updateCheckResult)
+                return updateCheckResult
+            } catch {
+                displayError("Error during updatecheck: \(error.localizedDescription)")
+                Report.shared.save()
+                throw ExitCode(-1) // TODO: better exit code
+            }
+        }
+        return nil
+    }
+
+    private func shouldDoAppleUpdates(appleUpdatesOnly: Bool) -> Bool {
+        if appleUpdatesOnly {
+            // admin told us to do them
+            return true
+        } else if commonOptions.munkiPkgsOnly {
+            // admin told us not to do apple updates
+            return false
+        } else if munkiUpdatesContainAppleItems() {
+            // shouldn't do apple updates
+            munkiLog("Skipping Apple Software Updates because items to be installed from the Munki repo contain Apple items.")
+            // if there are force_install_after_date items in a pre-existing
+            // AppleUpdates.plist this means we are blocking those updates.
+            // we need to delete AppleUpdates.plist so that other code doesn't
+            // mistakenly alert for forced installs it isn't actually going to
+            // install.
+            // TODO: appleupdates.clearAppleUpdateInfo()
+            return false
+        }
+        // check the normal preferences
+        return boolPref("InstallAppleSoftwareUpdates") ?? false
+    }
+
+    private func doAppleUpdateCheckIfAppropriate(appleUpdatesOnly: Bool) -> Int {
+        // TODO: implment this
+        if shouldDoAppleUpdates(appleUpdatesOnly: appleUpdatesOnly) {
+            return 0
+        }
+        return 0
     }
 }
