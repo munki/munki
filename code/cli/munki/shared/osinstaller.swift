@@ -343,9 +343,9 @@ func removeStagedOSInstallerInfo() {
     try? FileManager.default.removeItem(atPath: infoPath)
 }
 
-func displayStagedOSInstallerInfo() {
-    // Prints staged macOS installer info and updates ManagedInstallReport.
-    guard let item = getStagedOSInstallerInfo() else { return }
+func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
+    // Prints staged macOS installer info (if any) and updates ManagedInstallReport.
+    guard let item = info else { return }
     Report.shared.record(item, to: "StagedOSInstaller")
     displayInfo("")
     displayInfo("The following macOS upgrade is available to install:")
