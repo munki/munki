@@ -145,15 +145,22 @@ func recordUpdateCheckResult(_ result: UpdateCheckResult) {
     setPref("LastCheckResult", result.rawValue)
 }
 
-func notifyUserOfUpdates(force: Bool = false) -> Bool {
+func notifyUserOfUpdates(force: Bool = false) {
     // Notify the logged-in user of available updates.
     //
     // Args:
     //     force: bool, default false, forcefully notify user regardless
     //     of LastNotifiedDate.
-    // Returns:
-    //     Bool.  true if the user was notified, false otherwise.
-    var userWasNotified = false
+
+    if getConsoleUser() == "loginwindow" {
+        // someone is logged in, but we're sitting at the loginwindow
+        // due to to fast user switching so do nothing
+        munkiLog("Skipping user notification because we are at the loginwindow.")
+        return
+    } else if boolPref("SuppressUserNotification") ?? false {
+        munkiLog("Skipping user notification because SuppressUserNotification is true.")
+        return
+    }
     let lastNotifiedDate = datePref("LastNotifiedDate") ?? Date.distantPast
     if !(pref("DaysBetweenNotifications") is Int) {
         displayWarning("Preference DaysBetweenNotifications is not an integer; using a value of 1")
@@ -183,9 +190,7 @@ func notifyUserOfUpdates(force: Bool = false) -> Bool {
         // clear the trigger file. We have to do it because we're root,
         // and the munki-notifier process is running as the user
         try? FileManager.default.removeItem(atPath: launchfile)
-        userWasNotified = true
     }
-    return userWasNotified
 }
 
 func warnIfServerIsDefault() {
