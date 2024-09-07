@@ -970,12 +970,12 @@ func processRemoval(
 
     // we will ignore the unattended_uninstall key if the item needs a restart
     // or logout...
-    if (uninstallItem["unattended_install"] as? Bool ?? false) || (uninstallItem["forced_install"] as? Bool ?? false) {
+    if (uninstallItem["unattended_uninstall"] as? Bool ?? false) || (uninstallItem["forced_uninstall"] as? Bool ?? false) {
         let restartAction = uninstallItem["RestartAction"] as? String ?? "None"
         if restartAction != "None" {
-            displayWarning("Ignoring unattended_install key for \(name) because RestartAction is \(restartAction).")
+            displayWarning("Ignoring unattended_uninstall key for \(name) because RestartAction is \(restartAction).")
         } else {
-            processedItem["unattended_install"] = true
+            processedItem["unattended_uninstall"] = true
         }
     }
 
