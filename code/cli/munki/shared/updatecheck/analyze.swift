@@ -956,15 +956,13 @@ func processRemoval(
         }
     }
     if !dependentItemsRemoved {
-        displayWarning("Will not attempt to remove %s because could not remove all items dependent on it.")
+        displayWarning("Will not attempt to remove \(uninstallItemName) because could not remove all items dependent on it.")
         return false
     }
 
     // Finally! We can record the removal information!
     var processedItem = PlistDict()
-    let name = uninstallItem["name"] as? String ?? "<unknown>"
-    let version = uninstallItem["version"] as? String ?? "<unknown>"
-    processedItem["name"] = uninstallItem["name"]
+    processedItem["name"] = uninstallItemName
     processedItem["display_name"] = uninstallItem["display_name"]
     processedItem["description"] = "Will be removed."
 
@@ -973,7 +971,7 @@ func processRemoval(
     if (uninstallItem["unattended_uninstall"] as? Bool ?? false) || (uninstallItem["forced_uninstall"] as? Bool ?? false) {
         let restartAction = uninstallItem["RestartAction"] as? String ?? "None"
         if restartAction != "None" {
-            displayWarning("Ignoring unattended_uninstall key for \(name) because RestartAction is \(restartAction).")
+            displayWarning("Ignoring unattended_uninstall key for \(uninstallItemName) because RestartAction is \(restartAction).")
         } else {
             processedItem["unattended_uninstall"] = true
         }
@@ -1003,7 +1001,7 @@ func processRemoval(
         // admin did not explicitly mark this item; let's determine if
         // it's from Apple
         if isAppleItem(uninstallItem) {
-            munkiLog("Marking \(name) as an apple_item - this will block Apple SUS updates")
+            munkiLog("Marking \(uninstallItemName) as an apple_item - this will block Apple SUS updates")
             processedItem["apple_item"] = true
         }
     }
@@ -1027,9 +1025,9 @@ func processRemoval(
             let msg = "Package \(pkg) references are: \(references)"
             displayDebug1(msg)
             pkgReferencesMessages.append(msg)
-            if references.contains(name) {
+            if references.contains(uninstallItemName) {
                 let filteredReferences = references.filter {
-                    $0 != name
+                    $0 != uninstallItemName
                 }
                 if filteredReferences.isEmpty {
                     // no other references than this item
@@ -1044,7 +1042,7 @@ func processRemoval(
             processedItem["packages"] = packagesToReallyRemove
         } else {
             // no packages that belong to this item only
-            displayWarning("could not find unique packages to remove for \(name)")
+            displayWarning("could not find unique packages to remove for \(uninstallItemName)")
             for msg in pkgReferencesMessages {
                 displayWarning(msg)
             }
@@ -1056,14 +1054,14 @@ func processRemoval(
         if let itemsToCopy = uninstallItem["items_to_copy"] as? [PlistDict] {
             processedItem["items_to_remove"] = itemsToCopy
         } else {
-            displayWarning("Can't uninstall \(name) because there is no info on installed items.")
+            displayWarning("Can't uninstall \(uninstallItemName) because there is no info on installed items.")
             return false
         }
     } else if uninstallMethod == "uninstall_script" {
         if let uninstallScript = uninstallItem["uninstall_script"] as? String {
             processedItem["uninstall_script"] = uninstallScript
         } else {
-            displayWarning("Can't uninstall \(name) because uninstall_script is undefined or invalid.")
+            displayWarning("Can't uninstall \(uninstallItemName) because uninstall_script is undefined or invalid.")
             return false
         }
     } else if uninstallMethod == "uninstall_package" {
@@ -1074,14 +1072,14 @@ func processRemoval(
                 )
                 processedItem["uninstaller_item"] = baseName(location)
             } catch FetchError.verification {
-                displayWarning("Can't uninstall \(name) because the integrity check for the uninstall package failed.")
+                displayWarning("Can't uninstall \(uninstallItemName) because the integrity check for the uninstall package failed.")
                 return false
             } catch {
-                displayWarning("Failed to download the uninstaller for \(name) because \(error.localizedDescription)")
+                displayWarning("Failed to download the uninstaller for \(uninstallItemName) because \(error.localizedDescription)")
                 return false
             }
         } else {
-            displayWarning("Can't uninstall \(name) because there is no URL for the uninstall package.")
+            displayWarning("Can't uninstall \(uninstallItemName) because there is no URL for the uninstall package.")
             return false
         }
     }
@@ -1101,7 +1099,7 @@ func processRemoval(
 
     // finish recording info for this removal
     processedItem["installed"] = true
-    processedItem["installed_version"] = version
+    processedItem["installed_version"] = uninstallItemVersion
     appendToProcessedRemovals(processedItem)
     displayDetail("Removal of \(manifestItemNameWithVersion) added to managedsoftwareupdate tasks.")
     return true
