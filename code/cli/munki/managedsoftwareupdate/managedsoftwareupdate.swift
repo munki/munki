@@ -493,10 +493,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     }
 
     // MARK: main run function
-
     mutating func run() async throws {
-        // TODO: implment signal handler for SIGTERM
-
         if version {
             print(getVersion())
             return
@@ -514,6 +511,12 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         doCleanupTasks(runType: runtype)
         initializeReport()
         // TODO: support logging to syslog and unified logging
+        
+        // install handlers for SIGINT and SIGTERM
+        let sigintSrc = installSignalHandler(SIGINT)
+        sigintSrc.activate()
+        let sigtermSrc = installSignalHandler(SIGTERM)
+        sigtermSrc.activate()
 
         munkiLog("### Starting managedsoftwareupdate run: \(runtype) ###")
         if DisplayOptions.shared.verbose > 0 {
@@ -575,6 +578,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         if !otherOptions.quiet {
             print("Done.")
         }
+        TempDir.shared.cleanUp()
 
         if mustLogout {
             // not handling this currently

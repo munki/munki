@@ -45,22 +45,24 @@ func installSignalHandler(_ sig: Int32) -> DispatchSourceSignal {
     /// be sure to activate it!
 
     // the intent here is to kill our child process(es) when we get a SIGINT or SIGTERM
-    // (sadly we can't do it for SIGKILL) so rsync doesn't keep running if we're stopped by
-    // the user
+    // (sadly we can't do it for SIGKILL) so they don't keep running if we're stopped
+    // by the user (or killed by another process)
     signal(sig, SIG_IGN) // // Make sure the signal does not terminate the application.
 
     let sigSrc = DispatchSource.makeSignalSource(signal: sig, queue: .main)
     sigSrc.setEventHandler {
-        print("\nGot signal \(signalName(sig))")
+        munkiLog("Got signal \(signalName(sig))")
         // kill all our child processes
-        let pid = ProcessInfo.processInfo.processIdentifier
-        for task in processesWithPPID(pid) {
-            print("Sending signal \(signalName(sig)) to \(task.command), pid \(task.pid)...")
+        let ourPid = ProcessInfo.processInfo.processIdentifier
+        for task in processesWithPPID(ourPid) {
+            munkiLog("Sending signal \(signalName(sig)) to \(task.command), pid \(task.pid)...")
             kill(task.pid, sig)
         }
+        // clean up our temp dirs
+        TempDir.shared.cleanUp()
         // resend the signal to ourselves
         signal(sig, SIG_DFL)
-        kill(pid, sig)
+        kill(ourPid, sig)
     }
     return sigSrc
 }
