@@ -424,5 +424,5 @@ func uncache(_: Int) {
         return
     }
 
-    // more to do here
+    // TODO: actually remove items!
 }
