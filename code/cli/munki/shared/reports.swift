@@ -109,6 +109,32 @@ class Report {
         } catch {
             displayWarning("Could not archive report: \(error.localizedDescription)")
         }
-        // TODO: now keep number of archived reports to 100 or fewer
+        // now keep number of archived reports to 100 or fewer
+        let directoryURL = URL(fileURLWithPath: archiveDir)
+        do {
+            let contents = try
+                FileManager.default.contentsOfDirectory(
+                    at: directoryURL,
+                    includingPropertiesForKeys: [.contentModificationDateKey],
+                    options: [.skipsHiddenFiles, .skipsSubdirectoryDescendants]
+                )
+                .filter { $0.lastPathComponent.hasPrefix("ManagedInstallReport-") }
+                .sorted(by: {
+                    let date0 = try $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!
+                    let date1 = try $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!
+                    return date0.compare(date1) == .orderedDescending
+                })
+            if contents.count > 100 {
+                for item in contents[100...] {
+                    do {
+                        try FileManager.default.removeItem(at: item)
+                    } catch {
+                        displayWarning("Error removing \(item.path): \(error.localizedDescription)")
+                    }
+                }
+            }
+        } catch {
+            displayWarning("Error accessing archived report directory: \(error.localizedDescription)")
+        }
     }
 }
