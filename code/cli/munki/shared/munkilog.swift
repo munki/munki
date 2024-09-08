@@ -25,6 +25,19 @@ func loggingLevel() -> Int {
     return pref("LoggingLevel") as? Int ?? 1
 }
 
+func mainLogPath() -> String {
+    #if DEBUG
+        return "/Users/Shared/Managed Installs/Logs/ManagedSoftwareUpdate.log"
+    #else
+        return pref("LogFile") as? String ?? managedInstallsDir(subpath: "Logs/ManagedSoftwareUpdate.log")
+    #endif
+}
+
+func logNamed(_ name: String) -> String {
+    // returns path to log file in same dir as main log
+    return ((mainLogPath() as NSString).deletingLastPathComponent as NSString).appendingPathComponent(name)
+}
+
 func munkiLog(_ message: String, logFile: String = "") {
     // General logging function
     // TODO: add support for logging to /var/log/system.log
@@ -35,17 +48,11 @@ func munkiLog(_ message: String, logFile: String = "") {
     dateformatter.dateFormat = "MMM dd yyyy HH:mm:ss Z"
     let timestamp = dateformatter.string(from: Date())
     let logString = "\(timestamp) \(message)\n"
-    #if DEBUG
-        let defaultLogPath = "/Users/Shared/Managed Installs/Logs/ManagedSoftwareUpdate.log"
-    #else
-        let defaultLogPath = pref("LogFile") as? String ?? managedInstallsDir(subpath: "Logs/ManagedSoftwareUpdate.log")
-    #endif
     var logPath = ""
     if logFile.isEmpty {
-        logPath = defaultLogPath
+        logPath = mainLogPath()
     } else {
-        logPath = (defaultLogPath as NSString).deletingLastPathComponent
-        logPath = (logPath as NSString).appendingPathComponent(logFile)
+        logPath = logNamed(logFile)
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
         if !pathExists(logPath) {
@@ -58,14 +65,41 @@ func munkiLog(_ message: String, logFile: String = "") {
     }
 }
 
+private func rotateLog(_ logFilePath: String) {
+    // rotate a log
+    if !pathExists(logFilePath) {
+        // nothing to do
+        return
+    }
+    let filemanager = FileManager.default
+    for i in [3, 2, 1, 0] {
+        let olderLog = logFilePath + ".\(i + 1)"
+        let newerLog = logFilePath + ".\(i)"
+        try? filemanager.removeItem(atPath: olderLog)
+        try? filemanager.moveItem(atPath: newerLog, toPath: olderLog)
+    }
+    try? filemanager.moveItem(atPath: logFilePath, toPath: logFilePath + ".0")
+}
+
 func munkiLogResetErrors() {
-    // TODO: implement this
+    // Rotate our errors.log
+    rotateLog(logNamed("errors.log"))
 }
 
 func munkiLogResetWarnings() {
-    // TODO: implement this
+    // rotate our errors.log
+    rotateLog(logNamed("warnings.log"))
 }
 
 func munkiLogRotateMainLog() {
-    // TODO: implement this
+    // rotate our main log if it's too large
+    let mainLog = mainLogPath()
+    if pathIsRegularFile(mainLog),
+       let attributes = try? FileManager.default.attributesOfItem(atPath: mainLog)
+    {
+        let filesize = (attributes as NSDictionary).fileSize()
+        if filesize > 1_000_000 {
+            rotateLog(mainLog)
+        }
+    }
 }
