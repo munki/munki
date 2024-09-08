@@ -192,7 +192,7 @@ func cleanUpManifests() {
     let manifestDir = managedInstallsDir(subpath: "manifests")
     let exceptions = ["SelfServeManifest"]
     let keepList = Manifests.shared.list() + exceptions
-    cleanUpDir(manifestDir, keep: keepList)
+    cleanUpDir(manifestDir, keeping: keepList)
 }
 
 func manifestData(_ path: String) -> PlistDict? {
