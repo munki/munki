@@ -120,6 +120,10 @@ func generateInstallableCondition(_ models: [String]) -> String {
     return predicates.joined(separator: " OR ")
 }
 
+// TODO: implement setup_authrestart_if_applicable()
+
+// TODO: implement StartOSInstallRunner and related functions
+
 func makeStartOSInstallPkgInfo(mountpoint: String, item: String) throws -> PlistDict {
     // Returns pkginfo for a macOS installer on a disk
     // image, using the startosinstall installation method
@@ -356,3 +360,32 @@ func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
 }
 
 // MARK: functions for determining if a user is a volume owner
+
+func volumeOwnerUUIDs() -> [String] {
+    // Returns a list of UUIDs of accounts that are volume owners for /
+    var cryptoUsers = PlistDict()
+    do {
+        let result = runCLI(
+            "/usr/sbin/diskutil",
+            arguments: ["apfs", "listUsers", "/", "-plist"]
+        )
+        cryptoUsers = try readPlist(fromString: result.output) as? PlistDict ?? [:]
+    } catch {
+        // do nothing
+    }
+    let users = cryptoUsers["Users"] as? [PlistDict] ?? []
+    return users.filter {
+        $0["APFSCryptoUserUUID"] != nil &&
+            $0["VolumeOwner"] as? Bool ?? false &&
+            $0["APFSCryptoUserType"] as? String ?? "" == "LocalOpenDirectory"
+    }.compactMap {
+        $0["APFSCryptoUserUUID"] as? String
+    }
+}
+
+func userIsVolumeOwner(_ username: String) -> Bool {
+    // Returns a boolean to indicate if the user is a volume owner of /
+    return volumeOwnerUUIDs().contains(getGeneratedUID(username))
+}
+
+// TODO: implement functions for launching staged macOS installer
