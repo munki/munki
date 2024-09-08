@@ -242,7 +242,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     // TODO: initialize our Munki keychain if we are using custom certs or CAs
     // MunkiKeychain()
 
-    if DisplayOptions.shared.munkistatusoutput {
+    if DisplayOptions.munkistatusoutput {
         munkiStatusActivate()
     }
 

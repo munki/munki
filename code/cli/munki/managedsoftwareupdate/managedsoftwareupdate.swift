@@ -208,11 +208,11 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
 
     private func configureDisplayOptions() {
         // sets our display options
-        DisplayOptions.shared.munkistatusoutput = otherOptions.munkistatusoutput
+        DisplayOptions.munkistatusoutput = otherOptions.munkistatusoutput
         if otherOptions.quiet {
-            DisplayOptions.shared.verbose = 0
+            DisplayOptions.verbose = 0
         } else {
-            DisplayOptions.shared.verbose = commonOptions.verbose + 1
+            DisplayOptions.verbose = commonOptions.verbose + 1
         }
         // TODO: support setting MUNKI_VERBOSITY_LEVEL env variable
     }
@@ -406,7 +406,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             }
             // at loginwindow, system is idle, so we can install
             // but first, enable status output over login window
-            DisplayOptions.shared.munkistatusoutput = true
+            DisplayOptions.munkistatusoutput = true
             munkiLog("No GUI users, installing at login window.")
             munkiStatusLaunch()
             restartAction = await doInstallTasks(
@@ -493,6 +493,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     }
 
     // MARK: main run function
+
     mutating func run() async throws {
         if version {
             print(getVersion())
@@ -511,7 +512,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         doCleanupTasks(runType: runtype)
         initializeReport()
         // TODO: support logging to syslog and unified logging
-        
+
         // install handlers for SIGINT and SIGTERM
         let sigintSrc = installSignalHandler(SIGINT)
         sigintSrc.activate()
@@ -519,7 +520,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         sigtermSrc.activate()
 
         munkiLog("### Starting managedsoftwareupdate run: \(runtype) ###")
-        if DisplayOptions.shared.verbose > 0 {
+        if DisplayOptions.verbose > 0 {
             print("Managed Software Update Tool")
             print("Version \(getVersion())")
             print("Copyright 2010-2024 The Munki Project")
@@ -541,7 +542,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         // archive the previous session's report
         Report.shared.archiveReport()
 
-        if appleupdatesonly, DisplayOptions.shared.verbose > 0 {
+        if appleupdatesonly, DisplayOptions.verbose > 0 {
             print("NOTE: managedsoftwareupdate is configured to process Apple Software Updates only.")
         }
 
