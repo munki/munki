@@ -86,6 +86,29 @@ class Report {
 
     func archiveReport() {
         // Archive current report file
-        // TODO: implement this
+        let reportFile = managedInstallsDir(subpath: "ManagedInstallReport.plist")
+        if !pathExists(reportFile) {
+            // nothing to do
+            return
+        }
+        let dateformatter = DateFormatter()
+        dateformatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        let timestamp = dateformatter.string(from: Date())
+        let archiveName = "ManagedInstallReport-\(timestamp).plist"
+        let archiveDir = managedInstallsDir(subpath: "Archives")
+        if !pathExists(archiveDir) {
+            do {
+                try FileManager.default.createDirectory(atPath: archiveDir, withIntermediateDirectories: false)
+            } catch {
+                displayWarning("Could not create report archive directory: \(error.localizedDescription)")
+            }
+        }
+        let fullArchivePath = (archiveDir as NSString).appendingPathComponent(archiveName)
+        do {
+            try FileManager.default.moveItem(atPath: reportFile, toPath: fullArchivePath)
+        } catch {
+            displayWarning("Could not archive report: \(error.localizedDescription)")
+        }
+        // TODO: now keep number of archived reports to 100 or fewer
     }
 }
