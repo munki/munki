@@ -65,7 +65,7 @@ func enoughDiskSpaceFor(
 
     if diskSpaceNeeded > diskSpace, !precaching {
         // try to clear space by deleting some precached items
-        // TODO: uncache(diskSpaceNeeded - diskSpace)
+        uncache(diskSpaceNeeded - diskSpace)
         // now re-calc
         diskSpace = availableDiskSpace()
         for additionalItem in installList {
