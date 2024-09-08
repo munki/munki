@@ -25,10 +25,9 @@ func downloadIconsForActiveItems(_ installInfo: PlistDict) {
     for key in ["optional_installs", "managed_installs", "removals", "problem_items"] {
         itemList += installInfo[key] as? [PlistDict] ?? []
     }
-    // TODO: getStagedOSInstallerInfo()
-    // if let stagedOSInstallerInfo = getStagedOSInstallerInfo() {
-    //    itemList.append(stagedOSInstallerInfo)
-    // }
+    if let stagedOSInstallerInfo = getStagedOSInstallerInfo() {
+        itemList.append(stagedOSInstallerInfo)
+    }
     downloadIcons(itemList)
 }
 
@@ -302,9 +301,9 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         "removals": [PlistDict](),
     ]
 
-    // TODO: remove any staged os installer info we have; we'll check and
+    // remove any staged os installer info we have; we'll check and
     // recreate if still valid
-    // removeStagedOSInstallerInfo()
+    removeStagedOSInstallerInfo()
 
     do {
         // check managed_installs
