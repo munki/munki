@@ -665,5 +665,5 @@ func cleanUpCatalogs() {
     // Removes any catalog files that are no longer in use by this client
     let catalogsToKeep = Catalogs.shared.list()
     let catalogsDir = managedInstallsDir(subpath: "catalogs")
-    cleanUpDir(catalogsDir, keep: catalogsToKeep)
+    cleanUpDir(catalogsDir, keeping: catalogsToKeep)
 }

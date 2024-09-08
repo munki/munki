@@ -189,7 +189,7 @@ func cleanUpIconsDir(keepList: [String] = []) {
     // to keep
     let itemsToKeep = keepList + [ICON_HASHES_PLIST_NAME]
     let iconsDir = managedInstallsDir(subpath: "icons")
-    cleanUpDir(iconsDir, keep: itemsToKeep)
+    cleanUpDir(iconsDir, keeping: itemsToKeep)
 }
 
 func getIconHashes() -> [String: String] {

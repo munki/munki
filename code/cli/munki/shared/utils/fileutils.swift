@@ -129,11 +129,11 @@ func getSizeOfDirectory(_ path: String) -> Int {
     let dirEnum = filemanager.enumerator(atPath: path)
     while let file = dirEnum?.nextObject() as? String {
         let fullpath = (path as NSString).appendingPathComponent(file)
-        if pathIsRegularFile(fullpath) {
-            if let attributes = try? filemanager.attributesOfItem(atPath: fullpath) {
-                let filesize = (attributes as NSDictionary).fileSize()
-                totalSize += Int(filesize)
-            }
+        if pathIsRegularFile(fullpath),
+           let attributes = try? filemanager.attributesOfItem(atPath: fullpath)
+        {
+            let filesize = (attributes as NSDictionary).fileSize()
+            totalSize += Int(filesize)
         }
     }
     return totalSize
@@ -149,7 +149,7 @@ func getAbsolutePath(_ path: String) -> String {
     return ((composedPath as NSString).standardizingPath as NSString).resolvingSymlinksInPath
 }
 
-func cleanUpDir(_ dirPath: String, keep keepList: [String]) {
+func cleanUpDir(_ dirPath: String, keeping keepList: [String]) {
     // Remove items in dirPath that aren't in the keepList
     if !pathIsDirectory(dirPath) {
         return
