@@ -28,7 +28,7 @@ struct DisplayOptions {
     static var verbose = 1
     static var munkistatusoutput = false
 
-    private init() {}
+    private init() {} // prevents assigning an instance to another variable
 }
 
 func displayPercentDone(current: Int, maximum: Int) {
