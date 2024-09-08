@@ -21,18 +21,14 @@
 import Darwin.C
 import Foundation
 
-class DisplayOptions {
-    // a Singleton class to hold shared config values
+struct DisplayOptions {
+    // a Singleton struct to hold shared config values
     // this might eventually be replaced by a more encompassing struct
-    static let shared = DisplayOptions()
 
-    var verbose: Int
-    var munkistatusoutput: Bool
+    static var verbose = 1
+    static var munkistatusoutput = false
 
-    private init(verbose: Int = 1, munkistatusoutput: Bool = false) {
-        self.verbose = verbose
-        self.munkistatusoutput = munkistatusoutput
-    }
+    private init() {}
 }
 
 func displayPercentDone(current: Int, maximum: Int) {
@@ -44,11 +40,11 @@ func displayPercentDone(current: Int, maximum: Int) {
         percentDone = Int(Double(current) / Double(maximum) * 100)
     }
 
-    if DisplayOptions.shared.munkistatusoutput {
+    if DisplayOptions.munkistatusoutput {
         munkiStatusPercent(percentDone)
     }
 
-    if DisplayOptions.shared.verbose > 0 {
+    if DisplayOptions.verbose > 0 {
         let step = [0, 7, 13, 20, 27, 33, 40, 47, 53, 60, 67, 73, 80, 87, 93, 100]
         let indicator = ["\t0", ".", ".", "20", ".", ".", "40", ".", ".",
                          "60", ".", ".", "80", ".", ".", "100\n"]
@@ -70,12 +66,12 @@ func displayMajorStatus(_ message: String) {
     // for verbose/non-verbose and munkistatus-style output.
 
     munkiLog(message)
-    if DisplayOptions.shared.munkistatusoutput {
+    if DisplayOptions.munkistatusoutput {
         munkiStatusMessage(message)
         munkiStatusDetail("")
         munkiStatusPercent(-1)
     }
-    if DisplayOptions.shared.verbose > 0 {
+    if DisplayOptions.verbose > 0 {
         if message.hasSuffix(".") || message.hasSuffix("…") {
             print(message)
         } else {
@@ -90,10 +86,10 @@ func displayMinorStatus(_ message: String) {
     // for verbose/non-verbose and munkistatus-style output.
 
     munkiLog("    \(message)")
-    if DisplayOptions.shared.munkistatusoutput {
+    if DisplayOptions.munkistatusoutput {
         munkiStatusDetail(message)
     }
-    if DisplayOptions.shared.verbose > 0 {
+    if DisplayOptions.verbose > 0 {
         if message.hasSuffix(".") || message.hasSuffix("…") {
             print("    \(message)")
         } else {
@@ -108,7 +104,7 @@ func displayInfo(_ message: String) {
     // Not displayed in MunkiStatus.
 
     munkiLog("    \(message)")
-    if DisplayOptions.shared.verbose > 0 {
+    if DisplayOptions.verbose > 0 {
         print("    \(message)")
         fflush(stdout)
     }
@@ -119,7 +115,7 @@ func displayDetail(_ message: String) {
     // Not displayed in MunkiStatus.
     // These are usually logged only, but can be printed to
     // stdout if verbose is set greater than 1
-    if DisplayOptions.shared.verbose > 1 {
+    if DisplayOptions.verbose > 1 {
         print("    \(message)")
         fflush(stdout)
     }
@@ -130,7 +126,7 @@ func displayDetail(_ message: String) {
 
 func displayDebug1(_ message: String) {
     // Displays debug level 1 messages.
-    if DisplayOptions.shared.verbose > 2 {
+    if DisplayOptions.verbose > 2 {
         print("    \(message)")
         fflush(stdout)
     }
@@ -141,7 +137,7 @@ func displayDebug1(_ message: String) {
 
 func displayDebug2(_ message: String) {
     // Displays debug level 2 messages.
-    if DisplayOptions.shared.verbose > 3 {
+    if DisplayOptions.verbose > 3 {
         print("    \(message)")
         fflush(stdout)
     }
@@ -153,7 +149,7 @@ func displayDebug2(_ message: String) {
 func displayWarning(_ message: String, addToReport: Bool = true) {
     // Prints warning message to stderr and the log
     let warning = "WARNING: \(message)"
-    if DisplayOptions.shared.verbose > 0 {
+    if DisplayOptions.verbose > 0 {
         printStderr(warning)
     }
     munkiLog(warning)
@@ -167,7 +163,7 @@ func displayWarning(_ message: String, addToReport: Bool = true) {
 func displayError(_ message: String, addToReport: Bool = true) {
     // Prints error message to stderr and the log
     let errorMsg = "ERROR: \(message)"
-    if DisplayOptions.shared.verbose > 0 {
+    if DisplayOptions.verbose > 0 {
         printStderr(errorMsg)
     }
     munkiLog(errorMsg)

@@ -224,7 +224,7 @@ func doRestart(shutdown: Bool = false) {
     } else {
         "Software installed or removed requires a restart."
     }
-    if DisplayOptions.shared.munkistatusoutput {
+    if DisplayOptions.munkistatusoutput {
         munkiStatusHideStopButton()
         munkiStatusMessage(message)
         munkiStatusDetail("")
@@ -245,7 +245,7 @@ func doRestart(shutdown: Bool = false) {
             // TODO: doAuthorizedOrNormalRestart(shutdown: shutdown)
         }
     } else {
-        if DisplayOptions.shared.munkistatusoutput {
+        if DisplayOptions.munkistatusoutput {
             // someone is logged in and we're using Managed Software Center.
             // We need to notify the active user that a restart is required.
             // We actually should almost never get here; generally Munki knows
