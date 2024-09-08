@@ -210,8 +210,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
         if let itemList = item["items_to_copy"] as? [PlistDict] {
             retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
             if retcode == 0 {
-                // TODO: implement osinstaller.record_staged_os_installer
-                // osinstaller.record_staged_os_installer(item)
+                recordStagedOSInstaller(item)
             }
         }
     case "nopkg":
