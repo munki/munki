@@ -123,6 +123,10 @@
 		C06C213B2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
 		C06C213D2C88CACE0023E9D9 /* SignalHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */; };
 		C06C213E2C88CACE0023E9D9 /* SignalHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */; };
+		C06C21402C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
+		C06C21412C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
+		C06C21422C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
+		C06C21432C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
 		C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DD2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DF2C33B9A000B86310 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
@@ -367,6 +371,7 @@
 		C06C21332C8793720023E9D9 /* bootstrapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bootstrapping.swift; sourceTree = "<group>"; };
 		C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNIXProcessInfo.swift; sourceTree = "<group>"; };
 		C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHandler.swift; sourceTree = "<group>"; };
+		C06C213F2C8E1FF50023E9D9 /* ODutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODutils.swift; sourceTree = "<group>"; };
 		C07074DB2C33AE5F00B86310 /* munkilog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkilog.swift; sourceTree = "<group>"; };
 		C07074DE2C33B9A000B86310 /* reports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reports.swift; sourceTree = "<group>"; };
 		C07074E12C3489FA00B86310 /* pkginfolib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkginfolib.swift; sourceTree = "<group>"; };
@@ -684,6 +689,7 @@
 				C0D9C2A22C61939E0019A067 /* scriptutils.swift */,
 				C07A6FD12C2B654300090743 /* utils.swift */,
 				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
+				C06C213F2C8E1FF50023E9D9 /* ODutils.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1020,6 +1026,7 @@
 				C030A9A72C3B4FED007F0B34 /* cliutils.swift in Sources */,
 				C030A9A52C3B4FCD007F0B34 /* dmgutils.swift in Sources */,
 				C030A9AF2C3B50B5007F0B34 /* constants.swift in Sources */,
+				C06C21422C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C030A9A12C3B4F5B007F0B34 /* pkginfoOptions.swift in Sources */,
 				C030A9A92C3B4FF5007F0B34 /* display.swift in Sources */,
 				C0D00FB92C45BCB90021DA9C /* errors.swift in Sources */,
@@ -1048,6 +1055,7 @@
 				C030A9EA2C42417D007F0B34 /* iconutils.swift in Sources */,
 				C030A9D02C41F798007F0B34 /* munkiimport.swift in Sources */,
 				C030A9E82C424175007F0B34 /* osinstaller.swift in Sources */,
+				C06C21432C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C030A9E52C424160007F0B34 /* display.swift in Sources */,
 				C030A9D92C424057007F0B34 /* prefs.swift in Sources */,
 				C030A9E32C424158007F0B34 /* plistutils.swift in Sources */,
@@ -1078,6 +1086,7 @@
 				C0209B892C63DDF1007664A0 /* info.swift in Sources */,
 				C0D9C2A62C62C12E0019A067 /* munkistatus.swift in Sources */,
 				C06C213A2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */,
+				C06C21402C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C01792EB2C75089F008CBC22 /* licensing.swift in Sources */,
 				C06C213D2C88CACE0023E9D9 /* SignalHandler.swift in Sources */,
 				C07074E82C34932400B86310 /* pkgutils.swift in Sources */,
@@ -1188,6 +1197,7 @@
 				C0D9C2B12C62D4120019A067 /* powermanager.swift in Sources */,
 				C0D9C2982C6012C80019A067 /* dmg.swift in Sources */,
 				C030A9C22C41B556007F0B34 /* pkginfolib.swift in Sources */,
+				C06C21412C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C07074E92C34932400B86310 /* pkgutils.swift in Sources */,
 				C0011CB62C7EC5B60004ED70 /* msuutils.swift in Sources */,
 				C07074EC2C34A6AD00B86310 /* versionutils.swift in Sources */,
