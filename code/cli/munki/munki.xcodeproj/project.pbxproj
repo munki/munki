@@ -127,6 +127,8 @@
 		C06C21412C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
 		C06C21422C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
 		C06C21432C8E1FF50023E9D9 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
+		C06C21452C8F8C390023E9D9 /* appleupdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21442C8F8C390023E9D9 /* appleupdates.swift */; };
+		C06C21462C8F8C390023E9D9 /* appleupdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21442C8F8C390023E9D9 /* appleupdates.swift */; };
 		C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DD2C33AE5F00B86310 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C07074DF2C33B9A000B86310 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
@@ -372,6 +374,7 @@
 		C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNIXProcessInfo.swift; sourceTree = "<group>"; };
 		C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHandler.swift; sourceTree = "<group>"; };
 		C06C213F2C8E1FF50023E9D9 /* ODutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODutils.swift; sourceTree = "<group>"; };
+		C06C21442C8F8C390023E9D9 /* appleupdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appleupdates.swift; sourceTree = "<group>"; };
 		C07074DB2C33AE5F00B86310 /* munkilog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkilog.swift; sourceTree = "<group>"; };
 		C07074DE2C33B9A000B86310 /* reports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reports.swift; sourceTree = "<group>"; };
 		C07074E12C3489FA00B86310 /* pkginfolib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkginfolib.swift; sourceTree = "<group>"; };
@@ -672,6 +675,7 @@
 				C06C21332C8793720023E9D9 /* bootstrapping.swift */,
 				C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */,
 				C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */,
+				C06C21442C8F8C390023E9D9 /* appleupdates.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1116,6 +1120,7 @@
 				C043ED1F2C4822C70047C025 /* sqlite3.swift in Sources */,
 				C0011CB52C7EC5B60004ED70 /* msuutils.swift in Sources */,
 				C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */,
+				C06C21452C8F8C390023E9D9 /* appleupdates.swift in Sources */,
 				C0011CB82C7F86480004ED70 /* distributednotifications.swift in Sources */,
 				C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C0D9C2B02C62D4120019A067 /* powermanager.swift in Sources */,
@@ -1182,6 +1187,7 @@
 				C0D00FA82C45814F0021DA9C /* repoutils.swift in Sources */,
 				C013644E2C30F5D8008DB215 /* RepoFactory.swift in Sources */,
 				C07A6FBE2C2B5AF000090743 /* prefs.swift in Sources */,
+				C06C21462C8F8C390023E9D9 /* appleupdates.swift in Sources */,
 				C07A6FBA2C2B5ADE00090743 /* main.swift in Sources */,
 				C01792DA2C6EC09C008CBC22 /* urls.swift in Sources */,
 				C030A9B72C3DF6D0007F0B34 /* fileutils.swift in Sources */,
