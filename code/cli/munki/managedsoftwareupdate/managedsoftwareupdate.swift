@@ -323,10 +323,10 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             munkiUpdateCount = 0
             appleUpdateCount = 0
             if getStagedOSInstallerInfo() != nil {
-                // TODO: implement osinstaller.launch()
+                _ = launchStagedOSInstaller()
             } else {
                 // staged OS installer is missing
-                displayError("Requested to launch staged OS installer, but no info on a staged installer was found.")
+                displayError("Requested to launch staged OS installer, but no info on a staged OS installer was found.")
             }
         }
     }
