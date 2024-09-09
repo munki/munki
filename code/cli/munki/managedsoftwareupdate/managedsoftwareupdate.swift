@@ -279,7 +279,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             // we need to delete AppleUpdates.plist so that other code doesn't
             // mistakenly alert for forced installs it isn't actually going to
             // install.
-            // TODO: appleupdates.clearAppleUpdateInfo()
+            clearAppleUpdateInfo()
             return false
         }
         // check the normal preferences
@@ -287,10 +287,11 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     }
 
     private func doAppleUpdateCheckIfAppropriate(appleUpdatesOnly: Bool) -> Int {
-        // TODO: implment this
+        /// Does a check if appropriate
         if shouldDoAppleUpdates(appleUpdatesOnly: appleUpdatesOnly) {
-            return 0
+            return findAndRecordAvailableAppleUpdates()
         }
+        //
         return 0
     }
 
@@ -303,14 +304,11 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             otherOptions.auto = true
         }
         if runtype == "checkandinstallatstartup",
-           munkiUpdateCount == 0, appleUpdateCount > 0,
-           false // installableAppleUpdateCount() == 0
+           munkiUpdateCount == 0
         {
-            // TODO: implement installableAppleUpdateCount()
             // we're in bootstrap mode and
-            // there are only Apple updates, but we can't install
-            // some of them
-            // so clear bootstrapping mode so we don't loop endlessly
+            // there are no updates we can do.
+            // Clear bootstrapping mode so we don't loop endlessly
             do {
                 try clearBootstrapMode()
             } catch {
@@ -447,16 +445,8 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 mustLogout = true
             }
 
-            // it's possible that we no longer have any available updates
-            // so we need to check InstallInfo.plist and
-            // AppleUpdates.plist again
+            // recount available Munki updates
             munkiUpdateCount = munkiUpdatesAvailable()
-            if appleUpdateCount > 0 {
-                // there were Apple updates available, but we might have
-                // installed some unattended
-                // TODO: appleUpdateCount = appleupdates.appleSoftwareUpdatesAvailable(
-                // suppresscheck=True, client_id=options.id))
-            }
             if munkiUpdateCount > 0 || appleUpdateCount > 0 {
                 // set a flag to notify the user of available updates
                 // after we conclude this run.
@@ -557,7 +547,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         if let stagedOSInstallerInfo = getStagedOSInstallerInfo() {
             displayStagedOSInstallerInfo(info: stagedOSInstallerInfo)
         } else if appleUpdateCount > 0 {
-            // TODO: displayAppleUpdateInfo()
+            displayAppleUpdateInfo()
         }
 
         // send a notification event so MSC can update its display if needed
