@@ -388,4 +388,160 @@ func userIsVolumeOwner(_ username: String) -> Bool {
     return volumeOwnerUUIDs().contains(getGeneratedUID(username))
 }
 
-// TODO: implement functions for launching staged macOS installer
+// functions for launching staged macOS installer
+
+func getAdminOpenPath() -> String? {
+    /// Writes our adminopen script to a temp file. Returns the path.
+    let scriptText = """
+    #!/bin/bash
+
+    # This script is designed to be run as root.
+    # It takes one argument, a path to an app to be launched.
+    #
+    # If the current console user is not a member of the admin group, the user will
+    # be added to to the group.
+    # The app will then be launched in the console user's context.
+    # When the app exits (or this script is killed via SIGINT or SIGTERM),
+    # if we had promoted the user to admin, we demote that user once again.
+
+    export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+    function fail {
+        echo "$@" 1>&2
+        exit 1
+    }
+
+    function demote_user {
+        # demote CONSOLEUSER from admin
+        dseditgroup -o edit -d ${CONSOLEUSER} -t user admin
+    }
+
+    if [ $EUID -ne 0 ]; then
+       fail "This script must be run as root."
+    fi
+
+
+    CONSOLEUSER=$(stat -f %Su /dev/console)
+    if [ "${CONSOLEUSER}" == "root" ] ; then
+        fail "The console user may not be root!"
+    fi
+
+    USER_UID=$(id -u ${CONSOLEUSER})
+    if [ $? -ne 0 ] ; then
+        # failed to get UID, bail
+        fail "Could not get UID for ${CONSOLEUSER}"
+    fi
+
+    APP=$1
+    if [ "${APP}" == "" ] ; then
+        # no application specified
+        fail "Need to specify an application!"
+    fi
+
+    # check if CONSOLEUSER is admin
+    dseditgroup -o checkmember -m ${CONSOLEUSER} admin > /dev/null
+    if [ $? -ne 0 ] ; then
+        # not currently admin, so promote to admin
+        dseditgroup -o edit -a ${CONSOLEUSER} -t user admin
+        # make sure we demote the user at the end or if we are interrupted
+        trap demote_user EXIT SIGINT SIGTERM
+    fi
+
+    # launch $APP as $USER_UID and wait until it exits
+    launchctl asuser ${USER_UID} open -W "${APP}"
+
+    """
+    guard let tempdir = TempDir.shared.path else {
+        displayError("Could not get temp directory for adminopen tool")
+        return nil
+    }
+    let scriptPath = (tempdir as NSString).appendingPathComponent("adminopen")
+    guard createExecutableFile(
+        atPath: scriptPath,
+        withStringContents: scriptText,
+        posixPermissions: 0o744
+    )
+    else {
+        displayError("Could not get temp directory for adminopen tool")
+        return nil
+    }
+    return scriptPath
+}
+
+func launchInstallerApp(_ appPath: String) -> Bool {
+    /// Runs our adminopen tool to launch the Install macOS app. adminopen is run
+    /// via launchd so we can exit after the app is launched (and the user may or
+    /// may not actually complete running it.) Returns true if we run adminopen,
+    /// false otherwise (some reasons: can't find Install app, no GUI user)
+
+    // do we have a GUI user?
+    let username = getConsoleUser()
+    if username.isEmpty || username == "loginwindow" {
+        // we're at the loginwindow. Bail.
+        displayError("Could not launch macOS installer application: No current GUI user.")
+        return false
+    }
+
+    // if we're on Apple silicon -- is the user a volume owner?
+    if isAppleSilicon(), !userIsVolumeOwner(username) {
+        displayError("Could not launch macOS installer application: Current GUI user \(username) is not a volume owner.")
+        return false
+    }
+
+    // create the adminopen tool and get its path
+    guard let adminOpenPath = getAdminOpenPath() else {
+        displayError("Error launching macOS installer: Can't create adminopen tool.")
+        return false
+    }
+
+    // make sure the Install macOS app is present
+    if !pathExists(appPath) {
+        displayError("Error launching macOS installer: \(appPath) doesn't exist.")
+        return false
+    }
+
+    // OK, all preconditions are met, let's go!
+    displayMajorStatus("Launching macOS installer...")
+    let cmd = [adminOpenPath, appPath]
+    do {
+        let job = try LaunchdJob(cmd: cmd, cleanUpAtExit: false)
+        try job.start()
+        // sleep a bit, then check to see if our launchd job has exited with an error
+        usleep(1_000_000)
+        if let exitcode = job.exitcode(), exitcode != 0 {
+            var errorMsg = ""
+            if let stderr = job.stderr {
+                errorMsg = String(data: stderr.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            }
+            throw MunkiError("(\(exitcode)) \(errorMsg)")
+        }
+    } catch {
+        displayError("Failed to launch macOS installer due to launchd error.")
+        displayError(error.localizedDescription)
+        return false
+    }
+
+    // set Munki to run at boot after the OS upgrade is complete
+    do {
+        try setBootstrapMode()
+    } catch {
+        displayWarning("Could not set up Munki to run at boot after OS upgrade is complete: \(error.localizedDescription)")
+    }
+    // return true to indicate we launched the Install macOS app
+    return true
+}
+
+func launchStagedOSInstaller() -> Bool {
+    /// Attempt to launch a staged OS installer
+    guard let osInstallerInfo = getStagedOSInstallerInfo(),
+          let osInstallerPath = osInstallerInfo["osinstaller_path"] as? String
+    else {
+        displayError("Could not get path to staged OS installer.")
+        return false
+    }
+    if boolPref("SuppressStopButtonOnInstall") ?? false {
+        munkiStatusHideStopButton()
+    }
+    munkiLog("### Beginning GUI launch of macOS installer ###")
+    return launchInstallerApp(osInstallerPath)
+}
