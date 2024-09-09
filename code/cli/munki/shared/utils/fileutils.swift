@@ -29,7 +29,7 @@ class TempDir {
         return url?.path
     }
 
-    private init() {
+    init() {
         let filemanager = FileManager.default
         let dirName = "munki-\(UUID().uuidString)"
         let tmpURL = filemanager.temporaryDirectory.appendingPathComponent(
