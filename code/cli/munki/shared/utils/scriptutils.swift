@@ -7,14 +7,18 @@
 
 import Foundation
 
-func createExecutableFile(atPath path: String, withStringContents stringContents: String) -> Bool {
+func createExecutableFile(
+    atPath path: String,
+    withStringContents stringContents: String,
+    posixPermissions: Int = 0o700
+) -> Bool {
     // Writes string data to path.
     // Returns success or failure as a boolean.
     let data = stringContents.data(using: .utf8)
     return FileManager.default.createFile(
         atPath: path,
         contents: data,
-        attributes: [FileAttributeKey.posixPermissions: 0o700]
+        attributes: [FileAttributeKey.posixPermissions: posixPermissions]
     )
 }
 
