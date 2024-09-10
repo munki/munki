@@ -14,6 +14,5 @@ class BaseServer {
     var socketRef: CFSocket?
 
     init(_: CInt) {
-        let socket =
     }
 }
