@@ -14,11 +14,11 @@ func composedURLWithBase(_ baseURLString: String, adding path: String) -> String
 }
 
 func munkiRepoURL(_ type: String = "", resource: String = "") -> String? {
-    // we could use composedURLWithBase, but that doesn't handle
-    // URLs in the format of CGI invocations correctly, and would not
-    // be consistent with the behavior of the Python version of Munki
-    // So instead we'll do simple string concatenation
-    // (with percent-encoding of the resource path)
+    /// we could use composedURLWithBase, but that doesn't handle
+    /// URLs in the format of CGI invocations correctly, and would not
+    /// be consistent with the behavior of the Python version of Munki
+    /// So instead we'll do simple string concatenation
+    /// (with percent-encoding of the resource path)
 
     let munkiBaseURL = pref("SoftwareRepoURL") as? String ?? ""
     if type.isEmpty {
