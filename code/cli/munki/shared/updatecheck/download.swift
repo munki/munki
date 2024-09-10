@@ -8,9 +8,9 @@
 import Foundation
 
 func getDownloadCachePath(_ urlString: String) -> String {
-    // For a URL, return the path that the download should cache to.
-    //
-    // Returns a string.
+    /// For a URL, return the path that the download should cache to.
+    ///
+    /// Returns a string.
     return managedInstallsDir(subpath: "Cache/" + baseName(urlString))
 }
 
@@ -21,8 +21,8 @@ func enoughDiskSpaceFor(
     warn: Bool = true,
     precaching: Bool = false
 ) -> Bool {
-    // Determine if there is enough disk space to download and install
-    // the installer item.
+    /// Determine if there is enough disk space to download and install
+    /// the installer item.
 
     // fudgefactor is 100MB
     let fudgefactor = 102_400 // KBytes
@@ -84,10 +84,10 @@ func downloadInstallerItem(
     uninstalling: Bool = false,
     precaching: Bool = false
 ) throws -> Bool {
-    // Downloads an (un)installer item.
-    // Returns true if the item was downloaded,
-    // false if it was already cached.
-    // Thows an error if there are issues
+    /// Downloads an (un)installer item.
+    /// Returns true if the item was downloaded,
+    /// false if it was already cached.
+    /// Thows an error if there are issues
 
     let downloadItemKey = if uninstalling, item.keys.contains("uninstaller_item_location") {
         "uninstaller_item_location"
@@ -172,15 +172,15 @@ func downloadInstallerItem(
 let ICON_HASHES_PLIST_NAME = "_icon_hashes.plist"
 
 func cleanUpIconsDir(keepList: [String] = []) {
-    // Remove any cached/downloaded icons that aren't in the list of ones
-    // to keep
+    /// Remove any cached/downloaded icons that aren't in the list of ones
+    /// to keep
     let itemsToKeep = keepList + [ICON_HASHES_PLIST_NAME]
     let iconsDir = managedInstallsDir(subpath: "icons")
     cleanUpDir(iconsDir, keeping: itemsToKeep)
 }
 
 func getIconHashes() -> [String: String] {
-    // Attempts to download the dictionary of compiled icon hashes
+    /// Attempts to download the dictionary of compiled icon hashes
     let iconsHashesPlist = managedInstallsDir(subpath: "icons/\(ICON_HASHES_PLIST_NAME)")
     do {
         _ = try fetchMunkiResource(
@@ -197,8 +197,8 @@ func getIconHashes() -> [String: String] {
 }
 
 func downloadIcons(_ itemList: [PlistDict]) {
-    // Attempts to download icons (actually image files) for items in
-    // itemList
+    /// Attempts to download icons (actually image files) for items in
+    /// itemList
     var iconsToKeep = [String]()
     let iconsDir = managedInstallsDir(subpath: "icons")
     let iconHashes = getIconHashes()
@@ -259,12 +259,12 @@ func downloadIcons(_ itemList: [PlistDict]) {
 }
 
 func downloadClientResources() {
-    // Download client customization resources (if any).
+    /// Download client customization resources (if any).
 
-    // Munki's preferences can specify an explicit name
-    // under ClientResourcesFilename
-    // if that doesn't exist, use the primary manifest name as the
-    // filename. If that fails, try site_default.zip
+    /// Munki's preferences can specify an explicit name
+    /// under ClientResourcesFilename
+    /// if that doesn't exist, use the primary manifest name as the
+    /// filename. If that fails, try site_default.zip
 
     // build a list of resource names to request from the server
     var filenames = [String]()
@@ -321,8 +321,8 @@ func downloadClientResources() {
 }
 
 func downloadCatalog(_ catalogName: String) -> String? {
-    // Attempt to download a catalog from the Munki server, Returns the path to
-    // the downloaded catalog file
+    /// Attempt to download a catalog from the Munki server, Returns the path to
+    /// the downloaded catalog file
     let catalogPath = managedInstallsDir(subpath: "catalogs/\(catalogName)")
     displayDetail("Getting catalog \(catalogName)...")
     let message = "Retrieving catalog \(catalogName)..."
@@ -342,15 +342,9 @@ func downloadCatalog(_ catalogName: String) -> String? {
 
 // TODO: precaching support (in progress)
 
-/* private func getInstallInfo() -> PlistDict {
-     // Get the install info from InstallInfo.plist
-     let installInfoPlist = managedInstallsDir(subpath: "InstallInfo.plist")
-     return (try? readPlist(fromFile: installInfoPlist) as? PlistDict) ?? PlistDict()
- } */
-
 private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
-    // Returns a list of items from InstallInfo.plist's optional_installs
-    // that have precache=true and (installed=false or needs_update=true)
+    /// Returns a list of items from InstallInfo.plist's optional_installs
+    /// that have precache=true and (installed=false or needs_update=true)
     func boolValueFor(_ item: PlistDict, key: String) -> Bool {
         return item[key] as? Bool ?? false
     }
@@ -365,7 +359,7 @@ private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
 }
 
 func precache() {
-    // Download any applicable precache items into our Cache folder
+    /// Download any applicable precache items into our Cache folder
     guard let installInfo = getInstallInfo() else {
         // nothing to do
         return
@@ -385,7 +379,7 @@ func precache() {
 }
 
 func uncache(_: Int) {
-    // Discard precached items to free up space for managed installs
+    /// Discard precached items to free up space for managed installs
     guard let installInfo = getInstallInfo() else {
         return
     }
