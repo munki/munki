@@ -7,19 +7,6 @@
 
 import Foundation
 
-func baseName(_ str: String) -> String {
-    // Return a basename string.
-    // Examples:
-    //    "http://foo/bar/path/foo.dmg" => "foo.dmg"
-    //    "/path/foo.dmg" => "foo.dmg"
-
-    if let url = URL(string: str) {
-        return url.lastPathComponent
-    } else {
-        return (str as NSString).lastPathComponent
-    }
-}
-
 func getDownloadCachePath(_ urlString: String) -> String {
     // For a URL, return the path that the download should cache to.
     //
