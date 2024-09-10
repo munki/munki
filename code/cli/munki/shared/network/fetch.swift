@@ -58,28 +58,28 @@ func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
 }
 
 func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, alwaysHash: Bool = false) -> (Bool, String) {
-    // Verifies the integrity of the given software package.
+    /// Verifies the integrity of the given software package.
 
-    // The feature is controlled through the PackageVerificationMode key in
-    // Munki's preferences. Following modes currently exist:
-    //     none: No integrity check is performed.
-    //     hash: Integrity check is performed by calculating a SHA-256 hash of
-    //         the given file and comparing it against the reference value in
-    //         catalog. Only applies for package plists that contain the
-    //         item_key; for packages without the item_key, verification always
-    //         returns true.
-    //     hash_strict: Same as hash, but returns false for package plists that
-    //         do not contain the item_key.
-    //
-    // Args:
-    //     path: The file to check integrity on.
-    //     expectedHash: the sha256 hash expected.
-    //     alwaysHash: Boolean. Always check and return the hash even if not
-    //                 necessary for this function.
-    //
-    // Returns:
-    //     (true/false, sha256-hash)
-    //     true if the package integrity could be validated. Otherwise, false.
+    /// The feature is controlled through the PackageVerificationMode key in
+    /// Munki's preferences. Following modes currently exist:
+    ///     none: No integrity check is performed.
+    ///     hash: Integrity check is performed by calculating a SHA-256 hash of
+    ///         the given file and comparing it against the reference value in
+    ///         catalog. Only applies for package plists that contain the
+    ///         item_key; for packages without the item_key, verification always
+    ///         returns true.
+    ///     hash_strict: Same as hash, but returns false for package plists that
+    ///         do not contain the item_key.
+    ///
+    /// Args:
+    ///     path: The file to check integrity on.
+    ///     expectedHash: the sha256 hash expected.
+    ///     alwaysHash: Boolean. Always check and return the hash even if not
+    ///                 necessary for this function.
+    ///
+    /// Returns:
+    ///     (true/false, sha256-hash)
+    ///     true if the package integrity could be validated. Otherwise, false.
     let mode = pref("PackageVerificationMode") as? String ?? "hash"
     let itemName = (path as NSString).lastPathComponent
     var calculatedHash = ""
@@ -120,9 +120,9 @@ func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, always
 }
 
 func headerDictFromList(_ strList: [String]?) -> [String: String] {
-    // Given a list of strings in http header format, return a dict.
-    // A User-Agent header is added if none is present in the list.
-    // If strList is nil, returns a dict with only the User-Agent header.
+    /// Given a list of strings in http header format, return a dict.
+    /// A User-Agent header is added if none is present in the list.
+    /// If strList is nil, returns a dict with only the User-Agent header.
     var headerDict = [String: String]()
     headerDict["User-Agent"] = DEFAULT_USER_AGENT
 
@@ -154,17 +154,17 @@ func getURL(
     followRedirects: String = "none",
     pkginfo: PlistDict? = nil
 ) throws -> [String: String] {
-    // Gets an HTTP or HTTPS URL and stores it in
-    // destination path. Returns a dictionary of headers, which includes
-    // http_result_code and http_result_description.
-    // Will throw FetchError.connection if Gurl has a connection error.
-    // Will throw FetchError.http if HTTP Result code is not 2xx or 304.
-    // Will throw FetchError.fileSystem if Gurl has a filesystem error.
-    // If destinationpath already exists, you can set 'onlyifnewer' to true to
-    // indicate you only want to download the file only if it's newer on the
-    // server.
-    // If you set resume to true, Gurl will attempt to resume an
-    // interrupted download.
+    /// Gets an HTTP or HTTPS URL and stores it in
+    /// destination path. Returns a dictionary of headers, which includes
+    /// http_result_code and http_result_description.
+    /// Will throw FetchError.connection if Gurl has a connection error.
+    /// Will throw FetchError.http if HTTP Result code is not 2xx or 304.
+    /// Will throw FetchError.fileSystem if Gurl has a filesystem error.
+    /// If destinationpath already exists, you can set 'onlyifnewer' to true to
+    /// indicate you only want to download the file only if it's newer on the
+    /// server.
+    /// If you set resume to true, Gurl will attempt to resume an
+    /// interrupted download.
     let tempDownloadPath = destinationPath + ".download"
     if pathExists(tempDownloadPath), !resume {
         try? FileManager.default.removeItem(atPath: tempDownloadPath)
@@ -295,13 +295,14 @@ func getHTTPfileIfChangedAtomically(
     followRedirects: String = "none",
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    // Gets file from HTTP URL, checking first to see if it has changed on the
-    // server.
-
-    // Returns True if a new download was required; False if the
-    // item is already in the local cache.
-
-    // Throws a FetchError if there is an error (.connection or .download)
+    /// Gets file from HTTP URL, checking first to see if it has changed on the
+    /// server.
+    ///
+    /// Returns True if a new download was required; False if the
+    /// item is already in the local cache.
+    ///
+    /// Throws a FetchError if there is an error (.connection or .download)
+    // TODO: etag support
     // var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
@@ -381,13 +382,13 @@ func getHTTPfileIfChangedAtomically(
 }
 
 func getFileIfChangedAtomically(_ path: String, destinationPath: String) throws -> Bool {
-    // Gets file from path, checking first to see if it has changed on the
-    // source.
-
-    // Returns true if a new copy was required; false if the
-    // item is already in the local cache.
-
-    // Throws FetchError.fileSystem if there is an error.
+    /// Gets file from path, checking first to see if it has changed on the
+    /// source.
+    ///
+    /// Returns true if a new copy was required; false if the
+    /// item is already in the local cache.
+    ///
+    /// Throws FetchError.fileSystem if there is an error.
     let filemanager = FileManager.default
     if !pathExists(path) {
         throw FetchError.fileSystem("Source does not exist: \(path)")
@@ -455,19 +456,19 @@ func getResourceIfChangedAtomically(
     followRedirects: String? = nil,
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    // Gets file from a URL.
-    // Checks first if there is already a file with the necessary checksum.
-    // Then checks if the file has changed on the server, resuming or
-    // re-downloading as necessary.
-
-    // If the file has changed verify the pkg hash if so configured.
-
-    // Supported schemes are http, https, file.
-
-    // Returns true if a new download was required; False if the
-    // item is already in the local cache.
-
-    // Throws a FetchError if there is an error.
+    /// Gets file from a URL.
+    /// Checks first if there is already a file with the necessary checksum.
+    /// Then checks if the file has changed on the server, resuming or
+    /// re-downloading as necessary.
+    ///
+    /// If the file has changed verify the pkg hash if so configured.
+    ///
+    /// Supported schemes are http, https, file.
+    ///
+    /// Returns true if a new download was required; False if the
+    /// item is already in the local cache.
+    ///
+    /// Throws a FetchError if there is an error.
 
     guard let resolvedURL = URL(string: url) else {
         throw FetchError.connection(errorCode: -1, description: "Invalid URL: \(url)")
@@ -557,19 +558,19 @@ func fetchMunkiResourceByURL(
     verify: Bool = false,
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    // A high-level function for getting resources from the Munki repo.
-    // Gets a given URL from the Munki server.
-    // Adds any additional headers to the request if present
-    // Throws a FetchError if there's an error
-
-    // Add any additional headers specified in ManagedInstalls.plist.
-    // AdditionalHttpHeaders must be an array of strings with valid HTTP
-    // header format. For example:
-    // <key>AdditionalHttpHeaders</key>
-    // <array>
-    //   <string>Key-With-Optional-Dashes: Foo Value</string>
-    //   <string>another-custom-header: bar value</string>
-    // </array>
+    /// A high-level function for getting resources from the Munki repo.
+    /// Gets a given URL from the Munki server.
+    /// Adds any additional headers to the request if present
+    /// Throws a FetchError if there's an error
+    ///
+    /// Add any additional headers specified in ManagedInstalls.plist.
+    /// AdditionalHttpHeaders must be an array of strings with valid HTTP
+    /// header format. For example:
+    /// <key>AdditionalHttpHeaders</key>
+    /// <array>
+    ///   <string>Key-With-Optional-Dashes: Foo Value</string>
+    ///   <string>another-custom-header: bar value</string>
+    /// </array>
     let customHeaders = pref(ADDITIONAL_HTTP_HEADERS_KEY) as? [String]
 
     return try getResourceIfChangedAtomically(
@@ -602,7 +603,7 @@ func fetchMunkiResource(
     verify: Bool = false,
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    // An even higher-level function for getting resources from the Munki repo.
+    /// An even higher-level function for getting resources from the Munki repo.
     guard let url = munkiRepoURL(kind.rawValue, resource: name) else {
         throw FetchError.connection(
             errorCode: -1,
@@ -621,11 +622,11 @@ func fetchMunkiResource(
 }
 
 func getDataFromURL(_ url: String) throws -> Data? {
-    // Returns data from URL.
-    // We use the existing fetchMunkiResource function so any custom
-    // authentication/authorization headers are used
-    // (including, eventually, middleware-generated headers)
-    // May throw a FetchError
+    /// Returns data from URL.
+    /// We use the existing fetchMunkiResource function so any custom
+    /// authentication/authorization headers are used
+    /// (including, eventually, middleware-generated headers)
+    /// May throw a FetchError
 
     guard let tmpDir = TempDir.shared.makeTempDir() else {
         displayError("Could not create temporary directory")
@@ -640,10 +641,10 @@ func getDataFromURL(_ url: String) throws -> Data? {
 }
 
 func checkServer(_ urlString: String = "") -> (Int, String) {
-    // A function we can call to check to see if the server is
-    // available before we kick off a full run. This can be fooled by
-    // ISPs that return results for non-existent web servers...
-    // Returns a tuple (exitCode, exitDescription)
+    /// A function we can call to check to see if the server is
+    /// available before we kick off a full run. This can be fooled by
+    /// ISPs that return results for non-existent web servers...
+    /// Returns a tuple (exitCode, exitDescription)
 
     let serverURL: String = if !urlString.isEmpty {
         urlString
