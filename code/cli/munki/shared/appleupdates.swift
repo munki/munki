@@ -86,7 +86,64 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
     return updates
 }
 
-func getAppleUpdatesList() -> [PlistDict] {
+func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
+    /// FIlters out any majorOS upgrades from a list of Apple updates
+
+    // There's a few strategies we could use here:
+    //
+    //  1) Match update names that start with "macOS" and end with a version
+    //     number matching the uupdate version, then compare the first part
+    //     of that version against the currently installed OS. IOW,
+    //     if we are currently running 13.6.9, an update to 14.6.1 or 15.0
+    //     would be a major update. This could break if Apple chnages its
+    //     naming convention, or issues other non-OS updates with names that
+    //     start with "macOS".
+    //
+    //  2) Look at com.apple.SoftwareUpdate's RecommendedUpdates. Currently,
+    //     minor updates have identifiers and product keys like
+    //       "MSU_UPDATE_22G830_patch_13.6.9_minor"
+    //     Major updates have identifiers and product keys like
+    //       "MSU_UPDATE_23G93_patch_14.6.1_major"
+    //     IOW, all OS updates start with "MSU_UPDATE_" but the majors end with
+    //     "_major". This couod break if Apple changes the naming conventions
+    //     for their update identifiers/product keys
+    //
+    //  Since we are not currently collecting the info from
+    //  com.apple.SoftwareUpdate's RecommendedUpdates, right now we'll go with
+    //  strategy #1.
+
+    let currentOSVersion = getOSVersion() // just gets major.minor
+    let versionParts = currentOSVersion.components(separatedBy: ".")
+    let currentMajorOSVersion = versionParts[0]
+
+    var filteredUpdates = [PlistDict]()
+    for update in appleUpdates {
+        guard let name = update["name"] as? String,
+              let version = update["version_to_install"] as? String
+        else {
+            continue
+        }
+        if !name.hasPrefix("macOS ") {
+            filteredUpdates.append(update)
+            continue
+        }
+        // "macOS " update
+        if !name.hasSuffix(version) {
+            // not the expected name format so maybe not an OS update
+            filteredUpdates.append(update)
+            continue
+        }
+        if version.hasPrefix(currentMajorOSVersion + ".") {
+            // major version is the same, so this is a minor update
+            filteredUpdates.append(update)
+            continue
+        }
+        // "macOS " update with different major version. Do nothing.
+    }
+    return filteredUpdates
+}
+
+func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict] {
     /// Returns a list of dictionaries describing available Apple updates.
     var appleUpdates = [PlistDict]()
     let rawUpdates = getAvailableSoftwareUpdates()
@@ -111,18 +168,22 @@ func getAppleUpdatesList() -> [PlistDict] {
             {
                 info["RestartAction"] = "RequireRestart"
             }
-            appleUpdates.append(item)
+            appleUpdates.append(info)
         }
+    }
+    if shouldFilterMajorOSUpdates {
+        return filterOutMajorOSUpgrades(appleUpdates)
     }
     return appleUpdates
 }
 
-func findAndRecordAvailableAppleUpdates() -> Int {
+func findAndRecordAvailableAppleUpdates(shouldFilterMajorOSUpdates: Bool = false) -> Int {
     /// Gets available Apple updates.
     /// writes a file used by the MSC GUI to display available updates.
     /// Returns count of available Apple updates
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
-    let appleUpdates = getAppleUpdatesList()
+    let appleUpdates = getAppleUpdatesList(
+        shouldFilterMajorOSUpdates: shouldFilterMajorOSUpdates)
     if appleUpdates.isEmpty {
         try? FileManager.default.removeItem(atPath: appleUpdatesFilePath)
         return 0
