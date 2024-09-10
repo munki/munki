@@ -25,6 +25,7 @@ func defaultLogger(_ message: String) {
     print(message)
 }
 
+/// Some options used by Gurl
 struct GurlOptions {
     var url: String
     var destinationPath: String
@@ -41,10 +42,9 @@ struct GurlOptions {
     var log: (String) -> Void = defaultLogger // logging function
 }
 
+/// A class for getting content from a URL
+/// using NSURLSession and friends
 class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
-    /// A class for getting content from a URL
-    /// using NSURLSession and friends
-
     let GURL_XATTR = "com.googlecode.munki.downloadData"
 
     var options: GurlOptions
@@ -67,8 +67,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         super.init()
     }
 
+    /// Start the connection
     func start() {
-        /// Start the connection
         guard !options.destinationPath.isEmpty else {
             options.log("No output file specified")
             done = true
@@ -139,17 +139,17 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
     }
 
+    /// Cancel the session
     func cancel() {
-        /// Cancel the session
         if let session {
             session.invalidateAndCancel()
         }
         done = true
     }
 
+    /// Check if the connection request is complete. As a side effect,
+    /// allow the delegates to work by letting the run loop run for a bit
     func isDone() -> Bool {
-        /// Check if the connection request is complete. As a side effect,
-        /// allow the delegates to work by letting the run loop run for a bit
         if done {
             return true
         }
@@ -158,8 +158,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         return done
     }
 
+    /// Returns any stored headers for destinationPath
     func getStoredHeaders() -> [String: String]? {
-        /// Returns any stored headers for destinationPath
         if options.destinationPath.isEmpty {
             displayDebug1("destination path is not defined")
             return nil
@@ -182,8 +182,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
     }
 
+    /// Store headers dictionary as an xattr for options.destinationPath
     func storeHeaders(_ headers: [String: String]) {
-        /// Store headers dictionary as an xattr for options.destinationPath
         guard let data = try? plistToData(headers) else {
             options.log("header convert to plist data failure")
             return
@@ -199,10 +199,10 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
     }
 
+    /// Since HTTP header names are not case-sensitive, we normalize a
+    /// dictionary of HTTP headers by converting all the key names to
+    /// lower case
     func normalizeHeaderDict(_ headers: [String: String]) -> [String: String] {
-        /// Since HTTP header names are not case-sensitive, we normalize a
-        /// dictionary of HTTP headers by converting all the key names to
-        /// lower case
         var normalizedHeaders = [String: String]()
         for (key, value) in headers {
             normalizedHeaders[key.lowercased()] = value
@@ -210,8 +210,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         return normalizedHeaders
     }
 
+    /// Record any error info from completed session
     func recordError(_ error: NSError) {
-        /// Record any error info from completed session
         self.error = error
         // if this was an SSL error, try to extract the SSL error code
         if let underlyingError = error.userInfo["NSUnderlyingError"] as? NSError,
@@ -224,8 +224,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     }
 
     func removeExpectedSizeFromStoredHeaders() {
-        /// If a successful transfer, clear the expected size so we
-        /// don't attempt to resume the download next time
+        // If a successful transfer, clear the expected size so we
+        // don't attempt to resume the download next time
         if String(status).hasPrefix("2"),
            var headers = getStoredHeaders(),
            headers.keys.contains("expected-length")
@@ -235,8 +235,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
     }
 
+    /// URLSessionTaskDelegate method
     @objc func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: (any Error)?) {
-        /// URLSessionTaskDelegate method
         if task != task {
             return
         }
@@ -261,7 +261,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     }
 
     func okToResume(downloadData: [String: String]) -> Bool {
-        /// returns a boolean
+        // returns a boolean
         guard let storedData = getStoredHeaders() else {
             options.log("No stored headers")
             return false
@@ -297,13 +297,13 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         return true
     }
 
+    /// URLSessionDataDelegate method
     @objc func urlSession(
         _: URLSession,
         dataTask _: URLSessionDataTask,
         didReceive response: URLResponse,
         completionHandler: @escaping @Sendable (URLSession.ResponseDisposition) -> Void
     ) {
-        /// URLSessionDataDelegate method
         // self.response = response // doesn't appear to be actually used
         bytesReceived = 0
         percentComplete = -1
@@ -372,6 +372,7 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         completionHandler(.allow)
     }
 
+    /// URLSessionTaskDelegate method
     @objc func urlSession(
         _: URLSession,
         task _: URLSessionTask,
@@ -379,7 +380,6 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         newRequest request: URLRequest,
         completionHandler: @escaping @Sendable (URLRequest?) -> Void
     ) {
-        /// URLSessionTaskDelegate method
         guard let newURL = request.url else {
             // deny the redirect
             completionHandler(nil)
@@ -403,13 +403,13 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         completionHandler(nil)
     }
 
+    /// URLSessionTaskDelegate method
     @objc func urlSession(
         _: URLSession,
         task _: URLSessionTask,
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        /// URLSessionTaskDelegate method
         // Handle an authentication challenge
         let supportedAuthMethods = [
             NSURLAuthenticationMethodDefault,
@@ -453,8 +453,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
     }
 
+    /// URLSessionDataDelegate method
     @objc func urlSession(_: URLSession, dataTask _: URLSessionDataTask, didReceive data: Data) {
-        /// URLSessionDataDelegate method
         // Handle received data
         if let destination {
             destination.write(data)
