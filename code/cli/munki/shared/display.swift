@@ -21,18 +21,18 @@
 import Darwin.C
 import Foundation
 
+/// a Singleton struct to hold shared config values
+/// this might eventually be replaced by a more encompassing struct
 struct DisplayOptions {
-    // a Singleton struct to hold shared config values
-    // this might eventually be replaced by a more encompassing struct
-
     static var verbose = 1
     static var munkistatusoutput = false
 
     private init() {} // prevents assigning an instance to another variable
 }
 
+/// Displays percent-done info, both at the command-line, and via MunkiStatus
+/// Not displayed at the command-line if verbose is 0 (-q/--quiet)
 func displayPercentDone(current: Int, maximum: Int) {
-    // displays percent-done info
     var percentDone = 0
     if current >= maximum {
         percentDone = 100
@@ -61,10 +61,10 @@ func displayPercentDone(current: Int, maximum: Int) {
     }
 }
 
+/// Displays major status messages, formatting as needed
+/// for verbose/non-verbose and munkistatus-style output.
+/// Not printed if verbose is 0 (-q/--quiet)
 func displayMajorStatus(_ message: String) {
-    // Displays major status messages, formatting as needed
-    // for verbose/non-verbose and munkistatus-style output.
-
     munkiLog(message)
     if DisplayOptions.munkistatusoutput {
         munkiStatusMessage(message)
@@ -81,10 +81,10 @@ func displayMajorStatus(_ message: String) {
     }
 }
 
+/// Displays minor status messages, formatting as needed
+/// for verbose/non-verbose and munkistatus-style output.
+/// Not printed if verbose is 0 (-q/--quiet)
 func displayMinorStatus(_ message: String) {
-    // Displays minor status messages, formatting as needed
-    // for verbose/non-verbose and munkistatus-style output.
-
     munkiLog("    \(message)")
     if DisplayOptions.munkistatusoutput {
         munkiStatusDetail(message)
@@ -99,10 +99,9 @@ func displayMinorStatus(_ message: String) {
     }
 }
 
+/// Displays info messages. Not displayed in MunkiStatus.
+/// Not printed if verbose is 0 (-q/--quiet)
 func displayInfo(_ message: String) {
-    // Displays info messages.
-    // Not displayed in MunkiStatus.
-
     munkiLog("    \(message)")
     if DisplayOptions.verbose > 0 {
         print("    \(message)")
@@ -110,11 +109,10 @@ func displayInfo(_ message: String) {
     }
 }
 
+/// Displays minor info messages. Not displayed in MunkiStatus.
+/// These are usually logged only, but can be printed to stdout
+/// if verbose is set greater than 1 (-v)
 func displayDetail(_ message: String) {
-    // Displays minor info messages.
-    // Not displayed in MunkiStatus.
-    // These are usually logged only, but can be printed to
-    // stdout if verbose is set greater than 1
     if DisplayOptions.verbose > 1 {
         print("    \(message)")
         fflush(stdout)
@@ -124,8 +122,8 @@ func displayDetail(_ message: String) {
     }
 }
 
+/// Displays debug level 1 messages. (verbose is set to 3 or more (-vv))
 func displayDebug1(_ message: String) {
-    // Displays debug level 1 messages.
     if DisplayOptions.verbose > 2 {
         print("    \(message)")
         fflush(stdout)
@@ -135,6 +133,7 @@ func displayDebug1(_ message: String) {
     }
 }
 
+/// Displays debug level 2 messages. (verbose is set to 4 or more (-vvv))
 func displayDebug2(_ message: String) {
     // Displays debug level 2 messages.
     if DisplayOptions.verbose > 3 {
@@ -146,8 +145,8 @@ func displayDebug2(_ message: String) {
     }
 }
 
+/// Prints warning message to stderr and the log
 func displayWarning(_ message: String, addToReport: Bool = true) {
-    // Prints warning message to stderr and the log
     let warning = "WARNING: \(message)"
     if DisplayOptions.verbose > 0 {
         printStderr(warning)
@@ -160,8 +159,8 @@ func displayWarning(_ message: String, addToReport: Bool = true) {
     }
 }
 
+/// Prints error message to stderr and the log
 func displayError(_ message: String, addToReport: Bool = true) {
-    // Prints error message to stderr and the log
     let errorMsg = "ERROR: \(message)"
     if DisplayOptions.verbose > 0 {
         printStderr(errorMsg)
