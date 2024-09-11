@@ -18,5 +18,5 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-// one single place to define a version for CLI tools
+/// one single place to define a version for CLI tools
 let CLI_TOOLS_VERSION = "7.0.0"

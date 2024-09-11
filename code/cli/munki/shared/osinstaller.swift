@@ -20,15 +20,15 @@
 
 import Foundation
 
+/// Check to see if path appears to be a macOS Install app
 func pathIsInstallMacOSApp(_ path: String) -> Bool {
     let startosinstallPath = (path as NSString).appendingPathComponent(
         "Contents/Resources/startosinstall")
     return FileManager.default.fileExists(atPath: startosinstallPath)
 }
 
+/// Returns the path to the first Install macOS.app found the top level of dirpath, or nil
 func findInstallMacOSApp(_ dirpath: String) -> String? {
-    // Returns the path to the first Install macOS.app found the top level of
-    // dirpath, or nil
     let filemanager = FileManager.default
     if let filelist = try? filemanager.contentsOfDirectory(atPath: dirpath) {
         for item in filelist {
@@ -41,10 +41,10 @@ func findInstallMacOSApp(_ dirpath: String) -> String? {
     return nil
 }
 
+/// Some downloaded macOS installer apps are stubs that don't contain
+/// all the needed resources, which are later downloaded when the app is run
+/// we can't use those
 func installMacOSAppIsStub(_ apppath: String) -> Bool {
-    // Some downloaded macOS installer apps are stubs that don't contain
-    // all the needed resources, which are later downloaded when the app is run
-    // we can't use those
     let installESDdmg = (apppath as NSString).appendingPathComponent("Contents/SharedSupport/InstallESD.dmg")
     let sharedSupportDmg = (apppath as NSString).appendingPathComponent("Contents/SharedSupport/SharedSupport.dmg")
     let filemanager = FileManager.default
@@ -52,8 +52,8 @@ func installMacOSAppIsStub(_ apppath: String) -> Bool {
         filemanager.fileExists(atPath: sharedSupportDmg))
 }
 
+/// Returns info parsed out of OS Installer app
 func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
-    // Returns info parsed out of OS Installer app
     var appInfo = PlistDict()
     let installInfoPlist = (appPath as NSString).appendingPathComponent("Contents/SharedSupport/InstallInfo.plist")
     if pathIsRegularFile(installInfoPlist) {
@@ -103,9 +103,9 @@ func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
     throw MunkiError("Could not parse info from \((appPath as NSString).lastPathComponent)")
 }
 
+/// Generates an NSPredicate expression to be used as an installable
+/// condition limiting the hardware models this item is applicable for
 func generateInstallableCondition(_ models: [String]) -> String {
-    // Generates an NSPredicate expression to be used as an installable
-    // condition limiting the hardware models this item is applicable for
     var predicates = [String]()
     let boardIDs = models.filter { $0.hasPrefix("Mac-") }
     let deviceIDs = models.filter { !$0.hasPrefix("Mac-") }
@@ -124,9 +124,8 @@ func generateInstallableCondition(_ models: [String]) -> String {
 
 // TODO: implement StartOSInstallRunner and related functions
 
+/// Returns pkginfo for a macOS installer on a disk image, using the startosinstall installation method
 func makeStartOSInstallPkgInfo(mountpoint: String, item: String) throws -> PlistDict {
-    // Returns pkginfo for a macOS installer on a disk
-    // image, using the startosinstall installation method
     let appPath = (mountpoint as NSString).appendingPathComponent(item)
     guard pathIsInstallMacOSApp(appPath) else {
         throw MunkiError("Disk image item \(item) doesn't appear to be a macOS installer app")
@@ -181,10 +180,9 @@ func makeStartOSInstallPkgInfo(mountpoint: String, item: String) throws -> Plist
     return pkginfo
 }
 
+/// Returns additional pkginfo from macOS installer at app_path,
+/// describing a stage_os_installer item
 func makeStageOSInstallerPkgInfo(_ appPath: String) throws -> PlistDict {
-    // Returns additional pkginfo from macOS installer at app_path,
-    // describing a stage_os_installer item
-
     // calculate the size of the installer app
     let appSize = getSizeOfDirectory(appPath) / 1024 // this value is kbytes
     let appName = (appPath as NSString).lastPathComponent
@@ -237,9 +235,9 @@ func makeStageOSInstallerPkgInfo(_ appPath: String) throws -> PlistDict {
     return pkginfo
 }
 
+/// Attempts to trigger a "verification" process against the staged macOS
+/// installer. This improves the launch time.
 func verifyStagedOSInstaller(_ appPath: String) {
-    // Attempts to trigger a "verification" process against the staged macOS
-    // installer. This improves the launch time.
     displayMinorStatus("Verifying macOS installer...")
     displayPercentDone(current: -1, maximum: 100)
     let startOSInstallPath = (appPath as NSString).appendingPathComponent("Contents/Resources/startosinstall")
@@ -249,14 +247,13 @@ func verifyStagedOSInstaller(_ appPath: String) {
     }
 }
 
+/// Returns the path to the StagedOSInstaller.plist (which may or may not actually exist)
 func stagedOSInstallerInfoPath() -> String {
-    // returns the path to the StagedOSInstaller.plist
-    // (which may or may not actually exist)
     return managedInstallsDir(subpath: "StagedOSInstaller.plist")
 }
 
+/// Returns the expected path to the locally staged macOS installer
 func getOSInstallerPath(_ iteminfo: PlistDict) -> String? {
-    // Returns the expected path to the locally staged macOS installer
     guard let itemsToCopy = iteminfo["items_to_copy"] as? [PlistDict],
           itemsToCopy.count > 0
     else {
@@ -277,8 +274,8 @@ func getOSInstallerPath(_ iteminfo: PlistDict) -> String? {
     return (destinationPath as NSString).appendingPathComponent(baseName(destinationItem))
 }
 
+/// Creates a dict describing a staged OS installer
 func createOSInstallerInfo(_ iteminfo: PlistDict) -> PlistDict? {
-    // Creates a dict describing a staged OS installer
     guard let osInstallerPath = getOSInstallerPath(iteminfo) else {
         return nil
     }
@@ -298,10 +295,9 @@ func createOSInstallerInfo(_ iteminfo: PlistDict) -> PlistDict? {
     return osInstallerInfo
 }
 
+/// Records info on a staged macOS installer. This includes info for managedsoftwareupdate and
+/// Managed Software Center to display, and the path to the staged installer.
 func recordStagedOSInstaller(_ iteminfo: PlistDict) {
-    // Records info on a staged macOS installer. This includes info for
-    // managedsoftwareupdate and Managed Software Center to display, and the
-    // path to the staged installer.
     let infoPath = stagedOSInstallerInfoPath()
     guard let stagedOSInstallerInfo = createOSInstallerInfo(iteminfo) else {
         displayError("Error recording staged macOS installer: could not get os installer path")
@@ -318,8 +314,8 @@ func recordStagedOSInstaller(_ iteminfo: PlistDict) {
     }
 }
 
+/// Returns info we may have on a staged OS installer
 func getStagedOSInstallerInfo() -> PlistDict? {
-    // Returns any info we may have on a staged OS installer
     let infoPath = stagedOSInstallerInfoPath()
     if !pathExists(infoPath) {
         return nil
@@ -341,14 +337,14 @@ func getStagedOSInstallerInfo() -> PlistDict? {
     }
 }
 
+/// Removes any staged OS installer we may have
 func removeStagedOSInstallerInfo() {
-    // Removes any staged OS installer we may have
     let infoPath = stagedOSInstallerInfoPath()
     try? FileManager.default.removeItem(atPath: infoPath)
 }
 
+/// Prints staged macOS installer info (if any) and updates ManagedInstallReport.
 func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
-    // Prints staged macOS installer info (if any) and updates ManagedInstallReport.
     guard let item = info else { return }
     Report.shared.record(item, to: "StagedOSInstaller")
     displayInfo("")
@@ -361,8 +357,8 @@ func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
 
 // MARK: functions for determining if a user is a volume owner
 
+/// Returns a list of UUIDs of accounts that are volume owners for /
 func volumeOwnerUUIDs() -> [String] {
-    // Returns a list of UUIDs of accounts that are volume owners for /
     var cryptoUsers = PlistDict()
     do {
         let result = runCLI(
@@ -383,15 +379,15 @@ func volumeOwnerUUIDs() -> [String] {
     }
 }
 
+/// Returns a boolean to indicate if the user is a volume owner of /
 func userIsVolumeOwner(_ username: String) -> Bool {
-    // Returns a boolean to indicate if the user is a volume owner of /
     return volumeOwnerUUIDs().contains(getGeneratedUID(username))
 }
 
-// functions for launching staged macOS installer
+// MARK: functions for launching staged macOS installer
 
+/// Writes our adminopen script to a temp file. Returns the path.
 func getAdminOpenPath() -> String? {
-    /// Writes our adminopen script to a temp file. Returns the path.
     let scriptText = """
     #!/bin/bash
 
@@ -468,12 +464,11 @@ func getAdminOpenPath() -> String? {
     return scriptPath
 }
 
+/// Runs our adminopen tool to launch the Install macOS app. adminopen is run
+/// via launchd so we can exit after the app is launched (and the user may or
+/// may not actually complete running it.) Returns true if we run adminopen,
+/// false otherwise (some reasons: can't find Install app, no GUI user)
 func launchInstallerApp(_ appPath: String) -> Bool {
-    /// Runs our adminopen tool to launch the Install macOS app. adminopen is run
-    /// via launchd so we can exit after the app is launched (and the user may or
-    /// may not actually complete running it.) Returns true if we run adminopen,
-    /// false otherwise (some reasons: can't find Install app, no GUI user)
-
     // do we have a GUI user?
     let username = getConsoleUser()
     if username.isEmpty || username == "loginwindow" {
@@ -531,8 +526,8 @@ func launchInstallerApp(_ appPath: String) -> Bool {
     return true
 }
 
+/// Attempt to launch a staged OS installer
 func launchStagedOSInstaller() -> Bool {
-    /// Attempt to launch a staged OS installer
     guard let osInstallerInfo = getStagedOSInstallerInfo(),
           let osInstallerPath = osInstallerInfo["osinstaller_path"] as? String
     else {
