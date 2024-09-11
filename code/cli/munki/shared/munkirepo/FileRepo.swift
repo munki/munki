@@ -21,8 +21,8 @@
 import Foundation
 import NetFS
 
+/// Defines methods all repo classes must implement
 protocol Repo {
-    // Defines methods all repo classes must implement
     init(_ url: String) throws
     func list(_ kind: String) throws -> [String]
     func get(_ identifier: String) throws -> Data
@@ -56,9 +56,9 @@ enum ShareMountError: Error {
     case authorizationNeeded(Int32)
 }
 
+/// Mounts a share at /Volumes, optionally using credentials.
+/// Returns the mount point or throws an error
 func mountShare(_ shareURL: String, username: String = "", password: String = "") throws -> String {
-    // Mounts a share at /Volumes, optionally using credentials.
-    // Returns the mount point or throws an error
     let cfShareURL = CFURLCreateWithString(nil, shareURL as CFString, nil)
     // Set UI to reduced interaction
     let open_options: NSMutableDictionary = [kNAUIOptionKey: kNAUIOptionNoUI]
@@ -86,6 +86,8 @@ func mountShare(_ shareURL: String, username: String = "", password: String = ""
     return mounts[0] as String
 }
 
+/// A wrapper for mountShare that first attempts without credentials, and if that fails
+///  with .authorizationNeeded, prompts for credentials and tries again
 func mountShareURL(_ share_url: String) throws -> String {
     do {
         return try mountShare(share_url)
@@ -108,6 +110,7 @@ func mountShareURL(_ share_url: String) throws -> String {
 
 // MARK: File repo class
 
+// Implementation of the core file repo
 class FileRepo: Repo {
     // MARK: instance variables
 
@@ -132,8 +135,8 @@ class FileRepo: Repo {
         try _connect()
     }
 
+    /// Destructor -- unmount the fileshare if we mounted it
     deinit {
-        // Destructor -- unmount the fileshare if we mounted it
         if weMountedTheRepo, pathIsDirectory(root) {
             print("Attempting to unmount \(root)...")
             let results = runCLI(
@@ -150,19 +153,19 @@ class FileRepo: Repo {
 
     // MARK: utility methods
 
+    /// Returns the full (absolute) filesystem path to identifier
     func fullPath(_ identifier: String) -> String {
-        // returns the full (absolute) filesystem path to identifier
         return (root as NSString).appendingPathComponent(identifier)
     }
 
+    /// Returns the filesystem path to the parent dir of identifier
     func parentDir(_ identifier: String) -> String {
-        // returns the filesystem path to the parent dir of identifier
         return (fullPath(identifier) as NSString).deletingLastPathComponent
     }
 
+    /// If self.root is present, return. Otherwise, if the url scheme is not
+    /// "file" then try to mount the share url.
     private func _connect() throws {
-        // If self.root is present, return. Otherwise, if the url scheme is not
-        // "file" then try to mount the share url.
         if pathIsDirectory(root) {
             return
         }
@@ -183,15 +186,13 @@ class FileRepo: Repo {
 
     // MARK: API methods
 
+    /// Returns a list of identifiers for each item of kind.
+    /// Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
+    /// For a file-backed repo this would be a list of pathnames.
     func list(_ kind: String) throws -> [String] {
-        // Returns a list of identifiers for each item of kind.
-        // Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
-        // For a file-backed repo this would be a list of pathnames.
-
         // TODO: the order Foundation enumerates files is different than the order
         // you get from Python's os.walk. This affets the behavior of MWA2.
         // MWA2 probably should not be relying on catalogs being built in a specific ordering.
-
         var fileList = [String]()
         let searchPath = (root as NSString).appendingPathComponent(kind)
         let filemanager = FileManager.default
@@ -208,13 +209,13 @@ class FileRepo: Repo {
         return fileList
     }
 
+    /// Returns the content of item with given resource_identifier.
+    /// For a file-backed repo, a resource_identifier of
+    /// 'pkgsinfo/apps/Firefox-52.0.plist' would return the contents of
+    /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
+    /// Avoid using this method with the 'pkgs' kind as it might return a
+    /// really large blob of data.
     func get(_ identifier: String) throws -> Data {
-        // Returns the content of item with given resource_identifier.
-        // For a file-backed repo, a resource_identifier of
-        // 'pkgsinfo/apps/Firefox-52.0.plist' would return the contents of
-        // <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
-        // Avoid using this method with the 'pkgs' kind as it might return a
-        // really large blob of data.
         let repoFilePath = fullPath(identifier)
         if let data = FileManager.default.contents(atPath: repoFilePath) {
             return data
@@ -222,13 +223,13 @@ class FileRepo: Repo {
         throw MunkiError("Error getting contents from \(repoFilePath)")
     }
 
+    /// Gets the contents of item with given resource_identifier and saves
+    /// it to local_file_path.
+    /// For a file-backed repo, a resource_identifier
+    /// of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
+    /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
+    /// local_file_path.
     func get(_ identifier: String, toFile local_file_path: String) throws {
-        // Gets the contents of item with given resource_identifier and saves
-        // it to local_file_path.
-        // For a file-backed repo, a resource_identifier
-        // of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
-        // <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
-        // local_file_path.
         // TODO: make this atomic
         let filemanager = FileManager.default
         if filemanager.fileExists(atPath: local_file_path) {
@@ -237,11 +238,11 @@ class FileRepo: Repo {
         try filemanager.copyItem(atPath: fullPath(identifier), toPath: local_file_path)
     }
 
+    /// Stores content on the repo based on resource_identifier.
+    /// For a file-backed repo, a resource_identifier of
+    /// 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
+    /// saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
     func put(_ identifier: String, content: Data) throws {
-        // Stores content on the repo based on resource_identifier.
-        // For a file-backed repo, a resource_identifier of
-        // 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
-        // saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
         let filemanager = FileManager.default
         let dirPath = parentDir(identifier)
         if !filemanager.fileExists(atPath: dirPath) {
@@ -256,11 +257,11 @@ class FileRepo: Repo {
         }
     }
 
+    /// Copies the content of local_file_path to the repo based on
+    /// resource_identifier. For a file-backed repo, a resource_identifier
+    /// of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
+    /// being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
     func put(_ identifier: String, fromFile localFilePath: String) throws {
-        // Copies the content of local_file_path to the repo based on
-        // resource_identifier. For a file-backed repo, a resource_identifier
-        // of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
-        // being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
         let filemanager = FileManager.default
         let dirPath = parentDir(identifier)
         if !filemanager.fileExists(atPath: dirPath) {
@@ -278,11 +279,11 @@ class FileRepo: Repo {
         try filemanager.copyItem(atPath: localFilePath, toPath: repoFilePath)
     }
 
+    /// Deletes a repo object located by resource_identifier.
+    /// For a file-backed repo, a resource_identifier of
+    /// 'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
+    /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
     func delete(_ identifier: String) throws {
-        // Deletes a repo object located by resource_identifier.
-        // For a file-backed repo, a resource_identifier of
-        // 'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
-        // <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
         try FileManager.default.removeItem(atPath: fullPath(identifier))
     }
 }

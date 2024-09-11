@@ -20,8 +20,8 @@
 
 import Foundation
 
+/// Factory function that returns an instance of a specific Repo class
 func repoConnect(url: String, plugin: String = "FileRepo") throws -> Repo {
-    // Factory function that returns an instance of a specific Repo class
     switch plugin {
     case "FileRepo":
         return try FileRepo(url)
