@@ -580,7 +580,7 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
 ///
 /// Args:
 /// only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
-func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
+func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> PostAction {
     var removalsNeedRestart = false
     var installsNeedRestart = false
 
@@ -720,7 +720,7 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
     Report.shared.save()
 
     if removalsNeedRestart || installsNeedRestart {
-        return POSTACTION_RESTART
+        return .restart
     }
-    return POSTACTION_NONE
+    return .none
 }

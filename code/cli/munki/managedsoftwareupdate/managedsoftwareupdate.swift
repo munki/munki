@@ -45,7 +45,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     var runtype = "custom"
     var munkiUpdateCount = 0
     var appleUpdateCount = 0
-    var restartAction = POSTACTION_NONE
+    var restartAction: PostAction = .none
     var forcedSoon = false
     var mustLogout = false
     var shouldNotifyUser = false
@@ -458,7 +458,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     private func clearBootstrapModeIfAppropriate() {
         // TODO: rethink all this
         if runtype == "checkandinstallatstatup",
-           restartAction == POSTACTION_NONE,
+           restartAction == .none,
            pathExists(CHECKANDINSTALLATSTARTUPFLAG),
            currentGUIUsers().isEmpty
         {
@@ -574,9 +574,9 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         if mustLogout {
             // not handling this currently
         }
-        if restartAction == POSTACTION_SHUTDOWN {
+        if restartAction == .shutdown {
             doRestart(shutdown: true)
-        } else if restartAction == POSTACTION_RESTART {
+        } else if restartAction == .restart {
             doRestart()
         } else {
             // tell MunkiStatus/MSC we're done sending status info

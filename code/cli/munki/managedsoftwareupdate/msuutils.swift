@@ -260,7 +260,7 @@ func doRestart(shutdown: Bool = false) {
     }
 }
 
-func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) async -> Int {
+func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) async -> PostAction {
     // Perform our installation/removal tasks.
     //
     // Args:
@@ -268,15 +268,15 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
     //    onlyUnattended:  Bool. If true, only do unattended_(un)install items.
     //
     // Returns:
-    //    Int. One of POSTACTION_NONE, POSTACTION_LOGOUT, POSTACTION_RESTART, POSTACTION_SHUTDOWN
+    //    PostAction - one of .none, .logout, .restart, .shutdown
     if !onlyUnattended {
         // first, clear the last notified date so we can get notified of new
         // changes after this round of installs
         clearLastNotifiedDate()
     }
 
-    var munkiItemsRestartAction = POSTACTION_NONE
-    var appleItemsRestartAction = POSTACTION_NONE
+    var munkiItemsRestartAction = PostAction.none
+    var appleItemsRestartAction = PostAction.none
 
     if munkiUpdatesAvailable() > 0 {
         // install Munki updates
