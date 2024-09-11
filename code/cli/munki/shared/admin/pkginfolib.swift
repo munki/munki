@@ -26,9 +26,9 @@
 
 import Foundation
 
+/// Helps us record  information about the environment in which the pkginfo was
+/// created so we have a bit of an audit trail. Returns a dictionary.
 func pkginfoMetadata() -> PlistDict {
-    // Helps us record  information about the environment in which the pkginfo was
-    // created so we have a bit of an audit trail. Returns a dictionary.
     var metadata = PlistDict()
     metadata["created_by"] = NSUserName()
     metadata["creation_date"] = Date()
@@ -37,11 +37,11 @@ func pkginfoMetadata() -> PlistDict {
     return metadata
 }
 
+/// Gets package metadata for the package at pkgpath.
+/// Returns pkginfo
 func createPkgInfoFromPkg(_ pkgpath: String,
                           options: PkginfoOptions) throws -> PlistDict
 {
-    // Gets package metadata for the package at pkgpath.
-    // Returns pkginfo
     var info = PlistDict()
 
     if hasValidPackageExt(pkgpath) {
@@ -63,10 +63,10 @@ func createPkgInfoFromPkg(_ pkgpath: String,
     return info
 }
 
+/// Creates an item for a pkginfo "installs" array
+/// Determines if the item is an application, bundle, Info.plist, or a file or
+/// directory and gets additional metadata for later comparison.
 func createInstallsItem(_ itempath: String) -> PlistDict {
-    // Creates an item for a pkginfo "installs" array
-    // Determines if the item is an application, bundle, Info.plist, or a file or
-    // directory and gets additional metadata for later comparison.
     var info = PlistDict()
     if isApplication(itempath) {
         info["type"] = "application"
@@ -136,8 +136,8 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
     return info
 }
 
+/// Processes a drag-n-drop dmg to build pkginfo
 func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) throws -> PlistDict {
-    // processes a drag-n-drop dmg to build pkginfo
     var info = PlistDict()
     var dragNDropItem = ""
     var installsitem = PlistDict()
@@ -248,13 +248,13 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     return info
 }
 
+/// Mounts a disk image if it"s not already mounted
+/// Builds pkginfo for the first installer item found at the root level,
+/// or a specific one if specified by options.pkgname or options.item
+/// Unmounts the disk image if it wasn"t already mounted
 func createPkgInfoFromDmg(_ dmgpath: String,
                           options: PkginfoOptions) throws -> PlistDict
 {
-    // Mounts a disk image if it"s not already mounted
-    // Builds pkginfo for the first installer item found at the root level,
-    // or a specific one if specified by options.pkgname or options.item
-    // Unmounts the disk image if it wasn"t already mounted
     var info = PlistDict()
     let wasAlreadyMounted = diskImageIsMounted(dmgpath)
     var mountpoint = ""
@@ -306,19 +306,19 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     return info
 }
 
+/// Attempt to read a file with the same name as the input string and return its text,
+/// otherwise return the input string
 func readFileOrString(_ fileNameOrString: String) -> String {
-    // attempt to read a file with the same name as the input string and return its text,
-    // otherwise return the input string
-    if let fileText = try? String(contentsOfFile: fileNameOrString, encoding: .utf8) {
-        return fileText
+    if !pathExists(fileNameOrString) {
+        return fileNameOrString
     }
-    return fileNameOrString
+    return (try? String(contentsOfFile: fileNameOrString, encoding: .utf8)) ?? fileNameOrString
 }
 
+/// Return a pkginfo dictionary for installeritem
 func makepkginfo(_ filepath: String?,
                  options: PkginfoOptions) throws -> PlistDict
 {
-    // Return a pkginfo dictionary for installeritem
     var installeritem = filepath ?? ""
     var pkginfo = PlistDict()
 

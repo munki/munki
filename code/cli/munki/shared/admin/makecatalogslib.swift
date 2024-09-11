@@ -31,6 +31,7 @@ struct MakeCatalogOptions {
     var verbose: Bool = false
 }
 
+/// Struct that handles building catalogs
 struct CatalogsMaker {
     var repo: Repo
     var options: MakeCatalogOptions
@@ -52,8 +53,8 @@ struct CatalogsMaker {
         try getPkgsList()
     }
 
+    /// Returns a list of pkginfo identifiers
     mutating func getPkgsinfoList() throws {
-        // returns a list of pkginfo identifiers
         do {
             pkgsinfoList = try listItemsOfKind(repo, "pkgsinfo")
         } catch is MunkiError {
@@ -62,8 +63,8 @@ struct CatalogsMaker {
         }
     }
 
+    /// Returns a list of pkg identifiers
     mutating func getPkgsList() throws {
-        // returns a list of pkg identifiers
         do {
             pkgsList = try listItemsOfKind(repo, "pkgs")
         } catch is MunkiError {
@@ -72,8 +73,8 @@ struct CatalogsMaker {
         }
     }
 
+    /// Builds a dictionary containing hashes for all our repo icons
     mutating func hashIcons() -> [String: String] {
-        // Builds a dictionary containing hashes for all our repo icons
         if options.verbose {
             print("Getting list of icons...")
         }
@@ -100,8 +101,8 @@ struct CatalogsMaker {
         return iconHashes
     }
 
+    /// Returns a case-insentitive match for installer_item from pkgsList, if any
     func caseInsensitivePkgsListContains(_ installer_item: String) -> String? {
-        // returns a case-insentitive match for installer_item from pkgsList, if any
         for repo_pkg in pkgsList {
             if installer_item.lowercased() == repo_pkg.lowercased() {
                 return repo_pkg
@@ -110,9 +111,8 @@ struct CatalogsMaker {
         return nil
     }
 
+    /// Returns true if referenced installer items are present, false otherwise. Updates list of errors.
     mutating func verify(_ identifier: String, _ pkginfo: PlistDict) -> Bool {
-        // Returns true if referenced installer items are present,
-        // false otherwise. Updates list of errors.
         if let installer_type = pkginfo["installer_type"] as? String {
             if ["nopkg", "apple_update_metadata"].contains(installer_type) {
                 // no associated installer item (pkg) for these types
@@ -179,8 +179,8 @@ struct CatalogsMaker {
         return true
     }
 
+    /// Processes pkginfo files and updates catalogs and errors instance variables
     mutating func processPkgsinfo() {
-        // Processes pkginfo files and updates catalogs and errors instance variables
         catalogs["all"] = [PlistDict]()
         // Walk through the pkginfo files
         for pkginfoIdentifier in pkgsinfoList {
@@ -251,8 +251,8 @@ struct CatalogsMaker {
         }
     }
 
+    /// Clear out old catalogs
     mutating func cleanupCatalogs() {
-        // clear out old catalogs
         do {
             let catalogList = try repo.list("catalogs")
             for catalogName in catalogList {
@@ -270,12 +270,10 @@ struct CatalogsMaker {
         }
     }
 
+    /// Assembles all pkginfo files into catalogs.
+    /// User calling this needs to be able to write to the repo/catalogs directory.
+    /// Returns a list of any errors it encountered
     mutating func makecatalogs() -> [String] {
-        // Assembles all pkginfo files into catalogs.
-        // User calling this needs to be able to write to the repo/catalogs
-        // directory.
-        // Returns a list of any errors it encountered
-
         // process pkgsinfo items
         processPkgsinfo()
 

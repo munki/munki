@@ -21,9 +21,9 @@
 import Darwin.C
 import Foundation
 
+/// If there is exactly one supported architecture, return a string with it
+/// Otherwise return empty string
 func getSingleArch(_ pkginfo: PlistDict) -> String {
-    // If there is exactly one supported architecture, return a string with it
-    // Otherwise return empty string
     if let archList = pkginfo["supported_architectures"] as? [String],
        archList.count == 1
     {
@@ -32,12 +32,11 @@ func getSingleArch(_ pkginfo: PlistDict) -> String {
     return ""
 }
 
+/// Copies an item to the appropriate place in the repo.
+/// If itempath is a path within the repo/pkgs directory, copies nothing.
+/// Renames the item if an item already exists with that name.
+/// Returns the identifier for the item in the repo.
 func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, subdirectory: String = "") throws -> String {
-    // Copies an item to the appropriate place in the repo.
-    // If itempath is a path within the repo/pkgs directory, copies nothing.
-    // Renames the item if an item already exists with that name.
-    // Returns the identifier for the item in the repo.
-
     let destPath = ("pkgs" as NSString).appendingPathComponent(subdirectory)
     var itemName = (itempath as NSString).lastPathComponent
     var destIdentifier = (destPath as NSString).appendingPathComponent(itemName)
@@ -86,9 +85,9 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
     }
 }
 
+/// Saves pkginfo to <munki_repo>/pkgsinfo/subdirectory
+/// Can throw PlistError.writeError, RepoError, or RepoCopyError
 func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = "") throws -> String {
-    // Saves pkginfo to <munki_repo>/pkgsinfo/subdirectory
-    // Can throw PlistError.writeError, RepoError, or RepoCopyError
     let pkginfoData = try plistToData(pkginfo)
     let destinationPath = ("pkgsinfo" as NSString).appendingPathComponent(subdirectory)
     var pkginfoExt = adminPref("pkginfo_extension") as? String ?? ""
@@ -143,8 +142,8 @@ struct CatalogDatabase {
     var items: [PlistDict]
 }
 
+/// Builds a dictionary we use like a database to look up info
 func makeCatalogDB(_ repo: Repo) throws -> CatalogDatabase {
-    // Builds a dictionary we use like a database to look up info
     let allCatalog: Data
     let catalogItems: [PlistDict]
     do {
@@ -261,9 +260,9 @@ func makeCatalogDB(_ repo: Repo) throws -> CatalogDatabase {
     return catalogDB
 }
 
+/// Looks through repo catalogs looking for matching pkginfo
+/// Returns a pkginfo dictionary, or nil
 func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) -> PlistDict? {
-    // Looks through repo catalogs looking for matching pkginfo
-    // Returns a pkginfo dictionary, or nil
     var catalogDB: CatalogDatabase
 
     do {
@@ -348,8 +347,8 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) -> PlistDict? {
     return nil
 }
 
+/// Return repo identifier for icon
 func getIconIdentifier(_ pkginfo: PlistDict) -> String {
-    // Return repo identifier for icon
     var iconName = pkginfo["icon_name"] as? String ?? pkginfo["name"] as? String ?? ""
     if (iconName as NSString).pathExtension.isEmpty {
         iconName += ".png"
@@ -357,8 +356,8 @@ func getIconIdentifier(_ pkginfo: PlistDict) -> String {
     return ("icons" as NSString).appendingPathComponent(iconName)
 }
 
+/// Returns true if there is an icon for this item in the repo
 func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) -> Bool {
-    // Returns true if there is an icon for this item in the repo
     let iconIdentifer = getIconIdentifier(pkginfo)
     do {
         let iconList = try listItemsOfKind(repo, "icons")
@@ -372,9 +371,9 @@ func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) -> Bool {
     }
 }
 
+/// Convert icon file to png and save to repo icon path.
+/// Returns resource path to icon in repo
 func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws -> String {
-    // Convert icon file to png and save to repo icon path.
-    // Returns resource path to icon in repo
     guard let tmpDir = TempDir.shared.makeTempDir() else {
         throw MunkiError("Could not create a temp directory")
     }
@@ -397,9 +396,9 @@ func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws 
     throw MunkiError("Could not create icon \(pngName) in repo: failed to convert icon to png")
 }
 
+/// Generates a product icon from a startosinstall item
+/// and uploads to the repo. Returns repo identifier for icon
 func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemname: String) throws -> String {
-    // Generates a product icon from a startosinstall item
-    // and uploads to the repo. Returns repo identifier for icon
     do {
         let mountpoint = try mountdmg(installerDMG)
         defer {
@@ -421,9 +420,9 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemn
     }
 }
 
+/// Generates a product icon from a copy_from_dmg item
+/// and uploads to the repo. Returns repo path to icon
 func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) throws -> String {
-    // Generates a product icon from a copy_from_dmg item
-    // and uploads to the repo. Returns repo path to icon
     guard let itemname = pkginfo["name"] as? String else {
         throw MunkiError("pkginfo is missing 'name'")
     }
@@ -457,10 +456,10 @@ func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) t
     }
 }
 
+/// Generates a product icon (or candidate icons) from an installer pkg
+/// and uploads to the repo. Returns repo path(s) to icon(s)
+/// itemPath can be a path to a disk image or to a package
 func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, importMultiple: Bool = true) throws -> [String] {
-    // Generates a product icon (or candidate icons) from an installer pkg
-    // and uploads to the repo. Returns repo path(s) to icon(s)
-    // itemPath can be a path to a disk image or to a package
     guard let itemname = pkginfo["name"] as? String else {
         // this should essentially never happen
         throw MunkiError("Pkginfo is missing 'name': \(pkginfo)")
@@ -522,8 +521,8 @@ func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, imp
     return importedPaths
 }
 
+/// Saves a product icon to the repo. Returns repo path.
 func copyIconToRepo(_ repo: Repo, iconPath: String) throws -> String {
-    // Saves a product icon to the repo. Returns repo path.
     let destPath = "icons"
     let iconName = (iconPath as NSString).lastPathComponent
     let repoIdentifier = (destPath as NSString).appendingPathComponent(iconName)
@@ -555,9 +554,9 @@ func copyIconToRepo(_ repo: Repo, iconPath: String) throws -> String {
     }
 }
 
+/// Extracts an icon (or icons) from an installer item, converts to png, and
+/// copies to repo. Returns repo path to imported icon(s)
 func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict, importMultiple: Bool = true) throws -> [String] {
-    // Extracts an icon (or icons) from an installer item, converts to png, and
-    // copies to repo. Returns repo path to imported icon(s)
     let installerType = pkginfo["installer_type"] as? String ?? ""
     switch installerType {
     case "copy_from_dmg", "stage_os_installer":
@@ -580,6 +579,7 @@ func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict,
     return [String]()
 }
 
+/// A subclass of AsyncProcessRunner to create disk images
 class HdiUtilCreateFromFolderRunner: AsyncProcessRunner {
     init(sourceDir: String, outputPath: String) {
         let tool = "/usr/bin/hdiutil"
@@ -600,10 +600,10 @@ class HdiUtilCreateFromFolderRunner: AsyncProcessRunner {
     }
 }
 
+/// Wraps dirPath (generally an app bundle or bundle-style pkg into a disk image.
+/// Returns path to the created dmg file
+/// async because it can take a while, depending on the size of the item
 func makeDmg(_ dirPath: String) async -> String {
-    // Wraps dirPath (generally an app bundle or bundle-style pkg
-    // into a disk image. Returns path to the created dmg file
-    // async because it can take a while, depending on the size of the item
     let itemname = (dirPath as NSString).lastPathComponent
     print("Making disk image containing \(itemname)...")
     let dmgName = (itemname as NSString).deletingPathExtension + ".dmg"
@@ -622,8 +622,8 @@ func makeDmg(_ dirPath: String) async -> String {
     return dmgPath
 }
 
+/// Prompts the user for a subdirectory for the pkg and pkginfo
 func promptForSubdirectory(_ repo: Repo, _ subdirectory: String?) -> String {
-    // Prompts the user for a subdirectory for the pkg and pkginfo
     var existingSubdirs: Set<String> = []
     let pkgsinfoList = (try? repo.list("pkgsinfo")) ?? [String]()
     for item in pkgsinfoList {
@@ -646,8 +646,8 @@ func promptForSubdirectory(_ repo: Repo, _ subdirectory: String?) -> String {
     }
 }
 
+/// Opens pkginfo list in the user's chosen editor.
 func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
-    // Opens pkginfo list in the user's chosen editor.
     guard let editor = adminPref("editor") as? String else {
         return pkginfo
     }

@@ -22,20 +22,20 @@ import Foundation
 
 let ADMIN_BUNDLE_ID = "com.googlecode.munki.munkiimport" as CFString
 
+/// Return an admin preference. Since this uses CFPreferencesCopyAppValue,
+/// Preferences can be defined several places. Precedence is:
+/// - MCX/configuration profile
+/// - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XXXXXX.plist
+/// - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
+/// - /Library/Preferences/com.googlecode.munki.munkiimport.plist
+/// - .GlobalPreferences defined at various levels (ByHost, user, system)
+/// But typically these preferences are _not_ managed and are stored in the
+/// user's preferences (~/Library/Preferences/com.googlecode.munki.munkiimport.plist)
 func adminPref(_ pref_name: String) -> Any? {
-    /* Return an admin preference. Since this uses CFPreferencesCopyAppValue,
-     Preferences can be defined several places. Precedence is:
-     - MCX/configuration profile
-     - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XXXXXX.plist
-     - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
-     - /Library/Preferences/com.googlecode.munki.munkiimport.plist
-     - .GlobalPreferences defined at various levels (ByHost, user, system)
-     But typically these preferences are _not_ managed and are stored in the
-     user's preferences (~/Library/Preferences/com.googlecode.munki.munkiimport.plist)
-     */
     return CFPreferencesCopyAppValue(pref_name as CFString, ADMIN_BUNDLE_ID)
 }
 
+/// Adds `count` spaces to the start of `str`
 func leftPad(_ str: String, _ count: Int) -> String {
     if str.count < count {
         return String(repeating: " ", count: count - str.count) + str
