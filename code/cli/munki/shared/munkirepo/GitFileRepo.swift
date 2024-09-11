@@ -20,9 +20,8 @@
 
 import Foundation
 
+/// A subclass of FileRepo that also does git commits for repo changes
 class GitFileRepo: FileRepo {
-    // A subclass of FileRepo that also does git commits for repo changes
-
     // MARK: instance variables
 
     var cmd: String
@@ -42,9 +41,9 @@ class GitFileRepo: FileRepo {
         return runCLI(cmd, arguments: args)
     }
 
+    /// Returns True if file referred to by identifer will be ignored by Git
+    /// (usually due to being in a .gitignore file)
     func isGitIgnored(_ identifier: String) -> Bool {
-        // Returns True if file referred to by identifer will be ignored by Git
-        // (usually due to being in a .gitignore file)
         let results = runGit(
             args: ["-C", parentDir(identifier),
                    "check-ignore", fullPath(identifier)]
@@ -52,8 +51,8 @@ class GitFileRepo: FileRepo {
         return results.exitcode == 0
     }
 
+    /// Returns True if file referred to by identifer is in a Git repo, false otherwise.
     func isInGitRepo(_ identifier: String) -> Bool {
-        // Returns True if file referred to by identifer is in a Git repo, false otherwise.
         let results = runGit(
             args: ["-C", parentDir(identifier),
                    "status", "-z", fullPath(identifier)]
@@ -61,11 +60,10 @@ class GitFileRepo: FileRepo {
         return results.exitcode == 0
     }
 
+    /// Commits the file referred to be identifier. This method will also automatically
+    /// generate the commit log appropriate for the status of the file where
+    /// status would be 'modified', 'new file', or 'deleted'
     func gitCommit(_ identifier: String) {
-        // Commits the file referred to be identifier. This method will also automatically
-        // generate the commit log appropriate for the status of the file where
-        // status would be 'modified', 'new file', or 'deleted'
-
         // figure out the name of the tool in use
         let processPath = ProcessInfo.processInfo.arguments[0]
         let toolname = (processPath as NSString).lastPathComponent
@@ -103,8 +101,8 @@ class GitFileRepo: FileRepo {
         }
     }
 
-    func _gitAddOrRemove(_ identifier: String, _ operation: String) {
-        // Does a git add or rm of a file at path. "operation" must be either "add" or "rm"
+    /// Does a git add or rm of a file at path. "operation" must be either "add" or "rm"
+    private func gitAddOrRemove(_ identifier: String, _ operation: String) {
         if isInGitRepo(identifier) {
             if !isGitIgnored(identifier) {
                 let results = runGit(
@@ -122,14 +120,14 @@ class GitFileRepo: FileRepo {
         }
     }
 
+    /// Adds and commits file at path
     func gitAdd(_ identifier: String) {
-        // Adds and commits file at path
-        _gitAddOrRemove(identifier, "add")
+        gitAddOrRemove(identifier, "add")
     }
 
+    /// Deletes file at path and commits the result
     func gitDelete(_ identifier: String) {
-        // Deletes file at path and commits the result
-        _gitAddOrRemove(identifier, "rm")
+        gitAddOrRemove(identifier, "rm")
     }
 
     // MARK: override FileRepo API methods
