@@ -23,10 +23,9 @@ let comparisonResultDescriptions = [
     "newer",
 ]
 
+/// Compares two version numbers to one another.
+/// Returns MunkiComparisonResult (one of .older, .same, .newer)
 func compareVersions(_ thisVersion: String, _ thatVersion: String) -> MunkiComparisonResult {
-    // Compares two version numbers to one another.
-    //
-    // Returns MunkiComparisonResult (one of .older, .same, .newer)
     if MunkiVersion(thisVersion) < MunkiVersion(thatVersion) {
         return .older
     }
@@ -36,10 +35,9 @@ func compareVersions(_ thisVersion: String, _ thatVersion: String) -> MunkiCompa
     return .newer
 }
 
+/// Gets the version string from the plist at path and compares versions with plistItem
+/// May throw a MunkiError if there's an error in the input
 func comparePlistVersion(_ item: PlistDict) throws -> MunkiComparisonResult {
-    // Gets the version string from the plist at path
-    // and compares versions with plistItem
-    // May throw a MunkiError if there's an error in the input
     let versionComparisonKey = item["version_comparison_key"] as? String ?? "CFBundleShortVersionString"
     guard let path = item["path"] as? String,
           let versionString = item[versionComparisonKey] as? String
@@ -82,9 +80,9 @@ func comparePlistVersion(_ item: PlistDict) throws -> MunkiComparisonResult {
     return comparisonResult
 }
 
+/// Compares bundle described in bundleItem with what is actually on-disk.
+/// May throw a MunkiError if there's an error in the input
 func compareBundleVersion(_ bundleItem: PlistDict) throws -> MunkiComparisonResult {
-    // Compares bundle described in bundleItem with what is actually on-disk.
-    // May throw a MunkiError if there's an error in the input
     if let path = bundleItem["path"] as? NSString {
         var infoPlistPath = path.appendingPathComponent("Contents/Info.plist")
         if !pathExists(infoPlistPath) {
@@ -103,11 +101,11 @@ func compareBundleVersion(_ bundleItem: PlistDict) throws -> MunkiComparisonResu
     return .notPresent
 }
 
+/// Compares app described in appItem with what is actually on-disk.
+/// Checks the given path if it's available,
+/// otherwise uses LaunchServices and/or Spotlight to look for the app
+/// May throw a MunkiError if there's an error in the input
 func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonResult {
-    // Compares app described in appItem with what is actually on-disk.
-    // Checks the given path if it's available,
-    // otherwise uses LaunchServices and/or Spotlight to look for the app
-    // May throw a MunkiError if there's an error in the input
     if let path = appItem["path"] as? String {
         if !pathExists(path) {
             displayDebug2("Application is not present at \(path).")
@@ -178,14 +176,13 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
     return endResult
 }
 
+/// Returns the status of the local filesystem item as compared to
+/// the passed-in dictionary
+///
+/// If item has md5checksum attribute, compares on disk file's checksum.
+///
+/// Throws a MunkiError if there's a problwm with the input
 func filesystemItemStatus(_ item: PlistDict) throws -> MunkiComparisonResult {
-    // returns the status of the local filesystem item as compared to
-    // the passed-in dictionary
-    //
-    // If item has md5checksum attribute, compares on disk file's checksum.
-    //
-    // Throws a MunkiError if there's a problwm with the input
-
     guard let filepath = item["path"] as? String else {
         throw MunkiError("No path specified for filesystem item")
     }
@@ -210,11 +207,11 @@ func filesystemItemStatus(_ item: PlistDict) throws -> MunkiComparisonResult {
     return .notPresent
 }
 
+/// Compares an installs_item with what's on the startup disk.
+/// Wraps other comparison functions.
+/// Returns a MunkiComparisonResult
+/// Can throw MunkiError on bad input
 func compareItem(_ item: PlistDict) throws -> MunkiComparisonResult {
-    // Compares an installs_item with what's on the startup disk.
-    // Wraps other comparison functions.
-    // Returns a MunkiComparisonResult
-    // Can throw MunkiError on bad input
     guard let type = item["type"] as? String else {
         throw MunkiError("Item type was not defined")
     }
@@ -232,12 +229,11 @@ func compareItem(_ item: PlistDict) throws -> MunkiComparisonResult {
     }
 }
 
+/// Determines if the given package is already installed.
+/// Input: dict with receipt info
+/// Returns a MunkiComparisonResult
+/// Can throw MunkiError on bad input
 func compareReceipt(_ item: PlistDict) async throws -> MunkiComparisonResult {
-    // Determines if the given package is already installed.
-    // Input: dict with receipt info
-    // Returns a MunkiComparisonResult
-    // Can throw MunkiError on bad input
-
     if item["optional"] as? Bool ?? false {
         // receipt has been marked as optional, so it doesn't matter
         // if it's installed or not. Return .same
@@ -259,15 +255,14 @@ func compareReceipt(_ item: PlistDict) async throws -> MunkiComparisonResult {
     return .notPresent
 }
 
+/// Attempts to determine the currently installed version of an item.
+///
+/// Args:
+/// pkginfo: pkginfo plist of an item to get the version for.
+///
+/// Returns:
+/// String version of the item, or 'UNKNOWN' if unable to determine
 func getInstalledVersion(_ pkginfo: PlistDict) -> String {
-    // Attempts to determine the currently installed version of an item.
-    //
-    // Args:
-    // pkginfo: pkginfo plist of an item to get the version for.
-    //
-    // Returns:
-    // String version of the item, or 'UNKNOWN' if unable to determine
-
     func versionFromPlist(_ path: String) -> String? {
         do {
             if let plist = try readPlist(fromFile: path) as? PlistDict {

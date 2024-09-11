@@ -7,8 +7,8 @@
 
 import Foundation
 
+/// a Singleton class to track catalog data
 class Catalogs {
-    /// a Singleton class to track catalog data
     static let shared = Catalogs()
 
     var db: [String: PlistDict]
@@ -33,6 +33,7 @@ class Catalogs {
 
 typealias CatalogDBTable = [String: [String: [Int]]]
 
+/// Creates a dict we use like a database to query the catalogs for info
 func makeCatalogDB(_ catalogItems: [PlistDict]) -> PlistDict {
     var nameTable = CatalogDBTable()
     var pkgidTable = CatalogDBTable()
@@ -111,14 +112,14 @@ func makeCatalogDB(_ catalogItems: [PlistDict]) -> PlistDict {
     return pkgdb
 }
 
+/// Adds packageids from each catalogitem to two dictionaries.
+/// One maps itemnames to receipt pkgids, the other maps receipt pkgids
+/// to itemnames
 func addPackageIDs(
     _ catalogItems: [PlistDict],
     itemNameToPkgID: inout [String: [String: [String]]],
     pkgidToItemName: inout [String: [String: [String]]]
 ) {
-    /// Adds packageids from each catalogitem to two dictionaries.
-    /// One maps itemnames to receipt pkgids, the other maps receipt pkgids
-    /// to itemnames
     for item in catalogItems {
         guard let name = item["name"] as? String else {
             continue
@@ -158,13 +159,12 @@ func addPackageIDs(
     }
 }
 
+/// Searches the catalogs in a list for all items matching a given name.
+///
+/// Returns:
+///    list of pkginfo items; sorted with newest version first. No precedence
+///    is given to catalog order.
 func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
-    /// Searches the catalogs in a list for all items matching a given name.
-    ///
-    /// Returns:
-    ///    list of pkginfo items; sorted with newest version first. No precedence
-    ///    is given to catalog order.
-
     var itemList = [PlistDict]()
     let itemName = nameAndVersion(name, onlySplitOnHyphens: true).0
 
@@ -199,13 +199,13 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
     return itemList
 }
 
+/// Gets a list of items marked for automatic removal from the catalogs
+/// in cataloglist. Filters those against items in the processed_installs
+/// list, and managed_install list, which, together, should contain everything
+/// that is supposed to be installed.
+/// Then filters against the removals list, which contains all the removals
+/// that have already been processed.
 func getAutoRemovalItems(installInfo: PlistDict, catalogList: [String]) -> [String] {
-    /// Gets a list of items marked for automatic removal from the catalogs
-    /// in cataloglist. Filters those against items in the processed_installs
-    /// list, and managed_install list, which, together, should contain everything
-    /// that is supposed to be installed.
-    /// Then filters against the removals list, which contains all the removals
-    /// that have already been processed.
     var autoremovalNames = [String]()
     for catalogName in catalogList {
         if let catalogDB = Catalogs.shared.get(catalogName),
@@ -237,16 +237,14 @@ func getAutoRemovalItems(installInfo: PlistDict, catalogList: [String]) -> [Stri
     return autoremovalNames
 }
 
+/// Looks for updates for a given manifest item that is either
+/// installed or scheduled to be installed or removed. This handles not only
+/// specific application updates, but also updates that aren't simply
+/// later versions of the manifest item.
+/// For example, AdobeCameraRaw might be an update for Adobe Photoshop, but
+/// doesn't update the version of Adobe Photoshop.
+/// Returns a list of item names that are updates for manifestItem.
 func lookForUpdatesFor(_ manifestItem: String, catalogList: [String]) -> [String] {
-    /// Looks for updates for a given manifest item that is either
-    /// installed or scheduled to be installed or removed. This handles not only
-    /// specific application updates, but also updates that aren't simply
-    /// later versions of the manifest item.
-    /// For example, AdobeCameraRaw might be an update for Adobe Photoshop, but
-    /// doesn't update the version of Adobe Photoshop.
-    /// Returns a list of item names that are updates for
-    /// manifestItem.
-
     displayDebug1("Looking for updates for: \(manifestItem)")
     // get a list of catalog items that are updates for other items
     var updateList = [String]()
@@ -291,15 +289,13 @@ func lookForUpdatesForName(_ manifestname: String,
     return Array(Set(updateList))
 }
 
+/// Attempts to find the best match in itemDict for version
 func bestVersionMatch(version _: String, itemDict _: [String: [String]]) -> String? {
-    /// Attempts to find the best match in itemDict for version
     return nil
 }
 
+/// Analyze catalog data and installed packages in an attempt to determine what is installed.
 func analyzeInstalledPkgs() async -> PlistDict {
-    /// Analyze catalog data and installed packages in an attempt to determine
-    /// what is installed.
-
     var itemNameToPkgID = [String: [String: [String]]]()
     var pkgidToItemName = [String: [String: [String]]]()
     for catalogName in Catalogs.shared.list() {
@@ -431,6 +427,14 @@ func analyzeInstalledPkgs() async -> PlistDict {
     ]
 }
 
+/// Searches the catalogs in list for an item matching the given name that
+/// can be installed on the current hardware/OS (optionally skipping the
+/// minimum OS check so we can return an item that requires a higher OS)
+///
+/// If no version is supplied, but the version is appended to the name
+/// ('TextWrangler--2.3.0.0.0') that version is used.
+/// If no version is given at all, the latest version is assumed.
+/// Returns a pkginfo item, or nil.
 func getItemDetail(
     _ itemName: String,
     catalogList: [String],
@@ -438,22 +442,13 @@ func getItemDetail(
     skipMinimumOSCheck: Bool = false,
     suppressWarnings: Bool = false
 ) async -> PlistDict? {
-    /// Searches the catalogs in list for an item matching the given name that
-    /// can be installed on the current hardware/OS (optionally skipping the
-    /// minimum OS check so we can return an item that requires a higher OS)
-    ///
-    /// If no version is supplied, but the version is appended to the name
-    /// ('TextWrangler--2.3.0.0.0') that version is used.
-    /// If no version is given at all, the latest version is assumed.
-    /// Returns a pkginfo item, or None.
-
     var rejectedItems = [String]()
     let machine = await getMachineFacts()
 
+    /// Returns a boolean to indicate if the current Munki version is high
+    /// enough to install this item. If not, also adds the failure reason to
+    /// the rejected_items list.
     func munkiVersionOK(_ item: PlistDict) -> Bool {
-        /// Returns a boolean to indicate if the current Munki version is high
-        /// enough to install this item. If not, also adds the failure reason to
-        /// the rejected_items list.
         guard let name = item["name"] as? String,
               let version = item["version"] as? String,
               let munkiVersion = machine["munki_version"] as? String
@@ -474,11 +469,11 @@ func getItemDetail(
         return true
     }
 
+    /// Returns a boolean to indicate if the item is ok to install under
+    /// the current OS. If not, also adds the failure reason to the
+    /// rejected_items list. If skipMinimumOSCheck is true, skips the minimum os
+    /// version check.
     func osVersionOK(_ item: PlistDict) -> Bool {
-        /// Returns a boolean to indicate if the item is ok to install under
-        /// the current OS. If not, also adds the failure reason to the
-        /// rejected_items list. If skipMinimumOSCheck is true, skips the minimum os
-        /// version check.
         guard let name = item["name"] as? String,
               let version = item["version"] as? String,
               let osVersion = machine["os_vers"] as? String
@@ -516,10 +511,10 @@ func getItemDetail(
         return true
     }
 
+    /// Returns a boolean to indicate if the item is ok to install under
+    /// the current CPU architecture. If not, also adds the failure reason to
+    /// the rejected_items list.
     func cpuArchOK(_ item: PlistDict) -> Bool {
-        /// Returns a boolean to indicate if the item is ok to install under
-        /// the current CPU architecture. If not, also adds the failure reason to
-        /// the rejected_items list.
         guard let name = item["name"] as? String,
               let version = item["version"] as? String,
               let currentArch = machine["arch"] as? String
@@ -551,10 +546,10 @@ func getItemDetail(
         return true
     }
 
+    /// Returns a boolean to indicate if an installable_condition predicate
+    /// in the current item passes. If not, also adds the failure reason to
+    /// the rejected_items list.
     func installableConditionOK(_ item: PlistDict) async -> Bool {
-        /// Returns a boolean to indicate if an installable_condition predicate
-        /// in the current item passes. If not, also adds the failure reason to
-        /// the rejected_items list.
         if let installableCondition = item["installable_condition"] as? String {
             let infoObject = await predicateInfoObject()
             if !predicateEvaluatesAsTrue(installableCondition, infoObject: infoObject) {
@@ -636,9 +631,8 @@ func getItemDetail(
     return nil
 }
 
+/// Retrieves the catalogs from the server and populates our Catalogs object.
 func getCatalogs(_ catalogList: [String]) {
-    /// Retrieves the catalogs from the server and populates our Catalogs
-    /// object.
     for catalogName in catalogList {
         if Catalogs.shared.list().contains(catalogName) {
             continue
@@ -662,8 +656,8 @@ func getCatalogs(_ catalogList: [String]) {
     }
 }
 
+/// Removes any catalog files that are no longer in use by this client
 func cleanUpCatalogs() {
-    /// Removes any catalog files that are no longer in use by this client
     let catalogsToKeep = Catalogs.shared.list()
     let catalogsDir = managedInstallsDir(subpath: "catalogs")
     cleanUpDir(catalogsDir, keeping: catalogsToKeep)
