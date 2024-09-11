@@ -20,15 +20,15 @@
 
 import Foundation
 
-// NOTE: it's very important that defined exit codes are never changed!
-// Preflight exit codes
+/// NOTE: it's very important that defined exit codes are never changed!
+/// Preflight exit codes
 let EXIT_STATUS_PREFLIGHT_FAILURE: Int32 = 1
-// Client config exit codes.
+/// Client config exit codes.
 let EXIT_STATUS_OBJC_MISSING: Int32 = 100 // no longer relevant
 let EXIT_STATUS_MUNKI_DIRS_FAILURE: Int32 = 101
-// Server connection exit codes.
+/// Server connection exit codes.
 let EXIT_STATUS_SERVER_UNAVAILABLE: Int32 = 150
-// User related exit codes.
+/// User related exit codes.
 let EXIT_STATUS_INVALID_PARAMETERS: Int32 = 200
 let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
@@ -45,16 +45,23 @@ let ADDITIONAL_HTTP_HEADERS_KEY = "AdditionalHttpHeaders"
 
 let LOGINWINDOW = "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow"
 
+/// launchd trigger files
 let CHECKANDINSTALLATSTARTUPFLAG = "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
 let INSTALLATSTARTUPFLAG = "/Users/Shared/.com.googlecode.munki.installatstartup"
 let INSTALLATLOGOUTFLAG = "/private/tmp/com.googlecode.munki.installatlogout"
 let UPDATECHECKLAUNCHFILE = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 
-// postinstall actions
-let POSTACTION_NONE = 0
-let POSTACTION_LOGOUT = 1
-let POSTACTION_RESTART = 2
-let POSTACTION_SHUTDOWN = 4
+/// postinstall actions
+enum PostAction: Int, Codable, Comparable {
+    static func < (lhs: PostAction, rhs: PostAction) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+
+    case none = 0
+    case logout
+    case restart
+    case shutdown
+}
 
 typealias PlistDict = [String: Any]
