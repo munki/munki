@@ -5,8 +5,8 @@
 //  Created by Greg Neagle on 7/13/24.
 //
 
+// TODO: better implementation
 func getInput(prompt: String? = nil, defaultText: String? = nil, addToHistory: Bool = false) -> String? {
-    // TODO: better implementation
     var finalPrompt = prompt ?? ""
     if let defaultText {
         finalPrompt = "\(finalPrompt) [\(defaultText)] "
