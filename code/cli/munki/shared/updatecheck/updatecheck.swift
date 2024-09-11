@@ -138,7 +138,7 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
     }
 }
 
-/// processes the SelfServeManifest if present/
+/// processes the SelfServeManifest if present
 func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistDict) async throws {
     guard let parentCatalogs = mainManifest["catalogs"] as? [String] else {
         displayError("Primary manifest has no catalogs")
