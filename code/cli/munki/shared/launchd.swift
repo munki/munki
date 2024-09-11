@@ -21,8 +21,8 @@
 import Darwin.C
 import Foundation
 
+/// Retrieve named socket file descriptors from launchd.
 func getSocketFd(_ socketName: String) throws -> [CInt] {
-    // Retrieve named socket file descriptors from launchd.
     var fdsCount = 0
     var fds = UnsafeMutablePointer<CInt>.allocate(capacity: 0)
     let originalFds = fds
@@ -70,8 +70,8 @@ struct LaunchdJobInfo {
     var lastExitStatus: Int?
 }
 
+/// Get info about a launchd job. Returns LaunchdJobInfo.
 func launchdJobInfo(_ jobLabel: String) -> LaunchdJobInfo {
-    /// Get info about a launchd job. Returns LaunchdJobInfo.
     var info = LaunchdJobInfo(
         state: .unknown,
         pid: nil,
@@ -109,25 +109,24 @@ func launchdJobInfo(_ jobLabel: String) -> LaunchdJobInfo {
     return info
 }
 
+/// Stop a launchd job
 func stopLaunchdJob(_ jobLabel: String) throws {
-    /// Stop a launchd job
     let result = runCLI("/bin/launchctl", arguments: ["stop", jobLabel])
     if result.exitcode != 0 {
         throw MunkiError("launchctl stop error \(result.exitcode): \(result.error)")
     }
 }
 
+/// Remove a launchd job by label
 func removeLaunchdJob(_ jobLabel: String) throws {
-    /// Remove a launchd job by label
     let result = runCLI("/bin/launchctl", arguments: ["remove", jobLabel])
     if result.exitcode != 0 {
         throw MunkiError("launchctl remove error \(result.exitcode): \(result.error)")
     }
 }
 
+/// launchd job object
 class LaunchdJob {
-    /// launchd job object
-
     var label: String
     var cleanUpAtExit: Bool
     var stdout: FileHandle?
@@ -211,8 +210,8 @@ class LaunchdJob {
         }
     }
 
+    /// Start the launchd job
     func start() throws {
-        /// Start the launchd job
         let result = runCLI("/bin/launchctl", arguments: ["start", label])
         if result.exitcode != 0 {
             throw MunkiError("Could not start launchd job \(label): \(result.error)")
@@ -223,19 +222,19 @@ class LaunchdJob {
         stderr = FileHandle(forReadingAtPath: stdErrPath)
     }
 
+    /// Stop the launchd job
     func stop() {
-        /// Stop the launchd job
         try? stopLaunchdJob(label)
     }
 
+    /// Get info about the launchd job.
     func info() -> LaunchdJobInfo {
-        /// Get info about the launchd job.
         return launchdJobInfo(label)
     }
 
+    /// Returns the process exit code, if the job has exited; otherwise,
+    /// returns nil
     func exitcode() -> Int? {
-        /// Returns the process exit code, if the job has exited; otherwise,
-        /// returns nil
         let info = info()
         if info.state == .stopped {
             return info.lastExitStatus

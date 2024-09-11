@@ -21,26 +21,26 @@
 import Foundation
 import SQLite3
 
-// Yes this is yet another wrapper around the SQLite3 C API.
-// Munki doesn't need a wide range of functionality, and I'm porting from python's sqlite3
-// implementation, which doesn't necessarily map well to some of the existing sqlite3 packages
-// for Swift.
-// We might revisit this in the future.
+/// Yes this is yet another wrapper around the SQLite3 C API.
+/// Munki doesn't need a wide range of functionality, and I'm porting from python's sqlite3
+/// implementation, which doesn't necessarily map well to some of the existing sqlite3 packages
+/// for Swift.
+/// We might revisit this in the future.
 
+/// Some common SQLite3 status codes to share with calling code
+/// so it does not also have to import sqlite3
 enum SQL3Status {
-    // some common SQLite3 status codes to share with calling code
-    // so it does not also have to import sqlite3
     static let ok = SQLITE_OK
     static let error = SQLITE_ERROR
     static let row = SQLITE_ROW
     static let done = SQLITE_DONE
 }
 
+/// General error class for errors
 struct SQL3Error: Error, CustomStringConvertible {
-    // General error class for errors
     public internal(set) var message: String
 
-    // Creates a new error with the given message.
+    /// Creates a new error with the given message.
     public init(_ message: String) {
         self.message = message
     }
@@ -53,6 +53,7 @@ struct SQL3Error: Error, CustomStringConvertible {
 let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
 let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
+/// Class wrapper for sqlite3 statements
 class SQL3Statement {
     var conn: SQL3Connection
     var statement: OpaquePointer?
@@ -125,6 +126,7 @@ class SQL3Statement {
     }
 }
 
+/// Class wrapper for sqlite3 connections
 class SQL3Connection {
     var db: OpaquePointer?
 
