@@ -7,8 +7,8 @@
 
 import Foundation
 
+/// Returns a list of paths of running processes
 func getRunningProcesses() -> [String] {
-    // returns a list of paths of running processes
     let procList = UNIXProcessList()
     var processPaths = [String]()
     for proc in procList {
@@ -24,9 +24,8 @@ func getRunningProcesses() -> [String] {
     return processPaths
 }
 
+/// Returns a list of tuples containing the pid and executable path of running processes
 func runningProcessesWithPids() -> [(pid: Int32, path: String)] {
-    // returns a list of tuples containing the pid and executable path
-    // of running processes
     let procList = UNIXProcessList()
     var processTuples = [(Int32, String)]()
     for proc in procList {
@@ -42,9 +41,8 @@ func runningProcessesWithPids() -> [(pid: Int32, path: String)] {
     return processTuples
 }
 
+/// Tries to determine if the application in appname is currently running
 func isAppRunning(_ appName: String) -> Bool {
-    // Tries to determine if the application in appname is currently
-    // running
     displayDetail("Checking if \(appName) is running...")
     let procList = getRunningProcesses()
     var matchingItems = [String]()
@@ -74,10 +72,9 @@ func isAppRunning(_ appName: String) -> Bool {
     return false
 }
 
+/// Returns true if any application in the blocking_applications list is running
+/// or, if there is no blocking_applications list, true if any application in the installs list is running.
 func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
-    // Returns true if any application in the blocking_applications list
-    // is running or, if there is no blocking_applications list, if any
-    // application in the installs list is running.
     var appNames = [String]()
     if let blockingApplications = pkginfo["blocking_applications"] as? [String] {
         appNames = blockingApplications
@@ -104,10 +101,10 @@ func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
     return false
 }
 
+/// Returns ProcessID for a running python script matching the scriptName
+/// as long as the pid is not the same as ours
+/// this is used to see if the managedsoftwareupdate script is already running
 func pythonScriptRunning(_ scriptName: String) -> Int32? {
-    // Returns ProcessID for a running python script matching the scriptName
-    // as long as the pid is not the same as ours
-    // this is used to see if the managedsoftwareupdate script is already running
     let ourPid = ProcessInfo().processIdentifier
     let processTuples = runningProcessesWithPids()
     for item in processTuples {
@@ -132,9 +129,9 @@ func pythonScriptRunning(_ scriptName: String) -> Int32? {
     return nil
 }
 
+/// Returns Process ID for a running executable matching the name
+/// as long as it isn't our pid
 func executableRunning(_ name: String) -> Int32? {
-    // Returns Process ID for a running executable matching the name
-    // as long as it isn't our pid
     let ourPid = ProcessInfo().processIdentifier
     let processTuples = runningProcessesWithPids()
     for item in processTuples {
@@ -156,6 +153,7 @@ func executableRunning(_ name: String) -> Int32? {
     return nil
 }
 
+/// Returns the pid of another managedsoftwareupdate process, if found
 func anotherManagedsoftwareupdateInstanceRunning() -> Int32? {
     // A Python version of managedsoftwareupdate might be running,
     // or a compiled version
