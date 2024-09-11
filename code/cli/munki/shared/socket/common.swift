@@ -8,8 +8,8 @@
 import Darwin
 import Foundation
 
+/// make a sockaddr struct (this is ugly), wrap it in a CFData obj
 func addrRefCreate(_ path: String) -> CFData? {
-    // make a sockaddr struct (this is ugly), wrap it in a CFData obj
     var socketAdr = sockaddr_un()
     socketAdr.sun_family = sa_family_t(AF_UNIX)
     socketAdr.sun_len = __uint8_t(MemoryLayout<sockaddr_un>.size)

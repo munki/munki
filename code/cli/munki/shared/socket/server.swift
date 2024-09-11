@@ -14,5 +14,6 @@ class BaseServer {
     var socketRef: CFSocket?
 
     init(_: CInt) {
+        // TODO: actually implement
     }
 }
