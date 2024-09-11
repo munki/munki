@@ -7,15 +7,14 @@
 
 import Foundation
 
+/// Returns path to our appusage DB
 func appUsageDBPath() -> String {
-    // returns path to our appusage DB
     return managedInstallsDir(subpath: "application_usage.sqlite")
 }
 
+/// Tracks application launches, activations, and quits.
+/// Also tracks Munki selfservice install and removal requests.
 class ApplicationUsageRecorder {
-    // Tracks application launches, activations, and quits.
-    // Also tracks Munki selfservice install and removal requests.
-
     func _connect(_ databasePath: String = "") throws -> SQL3Connection {
         var db = ""
         if !databasePath.isEmpty {
@@ -30,8 +29,8 @@ class ApplicationUsageRecorder {
         try? conn.close()
     }
 
+    /// Detect whether a table exists by trying to perform a query against it
     func _detect_table(_ conn: SQL3Connection, detectQuery: String) throws -> Bool {
-        // Detect whether a table exists by trying to perform a query against it
         do {
             let _ = try SQL3Statement(connection: conn, SQLString: detectQuery)
             // don't even have to run the query: if the table doesn't exist, the
@@ -45,20 +44,20 @@ class ApplicationUsageRecorder {
         }
     }
 
+    /// Detect whether the application usage table exists
     func _detect_application_usage_table(_ conn: SQL3Connection) throws -> Bool {
-        // Detect whether the application usage table exists
         let APPLICATION_USAGE_TABLE_DETECT = "SELECT * FROM application_usage LIMIT 1"
         return try _detect_table(conn, detectQuery: APPLICATION_USAGE_TABLE_DETECT)
     }
 
+    /// Detect whether the install request table exists
     func _detect_install_request_table(_ conn: SQL3Connection) throws -> Bool {
-        // Detect whether the install request table exists
         let INSTALL_REQUEST_TABLE_DETECT = "SELECT * FROM install_requests LIMIT 1"
         return try _detect_table(conn, detectQuery: INSTALL_REQUEST_TABLE_DETECT)
     }
 
+    /// Create application usage table when it does not exist
     func _create_application_usage_table(_ conn: SQL3Connection) throws {
-        // Create application usage table when it does not exist
         try conn.execute("""
             CREATE TABLE application_usage (
                 event TEXT,
@@ -72,8 +71,8 @@ class ApplicationUsageRecorder {
         """)
     }
 
+    /// Create install request table when it does not exist
     func _create_install_request_table(_ conn: SQL3Connection) throws {
-        // Create install request table when it does not exist
         try conn.execute("""
             CREATE TABLE install_requests (
                 event TEXT,
@@ -86,10 +85,10 @@ class ApplicationUsageRecorder {
         """)
     }
 
+    /// Insert usage data into application usage table.
+    /// Uses an "upsert" statement so one action either creates a new record
+    /// or updates an existing record
     func _insert_application_usage(_ conn: SQL3Connection, event: String, appData: [String: String]) throws {
-        // Insert usage data into application usage table.
-        // Uses an "upsert" statement so one action either creates a new record
-        // or updates an existing record
         let now = Int(Date().timeIntervalSince1970)
         let bundleID = appData["bundle_id"] ?? "UNKNOWN_APP"
         let appVersion = appData["version"] ?? "0"
@@ -119,10 +118,10 @@ class ApplicationUsageRecorder {
         }
     }
 
+    /// Insert install request into install request table.
+    /// Uses an "upsert" statement so one action either creates a new record
+    /// or updates an existing record
     func _insert_install_request(_ conn: SQL3Connection, request: [String: String]) throws {
-        // Insert install request into install request table.
-        // Uses an "upsert" statement so one action either creates a new record
-        // or updates an existing record
         let now = Int(Date().timeIntervalSince1970)
         let event = request["event"] ?? "UNKNOWN_EVENT"
         let name = request["name"] ?? "UNKNOWN_ITEM"
@@ -158,8 +157,8 @@ class ApplicationUsageRecorder {
         // TODO: implement this
     }
 
+    /// log application usage and add to database
     func log_application_usage(event: String, appData: [String: String]) {
-        // log application usage and add to database
         if appData["bundle_id"] == nil {
             // TODO: log.warning "Application object had no bundle_id"
             return
@@ -182,8 +181,8 @@ class ApplicationUsageRecorder {
         }
     }
 
+    /// log install requests and add to database
     func log_install_request(_ request: [String: String]) {
-        // log install requests and add to database
         if request["event"] == nil || request["name"] == nil {
             // TODO: logging.warning("Request dict is missing event or name:")
             return

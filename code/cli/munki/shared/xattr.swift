@@ -21,9 +21,10 @@
 import Darwin
 import Foundation
 
+/// List extended attributes for path
+/// A simple implementation sufficient for Munki's needs
+/// Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
 func listXattrs(atPath path: String) throws -> [String] {
-    // A simple implementation sufficient for Munki's needs
-    // Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
     let bufLength = listxattr(path, nil, 0, XATTR_NOFOLLOW)
 
     guard bufLength != -1 else {
@@ -41,27 +42,30 @@ func listXattrs(atPath path: String) throws -> [String] {
     return names ?? [String]()
 }
 
+/// Remove an extended attribute for path
+/// A simple implementation sufficient for Munki's needs
+/// Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
 func removeXattr(_ name: String, atPath path: String) throws {
-    // A simple implementation sufficient for Munki's needs
-    // Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
     if removexattr(path, name, XATTR_NOFOLLOW) == -1 {
         let errString = String(utf8String: strerror(errno)) ?? String(errno)
         throw MunkiError("Failed to remove xattr \(name) from \(path): \(errString)")
     }
 }
 
+/// Set an extended attribute for path
+/// A simple implementation sufficient for Munki's needs
+/// Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
 func setXattr(named name: String, data: Data, atPath path: String) throws {
-    // A simple implementation sufficient for Munki's needs
-    // Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
     if setxattr(path, name, (data as NSData).bytes, data.count, 0, 0) == -1 {
         let errString = String(utf8String: strerror(errno)) ?? String(errno)
         throw MunkiError("Failed to set xattr \(name) at \(path): \(errString)")
     }
 }
 
+/// Get an extended attribute for path
+/// A simple implementation sufficient for Munki's needs
+/// Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
 func getXattr(named name: String, atPath path: String) throws -> Data {
-    // A simple implementation sufficient for Munki's needs
-    // Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
     let bufLength = getxattr(path, name, nil, 0, 0, 0)
 
     guard bufLength != -1, let buf = malloc(bufLength), getxattr(path, name, buf, bufLength, 0, 0) != -1 else {
