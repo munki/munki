@@ -20,11 +20,12 @@
 
 import Foundation
 
+/// Returns the logging level
 func loggingLevel() -> Int {
-    // returns the logging level
     return pref("LoggingLevel") as? Int ?? 1
 }
 
+/// Returns the path to the main log
 func mainLogPath() -> String {
     #if DEBUG
         return "/Users/Shared/Managed Installs/Logs/ManagedSoftwareUpdate.log"
@@ -33,13 +34,14 @@ func mainLogPath() -> String {
     #endif
 }
 
+/// Returns the path to a log with the given name in the same directory as our main log
 func logNamed(_ name: String) -> String {
     // returns path to log file in same dir as main log
     return ((mainLogPath() as NSString).deletingLastPathComponent as NSString).appendingPathComponent(name)
 }
 
+/// General logging function
 func munkiLog(_ message: String, logFile: String = "") {
-    // General logging function
     // TODO: add support for logging to /var/log/system.log
     // TODO: add support for logging to Apple unified logging
 
@@ -65,8 +67,8 @@ func munkiLog(_ message: String, logFile: String = "") {
     }
 }
 
+/// Rotate a log
 private func rotateLog(_ logFilePath: String) {
-    // rotate a log
     if !pathExists(logFilePath) {
         // nothing to do
         return
@@ -81,24 +83,25 @@ private func rotateLog(_ logFilePath: String) {
     try? filemanager.moveItem(atPath: logFilePath, toPath: logFilePath + ".0")
 }
 
+/// Rotate our errors.log
 func munkiLogResetErrors() {
-    // Rotate our errors.log
     rotateLog(logNamed("errors.log"))
 }
 
+/// Rotate our warnings.log
 func munkiLogResetWarnings() {
-    // rotate our errors.log
     rotateLog(logNamed("warnings.log"))
 }
 
+/// Rotate our main log if it's too large
 func munkiLogRotateMainLog() {
-    // rotate our main log if it's too large
+    let MAX_LOGFILE_SIZE = 1_000_000
     let mainLog = mainLogPath()
     if pathIsRegularFile(mainLog),
        let attributes = try? FileManager.default.attributesOfItem(atPath: mainLog)
     {
         let filesize = (attributes as NSDictionary).fileSize()
-        if filesize > 1_000_000 {
+        if filesize > MAX_LOGFILE_SIZE {
             rotateLog(mainLog)
         }
     }
