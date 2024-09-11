@@ -22,8 +22,8 @@ import Foundation
 
 let DEFAULT_INSECURE_REPO_URL = "http://munki/repo"
 
-// unlike the previous Python implementation, we define default
-// preference values only if they are not None/nil
+/// Unlike the previous Python implementation, we define default
+/// preference values only if they are not None/nil
 let DEFAULT_PREFS: [String: Any] = [
     // "AdditionalHttpHeaders": None,
     "AggressiveUpdateNotificationDays": 14,
@@ -70,8 +70,8 @@ let DEFAULT_PREFS: [String: Any] = [
     "UseNotificationCenterDays": 3,
 ]
 
-// and since we don't define default values if they are None/nil
-// we need a list of keynames we will display for --show-config
+/// Since we don't define default values if they are None/nil
+/// we need a list of keynames we will display for --show-config
 let CONFIG_KEY_NAMES = [
     "AdditionalHttpHeaders",
     "AggressiveUpdateNotificationDays",
@@ -117,20 +117,19 @@ let CONFIG_KEY_NAMES = [
     "UseNotificationCenterDays",
 ]
 
+/// Uses CFPreferencesAppSynchronize(BUNDLE_ID) to make sure
+/// we have the latest prefs. Call this if you have modified
+/// /Library/Preferences/ManagedInstalls.plist
+/// or /var/root/Library/Preferences/ManagedInstalls.plist directly
 func reloadPrefs() {
-    /* Uses CFPreferencesAppSynchronize(BUNDLE_ID)
-     to make sure we have the latest prefs. Call this
-     if you have modified /Library/Preferences/ManagedInstalls.plist
-     or /var/root/Library/Preferences/ManagedInstalls.plist directly */
     CFPreferencesAppSynchronize(BUNDLE_ID)
 }
 
+/// Sets a preference, writing it to /Library/Preferences/ManagedInstalls.plist.
+/// This should normally be used only for 'bookkeeping' values;
+/// values that control the behavior of munki may be overridden
+/// elsewhere (by config profiles, for example)
 func setPref(_ prefName: String, _ prefValue: Any?) {
-    /* Sets a preference, writing it to
-     /Library/Preferences/ManagedInstalls.plist.
-     This should normally be used only for 'bookkeeping' values;
-     values that control the behavior of munki may be overridden
-     elsewhere (by MCX, for example) */
     if let key = prefName as CFString? {
         if prefValue == nil {
             CFPreferencesSetValue(
@@ -152,16 +151,15 @@ func setPref(_ prefName: String, _ prefValue: Any?) {
     }
 }
 
+/// Return a preference. Since this uses CFPreferencesCopyAppValue,
+/// Preferences can be defined several places. Precedence is:
+/// - MCX/configuration profile
+/// - /var/root/Library/Preferences/ByHost/ManagedInstalls.XXXXXX.plist
+/// - /var/root/Library/Preferences/ManagedInstalls.plist
+/// - /Library/Preferences/ManagedInstalls.plist
+/// - .GlobalPreferences defined at various levels (ByHost, user, system)
+/// - default_prefs defined here.
 func pref(_ prefName: String) -> Any? {
-    /* Return a preference. Since this uses CFPreferencesCopyAppValue,
-     Preferences can be defined several places. Precedence is:
-     - MCX/configuration profile
-     - /var/root/Library/Preferences/ByHost/ManagedInstalls.XXXXXX.plist
-     - /var/root/Library/Preferences/ManagedInstalls.plist
-     - /Library/Preferences/ManagedInstalls.plist
-     - .GlobalPreferences defined at various levels (ByHost, user, system)
-     - default_prefs defined here.
-     */
     var prefValue: Any?
     prefValue = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
     if prefValue == nil {
@@ -179,23 +177,23 @@ func pref(_ prefName: String) -> Any? {
     return prefValue
 }
 
+/// Returns preference as a String if possible
 func stringPref(_ prefName: String) -> String? {
-    // returns preference as a String if possible
     return pref(prefName) as? String
 }
 
+/// Returns preference as a Bool if possible
 func boolPref(_ prefName: String) -> Bool? {
-    // returns preference as a Bool if possible
     return pref(prefName) as? Bool
 }
 
+/// Returns preference as an Int if possible
 func intPref(_ prefName: String) -> Int? {
-    // returns preference as an Int if possible
     return pref(prefName) as? Int
 }
 
+/// Returns preference as a Date if possible
 func datePref(_ prefName: String) -> Date? {
-    // returns preference as a Date if possible
     if let date = pref(prefName) as? Date {
         return date
     }
@@ -208,9 +206,9 @@ func datePref(_ prefName: String) -> Date? {
     return nil
 }
 
+/// Convenience function to return the path to the Managed Installs dir
+/// or a subpath of that directory
 func managedInstallsDir(subpath: String? = nil) -> String {
-    // convenience function to return the path to the Managed Installs dir
-    // or a subpath of that directory
     #if DEBUG
         let managedInstallsDir = "/Users/Shared/Managed Installs"
     #else
@@ -229,9 +227,9 @@ struct prefsDomain {
     var host: CFString
 }
 
+/// Attempt to compare two CFPropertyList objects that are actually one of:
+/// String, Number, Boolean, Date
 func isEqual(_ a: CFPropertyList, _ b: CFPropertyList) -> Bool {
-    // attempt to compare two CFPropertyList objects that are actually one of:
-    // String, Number, Boolean, Date
     if let aString = a as? String, let bString = b as? String {
         return aString == bString
     }
@@ -244,8 +242,8 @@ func isEqual(_ a: CFPropertyList, _ b: CFPropertyList) -> Bool {
     return false
 }
 
+/// Returns a string indicating where the given preference is defined
 func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> String {
-    // Returns a string indicating where the given preference is defined
     if value == nil {
         return "not set"
     }
@@ -313,8 +311,8 @@ func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> Stri
     return "unknown"
 }
 
+/// Prints the current Munki configuration
 func printConfig() {
-    // Prints the current Munki configuration
     print("Current Munki configuration:")
     let maxPrefNameLen = CONFIG_KEY_NAMES.max(by: { $1.count > $0.count })?.count ?? 0
     let padding = "                                                  "
@@ -346,8 +344,8 @@ func printConfig() {
     }
 }
 
+/// Prints the current Munki configuration in plist format
 func printConfigPlist() {
-    // Prints the current Munki configuration in plist format
     var plist = [PlistDict]()
     for prefName in CONFIG_KEY_NAMES.sorted() {
         let value = pref(prefName)
