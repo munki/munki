@@ -18,9 +18,8 @@
 
 import Foundation
 
+/// Download display icons for optional installs and active installs/removals
 func downloadIconsForActiveItems(_ installInfo: PlistDict) {
-    // download display icons for optional installs
-    // and active installs/removals
     var itemList = [PlistDict]()
     for key in ["optional_installs", "managed_installs", "removals", "problem_items"] {
         itemList += installInfo[key] as? [PlistDict] ?? []
@@ -31,14 +30,13 @@ func downloadIconsForActiveItems(_ installInfo: PlistDict) {
     downloadIcons(itemList)
 }
 
+/// clean up cache dir
+/// remove any item in the cache that isn't scheduled to be used for
+/// an install or removal
+/// this could happen if an item is downloaded on one updatecheck run,
+/// but later removed from the manifest before it is installed or removed
+/// -- so the cached itemis no longer needed.
 func cleanUpDownloadCache(_ installInfo: PlistDict) {
-    // clean up cache dir
-    // remove any item in the cache that isn't scheduled
-    // to be used for an install or removal
-    // this could happen if an item is downloaded on one
-    // updatecheck run, but later removed from the manifest
-    // before it is installed or removed - so the cached item
-    // is no longer needed.
     let managedInstalls = installInfo["managed_installs"] as? [PlistDict] ?? []
     let removals = installInfo["removals"] as? [PlistDict] ?? []
     let problemItems = installInfo["problem_items"] as? [PlistDict] ?? []
@@ -92,8 +90,8 @@ func cleanUpDownloadCache(_ installInfo: PlistDict) {
     }
 }
 
+/// processes the LocalOnlyManifest if defined and present
 func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDict) async throws {
-    // processes the LocalOnlyManifest if defined and present
     guard let localOnlyManifestName = stringPref("LocalOnlyManifest"),
           !localOnlyManifestName.isEmpty,
           !catalogList.isEmpty
@@ -140,9 +138,8 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
     }
 }
 
+/// processes the SelfServeManifest if present/
 func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistDict) async throws {
-    // processes the SelfServeManifest if present
-
     guard let parentCatalogs = mainManifest["catalogs"] as? [String] else {
         displayError("Primary manifest has no catalogs")
         return
@@ -230,10 +227,9 @@ enum UpdateCheckResult: Int {
     case updatesAvailable = 1
 }
 
+/// Checks for available new or updated managed software, downloading installer items if needed.
+/// Returns UpdateCheckResult.
 func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) async throws -> UpdateCheckResult {
-    // Checks for available new or updated managed software, downloading
-    // installer items if needed. Returns UpdateCheckResult.
-
     // Auto-detect a Munki repo if one isn't defined in preferences
     autodetectRepoURLIfNeeded()
 

@@ -18,13 +18,13 @@
 
 import Foundation
 
+/// Returns path to "system" SelfServeManifest/
 func selfServiceManifestPath() -> String {
-    // Returns path to "system" SelfServeManifest
     return managedInstallsDir(subpath: "manifests/SelfServeManifest")
 }
 
+/// Updates the SelfServeManifest from a user-writable copy if it exists.
 func updateSelfServeManifest() {
-    // Updates the SelfServeManifest from a user-writable copy if it exists.
     let userManifest = "/Users/Shared/.SelfServeManifest"
     let systemManifest = selfServiceManifestPath()
     if pathIsSymlink(userManifest) {
@@ -57,9 +57,9 @@ func updateSelfServeManifest() {
     }
 }
 
+/// Process a default installs item. Potentially add it to managed_installs
+/// in the SelfServeManifest
 func processDefaultInstalls(_ defaultItems: [String]) {
-    // Process a default installs item. Potentially add it to managed_installs
-    // in the SelfServeManifest
     let selfServeManifest = selfServiceManifestPath()
     var manifest = PlistDict()
     if pathExists(selfServeManifest) {
@@ -103,10 +103,9 @@ func processDefaultInstalls(_ defaultItems: [String]) {
     }
 }
 
+/// Removes any already-removed items from the SelfServeManifest's
+/// managed_uninstalls (So the user can later install them again if they wish)
 func cleanUpSelfServeManagedUninstalls(_ installInfoRemovals: [PlistDict]) {
-    // Removes any already-removed items from the SelfServeManifest's
-    // managed_uninstalls (So the user can later install them again if they
-    // wish)
     let selfServeManifest = selfServiceManifestPath()
     if !pathExists(selfServeManifest) {
         // nothing to do
