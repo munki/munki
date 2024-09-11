@@ -293,7 +293,7 @@ class AsyncProcessRunner {
     }
 }
 
-/// a basic wrapper intended to be used just as you would runCLI, but async/
+/// a basic wrapper intended to be used just as you would runCLI, but async
 func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") async -> CLIResults {
     let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
     await proc.run()
