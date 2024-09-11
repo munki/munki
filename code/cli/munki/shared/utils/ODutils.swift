@@ -19,8 +19,8 @@
 import Foundation
 import OpenDirectory
 
+/// Returns local DS node
 func localDSNode() -> ODNode? {
-    /// returns local DS node
     do {
         return try ODNode(session: ODSession.default(), name: "/Local/Default")
     } catch {
@@ -28,8 +28,8 @@ func localDSNode() -> ODNode? {
     }
 }
 
+/// Returns a user record for userName
 func getUserRecord(_ userName: String) -> ODRecord? {
-    /// returns a user record
     if let node = localDSNode() {
         do {
             return try node.record(withRecordType: kODRecordTypeUsers, name: userName, attributes: nil)
@@ -41,8 +41,8 @@ func getUserRecord(_ userName: String) -> ODRecord? {
     return nil
 }
 
+/// Returns GeneratedUID value for userName
 func getGeneratedUID(_ userName: String) -> String {
-    /// returns GeneratedUID value
     if let userRecord = getUserRecord(userName),
        let values = try? userRecord.values(
            forAttribute: "dsAttrTypeStandard:GeneratedUID"

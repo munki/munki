@@ -21,8 +21,8 @@
 import Darwin
 import Foundation
 
+/// similar to print() function, but prints to stderr
 func printStderr(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-    // similar to print() function, but prints to stderr
     let output = items
         .map { String(describing: $0) }
         .joined(separator: separator) + terminator
@@ -30,6 +30,7 @@ func printStderr(_ items: Any..., separator: String = " ", terminator: String = 
     FileHandle.standardError.write(output.data(using: .utf8)!)
 }
 
+/// Removes a final newline character from a string if present
 func trimTrailingNewline(_ s: String) -> String {
     var trimmedString = s
     if trimmedString.last == "\n" {
@@ -44,11 +45,10 @@ struct CLIResults {
     var error: String = ""
 }
 
+/// Runs a command line tool synchronously, returns CLIResults
+/// this implementation attempts to handle scenarios in which a large amount of stdout
+/// or sterr output is generated
 func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
-    // runs a command line tool synchronously, returns CLIResults
-    // this implementation attempts to handle scenarios in which a large amount of stdout
-    // or sterr output is generated
-
     var results = CLIResults()
 
     let task = Process()
@@ -119,8 +119,8 @@ enum ProcessError: Error {
     case timeout
 }
 
+/// like Python's subprocess.check_output
 func checkOutput(_ tool: String, arguments: [String] = [], stdIn: String = "") throws -> String {
-    // like Python's subprocess.check_output
     let result = runCLI(tool, arguments: arguments, stdIn: stdIn)
     if result.exitcode != 0 {
         throw ProcessError.error(description: result.error)
@@ -143,6 +143,7 @@ protocol AsyncProcessDelegate: AnyObject {
     func processUpdated()
 }
 
+/// A class to run processes in an async manner
 class AsyncProcessRunner {
     let task = Process()
     var status = AsyncProcessStatus()
@@ -261,7 +262,7 @@ class AsyncProcessRunner {
                 if Date() >= deadline {
                     displayError("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
-                    results.exitcode = Int.max // maybe we should
+                    results.exitcode = Int.max // maybe we should define a specific code
                     throw ProcessError.timeout
                 }
             }
@@ -292,17 +293,17 @@ class AsyncProcessRunner {
     }
 }
 
+/// a basic wrapper intended to be used just as you would runCLI, but async/
 func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") async -> CLIResults {
-    // a basic wrapper intended to be used just as you would runCLI, but async
     let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
     await proc.run()
     return proc.results
 }
 
+/// a basic wrapper intended to be used just as you would runCLI, but async and with
+/// a timeout
+/// throws ProcessError.timeout if the process times out
 func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "", timeout: Int) async throws -> CLIResults {
-    // a basic wrapper intended to be used just as you would runCLI, but async and with
-    // a timeout
-    // throws ProcessError.timeout if the process times out
     let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
     try await proc.run(timeout: timeout)
     return proc.results

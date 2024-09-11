@@ -35,6 +35,7 @@ extension PlistError: LocalizedError {
     }
 }
 
+/// Attempt to convert data into a PropertyList object
 func deserialize(_ data: Data?) throws -> Any? {
     if data != nil {
         do {
@@ -51,18 +52,22 @@ func deserialize(_ data: Data?) throws -> Any? {
     return nil
 }
 
+/// Attempt to read a PropertyList from a file
 func readPlist(fromFile filepath: String) throws -> Any? {
     return try deserialize(NSData(contentsOfFile: filepath) as Data?)
 }
 
+/// Attempt to read a PropertyList from data
 func readPlist(fromData data: Data) throws -> Any? {
     return try deserialize(data)
 }
 
+/// Attempt to read a PropertyList from a string
 func readPlist(fromString string: String) throws -> Any? {
     return try deserialize(string.data(using: String.Encoding.utf8))
 }
 
+/// Attempt to convert a PropertyList object into a data representation
 func serialize(_ plist: Any) throws -> Data {
     do {
         let plistData = try PropertyListSerialization.data(
@@ -76,6 +81,7 @@ func serialize(_ plist: Any) throws -> Data {
     }
 }
 
+/// Attempt to write a PropertyList object to a file
 func writePlist(_ dataObject: Any, toFile filepath: String) throws {
     do {
         let data = try serialize(dataObject) as NSData
@@ -87,10 +93,12 @@ func writePlist(_ dataObject: Any, toFile filepath: String) throws {
     }
 }
 
+/// Attempt to convert a PropertyList object to a Data object
 func plistToData(_ dataObject: Any) throws -> Data {
     return try serialize(dataObject)
 }
 
+/// Attempt to convert a PropertyList object to string
 func plistToString(_ dataObject: Any) throws -> String {
     do {
         let data = try serialize(dataObject)

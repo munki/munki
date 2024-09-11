@@ -21,17 +21,16 @@
 import Foundation
 import ImageIO
 
+/// Converts an icns file to a png file.
+/// desiredHeight should be one of the "native" icns sizes, like
+/// 512, 256, 128, 48, 32, or 16
+/// desiredDPI should be either 72 or 144
+/// Returns true if successful, false otherwise
 func convertIconToPNG(iconPath: String,
                       destinationPath: String,
                       desiredHeight: Int = 512,
                       desiredDPI: Int = 72) -> Bool
 {
-    // Converts an icns file to a png file.
-    // desiredHeight should be one of the "native" icns sizes, like
-    // 512, 256, 128, 48, 32, or 16
-    // desiredDPI should be either 72 or 144
-    // Returns true if successful, false otherwise
-
     typealias CandidateType = (height: Int, dpi: Int, index: Int)
 
     let iconURL = URL(fileURLWithPath: iconPath) as CFURL
@@ -104,8 +103,8 @@ func convertIconToPNG(iconPath: String,
     return false
 }
 
+/// Finds the icon file for app_path. Returns a path or nil
 func findIconForApp(_ appPath: String) -> String? {
-    // Finds the icon file for app_path. Returns a path or nil
     guard pathIsDirectory(appPath) else { return nil }
     let infoPlistPath = (appPath as NSString).appendingPathComponent("Contents/Info.plist")
     guard let info = try? readPlist(fromFile: infoPlistPath) as? PlistDict else { return nil }
@@ -122,10 +121,9 @@ func findIconForApp(_ appPath: String) -> String? {
     return nil
 }
 
+/// Extracts application Info.plist and .icns files into target_dir from a package archive file.
+/// Returns the result code of the pax extract operation.
 func extractAppBitsFromPkgArchive(_ archivePath: String, exportDir: String) -> Int {
-    // Extracts application Info.plist and .icns files into target_dir
-    // from a package archive file. Returns the result code of the
-    // pax extract operation.
     if !pathIsRegularFile(archivePath) {
         return -999
     }
@@ -146,9 +144,9 @@ func extractAppBitsFromPkgArchive(_ archivePath: String, exportDir: String) -> I
     return result.exitcode
 }
 
+/// Extracts application icons from a flat package.
+/// Returns a list of paths to icns files.
 func extractAppIconsFromFlatPkg(_ pkgPath: String) -> [String] {
-    // Extracts application icons from a flat package.
-    // Returns a list of paths to icns files.
     let result = runCLI("/usr/sbin/pkgutil", arguments: ["--bom", pkgPath])
     if result.exitcode != 0 {
         displayError("Could not get bom files from \(pkgPath): \(result.error)")
@@ -221,8 +219,8 @@ func extractAppIconsFromFlatPkg(_ pkgPath: String) -> [String] {
     return iconPaths
 }
 
+/// Returns a list of paths to application Info.plists
 func getAppInfoPathsFromBOM(_ bomFile: String) -> [String] {
-    // Returns a list of paths to application Info.plists
     var paths = [String]()
     if pathIsRegularFile(bomFile) {
         let result = runCLI("/usr/bin/lsbom", arguments: ["-s", bomFile])
@@ -236,9 +234,8 @@ func getAppInfoPathsFromBOM(_ bomFile: String) -> [String] {
     return paths
 }
 
+/// Returns a dict with pkg paths as keys and filename lists as values
 func findInfoPlistPathsInBundlePkg(_ pkgPath: String) -> [String: [String]] {
-    // Returns a dict with pkg paths as keys and filename lists
-    // as values
     var pkgDict = [String: [String]]()
     let bomFile = (pkgPath as NSString).appendingPathComponent("Contents/Archive.bom")
     if pathIsRegularFile(bomFile) {
@@ -270,9 +267,8 @@ func findInfoPlistPathsInBundlePkg(_ pkgPath: String) -> [String: [String]] {
     return pkgDict
 }
 
+/// Returns a list of paths for application icons found inside the bundle pkg at pkg_path
 func extractAppIconsFromBundlePkg(_ pkgPath: String) -> [String] {
-    // Returns a list of paths for application icons found
-    // inside the bundle pkg at pkg_path
     var iconPaths = [String]()
     let pkgDict = findInfoPlistPathsInBundlePkg(pkgPath)
     if let exportTmp = TempDir.shared.makeTempDir() {
