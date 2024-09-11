@@ -7,12 +7,11 @@
 
 import Foundation
 
+/// Removes filesystem items based on info in itemlist.
+/// These items were typically installed via copy_from_dmg
+/// This current aborts and returns false on the first error;
+/// might it make sense to try to continue and remove as much as we can?
 func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
-    // Removes filesystem items based on info in itemlist.
-    // These items were typically installed via copy_from_dmg
-    // This current aborts and returns false on the first error;
-    // might it make sense to try to continue and remove as much
-    // as we can?
     if itemList.isEmpty {
         displayError("Nothing to remove!")
         return false
@@ -61,9 +60,9 @@ func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
     return true
 }
 
+/// Looks for item prerequisites (requires and update_for) in the list of skipped items.
+/// Returns a list of matches.
 func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]) -> [String] {
-    // Looks for item prerequisites (requires and update_for) in the list
-    // of skipped items. Returns a list of matches.
     var matchedPrereqs = [String]()
     if skippedItems.isEmpty {
         return matchedPrereqs
@@ -112,14 +111,14 @@ func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]
     return matchedPrereqs
 }
 
+/// Returns boolean to indicate if the item needs a restart
 func requiresRestart(_ item: PlistDict) -> Bool {
-    // Returns boolean to indicate if the item needs a restart
     let restartAction = item["RestartAction"] as? String ?? ""
     return ["RequireRestart", "RecommendRestart"].contains(restartAction)
 }
 
+/// Process an Apple package for install. Returns retcode, needs_restart
 func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (Int, Bool) {
-    // Process an Apple package for install. Returns retcode, needs_restart
     if pkginfo["suppress_bundle_relocation"] as? Bool ?? false {
         displayWarning("Item has 'suppress_bundle_relocation' attribute. This feature is no longer supported.")
     }
@@ -163,9 +162,9 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
     return (-99, false)
 }
 
+/// Attempt to install a single item from the installList
+/// Returns an exitcode for the attempted install and a flag to indicate the need to restart
 func installItem(_ item: PlistDict) async -> (Int, Bool) {
-    // Attempt to install a single item from the installList
-    // returns an exitcode for the attempted install and a flag to indicate the need to restart
     var needToRestart = false
     let itemName = item["name"] as? String ?? "<unknown>"
     let installerType = item["installer_type"] as? String ?? "pkg_install"
@@ -238,12 +237,10 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     return (retcode, needToRestart)
 }
 
+/// Uses the installInfo installs list to install items in the correct order and with additional options
 func installWithInstallInfo(
     installList: [PlistDict], onlyUnattended: Bool = false
 ) async -> (Bool, [PlistDict]) {
-    // Uses the installInfo installs list to install items in the
-    // correct order and with additional options
-
     var restartFlag = false
     var itemIndex = 0
     var skippedInstalls = [PlistDict]()
@@ -396,10 +393,9 @@ func installWithInstallInfo(
     return (restartFlag, skippedInstalls)
 }
 
+/// Looks for items in the skipped_items that require or are update_for
+/// the current item. Returns a list of matches.
 func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -> [String] {
-    // Looks for items in the skipped_items that require or are update_for
-    // the current item. Returns a list of matches.
-
     var matchedSkippedItems = [String]()
     if skippedItems.isEmpty {
         return matchedSkippedItems
@@ -422,10 +418,9 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
     return matchedSkippedItems
 }
 
+/// Attempts to uninstall a single item from the removalList
+/// returns an exitcode for the attempted install and a flag to indicate the need to restart
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
-    // Attempts to uninstall a single item from the removalList
-    // returns an exitcode for the attempted install and a flag to indicate the need to restart
-
     var needToRestart = false
     let itemName = item["display_name"] as? String ?? "<unknown>"
     let displayName = item["display_name"] as? String ?? itemName
@@ -512,8 +507,8 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     return (retcode, needToRestart)
 }
 
+/// Processes removals from the removal list
 func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) async -> (Bool, [PlistDict]) {
-    // Processes removals from the removal list
     var restartFlag = false
     var index = 0
     var skippedRemovals = [PlistDict]()
@@ -581,11 +576,11 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
     return (restartFlag, skippedRemovals)
 }
 
+/// Runs the install/removal session.
+///
+/// Args:
+/// only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
 func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> Int {
-    // Runs the install/removal session.
-    //
-    // Args:
-    // only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
     var removalsNeedRestart = false
     var installsNeedRestart = false
 

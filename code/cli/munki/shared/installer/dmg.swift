@@ -7,9 +7,9 @@
 
 import Foundation
 
+/// Sets owner, group and mode for path from info in itemInfo.
+/// Returns 0 on success, non-zero otherwise.
 func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
-    // Sets owner, group and mode for path from info in itemInfo.
-    // Returns 0 on success, non-zero otherwise.
     // Yes, we could call FileManager methods like setAttributes(_:ofItemAtPath:),
     // But the user and group might be names or numbers, and the mode is
     // supposed to be symbolic (but could also be in the format of "777",
@@ -40,9 +40,9 @@ func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
     return 0
 }
 
+/// Creates any missing intermediate directories so we can copy item.
+/// Returns boolean to indicate success or failure
 func createMissingDirs(_ path: String) -> Bool {
-    // Creates any missing intermediate directories so we can copy item.
-    // Returns boolean to indicate success or failure
     let filemanager = FileManager.default
     if filemanager.fileExists(atPath: path) {
         // the path exists; don't need to create anything
@@ -75,8 +75,8 @@ func createMissingDirs(_ path: String) -> Bool {
     }
 }
 
+/// Removes com.apple.quarantine xattr from a path
 func removeQuarantineXattrFromItem(_ path: String) {
-    // Removes com.apple.quarantine xattr from a path
     do {
         let xattrs = try listXattrs(atPath: path)
         if xattrs.contains("com.apple.quarantine") {
@@ -89,8 +89,8 @@ func removeQuarantineXattrFromItem(_ path: String) {
     }
 }
 
+/// Removes com.apple.quarantine xattr from a path, recursively if needed
 func removeQuarantineXattrsRecursively(_ path: String) {
-    // Removes com.apple.quarantine xattr from a path, recursively if needed
     removeQuarantineXattrFromItem(path)
     if pathIsDirectory(path) {
         let dirEnum = FileManager.default.enumerator(atPath: path)
@@ -101,11 +101,9 @@ func removeQuarantineXattrsRecursively(_ path: String) {
     }
 }
 
+/// Validates source and destination for item to be copied from a mounted disk image.
+/// Returns a tuple of (success, source_path, destination_path)
 func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool, String, String) {
-    // Validates source and destination for item to be copied from a mounted
-    // disk image.
-    // Returns a tuple of (success, source_path, destination_path)
-
     // Ensure source item is defined
     guard let sourceItemName = item["source_item"] as? String else {
         displayError("Missing name of item to copy!")
@@ -147,8 +145,8 @@ func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool,
     return (true, sourceItemPath, fullDestinationPath)
 }
 
+/// Recursively gets size of pathname in bytes
 func getSize(_ path: String) -> Int {
-    // Recursively gets size of pathname in bytes
     if pathIsDirectory(path) {
         return getSizeOfDirectory(path)
     }
@@ -160,10 +158,8 @@ func getSize(_ path: String) -> Int {
     return 0
 }
 
+/// Subclass of AsyncProcessRunner that handles the progress output from /usr/bin/ditto
 class DittoRunner: AsyncProcessRunner {
-    // subclass of AsyncProcessRunner that handles the progress output from
-    // /usr/bin/ditto
-
     var remainingErrorOutput = ""
     var totalBytesCopied = 0
     var sourceItemSize = 1
@@ -202,16 +198,16 @@ class DittoRunner: AsyncProcessRunner {
     }
 }
 
+/// Uses ditto to copy an item and provides progress output
 func dittoWithProgress(sourcePath: String, destinationPath: String) async -> Int {
-    // Uses ditto to copy an item and provides progress output
     let proc = DittoRunner(sourcePath: sourcePath, destinationPath: destinationPath)
     await proc.run()
     return proc.results.exitcode
 }
 
+/// Copies items from the mountpoint to the startup disk
+/// Returns 0 if no issues; some error code otherwise.
 func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async -> Int {
-    // copies items from the mountpoint to the startup disk
-    // Returns 0 if no issues; some error code otherwise.
     guard let tempDestinationDir = TempDir.shared.makeTempDir() else {
         displayError("Could not create a temporary directory!")
         return -1
@@ -268,8 +264,8 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
     return 0
 }
 
+/// Copies items from disk image to local disk
 func copyFromDmg(dmgPath: String, itemList: [PlistDict]) async -> Int {
-    // Copies items from disk image to local disk
     if itemList.isEmpty {
         displayError("No items to copy!")
         return -1

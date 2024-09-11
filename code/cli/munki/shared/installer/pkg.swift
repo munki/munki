@@ -20,16 +20,13 @@
 
 import Foundation
 
+/// Stub function
 func removeBundleRelocationInfo() {
-    // this function existed in the Python version of Munki
-    // but could work only on bundle-style packages
-    // May not be worth porting.
     displayWarning("'suppress_bundle_relocation' is no longer supported. Ignoring.")
 }
 
+/// Query a package for its RestartAction. Returns true if a restart is needed, false otherwise
 func pkgNeedsRestart(_ pkgpath: String, options: PlistDict) -> Bool {
-    // Query a package for its RestartAction. Returns true if a restart is
-    // needed, false otherwise
     let tool = "/usr/sbin/installer"
     var arguments = ["-query", "RestartAction", "-pkg", pkgpath, "-plist"]
     if let choicesXML = options["installer_choices_xml"] as? PlistDict,
@@ -84,10 +81,8 @@ func getInstallerEnvironment(_ customEnv: [String: String]?) -> [String: String]
     return env
 }
 
+/// Parses a line of output from installer, displays it as progress output and logs it
 func displayInstallerOutput(_ text: String) {
-    // Parses a line of output from installer, displays it as progress output
-    // and logs it
-
     if !text.hasPrefix("installer:") {
         // this should not have been sent to this function!
         return
@@ -119,10 +114,8 @@ func displayInstallerOutput(_ text: String) {
     }
 }
 
+/// Subclass of AsyncProcessRunner that handles the progress output from /usr/sbin/installer
 class installerRunner: AsyncProcessRunner {
-    // subclass of AsyncProcessRunner that handles the progress output from
-    // /usr/sbin/installer
-
     var remainingOutput = ""
     var lastProcessedOutputLine = ""
 
@@ -161,10 +154,8 @@ class installerRunner: AsyncProcessRunner {
     }
 }
 
+/// Runs /usr/sbin/installer, parses and displays the output, and returns the process exit code
 func runInstaller(arguments: [String], environment: [String: String], pkgName: String) async -> Int {
-    // Runs /usr/sbin/installer, parses and displays the output, and returns
-    // the process exit code
-
     let proc = installerRunner(arguments: arguments, environment: environment)
     await proc.run()
     let results = proc.results
@@ -182,11 +173,10 @@ func runInstaller(arguments: [String], environment: [String: String], pkgName: S
     return results.exitcode
 }
 
+// Uses the Apple installer to install the package or metapackage at pkgpath.
+// Returns a tuple:
+//    the installer return code and restart needed as a boolean.
 func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
-    // Uses the Apple installer to install the package or metapackage at pkgpath.
-    // Returns a tuple:
-    //    the installer return code and restart needed as a boolean.
-
     var restartNeeded = false
     let packageName = (pkgpath as NSString).lastPathComponent
     let displayName = options["display_name"] as? String ?? options["name"] as? String ?? packageName
@@ -237,13 +227,13 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     return (retcode, restartNeeded)
 }
 
+// The Python version of Munki would actually install _all_ the pkgs from a given
+// directory (which was usually the root of a mounted disk image). This was rarely
+// was was actaully wanted. This version just installs the first installable item in
+// the directory.
+// Returns a tuple containing the exit code of the installer process and a boolean
+// indicating if a restart is needed
 func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) async -> (Int, Bool) {
-    // The Python version of Munki would actually install _all_ the pkgs from a given
-    // directory (which was usually the root of a mounted disk image. This was rarely
-    // was was actaully wanted. This version just installs the first installable item in
-    // the directory.
-    // Returns a tuple containing the exit code of the installer process and a boolean
-    // indicating if a restart is needed
     if stopRequested() {
         return (0, false)
     }
