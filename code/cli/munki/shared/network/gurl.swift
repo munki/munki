@@ -21,6 +21,7 @@
 import Foundation
 import Security
 
+/// A simple logging function to use if none is given to Gurl
 func defaultLogger(_ message: String) {
     print(message)
 }
@@ -42,8 +43,7 @@ struct GurlOptions {
     var log: (String) -> Void = defaultLogger // logging function
 }
 
-/// A class for getting content from a URL
-/// using NSURLSession and friends
+/// A class for getting content from a URL using NSURLSession and friends
 class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
     let GURL_XATTR = "com.googlecode.munki.downloadData"
 
@@ -199,9 +199,8 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         }
     }
 
-    /// Since HTTP header names are not case-sensitive, we normalize a
-    /// dictionary of HTTP headers by converting all the key names to
-    /// lower case
+    /// Normalize a dictionary of HTTP headers by converting all the key names to
+    /// lower case, since HTTP header names are not case-sensitive
     func normalizeHeaderDict(_ headers: [String: String]) -> [String: String] {
         var normalizedHeaders = [String: String]()
         for (key, value) in headers {

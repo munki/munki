@@ -31,8 +31,8 @@ extension ManifestError: LocalizedError {
     }
 }
 
+/// a Singleton class to track manifest name -> local path
 class Manifests {
-    /// a Singleton class to track manifest_name -> local path
     static let shared = Manifests()
 
     var db: [String: String]
@@ -62,14 +62,13 @@ class Manifests {
     }
 }
 
+/// Gets a manifest from the server.
+///
+/// Returns:
+///    string local path to the downloaded manifest
+/// Throws:
+///    ManifestError
 func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String {
-    /// Gets a manifest from the server.
-    ///
-    /// Returns:
-    ///    string local path to the downloaded manifest
-    /// Throws:
-    ///    ManifestError
-
     // have we already retrieved it this session?
     if let manifestLocalPath = Manifests.shared.get(name) {
         return manifestLocalPath
@@ -123,9 +122,9 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     return manifestLocalPath
 }
 
+/// Gets the primary client manifest from the server.
+/// Can throw all the same errors as getManifest
 func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
-    /// Gets the primary client manifest from the server.
-    /// Can throw all the same errors as getManifest
     var clientIdentifier = ""
     if let alternateIdentifier, !alternateIdentifier.isEmpty {
         clientIdentifier = alternateIdentifier
@@ -187,16 +186,16 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
     return manifest
 }
 
+/// Removes any manifest files that are no longer in use by this client
 func cleanUpManifests() {
-    /// Removes any manifest files that are no longer in use by this client
     let manifestDir = managedInstallsDir(subpath: "manifests")
     let exceptions = ["SelfServeManifest"]
     let keepList = Manifests.shared.list() + exceptions
     cleanUpDir(manifestDir, keeping: keepList)
 }
 
+/// Reads a manifest file, returns a dictionary.
 func manifestData(_ path: String) -> PlistDict? {
-    /// Reads a manifest file, returns a dictionary.
     if pathExists(path) {
         do {
             if let plist = try readPlist(fromFile: path) as? PlistDict {
@@ -218,6 +217,7 @@ func manifestData(_ path: String) -> PlistDict? {
     return nil
 }
 
+/// Returns the value for key for a manifest
 func getManifestValue(_ path: String, forKey key: String) -> Any? {
     if let manifest = manifestData(path) {
         if let value = manifest[key] {
@@ -229,9 +229,8 @@ func getManifestValue(_ path: String, forKey key: String) -> Any? {
     return nil
 }
 
+/// Remove the given itemname from the self-serve manifest's managed_uninstalls list
 func removeItemFromSelfServeSection(itemname: String, section: String) {
-    /// Remove the given itemname from the self-serve manifest's
-    /// managed_uninstalls list
     displayDebug1("Removing \(itemname) from SelfServeManifest's \(section)...")
     let manifestPath = managedInstallsDir(subpath: "manifests/SelfServeManifest")
     if !pathExists(manifestPath) {
@@ -258,9 +257,8 @@ func removeItemFromSelfServeSection(itemname: String, section: String) {
     }
 }
 
+/// Remove the given itemname from the self-serve manifest's managed_installs list
 func removeFromSelfServeInstalls(_ itemName: String) {
-    /// Remove the given itemname from the self-serve manifest's
-    /// managed_installs list
     removeItemFromSelfServeSection(itemname: itemName, section: "managed_installs")
 }
 
@@ -270,6 +268,13 @@ func removeFromSelfServeUninstalls(_ itemName: String) {
     removeItemFromSelfServeSection(itemname: itemName, section: "managed_uninstalls")
 }
 
+/// Processes keys in manifests to build the lists of items to install and
+/// remove.
+///
+/// Can be recursive if manifests include other manifests.
+/// Probably doesn't handle circular manifest references well.
+///
+/// manifest can be a path to a manifest file or a dictionary object.
 func processManifest(
     _ manifestdata: PlistDict,
     forKey key: String,
@@ -277,14 +282,6 @@ func processManifest(
     parentCatalogs: [String] = [],
     manifestName: String = "embedded manifest"
 ) async throws {
-    /// Processes keys in manifests to build the lists of items to install and
-    /// remove.
-    ///
-    /// Can be recursive if manifests include other manifests.
-    /// Probably doesn't handle circular manifest references well.
-    ///
-    /// manifest can be a path to a manifest file or a dictionary object.
-
     let manifestCatalogs = manifestdata["catalogs"] as? [String] ?? []
     var catalogList = [String]()
     if !manifestCatalogs.isEmpty {
@@ -391,13 +388,13 @@ func processManifest(
     }
 }
 
+/// Process a manifest _file_
 func processManifest(
     atPath manifestPath: String,
     forKey key: String,
     installInfo: inout PlistDict,
     parentCatalogs: [String] = []
 ) async throws {
-    /// processe a manifest _file_
     displayDebug1("** Processing manifest \(baseName(manifestPath)) for \(key)")
     if let manifestdata = manifestData(manifestPath) {
         try await processManifest(
