@@ -19,15 +19,15 @@
 import Foundation
 import SystemConfiguration
 
+/// Uses SystemConfiguration to get the current DNS search domains
 func getSearchDomains() -> [String]? {
     let dnsConfig = SCDynamicStoreCopyValue(nil, "State:/Network/Global/DNS" as CFString)
     return (dnsConfig as? NSDictionary)?["SearchDomains"] as? [String]
 }
 
+/// Tries a few default URLs and returns the first one that doesn't fail
+/// utterly, or the default
 func guessRepoURL() -> String {
-    // Tries a few default URLs and returns the first one that doesn't fail
-    // utterly, or the default
-
     guard let searchDomains = getSearchDomains() else {
         return DEFAULT_INSECURE_REPO_URL
     }
@@ -53,10 +53,9 @@ func guessRepoURL() -> String {
     return DEFAULT_INSECURE_REPO_URL
 }
 
+/// If Munki repo URL is not defined, (or is the insecure default) attempt to
+/// discover one. If successful, record the discovered URL in Munki's preferences.
 func autodetectRepoURLIfNeeded() {
-    // If Munki repo URL is not defined, (or is the insecure default) attempt
-    // to discover one. If successful, record the discovered URL in Munki's
-    // preferences.
     if let softwareRepoURL = pref("SoftwareRepoURL") as? String,
        !softwareRepoURL.isEmpty,
        softwareRepoURL != DEFAULT_INSECURE_REPO_URL

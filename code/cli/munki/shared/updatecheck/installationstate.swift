@@ -26,12 +26,12 @@ enum InstallationState: Int {
     case newerVersionInstalled = 2
 }
 
+/// Checks to see if the item described by pkginfo (or a newer version) is
+/// currently installed
+///
+/// All tests must pass to be considered installed.
+/// Returns InstallationState
 func installedState(_ pkginfo: PlistDict) async -> InstallationState {
-    // Checks to see if the item described by pkginfo (or a newer version) is
-    // currently installed
-
-    // All tests must pass to be considered installed.
-    // Returns InstallationState
     var foundNewer = false
     if pkginfo["OnDemand"] as? Bool ?? false {
         // we always need to install these items
@@ -155,8 +155,8 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
     return .thisVersionInstalled
 }
 
+/// Checks to see if some version of a pkgitem is installed.
 func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
-    // Checks to see if some version of a pkgitem is installed.
     if pkginfo["OnDemand"] as? Bool ?? false {
         // These should never be counted as installed
         displayDebug1("This is an OnDemand item.")
@@ -217,12 +217,12 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
     return true
 }
 
+/// Checks to see if there is any evidence that the item described
+/// by pkginfo (any version) is currenly installed.
+/// If any tests pass, the item might be installed.
+/// This is used when determining if we can remove the item, thus
+/// the attention given to the uninstall method.
 func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
-    // Checks to see if there is any evidence that the item described
-    // by pkginfo (any version) is currenly installed.
-    // If any tests pass, the item might be installed.
-    // This is used when determining if we can remove the item, thus
-    // the attention given to the uninstall method.
     if pkginfo["OnDemand"] as? Bool ?? false {
         // These should never be counted as installed
         displayDebug1("This is an OnDemand item.")

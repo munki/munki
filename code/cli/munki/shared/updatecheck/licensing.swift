@@ -18,9 +18,9 @@
 
 import Foundation
 
+/// Records # of available seats for each optional install
+/// returns an updated list of optional_installs with license info
 func updateAvailableLicenseSeats(_ optionalInstalls: [PlistDict]) -> [PlistDict] {
-    // Records # of available seats for each optional install
-    // returns an updated list of optional_installs with license info
     guard let licenseInfoURL = pref("LicenseInfoURL") as? String else {
         // nothing to do
         return optionalInstalls
