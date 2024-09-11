@@ -40,6 +40,7 @@ extension FetchError: LocalizedError {
     }
 }
 
+/// Stores a sha256 hash of the file in an extended attribute, generating the hash if needed.
 func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
     let fhash: String = if let hash {
         hash
