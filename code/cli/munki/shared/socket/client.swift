@@ -24,25 +24,23 @@ enum UNIXDomainSocketClientErrorCode: Int {
     case noError = 0, addressError, createError, socketError, connectError, readError, writeError, timeoutError
 }
 
+/// A basic implementation of Unix domain sockets
+/// We use CFSocket calls when we can, and fallback to Darwin (BSD/C) API
+/// when we must.
 class UNIXDomainSocketClient {
-    // A basic implementation of Unix domain sockets for MSC
-    // We use CFSocket calls when we can, and fallback to Darwin (BSD/C) API
-    // when we must.
-
     var socketRef: CFSocket?
     var errCode: UNIXDomainSocketClientErrorCode = .noError
 
+    /// close the socket if it exists
     func close() {
-        // close the socket if it exists
         if let socket = socketRef {
             CFSocketInvalidate(socket)
             socketRef = nil
         }
     }
 
+    /// Create a UNIX domain socket object and connect
     func connect(to path: String) {
-        // Create a UNIX domain socket object and connect
-        //
         // get a CFData reference to our socket path
         guard let adrDataRef = addrRefCreate(path) else {
             errCode = .addressError
@@ -72,9 +70,8 @@ class UNIXDomainSocketClient {
         socketRef = socket
     }
 
+    /// send text data to our socket
     func write(_ text: String) {
-        // send text data to our socket
-        //
         // ensure we have a non-nil socketRef
         guard let socket = socketRef else {
             errCode = .socketError
@@ -95,8 +92,8 @@ class UNIXDomainSocketClient {
         }
     }
 
+    /// Replacement for FD_SET macro
     private func fdSet(_ fd: Int32, set: inout fd_set) {
-        // Replacement for FD_SET macro
         let intOffset = Int(fd / 32)
         let bitOffset = fd % 32
         let mask = Int32(1 << bitOffset)
@@ -137,9 +134,8 @@ class UNIXDomainSocketClient {
         }
     }
 
+    /// uses POSIX select() to wait for data to be available on the socket
     private func dataAvailable(timeout: Int = 10) -> Bool {
-        // uses POSIX select() to wait for data to be available on the socket
-        //
         // ensure we have a non-nil socketRef
         guard let socket = socketRef else {
             errCode = .socketError
@@ -155,10 +151,9 @@ class UNIXDomainSocketClient {
         return result > 0
     }
 
+    /// read a message from our socket
     func read(maxsize: Int = 1024, timeout: Int = 10) -> String {
-        // read a message from our socket
         // there's no CFSocketRead method, use BSD socket recv method instead
-        //
         // ensure we have a non-nil socketRef
         guard let socket = socketRef else {
             errCode = .socketError
