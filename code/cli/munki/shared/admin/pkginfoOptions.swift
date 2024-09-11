@@ -21,13 +21,12 @@
 import ArgumentParser
 import Foundation
 
-// Defines option groups for makepkginfo
-// These are also used by munkiimport
+/// Defines option groups for makepkginfo
+/// These are also used by munkiimport
 
+/// Collect all our OptionGroups into a single struct
+/// I don't love this because if options move into different groups we have to change other stuff
 struct PkginfoOptions {
-    // collect all our OptionGroups into a single struct
-    // I don't love this because if options move into different groups
-    // we have to change other stuff
     var override: OverrideOptions
     var script: ScriptOptions
     var dmg: DragNDropOptions
@@ -39,25 +38,28 @@ struct PkginfoOptions {
     var hidden: HiddenPkginfoOptions
 }
 
+/// Supported restart actions
 enum RestartAction: String, CaseIterable, ExpressibleByArgument {
     case RequireRestart
     case RecommendRestart
     case RequireLogout
 }
 
+/// Supported installer types for --installer-type argument
 enum InstallerType: String, CaseIterable, ExpressibleByArgument {
     case copy_from_dmg
     case startosinstall
     case stage_os_installer
 }
 
+/// Supported values for architecture
 enum SupportedArchitecture: String, CaseIterable, ExpressibleByArgument {
     case x86_64
     case arm64
 }
 
+/// Pkginfo Override Options
 struct OverrideOptions: ParsableArguments {
-    // Pkginfo Override Options
     @Option(help: "Name to be used to refer to the installer item.")
     var name: String? = nil
 
@@ -92,8 +94,8 @@ struct OverrideOptions: ParsableArguments {
     }
 }
 
+/// Options related to scripts
 struct ScriptOptions: ParsableArguments {
-    // Script options
     @Option(name: [.long, .customLong("installcheck_script")],
             help: ArgumentHelp("Path to an optional script to be run to determine if item should be installed. An exit code of 0 indicates installation should occur. Takes precedence over installs items and receipts.", valueName: "path"))
     var installcheckScript: String? = nil
@@ -123,8 +125,8 @@ struct ScriptOptions: ParsableArguments {
     var uninstallScript: String? = nil
 }
 
+/// "Drag-n-drop" Disk Image Options
 struct DragNDropOptions: ParsableArguments {
-    // "Drag-n-drop" Disk Image Options
     @Option(name: [.short, .long, .customShort("a"), .customLong("app")],
             help: "Name or relative path of the item to be installed. Useful if there is more than one item at the root of the dmg or the item is located in a subdirectory. Absolute paths can be provided as well but they must point to an item located within the dmg.")
     var item: String? = nil
@@ -158,8 +160,8 @@ struct DragNDropOptions: ParsableArguments {
     }
 }
 
+/// Apple package specific options
 struct ApplePackageOptions: ParsableArguments {
-    // Apple package specific options
     @Option(name: .shortAndLong,
             help: "If the installer item is a disk image containing multiple packages, or the package to be installed is not at the root of the mounted disk image, <pkgname> is a relative path from the root of the mounted disk image to the specific package to be installed.")
     var pkgname: String? = nil
@@ -202,8 +204,8 @@ struct ApplePackageOptions: ParsableArguments {
     }
 }
 
+/// Forced/Unattended (install) options
 struct UnattendedInstallOptions: ParsableArguments {
-    // Forced/Unattended (install) options
     @Flag(name: [.long, .customLong("unattended_install")],
           help: "Item can be installed without notifying the user.")
     var unattendedInstall = false
@@ -227,15 +229,15 @@ struct UnattendedInstallOptions: ParsableArguments {
     }
 }
 
+/// Options for generating `installs` items
 struct GeneratingInstallsOptions: ParsableArguments {
-    // 'installs' generation options
     @Option(name: .shortAndLong,
             help: "Path to a filesystem item installed by this installer item, typically an application. This generates an 'installs' item for the pkginfo, to be used to determine if this software has been installed. Can be specified multiple times.")
     var file = [String]()
 }
 
+/// installer type options
 struct InstallerTypeOptions: ParsableArguments {
-    // installer type options
     @Option(name: [.long, .customLong("installer_type")],
             help: "Specify an intended installer_type when the installer item could be one of multiple types. Currently supported only to specify the intended type when importing a macOS installer.")
     var installerType: InstallerType? = nil
