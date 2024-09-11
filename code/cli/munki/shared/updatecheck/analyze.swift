@@ -23,11 +23,11 @@
 
 import Foundation
 
+/// Determines if an item is in a list of processed items.
+///
+/// Returns true if the item has already been processed (it's in the list)
+/// and, optionally, the version is the same or greater.
 func itemInInstallInfo(_ thisItem: PlistDict, theList: [PlistDict], version: String = "") -> Bool {
-    /// Determines if an item is in a list of processed items.
-    ///
-    /// Returns true if the item has already been processed (it's in the list)
-    /// and, optionally, the version is the same or greater.
     for listItem in theList {
         if let listItemName = listItem["name"] as? String,
            let thisItemName = thisItem["name"] as? String
@@ -56,12 +56,11 @@ func itemInInstallInfo(_ thisItem: PlistDict, theList: [PlistDict], version: Str
     return false
 }
 
+/// Returns true if the item to be installed or removed appears to be from
+/// Apple. If we are installing or removing any Apple items in a check/install
+/// cycle, we skip checking/installing Apple updates from an Apple Software
+/// Update server so we don't stomp on each other
 func isAppleItem(_ pkginfo: PlistDict) -> Bool {
-    /// Returns True if the item to be installed or removed appears to be from
-    /// Apple. If we are installing or removing any Apple items in a check/install
-    /// cycle, we skip checking/installing Apple updates from an Apple Software
-    /// Update server so we don't stomp on each other
-
     // is this a startosinstall item?
     if let installerType = pkginfo["installer_type"] as? String,
        installerType == "startosinstall"
@@ -93,9 +92,9 @@ func isAppleItem(_ pkginfo: PlistDict) -> Bool {
     return false
 }
 
+/// Returns true if itemname has already been added to installinfo in one
+/// of the given sections
 func alreadyProcessed(_ itemName: String, installInfo: PlistDict, sections: [String]) -> Bool {
-    /// Returns True if itemname has already been added to installinfo in one
-    /// of the given sections
     let description = [
         "processed_installs": "install",
         "processed_uninstalls": "uninstall",
@@ -122,6 +121,13 @@ func alreadyProcessed(_ itemName: String, installInfo: PlistDict, sections: [Str
     return false
 }
 
+/// Processes a manifest item for install. Determines if it needs to be
+/// installed, and if so, if any items it is dependent on need to
+/// be installed first.  Installation detail is added to
+/// installinfo['managed_installs']
+/// Calls itself recursively as it processes dependencies.
+/// Returns a boolean; when processing dependencies, a false return
+/// will stop the installation of a dependent item
 func processInstall(
     _ manifestItem: String,
     catalogList: [String],
@@ -129,16 +135,8 @@ func processInstall(
     isManagedUpdate: Bool = false,
     isOptionalInstall: Bool = false
 ) async -> Bool {
-    /// Processes a manifest item for install. Determines if it needs to be
-    /// installed, and if so, if any items it is dependent on need to
-    /// be installed first.  Installation detail is added to
-    /// installinfo['managed_installs']
-    /// Calls itself recursively as it processes dependencies.
-    /// Returns a boolean; when processing dependencies, a false return
-    /// will stop the installation of a dependent item
-
+    /// helper function
     func appendToProcessedManagedInstalls(_ item: PlistDict) {
-        /// helper function
         var managedInstalls = installInfo["managed_installs"] as? [PlistDict] ?? []
         managedInstalls.append(item)
         installInfo["managed_installs"] = managedInstalls
@@ -523,13 +521,12 @@ func processInstall(
     return true
 }
 
+/// Process a managed_updates item to see if it is installed, and if so, if it needs an update.
 func processManagedUpdate(
     _ manifestItem: String,
     catalogList: [String],
     installInfo: inout PlistDict
 ) async {
-    /// Process a managed_updates item to see if it is installed, and if so,
-    /// if it needs an update.
     let manifestItemName = (manifestItem as NSString).lastPathComponent
     displayDebug1("* Processing manifest item \(manifestItemName) for update")
 
@@ -562,13 +559,13 @@ func processManagedUpdate(
     }
 }
 
+/// Process an optional install item to see if it should be added to
+/// the list of optional installs
 func processOptionalInstall(
     _ manifestItem: String,
     catalogList: [String],
     installInfo: inout PlistDict
 ) async {
-    // Process an optional install item to see if it should be added to
-    // the list of optional installs
     let manifestItemName = (manifestItem as NSString).lastPathComponent
     displayDebug1("* Processing manifest item \(manifestItemName) for optional install")
 
@@ -762,28 +759,27 @@ func processOptionalInstall(
     installInfo["optional_installs"] = optionalInstalls
 }
 
+/// Processes a manifest item; attempts to determine if it
+/// needs to be removed, and if it can be removed.
+///
+/// Unlike installs, removals aren't really version-specific -
+/// If we can figure out how to remove the currently installed
+/// version, we do, unless the admin specifies a specific version
+/// number in the manifest. In that case, we only attempt a
+/// removal if the version installed matches the specific version
+/// in the manifest.
+///
+/// Any items dependent on the given item need to be removed first.
+/// Items to be removed are added to installinfo['removals'].
+///
+/// Calls itself recursively as it processes dependencies.
+/// Returns a boolean; when processing dependencies, a false return
+/// will stop the removal of a dependent item.
 func processRemoval(
     _ manifestItem: String,
     catalogList: [String],
     installInfo: inout PlistDict
 ) async -> Bool {
-    /// Processes a manifest item; attempts to determine if it
-    /// needs to be removed, and if it can be removed.
-    ///
-    /// Unlike installs, removals aren't really version-specific -
-    /// If we can figure out how to remove the currently installed
-    /// version, we do, unless the admin specifies a specific version
-    /// number in the manifest. In that case, we only attempt a
-    /// removal if the version installed matches the specific version
-    /// in the manifest.
-    ///
-    /// Any items dependent on the given item need to be removed first.
-    /// Items to be removed are added to installinfo['removals'].
-    ///
-    /// Calls itself recursively as it processes dependencies.
-    /// Returns a boolean; when processing dependencies, a false return
-    /// will stop the removal of a dependent item.
-
     func getReceiptsToRemove(_ item: PlistDict) async -> [String] {
         /// Returns a list of (installed/present) receipts to remove for item
         if let name = item["name"] as? String {
