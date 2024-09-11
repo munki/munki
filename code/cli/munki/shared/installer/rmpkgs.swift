@@ -52,15 +52,13 @@ import Foundation
  #################################################################
  */
 
+/// Returns path to our package DB
 func pkgDBPath() -> String {
-    // returns path to our package DB
-    // let dbDir = managedInstallsDir()
-    let dbDir = "/tmp"
-    return (dbDir as NSString).appendingPathComponent("b.receiptdb")
+    return managedInstallsDir(subpath: "b.receiptdb")
 }
 
+/// Checks to see if our internal package (receipt) DB should be rebuilt.
 func shouldRebuildReceiptDB() -> Bool {
-    // Checks to see if our internal package (receipt) DB should be rebuilt.
     let dbPath = pkgDBPath()
     let filemanager = FileManager.default
     if !filemanager.fileExists(atPath: dbPath) {
@@ -84,8 +82,8 @@ func shouldRebuildReceiptDB() -> Bool {
     return true
 }
 
+/// Creates the tables needed for our internal package database.
 func createReceiptDBTables(_ conn: SQL3Connection) throws {
-    // Creates the tables needed for our internal package database.
     try conn.execute("""
     CREATE TABLE paths
         (path_key INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,10 +119,10 @@ struct PkgData {
     var files: [String] = []
 }
 
+/// Inserts a pkg row into the db, returns rowid
+/// (which should be an alias for the integer primary key "pkg_key")
 func insertPkgDataIntoPkgDB(pkgdata: PkgData
 ) throws {
-    // inserts a pkg row into the db, returns rowid (which should be an alias for
-    // the integer primary key "pkg_key"
     let connection = try SQL3Connection(pkgDBPath())
     try connection.execute("PRAGMA journal_mode = WAL;")
     try connection.execute("PRAGMA synchronous = normal;")
@@ -148,10 +146,10 @@ func insertPkgDataIntoPkgDB(pkgdata: PkgData
     try connection.close()
 }
 
+/// Inserts info into paths and pkg_paths tables
 func insertFileInfoIntoPkgDB(
     connection: SQL3Connection, pkgKey: Int64, pkgdata: PkgData
 ) throws {
-    // inserts info into paths and pkg_paths tables
     let pathsQuery = try SQL3Statement(
         connection: connection,
         SQLString: "SELECT path_key FROM paths WHERE path = ?"
@@ -202,6 +200,7 @@ func insertFileInfoIntoPkgDB(
     }
 }
 
+/// Gets info about pkg from pkgutil
 func getPkgMetaData(_ pkg: String) async throws -> PkgData {
     let result = await runCliAsync(
         "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkg]
@@ -241,8 +240,8 @@ func getPkgMetaData(_ pkg: String) async throws -> PkgData {
     )
 }
 
+/// Returns a list of files installed by pkg
 func getFilesForPkg(_ pkg: String) async throws -> [String] {
-    // Returns a list of files installed by pkg
     let result = await runCliAsync("/usr/sbin/pkgutil", arguments: ["--files", pkg])
     if result.exitcode != 0 {
         throw MunkiError("Error calling pkgutil: \(result.error)")
@@ -250,6 +249,7 @@ func getFilesForPkg(_ pkg: String) async throws -> [String] {
     return result.output.components(separatedBy: "\n").filter { !$0.isEmpty }
 }
 
+/// Adds metadata for pkgid to our database
 func getPkgDataAndAddtoDB(pkgid: String) async throws {
     async let tempPkgdata = try getPkgMetaData(pkgid)
     async let fileList = try getFilesForPkg(pkgid)
@@ -258,8 +258,8 @@ func getPkgDataAndAddtoDB(pkgid: String) async throws {
     try insertPkgDataIntoPkgDB(pkgdata: pkgdata)
 }
 
+/// Imports package data from pkgutil into our internal package database.
 func importFromPkgutil() async throws {
-    // Imports package data from pkgutil into our internal package database.
     let result = await runCliAsync("/usr/sbin/pkgutil", arguments: ["--pkgs"])
     if result.exitcode != 0 {
         throw MunkiError("Error calling pkgutil: \(result.error)")
@@ -279,9 +279,8 @@ func importFromPkgutil() async throws {
     }
 }
 
+/// Builds or rebuilds our internal package database.
 func initReceiptDB(forcerebuild: Bool = false) async throws {
-    // Builds or rebuilds our internal package database.
-
     if !shouldRebuildReceiptDB(), !forcerebuild {
         // we'll use existing db
         return
@@ -307,15 +306,15 @@ func initReceiptDB(forcerebuild: Bool = false) async throws {
     try await importFromPkgutil()
 }
 
+/// Prepares a list of values for use in a SQL query
 func quoteAndJoin(_ stringList: [String]) -> String {
-    // prepares a list of values for use in a SQL query
     let quotedStrings = stringList.map { "\"\($0)\"" }
     return "(" + quotedStrings.joined(separator: ",") + ")"
 }
 
+/// Given a list of package ids, returns
+/// a list of pkg_keys from the pkgs table in our database.
 func getPkgKeysFromPkgDB(pkgids: [String]) throws -> [String] {
-    // Given a list of package ids, returns
-    // a list of pkg_keys from the pkgs table in our database.
     var keys = [String]()
     let sqlString = "SELECT pkg_key FROM pkgs WHERE pkgid IN " + quoteAndJoin(pkgids)
     let connection = try SQL3Connection(pkgDBPath())
@@ -326,8 +325,8 @@ func getPkgKeysFromPkgDB(pkgids: [String]) throws -> [String] {
     return keys
 }
 
+/// Queries our database for paths to remove.
 func getPathsToRemove(pkgKeys: [String]) throws -> [String] {
-    // Queries our database for paths to remove.
     var pathsToRemove = [String]()
     let keyList = quoteAndJoin(pkgKeys)
     let selectedPkgs = "SELECT DISTINCT path_key FROM pkgs_paths WHERE pkg_key IN " + keyList
@@ -364,6 +363,7 @@ func deletePkgKeyFromDB(connection: SQL3Connection, pkgKey: Int) throws {
     }
 }
 
+/// Removes info about pkgid from Apple's pkgutil database
 func forgetPkgFromAppleDB(_ pkgid: String) {
     let result = runCLI("/usr/sbin/pkgutil", arguments: ["--forget", pkgid])
     if result.exitcode == 0 {
@@ -375,9 +375,9 @@ func forgetPkgFromAppleDB(_ pkgid: String) {
     }
 }
 
+/// Removes receipt data from our internal package database,
+/// and optionally Apple's package database.
 func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws {
-    // Removes receipt data from our internal package database,
-    // and optionally Apple's package database.
     let taskCount = pkgKeys.count
 
     displayMinorStatus("Removing receipt info")
@@ -418,8 +418,8 @@ func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws 
     displayPercentDone(current: taskCount, maximum: taskCount)
 }
 
+/// Returns true if path is a bundle-style directory.
 func pathIsBundle(_ path: String) -> Bool {
-    // Returns true if path is a bundle-style directory.
     let bundleExtensions = [".action",
                             ".app",
                             ".bundle",
@@ -452,8 +452,8 @@ func pathIsBundle(_ path: String) -> Bool {
         bundleExtensions.contains((path as NSString).pathExtension)
 }
 
+/// Check the path to see if it's inside a bundle.
 func pathIsInsideBundle(_ path: String) -> Bool {
-    // Check the path to see if it's inside a bundle.
     var currentPath = path
     while currentPath.count > 1 {
         if pathIsBundle(currentPath) {
@@ -466,9 +466,8 @@ func pathIsInsideBundle(_ path: String) -> Bool {
     return false
 }
 
+/// Attempts to remove all the paths in the pathsToRemove list
 func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
-    // Attempts to remove all the paths in the pathsToRemove list
-
     var removalErrors = [String]()
     let itemCount = pathsToRemove.count
     displayMajorStatus("Removing \(itemCount) filesystem items")
@@ -545,6 +544,8 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
     }
 }
 
+/// Our main function, called to remove items based on receipt info.
+/// if listFiles is true, this is a dry run
 func removePackages(
     _ pkgids: [String],
     forceDeleteBundles: Bool = false,
@@ -553,8 +554,6 @@ func removePackages(
     noRemoveReceipts: Bool = false,
     noUpdateApplePkgDB: Bool = false
 ) async -> Int {
-    // Our main function, called to remove items based on receipt info.
-    // if listFiles is true, this is a dry run
     if pkgids.isEmpty {
         displayError("You must specify at least one package to remove!")
         return -2
