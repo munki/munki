@@ -26,6 +26,7 @@ import IOKit.pwr_mgt
 // This post https://forums.developer.apple.com/forums/thread/712711 helped with
 // getting these relatively safe
 
+/// Returns the current power source
 func getPowerSource() -> String? {
     guard
         let powerSourcesInfo = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
@@ -36,18 +37,18 @@ func getPowerSource() -> String? {
     return powerSource as String
 }
 
+/// Returns a boolean to indicate if the machine is on AC power
 func onACPower() -> Bool {
-    // Returns a boolean to indicate if the machine is on AC power
     return getPowerSource() == kIOPMACPowerKey
 }
 
+/// Returns a boolean to indicate if the machine is on battery power
 func onBatteryPower() -> Bool {
-    // Returns a boolean to indicate if the machine is on battery power
     return getPowerSource() == kIOPMBatteryPowerKey
 }
 
+/// Returns battery charge percentage
 func getBatteryPercentage() -> Int {
-    // Returns battery charge percentage
     guard
         let psi = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
         let cf = IOPSCopyPowerSourcesList(psi)?.takeRetainedValue()
@@ -79,8 +80,8 @@ func getBatteryPercentage() -> Int {
     return 0
 }
 
+/// Determine if this Mac has a power source of 'InternalBattery'
 func hasInternalBattery() -> Bool {
-    // Determine if this Mac has a power source of 'InternalBattery'
     guard
         let psi = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
         let cf = IOPSCopyPowerSourcesList(psi)?.takeRetainedValue()
@@ -109,8 +110,8 @@ func hasInternalBattery() -> Bool {
 
 // MARK: no sleep assertions
 
+/// Uses IOKit functions to prevent sleep.
 func assertIOPM(name: CFString, reason: CFString) -> IOPMAssertionID? {
-    // Uses IOKit functions to prevent sleep.
     var assertionID = IOPMAssertionID(0)
     let success = IOPMAssertionCreateWithName(
         name,
@@ -124,28 +125,28 @@ func assertIOPM(name: CFString, reason: CFString) -> IOPMAssertionID? {
     return nil
 }
 
+/// Uses IOKit functions to prevent idle sleep.
 func assertNoIdleSleep(reason: String) -> IOPMAssertionID? {
-    // Uses IOKit functions to prevent idle sleep.
     let kIOPMAssertPreventUserIdleSystemSleep = "PreventUserIdleSystemSleep" as CFString
     return assertIOPM(name: kIOPMAssertPreventUserIdleSystemSleep, reason: reason as CFString)
 }
 
+/// Uses IOKit functions to prevent display sleep.
 func assertNoDisplaySleep(reason: String) -> IOPMAssertionID? {
-    // Uses IOKit functions to prevent idle sleep.
     let kIOPMAssertPreventUserDisplaySystemSleep = "PreventUserDisplaySystemSleep" as CFString
     return assertIOPM(name: kIOPMAssertPreventUserDisplaySystemSleep, reason: reason as CFString)
 }
 
+/// Clears a sleep assertion if any
 func removeNoSleepAssertion(_ id: IOPMAssertionID?) {
     if let id {
         IOPMAssertionRelease(id)
     }
 }
 
+/// A simple object that prevents idle sleep and automagically
+/// removes the assertion when the object goes out of scope or is deleted
 class Caffeinator {
-    // A simple object that prevents idle sleep and automagically
-    // removes the assertion when the object goes out of scope or is deleted
-
     var assertionID: IOPMAssertionID?
 
     init(reason: String = "") {
