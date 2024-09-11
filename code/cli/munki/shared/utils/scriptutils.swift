@@ -7,13 +7,13 @@
 
 import Foundation
 
+/// Writes string data to path.
+/// Returns success or failure as a boolean.
 func createExecutableFile(
     atPath path: String,
     withStringContents stringContents: String,
     posixPermissions: Int = 0o700
 ) -> Bool {
-    // Writes string data to path.
-    // Returns success or failure as a boolean.
     let data = stringContents.data(using: .utf8)
     return FileManager.default.createFile(
         atPath: path,
@@ -22,6 +22,7 @@ func createExecutableFile(
     )
 }
 
+/// Runs a script, processes its output
 class ScriptRunner: AsyncProcessRunner {
     var remainingOutput = ""
 
@@ -46,8 +47,8 @@ class ScriptRunner: AsyncProcessRunner {
     }
 }
 
+/// Runs a script, Returns return code.
 func runScript(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false) async -> Int {
-    // Runs a script, Returns return code.
     if suppressError {
         displayDetail("Running \(scriptName) for \(itemName)")
     } else {
@@ -81,10 +82,9 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     return result.exitcode
 }
 
+/// Runs a script embedded in the pkginfo.
+/// Returns the result code.
 func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = false) async -> Int {
-    // Runs a script embedded in the pkginfo.
-    // Returns the result code.
-
     // get the script text
     let itemName = pkginfo["name"] as? String ?? "<unknown>"
     guard let scriptText = pkginfo[name] as? String else {
@@ -113,11 +113,11 @@ enum ExternalScriptError: Error {
     case insecurePermissions(detail: String)
 }
 
+/// Check the permissions on a given file path; fail if owner or group
+/// does not match the munki process (default: root/admin) or the group is not
+/// 'wheel', or if other users are able to write to the file. This prevents
+/// escalated execution of arbitrary code.
 func verifyFileOnlyWritableByMunkiAndRoot(_ path: String) throws {
-    // Check the permissions on a given file path; fail if owner or group
-    // does not match the munki process (default: root/admin) or the group is not
-    // 'wheel', or if other users are able to write to the file. This prevents
-    // escalated execution of arbitrary code.
     let filemanager = FileManager.default
     let thisProcessOwner = NSUserName()
     var attributes: NSDictionary
@@ -144,8 +144,8 @@ func verifyFileOnlyWritableByMunkiAndRoot(_ path: String) throws {
     }
 }
 
+/// Verifies path is executable
 func verifyExecutable(_ path: String) throws {
-    // verifies path is executable
     let filemanager = FileManager.default
     var attributes: NSDictionary
     do {
@@ -161,9 +161,8 @@ func verifyExecutable(_ path: String) throws {
     }
 }
 
+/// Run a script (e.g. preflight/postflight) and return a result.
 func runExternalScript(_ scriptPath: String, arguments: [String] = [], allowInsecure: Bool = false, timeout: Int = 60) async throws -> CLIResults {
-    // Run a script (e.g. preflight/postflight) and return a result.
-
     if !pathExists(scriptPath) {
         throw ExternalScriptError.notFound
     }

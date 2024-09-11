@@ -20,8 +20,8 @@
 
 import Foundation
 
+// A class to return a shared temp directory, and to clean it up when we exit
 class TempDir {
-    // a class to return a shared temp directory, and to clean it up when we exit
     static let shared = TempDir()
 
     private var url: URL?
@@ -72,42 +72,43 @@ class TempDir {
     }
 }
 
+/// Returns true if path exists/
 func pathExists(_ path: String) -> Bool {
-    // Returns true if path exists
     return FileManager.default.fileExists(atPath: path)
 }
 
+/// Returns type of file at path
 func fileType(_ path: String) -> String? {
     // FileAttributeType is really a String
     return try? (FileManager.default.attributesOfItem(atPath: path) as NSDictionary).fileType()
 }
 
+/// Returns true if path is a regular file/
 func pathIsRegularFile(_ path: String) -> Bool {
-    // Returns true if path is a regular file
     if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeRegular.rawValue
     }
     return false
 }
 
+/// Returns true if path is a symlink/
 func pathIsSymlink(_ path: String) -> Bool {
-    // Returns true if path is a symlink
     if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeSymbolicLink.rawValue
     }
     return false
 }
 
+/// Returns true if path is a directory/
 func pathIsDirectory(_ path: String) -> Bool {
-    // Returns true if path is a directory
     if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeDirectory.rawValue
     }
     return false
 }
 
+/// Returns true if path is a file and is executable/
 func pathIsExecutableFile(_ path: String) -> Bool {
-    // returns true if path is a file and is executable
     if pathIsDirectory(path) {
         return false
     }
@@ -121,9 +122,9 @@ func pathIsExecutableFile(_ path: String) -> Bool {
     return false
 }
 
+/// Returns size of directory in Kbytes by recursively adding
+/// up the size of all files within
 func getSizeOfDirectory(_ path: String) -> Int {
-    // returns size of directory in Kbytes by recursively adding
-    // up the size of all files within
     var totalSize = 0
     let filemanager = FileManager.default
     let dirEnum = filemanager.enumerator(atPath: path)
@@ -139,8 +140,8 @@ func getSizeOfDirectory(_ path: String) -> Int {
     return totalSize
 }
 
+// Returns absolute path to item referred to by path
 func getAbsolutePath(_ path: String) -> String {
-    // returns absolute path to item referred to by path
     if (path as NSString).isAbsolutePath {
         return ((path as NSString).standardizingPath as NSString).resolvingSymlinksInPath
     }
@@ -149,8 +150,8 @@ func getAbsolutePath(_ path: String) -> String {
     return ((composedPath as NSString).standardizingPath as NSString).resolvingSymlinksInPath
 }
 
+/// Remove items in dirPath that aren't in the keepList
 func cleanUpDir(_ dirPath: String, keeping keepList: [String]) {
-    // Remove items in dirPath that aren't in the keepList
     if !pathIsDirectory(dirPath) {
         return
     }
@@ -177,16 +178,14 @@ func cleanUpDir(_ dirPath: String, keeping keepList: [String]) {
     }
 }
 
+/// Return a basename string.
+/// Examples:
+///    "http://foo/bar/path/foo.dmg" => "foo.dmg"
+///    "/path/foo.dmg" => "foo.dmg"
 func baseName(_ str: String) -> String {
-    // Return a basename string.
-    // Examples:
-    //    "http://foo/bar/path/foo.dmg" => "foo.dmg"
-    //    "/path/foo.dmg" => "foo.dmg"
-
     if let url = URL(string: str) {
         return url.lastPathComponent
     } else {
         return (str as NSString).lastPathComponent
     }
 }
-

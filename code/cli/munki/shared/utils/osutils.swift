@@ -21,6 +21,7 @@
 import Foundation
 import SystemConfiguration
 
+/// Returns the macOS version
 func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     let version = ProcessInfo().operatingSystemVersion
 
@@ -31,13 +32,13 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     }
 }
 
+/// Returns console user (the current GUI user)
 func getConsoleUser() -> String {
-    // Return console user
     return SCDynamicStoreCopyConsoleUser(nil, nil, nil) as? String ?? ""
 }
 
+/// Gets a list of GUI users by parsing the output of /usr/bin/who
 func currentGUIUsers() -> [String] {
-    // Gets a list of GUI users by parsing the output of /usr/bin/who
     var guiUsers = [String]()
     let result = runCLI("/usr/bin/who")
     for line in result.output.components(separatedBy: .newlines) {
@@ -51,18 +52,17 @@ func currentGUIUsers() -> [String] {
     return guiUsers
 }
 
+/// Returns the number of seconds since the last mouse or keyboard event.
 func getIdleSeconds() -> Int {
-    // Returns the number of seconds since the last mouse
-    // or keyboard event.
     return Int(hidIdleTime() / 1_000_000_000)
 }
 
+/// Determine if the network is up by looking for any non-loopback
+/// internet network interfaces.
+///
+/// Returns:
+/// Boolean. true if non-loopback is found (network is up), false otherwise.
 func networkUp() -> Bool {
-    // Determine if the network is up by looking for any non-loopback
-    // internet network interfaces.
-    //
-    // Returns:
-    // Boolean. true if non-loopback is found (network is up), false otherwise.
     // TODO: replace this with something better that also handles IPv6
     let result = runCLI("/sbin/ifconfig", arguments: ["-a", "inet"])
     if result.exitcode == 0 {
@@ -84,8 +84,7 @@ func networkUp() -> Bool {
     return false
 }
 
+/// Trigger the detection of new network hardware, like a USB-to-Ethernet adapter
 func detectNetworkHardware() {
-    // Trigger the detection of new network hardware,
-    // like a USB-to-Ethernet adapter
     _ = runCLI("/usr/sbin/networksetup", arguments: ["-detectnewhardware"])
 }
