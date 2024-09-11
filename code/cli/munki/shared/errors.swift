@@ -20,8 +20,8 @@
 
 import Foundation
 
+/// General error class for Munki errors
 class MunkiError: Error, CustomStringConvertible {
-    // General error class for errors
     public internal(set) var message: String
 
     // Creates a new error with the given message.
@@ -34,13 +34,14 @@ class MunkiError: Error, CustomStringConvertible {
     }
 }
 
+/// Ensures we can return a useful localizedError
 extension MunkiError: LocalizedError {
-    // cheap hack
     var errorDescription: String? {
         return message
     }
 }
 
+/// an exception to throw when user cancels
 struct UserCancelled: Error {
-    // an exception to throw when user cancels
+    // nothing special
 }

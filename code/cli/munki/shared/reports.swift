@@ -20,8 +20,8 @@
 
 import Foundation
 
+/// A Singleton class to manage reports
 class Report {
-    // a Singleton class to manage reports
     static let shared = Report()
 
     var report: PlistDict
@@ -56,13 +56,13 @@ class Report {
         }
     }
 
+    /// Returns path to report file
     func reportFile() -> String {
-        // returns path to report file
         return managedInstallsDir(subpath: "ManagedInstallReport.plist")
     }
 
+    /// Saves our report
     func save() {
-        // saves our report
         do {
             try writePlist(report, toFile: reportFile())
         } catch {
@@ -73,8 +73,8 @@ class Report {
         }
     }
 
+    /// Read report data from file
     func read() {
-        // read report data from file
         do {
             if let temp = try readPlist(fromFile: reportFile()) {
                 report = temp as? PlistDict ?? PlistDict()
@@ -84,8 +84,8 @@ class Report {
         }
     }
 
+    /// Archive current report file
     func archiveReport() {
-        // Archive current report file
         let reportFile = managedInstallsDir(subpath: "ManagedInstallReport.plist")
         if !pathExists(reportFile) {
             // nothing to do
