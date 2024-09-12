@@ -18,14 +18,14 @@
 
 import Foundation
 
+/// Clear the last date the user was notified of updates.
 func clearLastNotifiedDate() {
-    // Clear the last date the user was notified of updates.
     setPref("LastNotifiedDate", nil)
 }
 
+/// Attempts to create any missing directories needed by managedsoftwareupdate
+/// Returns a boolean to indicate success
 func initMunkiDirs() -> Bool {
-    // attempts to create any missing directories needed by managedsoftwareupdate
-    // returns a boolean to indicate success
     var dirlist = [managedInstallsDir()]
     for subdir in [
         "Archives",
@@ -52,9 +52,9 @@ func initMunkiDirs() -> Bool {
     return success
 }
 
+/// Run an external script. Do not run if the permissions on the external
+/// script file are weaker than the current executable.
 func runPreOrPostScript(name: String, runType: String) async -> Int {
-    // Run an external script. Do not run if the permissions on the external
-    // script file are weaker than the current executable.
     let scriptdir = "/usr/local/munki" as NSString
     let scriptPath = scriptdir.appendingPathComponent(name)
     if !pathExists(scriptPath) {
@@ -83,14 +83,14 @@ func runPreOrPostScript(name: String, runType: String) async -> Int {
     return 0
 }
 
+/// If there are executables inside the cleanup directory,
+/// run them and remove them if successful
 func doCleanupTasks(runType _: String) {
-    // If there are executables inside the cleanup directory,
-    // run them and remove them if successful
     // TODO: implement this
 }
 
+/// Return count of available updates.
 func munkiUpdatesAvailable() -> Int {
-    // Return count of available updates.
     if let plist = getInstallInfo() {
         var updatesAvailable = 0
         if let removals = plist["removals"] as? [PlistDict] {
@@ -104,8 +104,8 @@ func munkiUpdatesAvailable() -> Int {
     return 0
 }
 
+/// Return true if there is an item with this installerType in the list of updates
 func munkiUpdatesContainItemWithInstallerType(_ installerType: String) -> Bool {
-    // Return true if there is an item with this installerType in the list of updates
     if let plist = getInstallInfo(),
        let managedInstalls = plist["managed_installs"] as? [PlistDict]
     {
@@ -120,8 +120,8 @@ func munkiUpdatesContainItemWithInstallerType(_ installerType: String) -> Bool {
     return false
 }
 
+/// Return True if there are any Apple items in the list of updates
 func munkiUpdatesContainAppleItems() -> Bool {
-    // Return True if there are any Apple items in the list of updates
     if let plist = getInstallInfo() {
         for key in ["managed_installs", "removals"] {
             if let items = plist[key] as? [PlistDict] {
@@ -138,20 +138,19 @@ func munkiUpdatesContainAppleItems() -> Bool {
     return false
 }
 
+/// Record last check date and result
 func recordUpdateCheckResult(_ result: UpdateCheckResult) {
-    // Record last check date and result
     let now = Date()
     setPref("LastCheckDate", now)
     setPref("LastCheckResult", result.rawValue)
 }
 
+/// Notify the logged-in user of available updates.
+///
+/// Args:
+///     force: bool, default false, forcefully notify user regardless
+///     of LastNotifiedDate.
 func notifyUserOfUpdates(force: Bool = false) {
-    // Notify the logged-in user of available updates.
-    //
-    // Args:
-    //     force: bool, default false, forcefully notify user regardless
-    //     of LastNotifiedDate.
-
     if getConsoleUser() == "loginwindow" {
         // someone is logged in, but we're sitting at the loginwindow
         // due to to fast user switching so do nothing
@@ -193,10 +192,10 @@ func notifyUserOfUpdates(force: Bool = false) {
     }
 }
 
+/// Munki defaults to using http://munki/repo as the base URL.
+/// This is useful as a bootstrapping default, but is insecure.
+/// Warn the admin if Munki is using an insecure default.
 func warnIfServerIsDefault() {
-    // Munki defaults to using http://munki/repo as the base URL.
-    // This is useful as a bootstrapping default, but is insecure.
-    // Warn the admin if Munki is using an insecure default.
     var server = stringPref("ManifestURL") ?? stringPref("SoftwareRepoURL") ?? DEFAULT_INSECURE_REPO_URL
     if server.last == "/" {
         server = String(server.dropLast())
@@ -206,19 +205,19 @@ func warnIfServerIsDefault() {
     }
 }
 
+/// Removes the jobs that launch MunkiStatus and managedsoftwareupdate at
+/// the loginwindow. We do this if we decide it's not applicable to run right
+/// now so we don't get relaunched repeatedly, but don't want to remove the
+/// trigger file because we do want to run again at the next logout/reboot.
+/// These jobs will be reloaded the next time we're in the loginwindow context.
 func removeLaunchdLogoutJobs() {
-    // Removes the jobs that launch MunkiStatus and managedsoftwareupdate at
-    // the loginwindow. We do this if we decide it's not applicable to run right
-    // now so we don't get relaunched repeatedly, but don't want to remove the
-    // trigger file because we do want to run again at the next logout/reboot.
-    // These jobs will be reloaded the next time we're in the loginwindow context.
     munkiStatusQuit()
     _ = runCLI("/bin/launchctl", arguments: ["remove", "com.googlecode.munki.MunkiStatus"])
     _ = runCLI("/bin/launchctl", arguments: ["remove", "com.googlecode.munki.managedsoftwareupdate-loginwindow"])
 }
 
+/// Handle the need for a restart or a possible shutdown.
 func doRestart(shutdown: Bool = false) {
-    // Handle the need for a restart or a possible shutdown.
     let message = if shutdown {
         "Software installed or removed requires a shut down."
     } else {
@@ -260,15 +259,15 @@ func doRestart(shutdown: Bool = false) {
     }
 }
 
+/// Perform our installation/removal tasks.
+///
+/// Args:
+///    doAppleUpdates: Bool. If true, install Apple updates
+///    onlyUnattended:  Bool. If true, only do unattended_(un)install items.
+///
+/// Returns:
+///    PostAction - one of .none, .logout, .restart, .shutdown
 func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) async -> PostAction {
-    // Perform our installation/removal tasks.
-    //
-    // Args:
-    //    doAppleUpdates: Bool. If true, install Apple updates
-    //    onlyUnattended:  Bool. If true, only do unattended_(un)install items.
-    //
-    // Returns:
-    //    PostAction - one of .none, .logout, .restart, .shutdown
     if !onlyUnattended {
         // first, clear the last notified date so we can get notified of new
         // changes after this round of installs
@@ -292,6 +291,7 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
     if doAppleUpdates {
         // install Apple updates
         // TODO: implement? appleItemsRestartAction = installAppleUpdates(onlyUnattended: onlyUnattended)
+        // We're probably never going to implement this...
     }
 
     Report.shared.save()
@@ -299,8 +299,8 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
     return max(appleItemsRestartAction, munkiItemsRestartAction)
 }
 
+/// Handle the need for a forced logout. Start our logouthelper
 func startLogoutHelper() {
-    // Handle the need for a forced logout. Start our logouthelper
     let result = runCLI("/bin/launchctl",
                         arguments: ["start", "com.googlecode.munki.logouthelper"])
     if result.exitcode != 0 {
@@ -308,9 +308,8 @@ func startLogoutHelper() {
     }
 }
 
+/// A collection of tasks to do as we finish up
 func doFinishingTasks(runtype: String = "") async {
-    // A collection of tasks to do as we finish up
-
     // finish our report
     Report.shared.record(Date(), to: "EndTime")
     Report.shared.record(getVersion(), to: "ManagedInstallVersion")

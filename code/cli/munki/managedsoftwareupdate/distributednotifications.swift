@@ -18,8 +18,8 @@
 
 import Foundation
 
+/// Sends a NSDistributedNotification
 func sendDistributedNotification(_ name: NSNotification.Name, userInfo: PlistDict? = nil) {
-    // Sends a NSDistributedNotification
     let dnc = DistributedNotificationCenter.default()
     dnc.postNotificationName(
         name,
@@ -29,33 +29,31 @@ func sendDistributedNotification(_ name: NSNotification.Name, userInfo: PlistDic
     )
 }
 
+/// Sends an update notification via NSDistributedNotificationCenter
+/// Managed Software Center.app and MunkiStatus.app register to receive these events.
 func sendUpdateNotification() {
-    // Sends an update notification via NSDistributedNotificationCenter
-    // Managed Software Center.app and MunkiStatus.app register to receive these
-    // events.
     let name = NSNotification.Name(rawValue: "com.googlecode.munki.managedsoftwareupdate.updateschanged")
     let userInfo = ["pid": ProcessInfo().processIdentifier]
     sendDistributedNotification(name, userInfo: userInfo)
 }
 
+/// Sends an update notification via NSDistributedNotificationCenter
+/// Managed Software Center.app's dock tile plugin registers to receive these events.
 func sendDockUpdateNotification() {
-    // Sends an update notification via NSDistributedNotificationCenter
-    // Managed Software Center.app's dock tile plugin registers to receive these
-    // events.
     let name = NSNotification.Name(rawValue: "com.googlecode.munki.managedsoftwareupdate.dock.updateschanged")
     let userInfo = ["pid": ProcessInfo().processIdentifier]
     sendDistributedNotification(name, userInfo: userInfo)
 }
 
+/// Sends a start notification via NSDistributedNotificationCenter
 func sendStartNotification() {
-    // Sends a start notification via NSDistributedNotificationCenter
     let name = NSNotification.Name(rawValue: "com.googlecode.munki.managedsoftwareupdate.started")
     let userInfo = ["pid": ProcessInfo().processIdentifier]
     sendDistributedNotification(name, userInfo: userInfo)
 }
 
+/// Sends an ended notification via NSDistributedNotificationCenter
 func sendEndedNotification() {
-    // Sends an ended notification via NSDistributedNotificationCenter
     let name = NSNotification.Name(rawValue: "com.googlecode.munki.managedsoftwareupdate.ended")
     let userInfo = ["pid": ProcessInfo().processIdentifier]
     sendDistributedNotification(name, userInfo: userInfo)
