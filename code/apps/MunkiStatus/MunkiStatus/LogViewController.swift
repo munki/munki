@@ -112,8 +112,7 @@ class LogViewController: NSViewController {
         }
         if atLoginWindow() {
             logWindow.canBecomeVisibleWithoutLogin = true
-            // make sure the log window is above the blurred background windows
-            logWindow.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow) + 1))
+            logWindow.level = statusWindowLevel
         }
         var windowRect = NSScreen.main!.frame
         windowRect.origin.x = 100.0

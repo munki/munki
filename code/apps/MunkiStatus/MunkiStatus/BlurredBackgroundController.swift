@@ -49,7 +49,7 @@ class BlurViewController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         view.window?.isOpaque = false
-        view.window?.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow) - 1 ))
+        view.window?.level = backdropWindowLevel
 
         let blurView = NSVisualEffectView(frame: view.bounds)
         blurView.blendingMode = .behindWindow
