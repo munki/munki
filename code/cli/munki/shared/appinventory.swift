@@ -20,13 +20,13 @@
 
 import Foundation
 
+/// Do spotlight search for type applications within the
+/// list of directories provided. Returns a list of paths to applications.
+/// dirList is actually a list of NSMetadataQuery search scopes, which
+/// can be paths, or certain constants
+/// Typically we'll use NSMetadataQueryLocalComputerScope to search the
+/// local computer (skipping mounted network volumes)
 func findAppsInDirs(_ dirList: [String]) -> [[String: String]] {
-    // Do spotlight search for type applications within the
-    // list of directories provided. Returns a list of paths to applications
-    // dirList is actually a list of NSMetadataQuery search scopes, which
-    // can be paths, or certain constants
-    // Typically we'll use NSMetadataQueryLocalComputerScope to search the
-    // local computer (skipping mounted network volumes)
     var appList = [[String: String]]()
     let query = NSMetadataQuery()
     query.predicate = NSPredicate(format: "(kMDItemKind = \"Application\")")
@@ -79,14 +79,14 @@ func findAppsInDirs(_ dirList: [String]) -> [[String: String]] {
     return appList
 }
 
+/// Get paths of currently installed applications per Spotlight.
+/// Return value is list of paths.
+/// Currently searches only the local computer, but not network volumes
 func spotlightInstalledApps() -> [[String: String]] {
-    // Get paths of currently installed applications per Spotlight.
-    // Return value is list of paths.
-    // Currently searches only the local computer, but not network volumes
     return findAppsInDirs([NSMetadataQueryLocalComputerScope])
 }
 
-// private, undocumented LaunchServices function
+/// private, undocumented LaunchServices function
 @_silgen_name("_LSCopyAllApplicationURLs") func LSCopyAllApplicationURLs(_: UnsafeMutablePointer<NSMutableArray?>) -> OSStatus
 func launchServicesInstalledApps() -> [String] {
     var apps: NSMutableArray?
@@ -99,9 +99,9 @@ func launchServicesInstalledApps() -> [String] {
     return [String]()
 }
 
+/// Uses system profiler to get application info for this machine
+/// Returns a dictionary with app paths as keys
 func spApplicationData() async -> PlistDict {
-    // Uses system profiler to get application info for this machine
-    // Returns a dictionary with app paths as keys
     var applicationData = PlistDict()
     let tool = "/usr/sbin/system_profiler"
     let arguments = ["SPApplicationsDataType", "-xml"]
@@ -141,21 +141,15 @@ func spApplicationData() async -> PlistDict {
     return applicationData
 }
 
+/// Gets info on currently installed apps.
+/// Returns a list of dicts containing path, name, version and bundleid
 func getAppData() -> [[String: String]] {
-    // Gets info on currently installed apps.
-    // Returns a list of dicts containing path, name, version and bundleid
-
     // one thing I'm not at all sure about is what iOS/iPadOS apps
     // installed on Apple silicon Macs look like and how/if
     // Launch Services, Spotlight, and system_profiler report them
-
     displayDebug1("Getting info on currently installed applications...")
-    // async let spAppData = spApplicationData()
     let lsApps = launchServicesInstalledApps()
-    // print("LaunchServices found \(lsApps.count) apps")
     let spotlightApps = spotlightInstalledApps()
-    // print("Spotlight found \(spotlightApps.count) apps")
-    // print("system_profiler found \(await spAppData.count) apps")
 
     // find apps that are unique to the LaunchServices list
     let spotlightAppPaths = spotlightApps.map { $0["path"] ?? "" }.filter { !$0.isEmpty }
@@ -192,9 +186,8 @@ func getAppData() -> [[String: String]] {
     return applicationData
 }
 
+/// A Singleton class for application inventory info, since it's expensive  to generate
 class ApplicationInventory {
-    // a Singleton class for application inventory info, since it's expensive
-    // to generate
     static let shared = ApplicationInventory()
 
     var inventory: [[String: String]]
@@ -213,22 +206,23 @@ class ApplicationInventory {
     }
 }
 
+/// Return (possibly cached) installed application data
 func appData() -> [[String: String]] {
     return ApplicationInventory.shared.get()
 }
 
+/// Returns a filtered version of app_data, filtering out apps in user
+/// home directories for use by compare_application_version()
 func filteredAppData() -> [[String: String]] {
-    // Returns a filtered version of app_data, filtering out apps in user
-    // home directories for use by compare_application_version()
     return appData().filter {
         !(($0["path"] ?? "").hasPrefix("/Users") && !($0["path"] ?? "").hasPrefix("/Users/Shared"))
     }
 }
 
+/// Save installed application data
+/// data from appData() is meant for use by updatecheck
+/// we need to massage it a bit for more general usage
 func saveAppData() {
-    // Save installed application data
-    // data from appData() is meant for use by updatecheck
-    // we need to massage it a bit for more general usage
     munkiLog("Saving application inventory...")
     var appInventory = [[String: String]]()
     for item in appData() {

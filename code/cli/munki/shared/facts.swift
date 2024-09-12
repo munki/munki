@@ -20,10 +20,9 @@
 
 import Foundation
 
+/// Gets some facts about this machine we use to determine if a given
+/// installer is applicable to this OS or hardware
 func generateMachineFacts() async -> PlistDict {
-    // Gets some facts about this machine we use to determine if a given
-    // installer is applicable to this OS or hardware
-
     // these all call system_profiler so see if we can do
     // them concurrently
     async let ip4addresses = await getIPAddresses("IPv4")
@@ -66,9 +65,8 @@ func generateMachineFacts() async -> PlistDict {
     return machine
 }
 
+/// A Singleton class for machine facts, since they are expensive to generate
 class MachineFacts {
-    // a Singleton class for machine facts, since they are expensive
-    // to generate
     static let shared = MachineFacts()
 
     var facts: PlistDict
@@ -85,21 +83,20 @@ class MachineFacts {
     }
 }
 
+/// Return 'facts' about this machine
 func getMachineFacts() async -> PlistDict {
-    // return 'facts' about this machine
     return await MachineFacts.shared.get()
 }
 
+/// Returns the path to the conditional scripts dir
 private func conditionalScriptsDir() -> String {
-    // returns the path to the conditional scripts dir
     // TODO: make this relative to the managedsoftwareupdate binary
     return "/usr/local/munki/conditions"
 }
 
+/// Fetches key/value pairs from condition scripts
+/// which can be placed into /usr/local/munki/conditions
 func getConditions() async -> PlistDict {
-    // Fetches key/value pairs from condition scripts
-    // which can be placed into /usr/local/munki/conditions
-
     let conditionalScriptDir = conditionalScriptsDir()
     let conditionalItemsPath = managedInstallsDir(subpath: "ConditionalItems.plist")
     let filemanager = FileManager.default
@@ -151,17 +148,16 @@ func getConditions() async -> PlistDict {
     return PlistDict() // empty results
 }
 
+/// Input: NSDate object
+/// Output: NSDate object with same date and time as the UTC.
+/// In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
+/// '2011-06-20 12:00:00 -0700'.
+/// In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
+/// This allows a pkginfo item to reference a time in UTC that
+/// gets translated to the same relative local time.
+/// A force_install_after_date for '2011-06-20T12:00:00Z' will happen
+/// after 2011-06-20 12:00:00 local time.
 func subtractTZOffsetFromDate(_ date: Date) -> Date {
-    // Input: NSDate object
-    // Output: NSDate object with same date and time as the UTC.
-    // In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
-    // '2011-06-20 12:00:00 -0700'.
-    // In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'.
-    // This allows a pkginfo item to reference a time in UTC that
-    // gets translated to the same relative local time.
-    // A force_install_after_date for '2011-06-20T12:00:00Z' will happen
-    // after 2011-06-20 12:00:00 local time.
-
     // find our time zone offset in seconds
     let timezone = NSTimeZone.default
     let secondsOffset = Double(timezone.secondsFromGMT(for: date))
@@ -169,17 +165,16 @@ func subtractTZOffsetFromDate(_ date: Date) -> Date {
     return Date(timeInterval: -secondsOffset, since: date)
 }
 
+/// Input: NSDate object
+/// Output: NSDate object with timezone difference added
+/// to the date. This allows conditional_item conditions to
+/// be written like so:
+///
+/// <key>condition</key>
+/// <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
+///
+/// with the intent being that the comparison is against local time.
 func addTZOffsetToDate(_ date: Date) -> Date {
-    // Input: NSDate object
-    // Output: NSDate object with timezone difference added
-    // to the date. This allows conditional_item conditions to
-    // be written like so:
-    //
-    // <key>condition</key>
-    // <string>date > CAST("2012-12-17T16:00:00Z", "NSDate")</string>
-    //
-    // with the intent being that the comparison is against local time.
-
     // find our time zone offset in seconds
     let timezone = NSTimeZone.default
     let secondsOffset = Double(timezone.secondsFromGMT(for: date))
@@ -187,9 +182,9 @@ func addTZOffsetToDate(_ date: Date) -> Date {
     return Date(timeInterval: secondsOffset, since: date)
 }
 
+/// Returns our info object used for predicate comparisons
 func generatePredicateInfo() async -> PlistDict {
-    // Returns our info object used for predicate comparisons
-
+    // let's do some stuff concurrently
     async let machine = getMachineFacts()
     async let conditions = getConditions()
     var infoObject = await machine
@@ -223,9 +218,8 @@ func generatePredicateInfo() async -> PlistDict {
     return infoObject
 }
 
+/// A Singleton class for predicate info, since it's expensive to generate
 class PredicateInfo {
-    // a Singleton class for predicate info, since it's expensive
-    // to generate
     static let shared = PredicateInfo()
 
     var info: PlistDict
@@ -242,19 +236,19 @@ class PredicateInfo {
     }
 }
 
+/// Return our (possibly cached) info object
 func predicateInfoObject() async -> PlistDict {
     return await PredicateInfo.shared.get()
 }
 
+/// Evaluates predicate against the info object; returns a boolean
+/// Calls out to an Objective-C function because NSPrediacte methods can
+/// raise NSExecption, whcih Swift cannot catch
 func predicateEvaluatesAsTrue(
     _ predicateString: String,
     infoObject: PlistDict,
     additionalInfo: PlistDict? = nil
 ) -> Bool {
-    // Evaluates predicate against the info object; returns a boolean
-    // Calls out to an Objective-C function because NSPrediacte methods can
-    // raise NSExecption, whcih Swift cannot catch
-
     var ourObject = infoObject
     if let additionalInfo {
         ourObject.merge(additionalInfo) { _, new in new }

@@ -23,8 +23,8 @@ import Darwin
 import Foundation
 import IOKit
 
+/// Uses system profiler to get info of dataType for this machine
 func getSystemProfilerData(_ dataType: String) async -> PlistDict {
-    // Uses system profiler to get info of data_type for this machine
     let tool = "/usr/sbin/system_profiler"
     let arguments = [dataType, "-xml"]
     let result = await runCliAsync(tool, arguments: arguments)
@@ -46,20 +46,20 @@ func getSystemProfilerData(_ dataType: String) async -> PlistDict {
     return PlistDict()
 }
 
+/// Uses system profiler to get hardware info for this machine
 func getHardwareInfo() async -> PlistDict {
-    // Uses system profiler to get hardware info for this machine
     return await getSystemProfilerData("SPHardwareDataType")
 }
 
+/// Uses system profiler to get iBridge info for this machine
 func getIBridgeInfo() async -> PlistDict {
-    // Uses system profiler to get iBridge info for this machine
     return await getSystemProfilerData("SPiBridgeDataType")
 }
 
+/// Uses system profiler to get active IP addresses for this machine
+/// kind must be one of 'IPv4' or 'IPv6'
+/// NOTE this does not return any utun addresses.
 func getIPAddresses(_ kind: String) async -> [String] {
-    // Uses system profiler to get active IP addresses for this machine
-    // kind must be one of 'IPv4' or 'IPv6'
-    // NOTE this does not return any utun addresses.
     var ipAddresses = [String]()
     let tool = "/usr/sbin/system_profiler"
     let arguments = ["SPNetworkDataType", "-xml"]
@@ -86,25 +86,25 @@ func getIPAddresses(_ kind: String) async -> [String] {
     return ipAddresses
 }
 
-// IOKit helpers
+// MARK: IOKit helpers
 
+/// Returns a reference to an IOKit service matching on IOService class name,
+/// typically something like "IOPlatformExpertDevice"
 private func serviceMatching(_ className: String) -> io_registry_entry_t {
-    // returns a reference to an IOKit service matching on IOService class name,
-    // typically something like "IOPlatformExpertDevice"
     return IOServiceGetMatchingService(
         kIOMasterPortDefault, IOServiceMatching(className)
     )
 }
 
+/// Returns a reference to an IOKit service matching on IOService name
 private func serviceNameMatching(_ name: String) -> io_registry_entry_t {
-    // returns a reference to an IOKit service matching on IOService name
     return IOServiceGetMatchingService(
         kIOMasterPortDefault, IOServiceNameMatching(name)
     )
 }
 
+/// Attempts to return a string value for the given property key
 private func stringValueForIOServiceProperty(service: io_registry_entry_t, key: String) -> String? {
-    // attempts to return a string value for the given property key
     let rawData = IORegistryEntryCreateCFProperty(
         service, key as CFString, kCFAllocatorDefault, 0
     )
@@ -116,11 +116,11 @@ private func stringValueForIOServiceProperty(service: io_registry_entry_t, key: 
                   encoding: .utf8)?.trimmingCharacters(in: ["\0"])
 }
 
-// info functions that call IOKit
+// MARK: info functions that call IOKit
 
+/// Returns mouse/keyboard idel time in nanoseconds
+/// (1/1000000000) of a second
 func hidIdleTime() -> Int {
-    // returns mouse/keyboard idel time in nanoseconds
-    // (1/1000000000) of a second
     let idleTime = IORegistryEntryCreateCFProperty(
         serviceMatching("IOHIDSystem"),
         "HIDIdleTime" as CFString,
@@ -134,8 +134,8 @@ func hidIdleTime() -> Int {
     return nanoSeconds as! Int
 }
 
+/// Returns the serial number of this Mac
 func serialNumber() -> String {
-    // Returns the serial number of this Mac
     let serial = IORegistryEntryCreateCFProperty(
         serviceMatching("IOPlatformExpertDevice"),
         kIOPlatformSerialNumberKey as CFString,
@@ -148,34 +148,34 @@ func serialNumber() -> String {
     return "UNKNOWN"
 }
 
+/// Returns the product name from IORegistry
 func productName() -> String {
-    // Returns the product name from IORegistry
     return stringValueForIOServiceProperty(
         service: serviceNameMatching("product"),
         key: "product-name"
     ) ?? "Intel Mac"
 }
 
+/// Returns board-id from IORegistry
 func boardID() -> String {
-    // Returns board-id from IORegistry
     return stringValueForIOServiceProperty(
         service: serviceMatching("IOPlatformExpertDevice"),
         key: "board-id"
     ) ?? "<none>"
 }
 
+/// Returns  device id from IORegistry
 func deviceID() -> String {
-    // Returns board-id from IORegistry
     return stringValueForIOServiceProperty(
         service: serviceMatching("IOPlatformExpertDevice"),
         key: "target-sub-type"
     ) ?? "<none>"
 }
 
-// info functions that use sysctlbyname
+// MARK: info functions that use sysctlbyname
 
+/// Returns model (like 'Mac1,2')
 func hardwareModel() -> String {
-    // returns model (Mac1,2)
     var size = 0
     // call sysctlbyname to get the size of the returned string
     let err1 = sysctlbyname("hw.model", nil, &size, nil, 0)
@@ -196,8 +196,8 @@ func hardwareModel() -> String {
     return str
 }
 
+/// Returns true if this Mac has an Intel processor that supports 64bit code
 func hasIntel64Support() -> Bool {
-    // returns true if this Mac has an Intel processor that supports 64bit code
     var size = 0
     // call sysctlbyname to get the size of the returned value
     let err1 = sysctlbyname("hw.optional.x86_64", nil, &size, nil, 0)
@@ -215,10 +215,10 @@ func hasIntel64Support() -> Bool {
     return buffer[0] == 1
 }
 
+/// Returns available diskspace in KBytes.
+/// Value should be very close to `df -k` output
+/// Returns negative values of there is an error
 func availableDiskSpace(volumePath _: String = "/") -> Int {
-    // Returns available diskspace in KBytes.
-    // Value should be very close to `df -k` output
-    // Returns negative values of there is an error
     let buffer = UnsafeMutablePointer<statvfs>.allocate(capacity: 1024)
     defer { buffer.deallocate() }
     let err = statvfs("/", buffer)
@@ -230,8 +230,8 @@ func availableDiskSpace(volumePath _: String = "/") -> Int {
     return Int(f_frsize * f_bavail / 1024)
 }
 
+/// Returns uname's version of hostname
 func hostname() -> String {
-    // returns uname's version of hostname
     var systemInfo = utsname()
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
@@ -244,8 +244,8 @@ func hostname() -> String {
     return str
 }
 
+/// Returns platform (arch) ("x86_64", "arm64")
 func platform() -> String {
-    // returns platform (arch) ("x86_64", "arm64")
     var systemInfo = utsname()
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
@@ -258,8 +258,8 @@ func platform() -> String {
     return str
 }
 
+/// Returns uname's version string
 func uname_version() -> String {
-    // returns uname's version string
     var systemInfo = utsname()
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
@@ -272,9 +272,8 @@ func uname_version() -> String {
     return str
 }
 
+/// Returns uname's system string. (Pretty much always returns "Darwin")
 func uname_sysname() -> String {
-    // returns uname's system string
-    // Pretty much always returns "Darwin"
     var systemInfo = utsname()
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
@@ -287,9 +286,8 @@ func uname_sysname() -> String {
     return str
 }
 
+/// Returns uname's release string (Darwin version)
 func uname_release() -> String {
-    // returns uname's system string
-    // Pretty much always returns "Darwin"
     var systemInfo = utsname()
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
@@ -302,13 +300,13 @@ func uname_release() -> String {
     return str
 }
 
+/// Returns true if we're running on Apple silicon
 func isAppleSilicon() -> Bool {
-    // Returns true if we're running on Apple silicon"
     return platform() == "arm64"
 }
 
+/// Returns the OS Build "number" (example 16G1212).
 func getOSBuild() -> String {
-    // Returns the OS Build "number" (example 16G1212).
     do {
         if let systemVersion = try readPlist(
             fromFile: "/System/Library/CoreServices/SystemVersion.plist"
