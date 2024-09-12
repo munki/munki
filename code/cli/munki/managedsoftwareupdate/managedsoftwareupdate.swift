@@ -81,6 +81,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
+    /// Triggers an exit if another instance of managedsoftwareupdate is running
     private func exitIfAnotherManagedSoftwareUpdateIsRunning() throws {
         if let otherPid = anotherManagedsoftwareupdateInstanceRunning() {
             let ourName = ProcessInfo().processName
@@ -95,6 +96,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
+    /// Process the options needed when we're triggered vi launchd
     private mutating func processLaunchdOptions() throws {
         if otherOptions.auto {
             // typically invoked by a launch daemon periodically.
@@ -200,14 +202,15 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
+    /// Make sure our needed directories exist or exit
     private func ensureMunkiDirsExist() throws {
         if !initMunkiDirs() {
             throw ExitCode(EXIT_STATUS_MUNKI_DIRS_FAILURE)
         }
     }
 
+    /// Sets our display options
     private func configureDisplayOptions() {
-        // sets our display options
         DisplayOptions.munkistatusoutput = otherOptions.munkistatusoutput
         if otherOptions.quiet {
             DisplayOptions.verbose = 0
@@ -217,6 +220,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         // TODO: support setting MUNKI_VERBOSITY_LEVEL env variable
     }
 
+    /// Start a report for this run
     private func initializeReport() {
         if commonOptions.installOnly {
             // we're only installing, not checking, so we should copy
@@ -227,9 +231,9 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         Report.shared.record(runtype, to: "RunType")
     }
 
+    /// Tries to run a Munki preflight. If it exists and exits non-zero
+    /// abort execution of the managedsoftwareupdate run
     private func runPreflight() async throws {
-        // tries to run a Munki preflight. If it exists and exits non-zero
-        // abort execution of the managedsoftwareupdate run
         let result = await runPreOrPostScript(name: "preflight", runType: runtype)
         if result == 0 {
             // Force a prefs refresh, in case preflight modified the prefs file.
@@ -247,6 +251,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         throw ExitCode(EXIT_STATUS_PREFLIGHT_FAILURE)
     }
 
+    /// Do our update check against the Munki repo
     private func doMunkiUpdateCheck(skipCheck: Bool) async throws -> UpdateCheckResult? {
         if !skipCheck {
             do {
@@ -264,6 +269,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         return nil
     }
 
+    /// Should we look for Apple updates this run?
     private func shouldDoAppleUpdates(appleUpdatesOnly: Bool) -> Bool {
         if appleUpdatesOnly {
             // admin told us to do them
@@ -286,8 +292,8 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         return boolPref("InstallAppleSoftwareUpdates") ?? false
     }
 
+    /// Does an Apple update check if appropriate
     private func doAppleUpdateCheckIfAppropriate(appleUpdatesOnly: Bool) -> Int {
-        /// Does a check if appropriate
         if shouldDoAppleUpdates(appleUpdatesOnly: appleUpdatesOnly) {
             return findAndRecordAvailableAppleUpdates()
         }
@@ -295,6 +301,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         return 0
     }
 
+    /// Once a check is done, some options may need to be adjusted for the install phase
     private mutating func reconfigureOptionsForInstall() {
         if runtype == "installatstartup" {
             // turn off options.installonly; we need options.auto behavior from here
@@ -329,6 +336,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
+    // Do our actual install/removal tasks
     private mutating func handleInstallTasks() async {
         // Complex logic here to handle lots of install scenarios
         // and options
@@ -373,6 +381,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
+    /// Do the automatic (background) install tasks
     private mutating func handleAutoInstallTasks() async {
         if currentGUIUsers().isEmpty {
             // we're at the loginwindow
@@ -455,6 +464,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
+    /// Possibly clear bootstrapping mode
     private func clearBootstrapModeIfAppropriate() {
         // TODO: rethink all this
         if runtype == "checkandinstallatstatup",
