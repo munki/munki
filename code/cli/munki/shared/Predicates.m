@@ -7,13 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
+/// Evaluates predicate against the info object; returns a boolean
+/// Written in Objective-C because NSPredicate methods can throw NSExceptions, which
+/// Swift can't catch. Error reason is returned in NSError
 int objCpredicateEvaluatesAsTrue(NSString *predicateString,
                                  NSDictionary *infoObject,
                                  NSError **errorPtr)
 {
-    // Evaluates predicate against the info object; returns a boolean
-    // Written in Objective-C because NSPredicate methods can throw NSExceptions, which
-    // Swift can't catch. Error reason is returned in NSError
     @try {
         NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateString];
         BOOL result = [predicate evaluateWithObject: infoObject];

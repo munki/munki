@@ -18,16 +18,16 @@
 
 import Foundation
 
+/// Removes the AppleUpdates.plist if it exists
 func clearAppleUpdateInfo() {
-    /// Removes the AppleUpdates.plist if it exists
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
     if pathExists(appleUpdatesFilePath) {
         try? FileManager.default.removeItem(atPath: appleUpdatesFilePath)
     }
 }
 
+/// Parses a new-style (macOS 10.15+) software update line
 func parseSULineNewStyle(_ line: String) -> [String: String] {
-    /// Parses a new-style (macOS 10.15+) software update line
     var info = [String: String]()
     var trimmedLine = line.trimmingCharacters(in: ["*"])
     trimmedLine = trimmedLine.trimmingCharacters(in: .whitespaces)
@@ -43,15 +43,15 @@ func parseSULineNewStyle(_ line: String) -> [String: String] {
     return info
 }
 
+/// Parses two lines from softwareupdate -l output that describe an update and returns a dict
 func parseSULines(_ line1: String, _ line2: String) -> [String: String] {
-    /// Parses two lines from softwareupdate -l output that describe an update and returns a dict
     var info = parseSULineNewStyle(line1)
     info.merge(parseSULineNewStyle(line2)) { _, second in second }
     return info
 }
 
+/// Deletes "RecommendedUpdates" from /Library/Preferences/com.apple.SoftwareUpdate.plist
 func clearRecommendedUpdates() {
-    /// Deletes "RecommendedUpdates" from /Library/Preferences/com.apple.SoftwareUpdate.plist
     CFPreferencesSetValue(
         "RecommendedUpdates" as CFString,
         nil,
@@ -61,8 +61,8 @@ func clearRecommendedUpdates() {
     )
 }
 
+/// Runs softwareupdate tool and returns a list of dictionaries parsed from the output
 func getAvailableSoftwareUpdates() -> [[String: String]] {
-    /// runs softwareupdate tool and returns a list of dictionaries parsed from the output
     var updates = [[String: String]]()
     clearRecommendedUpdates()
     let result = runCLI("/usr/sbin/softwareupdate", arguments: ["-l"])
@@ -86,9 +86,8 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
     return updates
 }
 
+/// FIlters out any majorOS upgrades from a list of Apple updates
 func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
-    /// FIlters out any majorOS upgrades from a list of Apple updates
-
     // There's a few strategies we could use here:
     //
     //  1) Match update names that start with "macOS" and end with a version
@@ -143,8 +142,8 @@ func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     return filteredUpdates
 }
 
+/// Returns a list of dictionaries describing available Apple updates.
 func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict] {
-    /// Returns a list of dictionaries describing available Apple updates.
     var appleUpdates = [PlistDict]()
     let rawUpdates = getAvailableSoftwareUpdates()
     for item in rawUpdates {
@@ -177,10 +176,10 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
     return appleUpdates
 }
 
+/// Gets available Apple updates.
+/// Writes a file used by the MSC GUI to display available updates.
+/// Returns count of available Apple updates
 func findAndRecordAvailableAppleUpdates(shouldFilterMajorOSUpdates: Bool = false) -> Int {
-    /// Gets available Apple updates.
-    /// writes a file used by the MSC GUI to display available updates.
-    /// Returns count of available Apple updates
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
     let appleUpdates = getAppleUpdatesList(
         shouldFilterMajorOSUpdates: shouldFilterMajorOSUpdates)
@@ -199,8 +198,8 @@ func findAndRecordAvailableAppleUpdates(shouldFilterMajorOSUpdates: Bool = false
     return appleUpdates.count
 }
 
+/// Returns the number of available/pending Apple updates
 func getAppleUpdateCount() -> Int {
-    /// Returns the number of available/pending Apple updates
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
     if !pathExists(appleUpdatesFilePath) {
         return 0
@@ -218,8 +217,8 @@ func getAppleUpdateCount() -> Int {
     }
 }
 
+/// Prints Apple update information and updates ManagedInstallReport.
 func displayAppleUpdateInfo() {
-    /// Prints Apple update information and updates ManagedInstallReport.
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
     if !pathExists(appleUpdatesFilePath) {
         return

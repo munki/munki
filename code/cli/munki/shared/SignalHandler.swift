@@ -18,8 +18,8 @@
 
 import Foundation
 
+/// Given a signal number, return the name
 func signalName(_ sig: Int32) -> String {
-    // given a signal number, return the name
     switch sig {
     case SIGHUP:
         return "SIGHUP"
@@ -40,10 +40,9 @@ func signalName(_ sig: Int32) -> String {
     }
 }
 
+/// Installs a signal handler and returns an object that controls it;
+/// Be sure to activate it!
 func installSignalHandler(_ sig: Int32) -> DispatchSourceSignal {
-    /// installs a signal handler and returns an object that controls it;
-    /// be sure to activate it!
-
     // the intent here is to kill our child process(es) when we get a SIGINT or SIGTERM
     // (sadly we can't do it for SIGKILL) so they don't keep running if we're stopped
     // by the user (or killed by another process)

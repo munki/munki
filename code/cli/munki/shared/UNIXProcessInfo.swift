@@ -26,6 +26,7 @@ struct UNIXProcessInfo {
     let command: String
 }
 
+/// Returns a list of running processes
 func UNIXProcessList() -> [UNIXProcessInfo] {
     var list = [UNIXProcessInfo]()
     var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0]
@@ -58,11 +59,13 @@ func UNIXProcessList() -> [UNIXProcessInfo] {
     return list
 }
 
+/// Returns a list of running processes with the given parent pid
 func processesWithPPID(_ ppid: Int32) -> [UNIXProcessInfo] {
     let list = UNIXProcessList()
     return list.filter { $0.ppid == ppid }
 }
 
+/// Gets the (raw) process argument data
 func argumentData(for pid: pid_t) -> Data? {
     // Lifted from Quinn's work here: https://developer.apple.com/forums/thread/681817
 
@@ -103,6 +106,7 @@ enum ParseError: Error {
     case argumentIsNotUTF8
 }
 
+/// Parses the argument data into a list of strings
 func parseArgumentData(_ data: Data) throws -> [String] {
     // Lifted from Quinn's work here: https://developer.apple.com/forums/thread/681817
 
@@ -152,6 +156,7 @@ func parseArgumentData(_ data: Data) throws -> [String] {
     return result
 }
 
+/// Returns the executable path and all arguments as a list of strings
 func executableAndArgsForPid(_ pid: Int32) -> [String]? {
     if let data = argumentData(for: pid) {
         return try? parseArgumentData(data)

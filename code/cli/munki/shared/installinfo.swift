@@ -18,8 +18,8 @@
 
 import Foundation
 
+/// Gets info from InstallInfo.plist
 func getInstallInfo() -> PlistDict? {
-    // gets info from InstallInfo.plist
     // TODO: there is at least one other similar function elsewhere; de-dup
     let installInfoPath = managedInstallsDir(subpath: "InstallInfo.plist")
     if pathExists(installInfoPath) {
@@ -38,8 +38,8 @@ func getInstallInfo() -> PlistDict? {
     return nil
 }
 
+/// Returns any available Apple updates
 func getAppleUpdates() -> PlistDict? {
-    // Returns any available Apple updates
     let installAppleUpdates = boolPref("InstallAppleSoftwareUpdates") ?? false
     let appleUpdatesOnly = boolPref("AppleSoftwareUpdatesOnly") ?? false
     let appleUpdatesFile = managedInstallsDir(subpath: "AppleUpdates.plist")
@@ -59,8 +59,8 @@ func getAppleUpdates() -> PlistDict? {
     return nil
 }
 
+/// Returns age of the oldest pending update in days
 func oldestPendingUpdateInDays() -> Double {
-    // return age of the oldest pending update in days
     let updateTrackingFile = managedInstallsDir(subpath: "UpdateNotificationTracking.plist")
     guard let pendingUpdates = try? readPlist(fromFile: updateTrackingFile) as? PlistDict else {
         return 0
@@ -89,9 +89,9 @@ struct PendingUpdateInfo {
     var forcedUpdateDueDate: Date?
 }
 
+/// Returns a dict with some data that
+/// managedsoftwareupdate records at the end of a run
 func getPendingUpdateInfo() -> PendingUpdateInfo {
-    // Returns a dict with some data that
-    // managedsoftwareupdate records at the end of a run
     let installInfo = getInstallInfo()
     let managedInstalls = installInfo?["managed_installs"] as? [PlistDict] ?? []
     let removals = installInfo?["removals"] as? [PlistDict] ?? []
@@ -120,11 +120,11 @@ func getPendingUpdateInfo() -> PendingUpdateInfo {
     )
 }
 
+/// Attempt to find the date Apple Updates were first seen since they can
+/// appear and disappear from the list of available updates, which screws up
+/// our tracking of pending updates that can trigger more aggressive update
+/// notifications.
 func getAppleUpdatesWithHistory() -> [String: Date] {
-    // Attempt to find the date Apple Updates were first seen since they can
-    // appear and disappear from the list of available updates, which screws up
-    // our tracking of pending updates that can trigger more aggressive update
-    // notifications.
     let appleUpdateHistoryPath = managedInstallsDir(subpath: "AppleUpdateHistory.plist")
     let appleUpdateInfo = getAppleUpdates()
     let appleUpdates = appleUpdateInfo?["AppleUpdates"] as? [PlistDict] ?? []
@@ -164,9 +164,9 @@ func getAppleUpdatesWithHistory() -> [String: Date] {
     return historyInfo
 }
 
+/// Record the time each update first is made available. We can use this to
+/// escalate our notifications if there are items that have been skipped a lot
 func savePendingUpdateTimes() {
-    // Record the time each update first is made available. We can use this to
-    // escalate our notifications if there are items that have been skipped a lot
     let now = Date()
     let pendingUpdatesPath = managedInstallsDir(subpath: "UpdateNotificationTracking.plist")
     let installInfo = getInstallInfo()
@@ -220,12 +220,11 @@ func savePendingUpdateTimes() {
     }
 }
 
+/// Prints info about available updates
 func displayUpdateInfo() {
-    // Prints info about available updates
-
+    //
+    /// Displays logout/restart info for item if present and also updates our report
     func displayAndRecordRestartInfo(_ item: PlistDict) {
-        // Displays logout/restart info for item if present
-        // and also updates our report
         let restartAction = item["RestartAction"] as? String ?? ""
         if ["RequireRestart", "RecommendRestart"].contains(restartAction) {
             displayInfo("       *Restart required")
@@ -286,14 +285,13 @@ enum ForceInstallStatus: Int {
     case restart = 4 // a force install is about to occur and requires restart
 }
 
+/// Check installable packages and applicable Apple updates
+/// for force install parameters.
+///
+/// This method modifies InstallInfo and/or AppleUpdates in one scenario:
+/// It enables the unattended_install flag on all packages which need to be
+/// force installed and do not have a RestartAction.
 func forceInstallPackageCheck() -> ForceInstallStatus {
-    // Check installable packages and applicable Apple updates
-    // for force install parameters.
-
-    // This method modifies InstallInfo and/or AppleUpdates in one scenario:
-    // It enables the unattended_install flag on all packages which need to be
-    // force installed and do not have a RestartAction.
-
     // This many hours before a force install deadline, start notifying the user.
     let FORCE_INSTALL_WARNING_HOURS = 4.0
 
