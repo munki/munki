@@ -26,14 +26,13 @@ enum AppUsageClientError: Error {
     case taskError(description: String)
 }
 
+/// Handles communication with appusaged daemon
 class AppUsageClient {
-    // handles communication with appusaged daemon
-
     let APPUSAGED_SOCKET = "/var/run/appusaged"
     let socket = UNIXDomainSocketClient()
 
+    /// Connect to appusaged
     func connect() throws {
-        // Connect to appusaged
         socket.connect(to: APPUSAGED_SOCKET)
         if socket.errCode != .noError {
             throw AppUsageClientError.socketError(
@@ -43,8 +42,8 @@ class AppUsageClient {
         }
     }
 
+    /// Send a request to appusaged
     func sendRequest(_ request: PlistDict) throws -> String {
-        // Send a request to appusaged
         let requestStr = try plistToString(request)
         socket.write(requestStr)
         if socket.errCode != .noError {
@@ -60,13 +59,13 @@ class AppUsageClient {
         return reply.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Disconnect from appusaged
     func disconnect() {
-        // Disconnect from appusaged
         socket.close()
     }
 
+    /// Send a request and return the result
     func process(_ request: PlistDict) throws -> String {
-        // Send a request and return the result
         try connect()
         let result = try sendRequest(request)
         disconnect()
@@ -74,9 +73,8 @@ class AppUsageClient {
     }
 }
 
+/// A subclass of NSObject to handle workspace notifications
 class NotificationHandler: NSObject {
-    // A subclass of NSObject to handle workspace notifications
-
     let usage = AppUsageClient()
     let wsNotificationCenter = NSWorkspace.shared.notificationCenter
     let distributedNotificationCenter = DistributedNotificationCenter.default()
@@ -115,14 +113,14 @@ class NotificationHandler: NSObject {
         distributedNotificationCenter.removeObserver(self)
     }
 
+    /// Returns a dict with info about an application.
+    /// Args:
+    ///     appObject: NSRunningApplication object
+    /// Returns:
+    ///     appDict: ["bundle_id": str,
+    ///               "path": str,
+    ///               "version": str]
     func getInfoDictForApp(_ appObject: NSRunningApplication) -> [String: String] {
-        // Returns a dict with info about an application.
-        // Args:
-        //     appObject: NSRunningApplication object
-        // Returns:
-        //     appDict: ["bundle_id": str,
-        //               "path": str,
-        //               "version": str]
         var bundleID = ""
         var appPath = ""
         var appVersion = "0"
@@ -159,23 +157,23 @@ class NotificationHandler: NSObject {
         }
     }
 
+    /// Handle NSWorkspaceDidLaunchApplicationNotification
     @objc func didLaunchApplicationNotification(_ notification: NSNotification) {
-        // Handle NSWorkspaceDidLaunchApplicationNotification
         process(event: "launch", notification: notification)
     }
 
+    /// Handle NSWorkspaceDidActivateApplicationNotification
     @objc func didActivateApplicationNotification(_ notification: NSNotification) {
-        // Handle NSWorkspaceDidActivateApplicationNotification
         process(event: "activate", notification: notification)
     }
 
+    /// Handle NSWorkspaceDidTerminateApplicationNotification
     @objc func didTerminateApplicationNotification(_ notification: NSNotification) {
-        // Handle NSWorkspaceDidTerminateApplicationNotification
         process(event: "quit", notification: notification)
     }
 
+    /// Handle com.googlecode.munki.managedsoftwareupdate.installrequest
     @objc func requestedItemForInstall(_ notification: NSNotification) {
-        // Handle com.googlecode.munki.managedsoftwareupdate.installrequest
         if let installInfo = notification.userInfo as? [String: String] {
             let _ = try? usage.process(
                 ["event": installInfo["event"] ?? "unknown",
@@ -199,5 +197,5 @@ func main() {
     }
 }
 
-// run it!
+/// run it!
 main()

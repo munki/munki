@@ -21,8 +21,10 @@
 import Foundation
 import SystemConfiguration
 
+/// A tool that launches the app in arguments in the context of the current user.
+
+/// Return console user (current GUI user)
 func getConsoleUser() -> String {
-    // Return console user
     return SCDynamicStoreCopyConsoleUser(nil, nil, nil) as? String ?? ""
 }
 
