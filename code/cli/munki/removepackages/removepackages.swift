@@ -69,7 +69,8 @@ struct RemovePackages: AsyncParsableCommand {
             throw ExitCode(-1)
         }
 
-        // TODO: actually implement --munkistatusputput and --verbose
+        DisplayOptions.munkistatusoutput = munkiStatusOutput
+        DisplayOptions.verbose = verbose + 1
 
         let returnCode = await removePackages(
             pkgids,
