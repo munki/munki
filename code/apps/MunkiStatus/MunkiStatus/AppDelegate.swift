@@ -41,7 +41,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func blurBackground() {
         blurredBackground = BackgroundBlurrer()
-        window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow) + 1))
     }
 }
 
