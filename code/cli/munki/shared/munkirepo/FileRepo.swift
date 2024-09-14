@@ -30,6 +30,7 @@ protocol Repo {
     func put(_ identifier: String, content: Data) throws
     func put(_ identifier: String, fromFile local_file_path: String) throws
     func delete(_ identifier: String) throws
+    func pathFor(_ identifier: String) -> String?
 }
 
 // MARK: share mounting functions
@@ -285,5 +286,11 @@ class FileRepo: Repo {
     /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
     func delete(_ identifier: String) throws {
         try FileManager.default.removeItem(atPath: fullPath(identifier))
+    }
+
+    /// Returns the filesystem path to the item in the repo
+    /// Non-filesystem Repo sublcasses should implement this but return nil
+    func pathFor(_ identifier: String) -> String? {
+        return fullPath(identifier)
     }
 }
