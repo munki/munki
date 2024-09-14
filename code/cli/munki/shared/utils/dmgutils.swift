@@ -201,7 +201,7 @@ func mountdmg(_ dmgPath: String,
     throw MunkiError("Could not get mountpoint info from results of hdiutil attach \(dmgName)")
 }
 
-/// Unmounts the dmg at mountpoint/
+/// Unmounts the dmg at mountpoint
 func unmountdmg(_ mountpoint: String) {
     var arguments = ["detach", mountpoint]
     let results = runCLI("/usr/bin/hdiutil", arguments: arguments)
