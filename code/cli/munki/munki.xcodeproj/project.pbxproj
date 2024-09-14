@@ -184,6 +184,36 @@
 		C07AED702C67DF6B00DE6119 /* gurl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED6E2C67DF6B00DE6119 /* gurl.swift */; };
 		C07AED722C67F77000DE6119 /* sslerrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED712C67F77000DE6119 /* sslerrors.swift */; };
 		C07AED732C67F77000DE6119 /* sslerrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07AED712C67F77000DE6119 /* sslerrors.swift */; };
+		C0848D1A2C94D1840008B463 /* iconimporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0848D192C94D1840008B463 /* iconimporter.swift */; };
+		C0848D1F2C94D4610008B463 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0848D1E2C94D4610008B463 /* ArgumentParser */; };
+		C0848D202C94D7600008B463 /* FileRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD52C2B7F2100090743 /* FileRepo.swift */; };
+		C0848D212C94D7640008B463 /* GitFileRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364482C2F8EFE008DB215 /* GitFileRepo.swift */; };
+		C0848D222C94D7660008B463 /* RepoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013644C2C30F5D8008DB215 /* RepoFactory.swift */; };
+		C0848D232C94D76A0008B463 /* repoutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FA72C45814F0021DA9C /* repoutils.swift */; };
+		C0848D242C94D7B50008B463 /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
+		C0848D252C94D7B90008B463 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9BE2C409738007F0B34 /* iconutils.swift */; };
+		C0848D262C94D7F00008B463 /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0848D272C94D8060008B463 /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
+		C0848D282C94D8120008B463 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
+		C0848D292C94D8230008B463 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C0848D2A2C94D8360008B463 /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
+		C0848D2B2C94D83E0008B463 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
+		C0848D2C2C94DDA50008B463 /* munkistatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A52C62C12E0019A067 /* munkistatus.swift */; };
+		C0848D2D2C94DDAF0008B463 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
+		C0848D2E2C94DDE30008B463 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
+		C0848D2F2C94DE240008B463 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
+		C0848D302C94ED600008B463 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
+		C0848D312C94EE7A0008B463 /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
+		C0848D322C94EEA60008B463 /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0848D332C94EF010008B463 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B12C3DB88E007F0B34 /* osinstaller.swift */; };
+		C0848D342C94F62C0008B463 /* pkgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E72C34932400B86310 /* pkgutils.swift */; };
+		C0848D352C94F6420008B463 /* versionutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074EA2C34A6AD00B86310 /* versionutils.swift */; };
+		C0848D362C94F6610008B463 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
+		C0848D372C94F68B0008B463 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
+		C0848D382C94F6D10008B463 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
+		C0848D392C94F6D70008B463 /* launchd.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2562C5D391C0019A067 /* launchd.swift */; };
+		C0848D3A2C94F70C0008B463 /* scriptutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A22C61939E0019A067 /* scriptutils.swift */; };
+		C0848D3B2C94F7190008B463 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA22C457E4E0021DA9C /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
@@ -309,6 +339,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		C0848D152C94D1840008B463 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		C0D9C2492C5C5C920019A067 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -413,6 +452,8 @@
 		C07AED6A2C66F56C00DE6119 /* manifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifests.swift; sourceTree = "<group>"; };
 		C07AED6E2C67DF6B00DE6119 /* gurl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gurl.swift; sourceTree = "<group>"; };
 		C07AED712C67F77000DE6119 /* sslerrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sslerrors.swift; sourceTree = "<group>"; };
+		C0848D172C94D1840008B463 /* iconimporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = iconimporter; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0848D192C94D1840008B463 /* iconimporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconimporter.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
@@ -483,6 +524,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0848D142C94D1840008B463 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0848D1F2C94D4610008B463 /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -603,6 +652,7 @@
 				C0D9C24C2C5C5C920019A067 /* app_usage_monitor */,
 				C0D9C28B2C5EDFAE0019A067 /* appusaged */,
 				C0209B902C63E3B7007664A0 /* launchapp */,
+				C0848D182C94D1840008B463 /* iconimporter */,
 				C07A6FA62C2A82B400090743 /* Products */,
 				C01364502C311DFA008DB215 /* Frameworks */,
 			);
@@ -620,6 +670,7 @@
 				C0D9C24B2C5C5C920019A067 /* app_usage_monitor */,
 				C0D9C28A2C5EDFAE0019A067 /* appusaged */,
 				C0209B8F2C63E3B7007664A0 /* launchapp */,
+				C0848D172C94D1840008B463 /* iconimporter */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -737,6 +788,14 @@
 				C01792D82C6EC09C008CBC22 /* urls.swift */,
 			);
 			path = network;
+			sourceTree = "<group>";
+		};
+		C0848D182C94D1840008B463 /* iconimporter */ = {
+			isa = PBXGroup;
+			children = (
+				C0848D192C94D1840008B463 /* iconimporter.swift */,
+			);
+			path = iconimporter;
 			sourceTree = "<group>";
 		};
 		C0D9C24C2C5C5C920019A067 /* app_usage_monitor */ = {
@@ -893,6 +952,26 @@
 			productReference = C07A6FC42C2B5C0700090743 /* makecatalogs */;
 			productType = "com.apple.product-type.tool";
 		};
+		C0848D162C94D1840008B463 /* iconimporter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0848D1D2C94D1840008B463 /* Build configuration list for PBXNativeTarget "iconimporter" */;
+			buildPhases = (
+				C0848D132C94D1840008B463 /* Sources */,
+				C0848D142C94D1840008B463 /* Frameworks */,
+				C0848D152C94D1840008B463 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iconimporter;
+			packageProductDependencies = (
+				C0848D1E2C94D4610008B463 /* ArgumentParser */,
+			);
+			productName = iconimporter;
+			productReference = C0848D172C94D1840008B463 /* iconimporter */;
+			productType = "com.apple.product-type.tool";
+		};
 		C0D9C24A2C5C5C920019A067 /* app_usage_monitor */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C0D9C24F2C5C5C920019A067 /* Build configuration list for PBXNativeTarget "app_usage_monitor" */;
@@ -978,6 +1057,9 @@
 					C07A6FC32C2B5C0700090743 = {
 						CreatedOnToolsVersion = 15.4;
 					};
+					C0848D162C94D1840008B463 = {
+						CreatedOnToolsVersion = 15.4;
+					};
 					C0D9C24A2C5C5C920019A067 = {
 						CreatedOnToolsVersion = 15.4;
 					};
@@ -1014,6 +1096,7 @@
 				C0D9C24A2C5C5C920019A067 /* app_usage_monitor */,
 				C0D9C2892C5EDFAE0019A067 /* appusaged */,
 				C0209B8E2C63E3B7007664A0 /* launchapp */,
+				C0848D162C94D1840008B463 /* iconimporter */,
 			);
 		};
 /* End PBXProject section */
@@ -1272,6 +1355,42 @@
 				C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */,
 				C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */,
 				C0D00FA22C457E4E0021DA9C /* display.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0848D132C94D1840008B463 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0848D2C2C94DDA50008B463 /* munkistatus.swift in Sources */,
+				C0848D352C94F6420008B463 /* versionutils.swift in Sources */,
+				C0848D392C94F6D70008B463 /* launchd.swift in Sources */,
+				C0848D252C94D7B90008B463 /* iconutils.swift in Sources */,
+				C0848D322C94EEA60008B463 /* version.swift in Sources */,
+				C0848D362C94F6610008B463 /* ODutils.swift in Sources */,
+				C0848D3A2C94F70C0008B463 /* scriptutils.swift in Sources */,
+				C0848D332C94EF010008B463 /* osinstaller.swift in Sources */,
+				C0848D382C94F6D10008B463 /* bootstrapping.swift in Sources */,
+				C0848D342C94F62C0008B463 /* pkgutils.swift in Sources */,
+				C0848D302C94ED600008B463 /* dmgutils.swift in Sources */,
+				C0848D272C94D8060008B463 /* plistutils.swift in Sources */,
+				C0848D2F2C94DE240008B463 /* admincommon.swift in Sources */,
+				C0848D372C94F68B0008B463 /* info.swift in Sources */,
+				C0848D2A2C94D8360008B463 /* display.swift in Sources */,
+				C0848D212C94D7640008B463 /* GitFileRepo.swift in Sources */,
+				C0848D282C94D8120008B463 /* constants.swift in Sources */,
+				C0848D2B2C94D83E0008B463 /* munkilog.swift in Sources */,
+				C0848D2E2C94DDE30008B463 /* reports.swift in Sources */,
+				C0848D2D2C94DDAF0008B463 /* prefs.swift in Sources */,
+				C0848D312C94EE7A0008B463 /* utils.swift in Sources */,
+				C0848D242C94D7B50008B463 /* fileutils.swift in Sources */,
+				C0848D3B2C94F7190008B463 /* osutils.swift in Sources */,
+				C0848D1A2C94D1840008B463 /* iconimporter.swift in Sources */,
+				C0848D262C94D7F00008B463 /* errors.swift in Sources */,
+				C0848D222C94D7660008B463 /* RepoFactory.swift in Sources */,
+				C0848D292C94D8230008B463 /* cliutils.swift in Sources */,
+				C0848D202C94D7600008B463 /* FileRepo.swift in Sources */,
+				C0848D232C94D76A0008B463 /* repoutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1616,6 +1735,30 @@
 			};
 			name = Release;
 		};
+		C0848D1B2C94D1840008B463 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 52ZFZKM6BK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C0848D1C2C94D1840008B463 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 52ZFZKM6BK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		C0D9C2502C5C5C920019A067 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1752,6 +1895,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C0848D1D2C94D1840008B463 /* Build configuration list for PBXNativeTarget "iconimporter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0848D1B2C94D1840008B463 /* Debug */,
+				C0848D1C2C94D1840008B463 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C0D9C24F2C5C5C920019A067 /* Build configuration list for PBXNativeTarget "app_usage_monitor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1793,6 +1945,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C0848D1E2C94D4610008B463 /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
 		C0E994192C5C10E1006FDF44 /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
