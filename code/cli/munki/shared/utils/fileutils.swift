@@ -72,6 +72,15 @@ class TempDir {
     }
 }
 
+/// Returns a path to use for a temporary file
+func tempFile() -> String? {
+    guard let tempDir = TempDir.shared.path else {
+        return nil
+    }
+    let basename = UUID().uuidString
+    return (tempDir as NSString).appendingPathComponent(basename)
+}
+
 /// Returns true if path exists/
 func pathExists(_ path: String) -> Bool {
     return FileManager.default.fileExists(atPath: path)
