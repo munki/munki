@@ -285,7 +285,11 @@ struct IconImporter: ParsableCommand {
 
     mutating func validate() throws {
         if repoURL.isEmpty, repoPath.isEmpty {
-            throw ValidationError("Must specify a repo URL or repo path!")
+            if let prefsRepoURL = adminPref("repo_url") as? String {
+                repoURL = prefsRepoURL
+            } else {
+                throw ValidationError("Must specify a repo URL or repo path!")
+            }
         }
         if repoURL.isEmpty {
             // repoPath must be defined
