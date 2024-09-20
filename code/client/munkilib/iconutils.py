@@ -124,6 +124,15 @@ def extractAppBitsFromPkgArchive(archive_path, target_dir):
                '*.app/Contents/Info.plist',
                '*.app/Contents/Resources/*.icns']
         result = subprocess.call(cmd)
+        if result != 0:
+            # pax failed. Maybe Apple Archive format?
+            cmd = ["/usr/bin/aa", "extract",
+                   "-i", archive_path,
+                   "-include-regex", "\\.app/Contents/Info.plist",
+                   "-include-regex", "\\.app/Contents/Resources/.*\\.icns",
+                   "-d", "."
+            ]
+            result = subprocess.call(cmd)
         os.chdir(original_dir)
     return result
 
