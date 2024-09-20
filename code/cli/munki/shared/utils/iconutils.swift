@@ -133,13 +133,24 @@ func extractAppBitsFromPkgArchive(_ archivePath: String, exportDir: String) -> I
     let filemanager = FileManager.default
     let originalWorkingDir = filemanager.currentDirectoryPath
     filemanager.changeCurrentDirectoryPath(exportDir)
-    let result = runCLI(
+    var result = runCLI(
         "/bin/pax",
         arguments: ["-rzf",
                     archivePath,
                     "*.app/Contents/Info.plist",
                     "*.app/Contents/Resources/*.icns"]
     )
+    if result.exitcode != 0 {
+        // pax failed. Maybe this Payload is an Apple Archive
+        result = runCLI(
+            "/usr/bin/aa",
+            arguments: ["extract",
+                        "-i", archivePath,
+                        "-include-regex", "\\.app/Contents/Info.plist",
+                        "-include-regex", "\\.app/Contents/Resources/.*\\.icns",
+                        "-d", "."]
+        )
+    }
     filemanager.changeCurrentDirectoryPath(originalWorkingDir)
     return result.exitcode
 }
