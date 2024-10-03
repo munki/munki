@@ -70,6 +70,10 @@ struct MunkiImport: AsyncParsableCommand {
         if munkiImportOptions.version {
             return
         }
+        
+        if munkiImportOptions.configure {
+            return
+        }
 
         // validate installerItem
         if installerItem.isEmpty {
@@ -99,6 +103,18 @@ struct MunkiImport: AsyncParsableCommand {
             print(getVersion())
             return
         }
+        
+        if munkiImportOptions.configure {
+            let promptList = [
+                ("repo_url", "Repo URL (example: afp://munki.example.com/repo)"),
+                ("pkginfo_extension", "pkginfo extension (Example: .plist)"),
+                ("editor", "pkginfo editor (examples: /usr/bin/vi or TextMate.app; leave empty to not open an editor after import)"),
+                ("default_catalog", "Default catalog to use (example: testing)"),
+                ("plugin", "Repo access plugin (defaults to FileRepo)")
+            ]
+            configure(promptList: promptList)
+            return
+        }
 
         var pkginfoOptions = PkginfoOptions(
             override: overrideOptions,
@@ -111,11 +127,6 @@ struct MunkiImport: AsyncParsableCommand {
             other: additionalOptions,
             hidden: hiddenOptions
         )
-
-        if munkiImportOptions.configure {
-            // configure()
-            return
-        }
 
         if pathIsDirectory(installerItem) {
             let dmgPath = await makeDmg(installerItem)
