@@ -32,10 +32,11 @@ let EXIT_STATUS_SERVER_UNAVAILABLE: Int32 = 150
 let EXIT_STATUS_INVALID_PARAMETERS: Int32 = 200
 let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
-let BUNDLE_ID = "ManagedInstalls" as CFString
 #if DEBUG
+    let BUNDLE_ID = "ManagedInstallsDebug" as CFString
     let DEFAULT_MANAGED_INSTALLS_DIR = "/Users/Shared/Managed Installs"
 #else
+    let BUNDLE_ID = "ManagedInstalls" as CFString
     let DEFAULT_MANAGED_INSTALLS_DIR = "/Library/Managed Installs"
 #endif
 let DEFAULT_GUI_CACHE_AGE_SECS = 3600
