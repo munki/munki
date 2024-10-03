@@ -35,6 +35,29 @@ func adminPref(_ pref_name: String) -> Any? {
     return CFPreferencesCopyAppValue(pref_name as CFString, ADMIN_BUNDLE_ID)
 }
 
+/// Sets a preference, writing it to ~/Library/Preferences/com.googlecode.munki.munkiimport.plist.
+func setAdminPref(_ prefName: String, _ prefValue: Any?) {
+    if let key = prefName as CFString? {
+        if prefValue == nil {
+            CFPreferencesSetValue(
+                key, nil, ADMIN_BUNDLE_ID,
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost
+            )
+            CFPreferencesAppSynchronize(BUNDLE_ID)
+        } else if let value = prefValue as CFPropertyList? {
+            CFPreferencesSetValue(
+                key, value, ADMIN_BUNDLE_ID,
+                kCFPreferencesAnyUser, kCFPreferencesCurrentHost
+            )
+            CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
+        } else {
+            // raise error about illegal value?
+        }
+    } else {
+        // raise error about illegal key?
+    }
+}
+
 /// Adds `count` spaces to the start of `str`
 func leftPad(_ str: String, _ count: Int) -> String {
     if str.count < count {
