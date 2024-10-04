@@ -184,6 +184,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         // make sure we're frontmost
         NSApp.activate(ignoringOtherApps: true)
+
+      // If the window is not on the active space, force a space switch.
+      // Return early, before locking down the presentation options. This will let the run loop spin, allowing
+      // the space switch to occur. When the window becomes key, `makeUsObnoxious` will be called again.
+      // On the second invocation, the window will be on the active space and this block will be skipped.
+      if let window = self.window {
+          if (!window.isOnActiveSpace) {
+              NSApp.activate(ignoringOtherApps: true)
+              window.orderFrontRegardless()
+              return
+          }
+      }
         
         // make it very difficult to switch away from this app
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
@@ -497,6 +509,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func windowDidResignMain(_ notification: Notification) {
         // Our window was deactivated, make sure controls enabled as needed
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        // If we just became key, enforce obnoxious mode if required.
+        if _obnoxiousNotificationMode {
+            makeUsObnoxious()
+        }
     }
     
     // End NSWindowDelegate methods
