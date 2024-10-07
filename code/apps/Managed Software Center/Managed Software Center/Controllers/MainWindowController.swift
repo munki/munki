@@ -125,28 +125,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         return sidebar.selectedRow == 3
     }
 
-    func newTranslucentWindow(screen: NSScreen) -> NSWindow {
-        // makes a translucent masking window we use to prevent interaction with
-        // other apps
-        var windowRect = screen.frame
-        windowRect.origin = NSMakePoint(0.0, 0.0)
-        let thisWindow = NSWindow(
-            contentRect: windowRect,
-            styleMask: .borderless,
-            backing: .buffered,
-            defer: false,
-            screen: screen
-        )
-        thisWindow.level = .normal
-        thisWindow.backgroundColor = NSColor.black.withAlphaComponent(0.50)
-        thisWindow.isOpaque = false
-        thisWindow.ignoresMouseEvents = false
-        thisWindow.alphaValue = 0.0
-        thisWindow.orderFrontRegardless()
-        thisWindow.animator().alphaValue = 1.0
-        return thisWindow
-    }
-
     func blurBackground() {
         blurredBackground = BackgroundBlurrer()
         if let window = self.window {
