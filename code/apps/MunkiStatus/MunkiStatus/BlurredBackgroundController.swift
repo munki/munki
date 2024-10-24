@@ -23,6 +23,7 @@ class BlurWindowController: NSWindowController {
         self.window?.contentViewController = BlurViewController()
         if let screen {
             self.window?.setFrame((screen.frame), display: true)
+            self.window?.setFrameOrigin(screen.frame.origin)
         }
         self.window?.collectionBehavior = [.canJoinAllSpaces]
         if atLoginWindow() {
