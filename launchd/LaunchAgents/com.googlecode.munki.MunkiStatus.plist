@@ -24,7 +24,7 @@
 	</array>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
+		<string>/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/MacOS/MunkiStatus</string>
 	</array>
 </dict>
 </plist>

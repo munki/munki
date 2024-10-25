@@ -43,6 +43,8 @@ from Foundation import kCFPreferencesCurrentHost
 from .constants import BUNDLE_ID
 from .wrappers import is_a_string
 
+from . import FoundationPlist
+
 #####################################################
 # managed installs preferences/metadata
 #####################################################
@@ -278,6 +280,27 @@ def get_config_level(domain, pref_name, value):
         return '[default]'
     return '[unknown]'
 
+
+def print_config_plist():
+    '''Prints the current Munki configuration in plist format'''
+    output = []
+    for pref_name in sorted(DEFAULT_PREFS):
+        if pref_name == 'LastNotifiedDate':
+            # skip it
+            continue
+        else:
+            value = pref(pref_name)
+            where = get_config_level(BUNDLE_ID, pref_name, value)
+        if value is None:
+            value = "None"
+        
+        if where.startswith('[') and where.endswith(']'):
+            where = where[1:-1]
+
+        item = {'preference': pref_name, 'value': value, 'source': where}
+        output.append(item)
+    
+    print(FoundationPlist.writePlistToString(output).decode('UTF-8'))
 
 def print_config():
     '''Prints the current Munki configuration'''

@@ -114,13 +114,6 @@ def check(client_id='', localmanifestpath=None):
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
 
-        # record info object for conditional item comparisons
-        reports.report['Conditions'] = info.predicate_info_object()
-        # remove application data, because that's recorded elsewhere,
-        # and it's generally a _lot_ of data
-        if 'applications' in reports.report['Conditions']:
-            del reports.report['Conditions']['applications']
-
         # remove any staged os installer info we have; we'll check and
         # recreate if still valid
         osinstaller.remove_staged_os_installer_info()
@@ -377,6 +370,17 @@ def check(client_id='', localmanifestpath=None):
         # record the filtered lists
         reports.report['ItemsToInstall'] = installinfo['managed_installs']
         reports.report['ItemsToRemove'] = installinfo['removals']
+
+        # record info object for conditional item comparisons
+        reports.report['Conditions'] = {}
+        # copy everything except applications data
+        for key, value in info.predicate_info_object().items():
+            if key != 'applications':
+                reports.report['Conditions'][key] = value
+        # make sure recorded catalogs are those for the primary manifest
+        # as this list can change with included manifests
+        reports.report['Conditions']['catalogs'] = get_primary_manifest_catalogs(
+            client_id=client_id)
 
         # clean up catalogs directory
         catalogs.clean_up()

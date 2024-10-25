@@ -274,7 +274,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
-        'installer_item_size', iteminfo['installer_item_size'])
+        'installed_size', iteminfo['installer_item_size'])
     if item_pl.get('note'):
         # catalogs.get_item_detail() passed us a note about this item;
         # pass it along
@@ -855,35 +855,45 @@ def process_removal(manifestitem, cataloglist, installinfo):
     # should use that item to do the removal
     uninstall_item = None
     packages_to_remove = []
-    # check for uninstall info
-    # and grab the first uninstall method we find.
-    if found_item.get('uninstallable') and 'uninstall_method' in found_item:
-        uninstallmethod = found_item['uninstall_method']
-        if uninstallmethod == 'removepackages':
-            packages_to_remove = get_receipts_to_remove(found_item)
-            if packages_to_remove:
-                uninstall_item = found_item
-        elif uninstallmethod.startswith('Adobe'):
-            # Adobe CS3/CS4/CS5/CS6/CC product
-            uninstall_item = found_item
-        elif uninstallmethod in ['remove_copied_items',
-                                 'remove_app',
-                                 'uninstall_script',
-                                 'remove_profile',
-                                 'uninstall_package']:
+    uninstallmethod = found_item.get('uninstall_method')
+    # check for uninstall info and find an uninstall method.
+    if not found_item.get('uninstallable'):
+        display.display_warning('Item %s is not marked as uninstallable.',
+                                manifestitemname_withversion)
+    elif not uninstallmethod:
+        display.display_warning('No uninstall_method in %s',
+                                manifestitemname_withversion)
+    elif uninstallmethod == 'removepackages':
+        packages_to_remove = get_receipts_to_remove(found_item)
+        if packages_to_remove:
             uninstall_item = found_item
         else:
-            # uninstall_method is a local script.
-            # Check to see if it exists and is executable
-            if os.path.exists(uninstallmethod) and \
-               os.access(uninstallmethod, os.X_OK):
-                uninstall_item = found_item
+            display.display_warning(
+                'uninstall_method for %s is removepackages, but no packages '
+                'found to remove', manifestitemname_withversion)
+    elif uninstallmethod.startswith('Adobe'):
+        # Adobe CS3/CS4/CS5/CS6/CC product
+        uninstall_item = found_item
+    elif uninstallmethod in [
+            'remove_copied_items',
+            'remove_app',
+            'uninstall_script',
+            'remove_profile',
+            'uninstall_package']:
+        uninstall_item = found_item
+    else:
+        # uninstall_method is a local script.
+        # Check to see if it exists and is executable
+        if (os.path.exists(uninstallmethod) and
+                os.access(uninstallmethod, os.X_OK)):
+            uninstall_item = found_item
+        else:
+            display.display_warning(
+                'uninstall_method "%s" in %s is not a valid method.',
+                uninstallmethod, manifestitemname_withversion)
 
     if not uninstall_item:
-        # the uninstall info for the item couldn't be matched
-        # to what's on disk
-        display.display_warning('Could not find uninstall info for %s.',
-                                manifestitemname_withversion)
+        # Could not find usable uninstall_method
         return False
 
     # if we got this far, we have enough info to attempt an uninstall.
@@ -995,7 +1005,7 @@ def process_removal(manifestitem, cataloglist, installinfo):
             # so we only remove packages if we're the last reference to it
             if pkg in pkgdata['pkg_references']:
                 msg = ('Package %s references are: %s'
-                       % pkg, pkgdata['pkg_references'][pkg])
+                       % (pkg, pkgdata['pkg_references'][pkg]))
                 display.display_debug1(msg)
                 # record these for possible later use
                 pkg_references_messages.append(msg)

@@ -1,22 +1,19 @@
 #!/bin/sh
 
-# Lovingly adapted from Per Olofsson
-# https://github.com/MagerValp/Scripted-Mac-Package-Creation/blob/master/scripts/postinstall
+#
+# this postinstall should run installhelper in the background, with it then waiting until
+# managedsoftwareupdate isn't running and then (re)load Munki's appusage launchditems items as needed
+#
 
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin
-
-# Execute postinstall actions if we're installing on a live system.
-# This is useful for loading launch daemons and agents.
-if [ "$3" = "/" ]; then
-
-    # Run postinstall actions for root.
-    launchctl bootstrap system/ /Library/LaunchDaemons/com.googlecode.munki.appusaged.plist
-
-    # Run postinstall actions for all logged in users.
-    for uid in $(ps -axo uid,args | grep "/[F]inder.app/" | awk '{print $1}'); do
-        launchctl bootstrap gui/"$uid"/ /Library/LaunchAgents/com.googlecode.munki.app_usage_monitor.plist
-    done
-
+# Only execute postinstall actions if we're installing on a live system.
+if [ "$3" = "/" ]
+then
+    installHelper='/usr/local/munki/installhelper'
+    if [ -f  "${installHelper}" ]
+    then
+        /bin/echo "Loading ${installHelper}..."
+        "${installHelper}" appusage &
+    else
+        /bin/echo "Cannot locate: ${installHelper}..."
+    fi
 fi
-
-exit 0

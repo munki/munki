@@ -20,7 +20,7 @@
 	<array>
 		<string>/usr/local/munki/launchapp</string>
 		<string>-a</string>
-		<string>/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app</string>
+		<string>/Applications/Managed Software Center.app/Contents/Helpers/munki-notifier.app</string>
 	</array>
 </dict>
 </plist>

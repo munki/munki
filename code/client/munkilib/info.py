@@ -44,6 +44,7 @@ from Foundation import NSString, NSUTF8StringEncoding
 # pylint: enable=E0611
 
 # our libs
+from . import dateutils
 from . import display
 from . import munkilog
 from . import osutils
@@ -931,8 +932,8 @@ def predicate_info_object():
     # and add the timezone offset to it so we can compare
     # UTC dates as though they were local dates.
     info_object['date'] = add_tzoffset_to_date(
-        NSDate.dateWithString_(
-            reports.report.get('StartTime', reports.format_time())))
+        dateutils.dateFromString(
+            reports.report.get('StartTime', dateutils.format_timestamp())))
     # split os version into components for easier predicate comparison
     os_vers = machine['os_vers']
     os_vers = os_vers + '.0.0'

@@ -31,7 +31,6 @@ import optparse
 import os
 import re
 import sys
-import time
 
 # Apple frameworks via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -43,6 +42,7 @@ from Foundation import NSDate, NSUserName
 # our libs
 from .common import AttributeDict
 
+from .. import dateutils
 from .. import dmgutils
 from .. import info
 from .. import munkihash
@@ -73,26 +73,6 @@ created so we have a bit of an audit trail. Returns a dictionary.'''
     metadata['munki_version'] = info.get_version()
     metadata['os_version'] = osutils.getOsVersion(only_major_minor=False)
     return metadata
-
-
-def convert_date_string_to_nsdate(datetime_string):
-    '''Converts a string in the "2013-04-25T20:00:00Z" format or
-    "2013-04-25 20:00:00 +0000" format to an NSDate'''
-    nsdate_format = '%Y-%m-%dT%H:%M:%SZ'
-    iso_format = '%Y-%m-%d %H:%M:%S +0000'
-    fallback_format = '%Y-%m-%d %H:%M:%S'
-    try:
-        tobj = time.strptime(datetime_string, nsdate_format)
-    except ValueError:
-        try:
-            tobj = time.strptime(datetime_string, iso_format)
-        except ValueError:
-            try:
-                tobj = time.strptime(datetime_string, fallback_format)
-            except ValueError:
-                return None
-    iso_date_string = time.strftime(iso_format, tobj)
-    return NSDate.dateWithString_(iso_date_string)
 
 
 def get_catalog_info_from_path(pkgpath, options):
@@ -701,8 +681,7 @@ def makepkginfo(installeritem, options):
     if options.arch:
         pkginfo['supported_architectures'] = options.arch
     if options.force_install_after_date:
-        date_obj = convert_date_string_to_nsdate(
-            options.force_install_after_date)
+        date_obj = dateutils.dateFromString(options.force_install_after_date)
         if date_obj:
             pkginfo['force_install_after_date'] = date_obj
         else:

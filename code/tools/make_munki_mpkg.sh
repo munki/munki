@@ -102,7 +102,7 @@ do
         "A")
             AUTORUNPKG=YES
             ;;
-        "R") 
+        "R")
             ROSETTA2=YES
             ;;
         "T")
@@ -508,7 +508,7 @@ mkdir -m 755 "$ADMINROOT/usr/local"
 mkdir -m 755 "$ADMINROOT/usr/local/munki"
 # Copy command line admin utilities.
 # edit this if list of tools changes!
-for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean
+for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean installhelper
 do
 	cp -X "$MUNKIROOT/code/client/$TOOL" "$ADMINROOT/usr/local/munki/" 2>&1
 done
@@ -544,10 +544,12 @@ mkdir -m 1775 "$APPROOT"
 mkdir -m 775 "$APPROOT/Applications"
 # Copy Managed Software Center application.
 cp -R "$MSCAPP" "$APPROOT/Applications/"
+# Create Helper directory
+mkdir -m 775 "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # Copy MunkiStatus helper app
-cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+cp -R "$MSAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # Copy notifier helper app
-cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/"
+cp -R "$NOTIFIERAPP" "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/"
 # make sure not writeable by group or other
 chmod -R go-w "$APPROOT/Applications/Managed Software Center.app"
 
@@ -556,7 +558,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
     echo "Signing Managed Software Center.app Bundles..."
     /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose \
         "$APPROOT/Applications/Managed Software Center.app/Contents/PlugIns/MSCDockTilePlugin.docktileplugin" \
-        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/munki-notifier.app"
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/munki-notifier.app"
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
         echo "Error signing Managed Software Center.app: $SIGNING_RESULT"
@@ -564,7 +566,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
     fi
 
     echo "Signing MunkiStatus.app Frameworks..."
-    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
         echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
@@ -580,7 +582,7 @@ if [ "$APPSIGNINGCERT" != "" ]; then
 
     echo "Signing Managed Software Center.app..."
     /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose \
-        "$APPROOT/Applications/Managed Software Center.app/Contents/Resources/MunkiStatus.app" \
+        "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app" \
         "$APPROOT/Applications/Managed Software Center.app"
     SIGNING_RESULT="$?"
     if [ "$SIGNING_RESULT" -ne 0 ]; then
@@ -622,7 +624,7 @@ if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
 fi
 
 # Create package info file.
-makeinfo launchd "$PKGTMP/info" restart
+makeinfo launchd "$PKGTMP/info" norestart
 
 
 #######################
@@ -746,7 +748,7 @@ if [ "$AUTORUNPKG" == "YES" ] ; then
 
     # Create package info file.
     makeinfo autorun "$PKGTMP/info" norestart
-    
+
 fi
 
 
@@ -914,18 +916,6 @@ cat > "$DISTFILE" <<EOF
             <os-version min="10.13"/>
         </allowed-os-versions>
     </volume-check>
-    <script>
-    <![CDATA[
-    function launchdRestartAction() {
-      var launchd_choice = choices.launchd.packageUpgradeAction
-      if (launchd_choice == "upgrade" || launchd_choice == "downgrade") {
-          return "RequireRestart";
-      } else {
-          return "None";
-      }
-    }
-    ]]>
-    </script>
     <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>
     <domains enable_anywhere="true"/>
     <choices-outline>
@@ -933,9 +923,9 @@ cat > "$DISTFILE" <<EOF
         <line choice="core"/>
         <line choice="admin"/>
         <line choice="app"/>
-        <line choice="launchd"/>
         <line choice="app_usage"/>
         <line choice="python"/>
+        <line choice="launchd"/>
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
         $CLIENTCERTOUTLINE
@@ -951,14 +941,14 @@ cat > "$DISTFILE" <<EOF
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC" start_selected='my.choice.packageUpgradeAction != "installed"'>
-        <pkg-ref id="$PKGID.launchd"/>
-    </choice>
     <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
         <pkg-ref id="$PKGID.app_usage"/>
     </choice>
     <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
         <pkg-ref id="$PKGID.python"/>
+    </choice>
+    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
+        <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $BOOTSTRAPCHOICE
     $CONFCHOICE
@@ -968,9 +958,9 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.launchd" auth="Root" onConclusionScript="launchdRestartAction()">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
-    <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.python" auth="Root">${PKGPREFIX}munkitools_python.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
     $BOOTSTRAPREF
     $CONFREF
     $CLIENTCERTREF

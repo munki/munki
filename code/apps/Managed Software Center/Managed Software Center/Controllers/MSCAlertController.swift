@@ -184,7 +184,7 @@ class MSCAlertController: NSObject {
             timers.append(timer2)
             let timer3 = Timer.scheduledTimer(timeInterval: 14.5,
                                               target: self,
-                                              selector: #selector(self.fadeOutBackdropWindows),
+                                              selector: #selector(self.removeBlurredBackground),
                                               userInfo: nil,
                                               repeats: false)
             timers.append(timer3)
@@ -213,6 +213,13 @@ class MSCAlertController: NSObject {
     
     @objc func openSoftwareUpdate() {
         // object method to call openSoftwareUpdatePrefsPane function
+        if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController,
+           let blurredBackground = mainWindowController.blurredBackground
+        {
+            // lower the level of our blur windows so the Software Update
+            // pane can appear in front
+            blurredBackground.lowerWindowLevels()
+        }
         openSoftwareUpdatePrefsPane()
         self.haveOpenedSysPrefsSUPane = true
     }
@@ -224,11 +231,10 @@ class MSCAlertController: NSObject {
         }
     }
     
-    @objc func fadeOutBackdropWindows() {
-        // fades out the windows that block access to other apps
-        let backdropWindows = (NSApp.delegate! as! AppDelegate).mainWindowController.backdropWindows
-        for window in backdropWindows {
-            window.animator().alphaValue = 0.0
+    @objc func removeBlurredBackground() {
+        // removes the blurred background so other apps can be accessed
+        if (NSApp.delegate! as! AppDelegate).mainWindowController.blurredBackground != nil {
+            (NSApp.delegate! as! AppDelegate).mainWindowController.blurredBackground = nil
         }
     }
 

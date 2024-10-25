@@ -34,8 +34,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var user_warned_about_extra_updates = false
     var forceFrontmost = false
     
-    var backdropWindows: [NSWindow] = []
-    
     // Cocoa UI binding properties
     
     @IBOutlet weak var navigateBackButton: NSButton!
@@ -58,7 +56,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var webViewContainer: NSView!
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
+    
+    var blurredBackground: BackgroundBlurrer?
 
+    
     override func windowDidLoad() {
         super.windowDidLoad()
     }
@@ -145,14 +146,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         thisWindow.animator().alphaValue = 1.0
         return thisWindow
     }
-    
-    func displayBackdropWindows() {
-        if backdropWindows.count == 0 {
-            for screen in NSScreen.screens {
-                let newWindow = newTranslucentWindow(screen: screen)
-                // add to our backdropWindows array so a reference stays around
-                backdropWindows.append(newWindow)
-            }
+
+    func blurBackground() {
+        blurredBackground = BackgroundBlurrer()
+        if let window = self.window {
+            window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow) + 1))
         }
     }
     
@@ -164,10 +162,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.subtracting(
             NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
         
-        for window in self.backdropWindows {
-            window.orderOut(self)
-        }
-        backdropWindows = []
+        // remove blurred background
+        blurredBackground = nil
 
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
@@ -210,8 +206,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // set flag to cause us to always be brought to front
         self.forceFrontmost = true
         
-        // create translucent windows to mask all other apps
-        displayBackdropWindows()
+        // blur everything behind the MSC window
+        blurBackground()
+
+        // seems redundant, but ensures the window is visible
+        // in front of the blurred background even if it was minimized
+        // previously
+        self.showWindow(self)
     }
     
     func weShouldBeObnoxious() -> Bool {
@@ -982,8 +983,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // we can't remove them directly since we didn't actually post them
         // so we can't use
         // NSUserNotificationCenter.default.removeAllDeliveredNotifications()
-        let munkiNotifierPath = Bundle.main.path(forResource: "munki-notifier", ofType: "app")
-        if let munkiNotifierPath = munkiNotifierPath {
+        let munkiNotifierPath = Bundle.main.bundlePath + "/Contents/Helpers/munki-notifier.app"
+        if FileManager.default.fileExists(atPath: munkiNotifierPath) {
             NSLog("munki-notifier path: %@", munkiNotifierPath as String)
             // now make sure it's not already running
             let executablePath = munkiNotifierPath + "/Contents/MacOS/munki-notifier"
