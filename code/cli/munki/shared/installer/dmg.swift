@@ -145,19 +145,6 @@ func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool,
     return (true, sourceItemPath, fullDestinationPath)
 }
 
-/// Recursively gets size of pathname in bytes
-func getSize(_ path: String) -> Int {
-    if pathIsDirectory(path) {
-        return getSizeOfDirectory(path)
-    }
-    if pathIsRegularFile(path) {
-        if let attributes = try? FileManager.default.attributesOfItem(atPath: path) {
-            return Int((attributes as NSDictionary).fileSize())
-        }
-    }
-    return 0
-}
-
 /// Subclass of AsyncProcessRunner that handles the progress output from /usr/bin/ditto
 class DittoRunner: AsyncProcessRunner {
     var remainingErrorOutput = ""
