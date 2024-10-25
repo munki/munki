@@ -26,6 +26,8 @@ func defaultLogger(_ message: String) {
     print(message)
 }
 
+let GURL_XATTR = "com.googlecode.munki.downloadData"
+
 /// Some options used by Gurl
 struct GurlOptions {
     var url: String
@@ -45,7 +47,6 @@ struct GurlOptions {
 
 /// A class for getting content from a URL using NSURLSession and friends
 class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
-    let GURL_XATTR = "com.googlecode.munki.downloadData"
 
     var options: GurlOptions
     var resume = false
