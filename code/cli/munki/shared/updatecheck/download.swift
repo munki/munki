@@ -368,7 +368,7 @@ func precache() {
 }
 
 /// Discard precached items to free up space for managed installs
-func uncache(_: Int) {
+func uncache(_ spaceNeededInKB: Int) {
     guard let installInfo = getInstallInfo() else {
         return
     }
@@ -394,5 +394,41 @@ func uncache(_: Int) {
         return
     }
 
-    // TODO: actually remove items!
+    var precachedSize = 0
+    var itemsWithSize = [(String, Int)]()
+    for item in precachedItems {
+        let itemPath = (cacheDir as NSString).appendingPathComponent(item)
+        let itemSize = getSize(itemPath) / 1024
+        precachedSize += itemSize
+        itemsWithSize.append((itemPath, itemSize))
+    }
+
+    if precachedSize < spaceNeededInKB {
+        // we can't clear enough space, so don't bother removing anything.
+        // otherwise we'll clear some space, but still can't download the large
+        // managed install, but then we'll have enough space to redownload the
+        // precachable items and so we will (and possibly do this over and
+        // over -- delete some, redownload, delete some, redownload...)
+        return
+    }
+
+    // sort by size; smallest first
+    itemsWithSize.sort {
+        $0.1 < $1.1
+    }
+    var deletedKB = 0
+    let filemanager = FileManager.default
+    for (path, size) in itemsWithSize {
+        // we delete the smallest item first, proceeeding until
+        // we've freed up enough space or deleted all the items
+        if deletedKB >= spaceNeededInKB {
+            break
+        }
+        do {
+            try filemanager.removeItem(atPath: path)
+            deletedKB += size
+        } catch {
+            displayError("Could not remove precached item \(path): \(error.localizedDescription)")
+        }
+    }
 }
