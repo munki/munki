@@ -47,7 +47,6 @@ struct GurlOptions {
 
 /// A class for getting content from a URL using NSURLSession and friends
 class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
-
     var options: GurlOptions
     var resume = false
     var headers: [String: String]? = nil
