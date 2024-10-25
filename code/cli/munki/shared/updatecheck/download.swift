@@ -329,8 +329,6 @@ func downloadCatalog(_ catalogName: String) -> String? {
     return nil
 }
 
-// TODO: precaching support (in progress)
-
 /// Returns a list of items from InstallInfo.plist's optional_installs
 /// that have precache=true and (installed=false or needs_update=true)
 private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
