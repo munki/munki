@@ -131,7 +131,15 @@ func pathIsExecutableFile(_ path: String) -> Bool {
     return false
 }
 
-/// Returns size of directory in Kbytes by recursively adding
+/// Returns size of file in bytes
+func getSizeOfFile(_ path: String) -> Int {
+    if let attributes = try? FileManager.default.attributesOfItem(atPath: path) {
+        return Int((attributes as NSDictionary).fileSize())
+    }
+    return 0
+}
+
+/// Returns size of directory in bytes by recursively adding
 /// up the size of all files within
 func getSizeOfDirectory(_ path: String) -> Int {
     var totalSize = 0
@@ -147,6 +155,17 @@ func getSizeOfDirectory(_ path: String) -> Int {
         }
     }
     return totalSize
+}
+
+/// Recursively gets size of pathname in bytes
+func getSize(_ path: String) -> Int {
+    if pathIsDirectory(path) {
+        return getSizeOfDirectory(path)
+    }
+    if pathIsRegularFile(path) {
+        return getSizeOfFile(path)
+    }
+    return 0
 }
 
 // Returns absolute path to item referred to by path
