@@ -8,7 +8,7 @@
 import Foundation
 
 // XATTR name storing the ETAG of the file when downloaded via http(s).
-//let XATTR_ETAG = "com.googlecode.munki.etag"
+// let XATTR_ETAG = "com.googlecode.munki.etag"
 // XATTR name storing the sha256 of the file after original download by munki.
 let XATTR_SHA = "com.googlecode.munki.sha256"
 
