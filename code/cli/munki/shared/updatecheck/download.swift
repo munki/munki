@@ -334,9 +334,6 @@ func downloadCatalog(_ catalogName: String) -> String? {
 /// Returns a list of items from InstallInfo.plist's optional_installs
 /// that have precache=true and (installed=false or needs_update=true)
 private func itemsToPrecache(_ installInfo: PlistDict) -> [PlistDict] {
-    func boolValueFor(_ item: PlistDict, key: String) -> Bool {
-        return item[key] as? Bool ?? false
-    }
     if let optionalInstalls = installInfo["optional_installs"] as? [PlistDict] {
         return optionalInstalls.filter {
             ($0["precache"] as? Bool ?? false) &&
@@ -429,6 +426,52 @@ func uncache(_ spaceNeededInKB: Int) {
             deletedKB += size
         } catch {
             displayError("Could not remove precached item \(path): \(error.localizedDescription)")
+        }
+    }
+}
+
+let PRECACHING_AGENT_LABEL = "com.googlecode.munki.precache_agent"
+
+/// Kick off a run of our precaching agent, which allows the precaching to
+/// run in the background after a normal Munki run
+func runPrecachingAgent() {
+    if itemsToPrecache(getInstallInfo() ?? PlistDict()).isEmpty {
+        // nothing to precache
+        displayDebug1("Nothing found to precache.")
+        return
+    }
+    let precacheAgentPath = "/usr/local/munki/precache_agent"
+    // TODO: look for precache_agent in the same dir as managedsoftwareupdate
+    if pathExists(precacheAgentPath) {
+        displayInfo("Starting precaching agent")
+        displayDebug1("Launching precache_agent from \(precacheAgentPath)")
+        do {
+            let job = try LaunchdJob(
+                cmd: [precacheAgentPath],
+                jobLabel: PRECACHING_AGENT_LABEL,
+                cleanUpAtExit: false
+            )
+            try job.start()
+        } catch {
+            displayError("Error with launchd job (\(precacheAgentPath)): \(error.localizedDescription)")
+        }
+    } else {
+        displayError("Could not find precache_agent")
+    }
+}
+
+/// Stop the precaching_agent if it's running
+func stopPrecachingAgent() {
+    let agentInfo = launchdJobInfo(PRECACHING_AGENT_LABEL)
+    if agentInfo.state != .unknown {
+        // it's either running or stopped. Removing it will stop it.
+        if agentInfo.state == .running {
+            displayInfo("Stopping precaching agent")
+        }
+        do {
+            try removeLaunchdJob(PRECACHING_AGENT_LABEL)
+        } catch {
+            displayError("Error stopping precaching agent: \(error.localizedDescription)")
         }
     }
 }
