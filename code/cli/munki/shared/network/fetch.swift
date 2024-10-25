@@ -8,7 +8,7 @@
 import Foundation
 
 // XATTR name storing the ETAG of the file when downloaded via http(s).
-// let XATTR_ETAG = "com.googlecode.munki.etag"
+//let XATTR_ETAG = "com.googlecode.munki.etag"
 // XATTR name storing the sha256 of the file after original download by munki.
 let XATTR_SHA = "com.googlecode.munki.sha256"
 
@@ -202,7 +202,7 @@ func getURL(
     var storedPercentComplete = -1
     var storedBytesReceived = 0
     session.start()
-    // TODO: add support for Cntl-C, etc
+    // TODO: add support for Control-C, etc
     while true {
         // if we did `while not session.isDone()` we'd miss printing
         // messages and displaying percentages if we exit the loop first
@@ -303,22 +303,22 @@ func getHTTPfileIfChangedAtomically(
     followRedirects: String = "none",
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    // TODO: etag support
-    // var eTag = ""
+    var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
         getOnlyIfNewer = true
-        /*
-         // see if we have an etag attribute
-         do {
-             let data = try getXattr(named: XATTR_ETAG, atPath: destinationPath)
-             eTag = String(data: data, encoding: .utf8) ?? ""
-         } catch {
-             // fall through
-         }
-         if eTag.isEmpty {
-             getOnlyIfNewer = false
-         }*/
+        // see if we have an etag attribute
+        do {
+            let data = try getXattr(named: GURL_XATTR, atPath: destinationPath)
+            if let headers = try readPlist(fromData: data) as? [String: String] {
+                eTag = headers["etag"] ?? ""
+            }
+        } catch {
+            // fall through
+        }
+        if eTag.isEmpty {
+            getOnlyIfNewer = false
+        }
     }
     var headers: [String: String]
     do {
@@ -370,15 +370,6 @@ func getHTTPfileIfChangedAtomically(
             try? FileManager.default.setAttributes(attrs, ofItemAtPath: destinationPath)
         }
     }
-    /*
-      // not sure why we're storing the etag in yet another xattr since gurl
-      // is doing it already in a different xattr. Wondering if this is leftover
-      // logic from when we were using curl
-     if let eTag = headers["etag"], let data = eTag.data(using: .utf8) {
-         // store etag in extended attribute for future use
-         try? setXattr(named: XATTR_ETAG, data: data, atPath: destinationPath)
-     }
-      */
     return true
 }
 
