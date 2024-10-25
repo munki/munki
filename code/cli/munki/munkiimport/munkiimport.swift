@@ -70,7 +70,7 @@ struct MunkiImport: AsyncParsableCommand {
         if munkiImportOptions.version {
             return
         }
-        
+
         if munkiImportOptions.configure {
             return
         }
@@ -103,14 +103,14 @@ struct MunkiImport: AsyncParsableCommand {
             print(getVersion())
             return
         }
-        
+
         if munkiImportOptions.configure {
             let promptList = [
                 ("repo_url", "Repo URL (example: afp://munki.example.com/repo)"),
                 ("pkginfo_extension", "pkginfo extension (Example: .plist)"),
                 ("editor", "pkginfo editor (examples: /usr/bin/vi or TextMate.app; leave empty to not open an editor after import)"),
                 ("default_catalog", "Default catalog to use (example: testing)"),
-                ("plugin", "Repo access plugin (defaults to FileRepo)")
+                ("plugin", "Repo access plugin (defaults to FileRepo)"),
             ]
             configure(promptList: promptList)
             return
