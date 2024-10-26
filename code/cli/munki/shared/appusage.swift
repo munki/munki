@@ -204,3 +204,104 @@ class ApplicationUsageRecorder {
         }
     }
 }
+
+/// A class to query our application usage db to determine the last time
+/// an application was activated
+class ApplicationUsageQuery {
+    let db = appUsageDBPath()
+    let dayInSeconds = 24 * 60 * 60
+    var conn: SQL3Connection?
+
+    // open connection to DB
+    init() {
+        do {
+            try conn = SQL3Connection(db)
+        } catch {
+            // TODO: log_error("Error connecting to \(db): \(error.localizedDescription)")
+            conn = nil
+        }
+    }
+
+    // close connection to DB
+    deinit {
+        if let conn {
+            try? conn.close()
+        }
+    }
+
+    /// Return how many days of data we have on file
+    func daysOfData() -> Int {
+        guard let connection = conn else { return 0 }
+        let oldestRecordQuery = "SELECT last_time FROM application_usage ORDER BY last_time ASC LIMIT 1"
+        do {
+            let query = try SQL3Statement(
+                connection: connection, SQLString: oldestRecordQuery
+            )
+            if query.step() == SQL3Status.row {
+                let lastTime = Int(query.int64(column: 0))
+                let now = Int(Date().timeIntervalSince1970)
+                let timeDiff = now - lastTime
+                return Int(timeDiff / dayInSeconds)
+            }
+        } catch {
+            // TODO: log_error("Error querying \(db): \(error.localizedDescription)")
+        }
+        return 0
+    }
+
+    /// Perform db query and return the number of days since the last event
+    /// occurred for bundle_id.
+    /// Returns -2 if database is missing or broken;
+    /// Returns -1 if there is no event record for the bundle_id
+    /// Returns int number of days since last event otherwise
+    func daysSinceLastUsageEvent(_ event: String, bundleID: String) -> Int {
+        guard let connection = conn else { return -2 }
+        let usageQuery = "SELECT last_time FROM application_usage WHERE event=? AND bundle_id=?"
+        do {
+            let query = try SQL3Statement(connection: connection)
+            try query.prepare(usageQuery)
+            try query.bindText(event, position: 1)
+            try query.bindText(bundleID, position: 2)
+            if query.step() == SQL3Status.row {
+                let lastTime = Int(query.int64(column: 0))
+                let now = Int(Date().timeIntervalSince1970)
+                let timeDiff = now - lastTime
+                return Int(timeDiff / dayInSeconds)
+            } else {
+                // no data for that event and bundleID
+                return -1
+            }
+        } catch {
+            // TODO: log_error("Error querying \(db): \(error.localizedDescription)")
+            return -2
+        }
+    }
+
+    /// Perform db query and return the number of days since the last
+    /// install request occurred for itemName..
+    /// Returns -2 if database is missing or broken;
+    /// Returns -1 if there are no matching records for the itemName
+    /// Returns int number of days since last event otherwise
+    func daysSinceLastInstallEvent(_ event: String, itemName: String) -> Int {
+        guard let connection = conn else { return -2 }
+        let usageQuery = "SELECT last_time FROM install_requests WHERE event=? AND item_name=?"
+        do {
+            let query = try SQL3Statement(connection: connection)
+            try query.prepare(usageQuery)
+            try query.bindText(event, position: 1)
+            try query.bindText(itemName, position: 2)
+            if query.step() == SQL3Status.row {
+                let lastTime = Int(query.int64(column: 0))
+                let now = Int(Date().timeIntervalSince1970)
+                let timeDiff = now - lastTime
+                return Int(timeDiff / dayInSeconds)
+            } else {
+                // no data for that itemName
+                return -1
+            }
+        } catch {
+            // TODO: log_error("Error querying \(db): \(error.localizedDescription)")
+            return -2
+        }
+    }
+}
