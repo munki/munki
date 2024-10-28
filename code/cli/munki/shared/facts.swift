@@ -195,9 +195,19 @@ func generatePredicateInfo() async -> PlistDict {
     infoObject["os_vers_minor"] = Int(osVersComponents[1])
     infoObject["os_vers_patch"] = Int(osVersComponents[2])
 
-    // TODO: get last build number component for easier predicate comparison
-    // let build = getOSBuild()
-    // infoObject["os_build_last_component"] = <something clever>
+    // get last build number component for easier predicate comparison
+    var build = getOSBuild()
+    var lastBuildComponent = ""
+    // build numbers look like '23H124'. We could probably just remove the
+    // first three characters and be done with it.
+    // The letter part of the build has never gone above H, but we'll be safe.
+    while build.count > 0 {
+        let char = String(build.removeFirst())
+        if "ABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(char) {
+            lastBuildComponent = build
+        }
+    }
+    infoObject["os_build_last_component"] = lastBuildComponent
 
     // laptop or desktop?
     if hasInternalBattery() {
