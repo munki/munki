@@ -91,6 +91,8 @@ func runPreOrPostScript(name: String, runType: String) async -> Int {
 
 /// If there are executables inside the cleanup directory,
 /// run them and remove them if successful
+/// NOTE: historically, this has been used to clean up the Python framework when updating
+/// Python versions. This may no longer be needed.
 func doCleanupTasks(_ runType: String) async {
     // TODO: make this relative to managedsoftwareupdate binary
     let cleanupdir = "/usr/local/munki/cleanup"
