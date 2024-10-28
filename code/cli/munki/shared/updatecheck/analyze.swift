@@ -453,7 +453,7 @@ func processInstall(
             // so we know we can launch the installer later
             // TODO: maybe filter the actual info recorded
             displayInfo("Recording staged macOS installer...")
-            // TODO: recordStagedOSInstaller(pkginfo)
+            recordStagedOSInstaller(pkginfo)
         }
         // record installed size and version
         let installedSize = pkginfo["installed_size"] as? Int ?? pkginfo["installer_item_size"] as? Int ?? 0
@@ -622,11 +622,11 @@ func processOptionalInstall(
     let isCurrentlyInstalled = await someVersionInstalled(pkginfo)
     var needsUpdate = false
     if isCurrentlyInstalled {
-        // TODO: if shouldBeRemovedIfUnused(pkginfo) {
-        //    processRemoval(manifestItemName, catalogList: catalogList, installInfo: &installInfo)
-        //    removeFromSelfServeInstalls(manifestItemName)
-        //    return
-        // }
+        if shouldBeRemovedIfUnused(pkginfo) {
+            _ = await processRemoval(manifestItemName, catalogList: catalogList, installInfo: &installInfo)
+            removeFromSelfServeInstalls(manifestItemName)
+            return
+        }
         if pkginfo["installcheck_script"] == nil {
             // installcheck_scripts can be expensive and only tell us if
             // an item is installed or not. So if iteminfo['installed'] is
