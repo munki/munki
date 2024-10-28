@@ -54,39 +54,60 @@ func initMunkiDirs() -> Bool {
 
 /// Run an external script. Do not run if the permissions on the external
 /// script file are weaker than the current executable.
-func runPreOrPostScript(name: String, runType: String) async -> Int {
-    let scriptdir = "/usr/local/munki" as NSString
-    let scriptPath = scriptdir.appendingPathComponent(name)
+func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) async -> Int {
     if !pathExists(scriptPath) {
         return 0
     }
-    displayMinorStatus("Performing \(name) tasks...")
+    displayMinorStatus("Performing \(taskName) tasks...")
     do {
         let result = try await runExternalScript(
             scriptPath, arguments: [runType]
         )
         if result.exitcode != 0 {
-            displayInfo("\(name) return code: \(result.exitcode)")
+            displayInfo("\(scriptPath) return code: \(result.exitcode)")
         }
         if !result.output.isEmpty {
-            displayInfo("\(name) stdout: \(result.output)")
+            displayInfo("\(scriptPath) stdout: \(result.output)")
         }
         if !result.error.isEmpty {
-            displayInfo("\(name) stderr: \(result.error)")
+            displayInfo("\(scriptPath) stderr: \(result.error)")
         }
         return result.exitcode
     } catch ExternalScriptError.notFound {
         // not required, so pass
     } catch {
-        displayWarning("Unexpected error when attempting to run \(name): \(error.localizedDescription)")
+        displayWarning("Unexpected error when attempting to run \(scriptPath): \(error.localizedDescription)")
     }
     return 0
 }
 
+/// Helper to specifically run Munki preflight or postflight scripts
+func runPreOrPostScript(name: String, runType: String) async -> Int {
+    // TODO: make this path relative to managedsoftwareupdate binary
+    let scriptdir = "/usr/local/munki" as NSString
+    let scriptPath = scriptdir.appendingPathComponent(name)
+    return await runMunkiDirScript(scriptPath, taskName: name, runType: runType)
+}
+
 /// If there are executables inside the cleanup directory,
 /// run them and remove them if successful
-func doCleanupTasks(runType _: String) {
-    // TODO: implement this
+func doCleanupTasks(_ runType: String) async {
+    // TODO: make this relative to managedsoftwareupdate binary
+    let cleanupdir = "/usr/local/munki/cleanup"
+    if !pathIsDirectory(cleanupdir) {
+        return
+    }
+    if let dirContents = try? FileManager.default.contentsOfDirectory(atPath: cleanupdir) {
+        for itemName in dirContents {
+            let fullPath = (cleanupdir as NSString).appendingPathComponent(itemName)
+            if pathIsExecutableFile(fullPath) {
+                let result = await runMunkiDirScript(fullPath, taskName: "cleanup", runType: runType)
+                if result == 0 {
+                    try? FileManager.default.removeItem(atPath: fullPath)
+                }
+            }
+        }
+    }
 }
 
 /// Return count of available updates.
