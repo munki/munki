@@ -219,6 +219,7 @@
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8572CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
+		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA22C457E4E0021DA9C /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
@@ -282,7 +283,6 @@
 		C0E994092C5BF54E006FDF44 /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
 		C0E9940A2C5BF56C006FDF44 /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C0E9941A2C5C10E1006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994192C5C10E1006FDF44 /* ArgumentParser */; };
-		C0E9941C2C5C10F8006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941B2C5C10F8006FDF44 /* ArgumentParser */; };
 		C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941D2C5C10FE006FDF44 /* ArgumentParser */; };
 		C0E994202C5C1103006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941F2C5C1103006FDF44 /* ArgumentParser */; };
 		C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994212C5C1109006FDF44 /* ArgumentParser */; };
@@ -514,7 +514,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0E9941C2C5C10F8006FDF44 /* ArgumentParser in Frameworks */,
+				C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -915,7 +915,7 @@
 			);
 			name = managedsoftwareupdate;
 			packageProductDependencies = (
-				C0E9941B2C5C10F8006FDF44 /* ArgumentParser */,
+				C0B3A8592CD04D380057BA0E /* ArgumentParser */,
 			);
 			productName = munki;
 			productReference = C07A6FA52C2A82B400090743 /* managedsoftwareupdate */;
@@ -1964,12 +1964,12 @@
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
 		};
-		C0E994192C5C10E1006FDF44 /* ArgumentParser */ = {
+		C0B3A8592CD04D380057BA0E /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
 		};
-		C0E9941B2C5C10F8006FDF44 /* ArgumentParser */ = {
+		C0E994192C5C10E1006FDF44 /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
