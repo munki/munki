@@ -83,9 +83,11 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
 
 /// Helper to specifically run Munki preflight or postflight scripts
 func runPreOrPostScript(name: String, runType: String) async -> Int {
-    // TODO: make this path relative to managedsoftwareupdate binary
-    let scriptdir = "/usr/local/munki" as NSString
-    let scriptPath = scriptdir.appendingPathComponent(name)
+    // first check the same directory where managedsoftwareupdate lives
+    var scriptPath = currentExecutableDir(appendingPathComponent: name)
+    if !pathIsExecutableFile(scriptPath) {
+        return 0
+    }
     return await runMunkiDirScript(scriptPath, taskName: name, runType: runType)
 }
 
@@ -93,9 +95,8 @@ func runPreOrPostScript(name: String, runType: String) async -> Int {
 /// run them and remove them if successful
 /// NOTE: historically, this has been used to clean up the Python framework when updating
 /// Python versions. This may no longer be needed.
-func doCleanupTasks(_ runType: String) async {
-    // TODO: make this relative to managedsoftwareupdate binary
-    let cleanupdir = "/usr/local/munki/cleanup"
+func doCleanupTasks(runType: String) async {
+    let cleanupdir = currentExecutableDir(appendingPathComponent: "cleanup")
     if !pathIsDirectory(cleanupdir) {
         return
     }

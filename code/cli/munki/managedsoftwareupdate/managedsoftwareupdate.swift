@@ -509,7 +509,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         try processLaunchdOptions()
         try ensureMunkiDirsExist()
         configureDisplayOptions()
-        doCleanupTasks(runType: runtype)
+        await doCleanupTasks(runType: runtype)
         initializeReport()
         // TODO: support logging to syslog and unified logging
 

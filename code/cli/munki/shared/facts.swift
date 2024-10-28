@@ -88,16 +88,10 @@ func getMachineFacts() async -> PlistDict {
     return await MachineFacts.shared.get()
 }
 
-/// Returns the path to the conditional scripts dir
-private func conditionalScriptsDir() -> String {
-    // TODO: make this relative to the managedsoftwareupdate binary
-    return "/usr/local/munki/conditions"
-}
-
 /// Fetches key/value pairs from condition scripts
 /// which can be placed into /usr/local/munki/conditions
 func getConditions() async -> PlistDict {
-    let conditionalScriptDir = conditionalScriptsDir()
+    let conditionalScriptDir = currentExecutableDir(appendingPathComponent: "conditions")
     let conditionalItemsPath = managedInstallsDir(subpath: "ConditionalItems.plist")
     let filemanager = FileManager.default
     try? filemanager.removeItem(atPath: conditionalItemsPath)
