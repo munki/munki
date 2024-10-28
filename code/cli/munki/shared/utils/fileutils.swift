@@ -219,9 +219,9 @@ func baseName(_ str: String) -> String {
 }
 
 /// Return the path to the current executable's directory
-func currentExecutableDir() -> String {
+func currentExecutableDir(appendingPathComponent: String = "") -> String {
     if let executablePath = Bundle.main.executablePath {
-        return (executablePath as NSString).deletingLastPathComponent
+        return ((executablePath as NSString).deletingLastPathComponent as NSString).appendingPathComponent(appendingPathComponent)
     }
-    return ""
+    return appendingPathComponent
 }
