@@ -217,3 +217,11 @@ func baseName(_ str: String) -> String {
         return (str as NSString).lastPathComponent
     }
 }
+
+/// Return the path to the current executable's directory
+func currentExecutableDir() -> String {
+    if let executablePath = Bundle.main.executablePath {
+        return (executablePath as NSString).deletingLastPathComponent
+    }
+    return ""
+}

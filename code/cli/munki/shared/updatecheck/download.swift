@@ -438,8 +438,11 @@ func startPrecachingAgent() {
         displayDebug1("Nothing found to precache.")
         return
     }
-    let precacheAgentPath = "/usr/local/munki/precache_agent"
-    // TODO: look for precache_agent in the same dir as managedsoftwareupdate
+    // first look in same dir as the current executable
+    var precacheAgentPath = (currentExecutableDir() as NSString).appendingPathComponent("precache_agent")
+    if !pathExists(precacheAgentPath) {
+        precacheAgentPath = "/usr/local/munki/precache_agent"
+    }
     if pathExists(precacheAgentPath) {
         displayInfo("Starting precaching agent")
         displayDebug1("Launching precache_agent from \(precacheAgentPath)")
