@@ -277,7 +277,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     }
 
     // stop precaching_agent if it's running
-    // TODO: stopPrecachingAgent()
+    stopPrecachingAgent()
 
     // prevent idle sleep only if we are on AC power
     var caffeinator: Caffeinator? = nil
@@ -547,7 +547,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
     // start our precaching agent
     // note -- this must happen _after_ InstallInfo.plist gets written to disk.
-    // TODO: download.run_precaching_agent()
+    startPrecachingAgent()
 
     if !success {
         return .finishedWithErrors

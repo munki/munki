@@ -432,7 +432,7 @@ let PRECACHING_AGENT_LABEL = "com.googlecode.munki.precache_agent"
 
 /// Kick off a run of our precaching agent, which allows the precaching to
 /// run in the background after a normal Munki run
-func runPrecachingAgent() {
+func startPrecachingAgent() {
     if itemsToPrecache(getInstallInfo() ?? PlistDict()).isEmpty {
         // nothing to precache
         displayDebug1("Nothing found to precache.")
