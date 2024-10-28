@@ -96,7 +96,11 @@ func getConditions() async -> PlistDict {
     let filemanager = FileManager.default
     try? filemanager.removeItem(atPath: conditionalItemsPath)
 
-    if pathExists(conditionalScriptDir), !pathIsDirectory(conditionalScriptDir) {
+    if !pathExists(conditionalScriptDir) {
+        return PlistDict()
+    }
+
+    if !pathIsDirectory(conditionalScriptDir) {
         displayWarning("\(conditionalScriptDir) exists but is not a directory.")
         return PlistDict()
     }
@@ -137,7 +141,7 @@ func getConditions() async -> PlistDict {
         }
     } else {
         // could not get script items from dir
-        displayWarning("Unexpected filesyem issue getting contents of \(conditionalScriptDir)")
+        displayWarning("Unexpected filesystem issue getting contents of \(conditionalScriptDir)")
     }
     return PlistDict() // empty results
 }
