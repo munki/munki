@@ -114,13 +114,13 @@ func pythonScriptRunning(_ scriptName: String) -> Int32? {
         let executable = (item.path as NSString).lastPathComponent
         if executable.contains("python") || executable.contains("Python") {
             // get all the args for this pid
-            if var args = executableAndArgsForPid(item.pid) {
+            if var args = executableAndArgsForPid(item.pid), args.count > 2 {
                 // first value is executable path, drop it
                 // next value is command, drop it
                 args = Array(args.dropFirst(2))
                 // drop leading args that start with a hyphen
                 args = Array(args.drop(while: { $0.hasPrefix("-") }))
-                if args[0].hasSuffix(scriptName) {
+                if args.count > 0, args[0].hasSuffix(scriptName) {
                     return item.pid
                 }
             }
