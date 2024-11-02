@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ else:
     from munkilib import authrestart
     from munkilib import bootstrapping
     from munkilib import constants
+    from munkilib import dateutils
     from munkilib import display
     from munkilib import info
     from munkilib import installer
@@ -107,7 +108,7 @@ def getIdleSeconds():
         if idle_re:
             idle_time = idle_re.group(1)
             break
-    return int(int(idle_time)/1000000000) # pylint: disable=old-division
+    return int(int(idle_time)/1000000000)
 
 
 def networkUp():
@@ -340,7 +341,7 @@ def doInstallTasks(do_apple_updates, only_unattended=False):
 def doFinishingTasks(runtype=None):
     '''A collection of tasks to do as we finish up'''
     # finish our report
-    reports.report['EndTime'] = reports.format_time()
+    reports.report['EndTime'] = dateutils.format_timestamp()
     reports.report['ManagedInstallVersion'] = info.get_version()
     reports.report['AvailableDiskSpace'] = info.available_disk_space()
     reports.report['ConsoleUser'] = osutils.getconsoleuser() or '<None>'
@@ -553,7 +554,7 @@ def notifyUserOfUpdates(force=False):
     now = NSDate.new()
     nextNotifyDate = now
     if lastNotifiedString:
-        lastNotifiedDate = NSDate.dateWithString_(lastNotifiedString)
+        lastNotifiedDate = dateutils.dateFromString(lastNotifiedString)
         interval = daysBetweenNotifications * (24 * 60 * 60)
         if daysBetweenNotifications > 0:
             # we make this adjustment so a 'daily' notification
@@ -571,9 +572,11 @@ def notifyUserOfUpdates(force=False):
         # notify user of available updates using LaunchAgent to launch
         # munki-notifier.app in the user context.
         launchfile = '/var/run/com.googlecode.munki.munki-notifier'
-        f = open(launchfile, 'w')
+        f = open(launchfile, 'wb')
         f.close()
         time.sleep(5)
+        # clear the trigger file. We have to do it because we're root,
+        # and the munki-notifier process is running as the user
         if os.path.exists(launchfile):
             os.unlink(launchfile)
         user_was_notified = True
@@ -616,7 +619,7 @@ def remove_launchd_logout_jobs_and_exit():
 def main():
     """Main"""
     progname = "managedsoftwareupdate"
-    
+
     # install handler for SIGTERM
     signal.signal(signal.SIGTERM, signal_handler)
 
@@ -656,6 +659,9 @@ def main():
     config_options.add_option(
         '--show-config', action='store_true',
         help='Print the current configuration and exit.')
+    config_options.add_option(
+        '--show-config-plist', action='store_true',
+        help='Print the current configuration as a plist and exit.')
     config_options.add_option(
         '--id', default=u'',
         help='String to use as ClientIdentifier for this run only.')
@@ -718,6 +724,11 @@ def main():
 
     if options.show_config:
         prefs.print_config()
+        sys.exit(0)
+
+
+    if options.show_config_plist:
+        prefs.print_config_plist()
         sys.exit(0)
 
     if options.set_bootstrap_mode:
@@ -889,7 +900,7 @@ def main():
         reports.readreport()
 
     # start a new report
-    reports.report['StartTime'] = reports.format_time()
+    reports.report['StartTime'] = dateutils.format_timestamp()
     reports.report['RunType'] = runtype
     # Clearing arrays must be run before any call to display_warning/error.
     reports.report['Errors'] = []
@@ -901,7 +912,8 @@ def main():
     munkilog.log("### Starting managedsoftwareupdate run: %s ###" % runtype)
     if options.verbose:
         print('Managed Software Update Tool')
-        print('Copyright 2010-2023 The Munki Project')
+        print('Version %s' % info.get_version())
+        print('Copyright 2010-2024 The Munki Project')
         print('https://github.com/munki/munki\n')
 
     display.display_status_major('Starting...')

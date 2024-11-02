@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -200,7 +200,7 @@ def get_adobe_setup_info(installroot):
                     payloads.append(payloadinfo)
                     if ((driverfolder and item == driverfolder) or
                             (media_signature and
-                             payloadinfo['AdobeCode'] == media_signature)):
+                             payloadinfo.get('AdobeCode') == media_signature)):
                         info['display_name'] = payloadinfo['display_name']
                         info['version'] = payloadinfo['version']
                         info['AdobeSetupType'] = 'ProductInstall'

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ from .. import munkistatus
 from .. import osutils
 from .. import processes
 from .. import pkgutils
+from .. import utils
 from .. import FoundationPlist
 
 
@@ -82,7 +83,7 @@ def remove_bundle_relocation_info(pkgpath):
 def pkg_needs_restart(pkgpath, options):
     '''Query a package for its RestartAction. Returns True if a restart is
     needed, False otherwise'''
-    cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath]
+    cmd = ['/usr/sbin/installer', '-query', 'RestartAction', '-pkg', pkgpath, '-plist']
     if options.get('installer_choices_xml'):
         choices_xml_file = os.path.join(osutils.tmpdir(), 'choices.xml')
         FoundationPlist.writePlist(
@@ -95,8 +96,14 @@ def pkg_needs_restart(pkgpath, options):
     proc = subprocess.Popen(cmd, shell=False, bufsize=-1,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output = proc.communicate()[0].decode('UTF-8')
-    restartaction = output.rstrip('\n')
+    output = proc.communicate()[0]
+    # need to use getFirstPlist because in 14.4 Apple broke the output by
+    # printing deprecation warnings to STDOUT
+    pliststr, _ = utils.getFirstPlist(output)
+    restartaction = ''
+    if pliststr:
+        plist = FoundationPlist.readPlistFromString(pliststr)
+        restartaction = plist.get('RestartAction', '')
     return restartaction in ['RequireRestart', 'RecommendRestart']
 
 

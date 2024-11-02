@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2023 The Munki Project. All rights reserved.
+//  Copyright © 2018-2024 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -14,6 +14,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
+    var _obnoxiousNotificationMode = false
     var managedsoftwareupdate_task = ""
     var cached_self_service = SelfService()
     var alert_controller = MSCAlertController()
@@ -32,8 +33,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var stop_requested = false
     var user_warned_about_extra_updates = false
     var forceFrontmost = false
-    
-    var backdropWindows: [NSWindow] = []
     
     // Cocoa UI binding properties
     
@@ -57,7 +56,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var webViewContainer: NSView!
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
+    
+    var blurredBackground: BackgroundBlurrer?
 
+    
     override func windowDidLoad() {
         super.windowDidLoad()
     }
@@ -144,26 +146,25 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         thisWindow.animator().alphaValue = 1.0
         return thisWindow
     }
-    
-    func displayBackdropWindows() {
-        for screen in NSScreen.screens {
-            let newWindow = newTranslucentWindow(screen: screen)
-            // add to our backdropWindows array so a reference stays around
-            backdropWindows.append(newWindow)
+
+    func blurBackground() {
+        blurredBackground = BackgroundBlurrer()
+        if let window = self.window {
+            window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow) + 1))
         }
     }
     
     func makeUsUnobnoxious() {
         // reverse all the obnoxious changes
-        msc_log("msc", "end_obnoxious_mode")
+        msc_log("MSC", "end_obnoxious_mode")
         
         // remove obnoxious presentation options
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.subtracting(
             NSApplication.PresentationOptions([.hideDock, .disableHideApplication, .disableProcessSwitching, .disableForceQuit]))
         
-        for window in self.backdropWindows {
-            window.orderOut(self)
-        }
+        // remove blurred background
+        blurredBackground = nil
+
         if let window = self.window {
             window.collectionBehavior = .fullScreenPrimary
             // turn .closable, .miniaturizable, .resizable back on
@@ -179,7 +180,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func makeUsObnoxious() {
         // makes this app and window impossible(?)/difficult to ignore
-        msc_log("msc", "start_obnoxious_mode")
+        msc_log("MSC", "start_obnoxious_mode")
         
         // make sure we're frontmost
         NSApp.activate(ignoringOtherApps: true)
@@ -205,8 +206,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // set flag to cause us to always be brought to front
         self.forceFrontmost = true
         
-        // create translucent windows to mask all other apps
-        displayBackdropWindows()
+        // blur everything behind the MSC window
+        blurBackground()
+
+        // seems redundant, but ensures the window is visible
+        // in front of the blurred background even if it was minimized
+        // previously
+        self.showWindow(self)
     }
     
     func weShouldBeObnoxious() -> Bool {
@@ -236,6 +242,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         webViewContainer.frame.origin.x = -1
         webViewContainer.frame.size.width = self.window!.frame.width
         navigateBackButton.frame.origin.x = 90
+        navigateBackButton.showsBorderOnlyWhileMouseInside = true
         // adjusts window controls on newer OSs
         if #available(macOS 10.13, *) {
             let customToolbar = NSToolbar()
@@ -254,7 +261,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         updatesMenuItem.isHidden = false
         fullSidebar.isHidden = false
         webViewContainer.frame.origin.x = 220
-        navigateBackButton.frame.origin.x = 17
+        navigateBackButton.frame.origin.x = 12
+        navigateBackButton.showsBorderOnlyWhileMouseInside = true
         webViewContainer.frame.size.width = self.window!.frame.width - fullSidebar.frame.width
         // adjusts window controls on newer OSs
         if #available(macOS 10.13, *) {
@@ -456,6 +464,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             load_page("updates.html")
             if !shouldAggressivelyNotifyAboutMunkiUpdates() {
                 _alertedUserToOutstandingUpdates = true
+            }
+            if _obnoxiousNotificationMode {
+                if weShouldBeObnoxious() {
+                    makeUsObnoxious()
+                } else {
+                    _obnoxiousNotificationMode = false
+                    makeUsUnobnoxious()
+                }
             }
         default:
             // should never get here
@@ -826,6 +842,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 "Update in progress.",
                 comment: "Update In Progress primary text") + ".."
             kickOffInstallSession()
+            _obnoxiousNotificationMode = false
             makeUsUnobnoxious()
         }
     }
@@ -856,6 +873,20 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         } else {
             NSApp.dockTile.badgeLabel = nil
             cellView?.badge.isHidden = true
+        }
+    }
+    
+    func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
+        //
+        var cellView:MSCTableCellView?
+        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+            cellView = view.view(atColumn: 0) as? MSCTableCellView
+        }
+        if shouldDisplay {
+            cellView?.badge.isHidden = true
+            cellView?.spinner.startAnimation(self)
+        } else {
+            cellView?.spinner.stopAnimation(self)
         }
     }
     
@@ -915,8 +946,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                                  timeoutInterval: TimeInterval(10.0))
         webView.load(request)
         if url_fragment == "updates.html" {
-            // clear all earlier update notifications
-            removeAllDeliveredNotifications()
+            if !_update_in_progress && NSApp.isActive {
+                // clear all earlier update notifications
+                removeAllDeliveredNotifications()
+            }
             // record that the user has been presented pending updates
             if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
                 _alertedUserToOutstandingUpdates = true
@@ -929,9 +962,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // we can't remove them directly since we didn't actually post them
         // so we can't use
         // NSUserNotificationCenter.default.removeAllDeliveredNotifications()
-        let munkiNotifierPath = Bundle.main.path(forResource: "munki-notifier", ofType: "app")
-        if let munkiNotifierPath = munkiNotifierPath {
+        let munkiNotifierPath = Bundle.main.bundlePath + "/Contents/Helpers/munki-notifier.app"
+        if FileManager.default.fileExists(atPath: munkiNotifierPath) {
             NSLog("munki-notifier path: %@", munkiNotifierPath as String)
+            // now make sure it's not already running
+            let executablePath = munkiNotifierPath + "/Contents/MacOS/munki-notifier"
+            let procs = getRunningProcessesWithUsers()
+            for proc in procs {
+                if proc["pathname"] == executablePath && proc["user"] == NSUserName() {
+                    // munki-notifier is already running as this user
+                    return
+                }
+            }
             let command = "/usr/bin/open"
             let args = ["-a", munkiNotifierPath, "--args", "-clear"]
             _ = exec(command, args: args)
@@ -974,6 +1016,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 if weShouldBeObnoxious() {
                     NSLog("%@", "Entering obnoxious mode")
                     makeUsObnoxious()
+                    _obnoxiousNotificationMode = true
                 }
             }
         } else {

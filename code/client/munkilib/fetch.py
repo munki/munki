@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2011-2023 Greg Neagle.
+# Copyright 2011-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -24,9 +24,10 @@ from __future__ import absolute_import, print_function
 # standard libs
 import calendar
 import errno
-import imp
+import importlib.util
 import os
 import shutil
+import sys
 import time
 import xattr
 
@@ -94,12 +95,15 @@ def import_middleware():
             name = os.path.splitext(filename)[0]
             filepath = os.path.join(munki_dir, filename)
             try:
-                _tmp = imp.load_source(name, filepath)
-                if hasattr(_tmp, required_function_name):
-                    if callable(getattr(_tmp, required_function_name)):
+                spec = importlib.util.spec_from_file_location(name, filepath)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, required_function_name):
+                    if callable(getattr(module, required_function_name)):
                         display.display_debug1(
                             'Loading middleware module %s' % filename)
-                        globals()['middleware'] = _tmp
+                        sys.modules["middleware"] = module
+                        globals()["middleware"] = module
                         return
                     else:
                         display.display_warning(
@@ -111,14 +115,19 @@ def import_middleware():
                         '%s does not have a %s function'
                         % (filepath, required_function_name))
                     display.display_warning('Ignoring %s' % filepath)
-            except BaseException:
+            except BaseException as err:
                 display.display_warning(
-                    'Ignoring %s because of error importing module.' % filepath)
+                    'Ignoring %s because of error importing module: %s',
+                    filepath, err)
     return
 
 
 middleware = None
-import_middleware()
+ignore_middleware = prefs.pref('IgnoreMiddleware')
+if not ignore_middleware:
+    # If we haven't explicitly said to ignore middleware,
+    # the preference decides
+    import_middleware()
 
 
 class Error(Exception):

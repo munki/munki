@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2022-2023 Greg Neagle.
+# Copyright 2022-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ def update_manifest():
             pass
         display.display_warning(
             "Found symlink at %s. Ignoring and removing."
-            % selfservemanifest)
+            % usermanifest)
 
     if os.path.exists(usermanifest):
         # copy user-generated SelfServeManifest to our

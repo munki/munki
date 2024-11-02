@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ def check(client_id='', localmanifestpath=None):
     munkistatus.detail('')
 
     installinfo = {}
+    success = True
 
     try:
         if localmanifestpath:
@@ -112,9 +113,6 @@ def check(client_id='', localmanifestpath=None):
         installinfo['featured_items'] = []
         installinfo['managed_installs'] = []
         installinfo['removals'] = []
-
-        # record info object for conditional item comparisons
-        reports.report['Conditions'] = info.predicate_info_object()
 
         # remove any staged os installer info we have; we'll check and
         # recreate if still valid
@@ -373,6 +371,17 @@ def check(client_id='', localmanifestpath=None):
         reports.report['ItemsToInstall'] = installinfo['managed_installs']
         reports.report['ItemsToRemove'] = installinfo['removals']
 
+        # record info object for conditional item comparisons
+        reports.report['Conditions'] = {}
+        # copy everything except applications data
+        for key, value in info.predicate_info_object().items():
+            if key != 'applications':
+                reports.report['Conditions'][key] = value
+        # make sure recorded catalogs are those for the primary manifest
+        # as this list can change with included manifests
+        reports.report['Conditions']['catalogs'] = get_primary_manifest_catalogs(
+            client_id=client_id)
+
         # clean up catalogs directory
         catalogs.clean_up()
 
@@ -449,6 +458,7 @@ def check(client_id='', localmanifestpath=None):
     except (manifestutils.ManifestException, UpdateCheckAbortedError):
         # Update check aborted. Check to see if we have a valid
         # install/remove list from an earlier run.
+        success = False
         installinfopath = os.path.join(managed_install_dir, 'InstallInfo.plist')
         if os.path.exists(installinfopath):
             try:
@@ -470,6 +480,9 @@ def check(client_id='', localmanifestpath=None):
     # note -- this must happen _after_ InstallInfo.plist gets written to disk.
     download.run_precaching_agent()
 
+    if not success:
+        # error in getting manifests, or other check error
+        return -1
     if installcount or removalcount:
         return 1
     # installcount and removalcount are 0

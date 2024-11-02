@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -67,24 +67,6 @@ def installed_state(item_pl):
         # that an install is not needed. We hope it's the latter.
         # return 1 so we're marked as not needing to be installed
         return 1
-
-    # this was deprecated a very long time ago. removing 02 Jan 2017
-    #if item_pl.get('softwareupdatename'):
-    #    available_apple_updates = appleupdates.softwareUpdateList()
-    #    display.display_debug2(
-    #        'Available Apple updates:\n%s', available_apple_updates)
-    #    if item_pl['softwareupdatename'] in available_apple_updates:
-    #        display.display_debug1(
-    #            '%s is in available Apple Software Updates',
-    #            item_pl['softwareupdatename'])
-    #        # return 0 so we're marked as needing to be installed
-    #        return 0
-    #    else:
-    #        display.display_debug1(
-    #            '%s is not in available Apple Software Updates',
-    #            item_pl['softwareupdatename'])
-    #        # return 1 so we're marked as not needing to be installed
-    #        return 1
 
     if item_pl.get('installer_type') == 'startosinstall':
         current_os_vers = osutils.getOsVersion()

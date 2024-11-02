@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -274,7 +274,7 @@ def process_optional_install(manifestitem, cataloglist, installinfo):
     iteminfo['installer_item_size'] = \
         item_pl.get('installer_item_size', 0)
     iteminfo['installed_size'] = item_pl.get(
-        'installer_item_size', iteminfo['installer_item_size'])
+        'installed_size', iteminfo['installer_item_size'])
     if item_pl.get('note'):
         # catalogs.get_item_detail() passed us a note about this item;
         # pass it along
@@ -339,9 +339,21 @@ def process_install(manifestitem, cataloglist, installinfo,
             'catalogs: %s ', manifestitem, ', '.join(cataloglist))
         return False
 
-    if item_in_installinfo(item_pl, installinfo['managed_installs'],
+    if item_in_installinfo(item_pl,
+                           installinfo['managed_installs'],
                            vers=item_pl.get('version')):
-        # has this item already been added to the list of things to install?
+        # item has been processed for install; now check to see if there
+        # was a problem when it was processed
+        problem_item_names = [item['name']
+                             for item in installinfo['managed_installs']
+                             if item.get('installed') is False and
+                             not item.get('installer_item')]
+        if item_pl.get('name') in problem_item_names:
+            # item was processed, but not successfully downloaded
+            display.display_debug1(
+                '%s was processed earlier, but download failed.', manifestitemname)
+            return False
+        # item was processed successfully
         display.display_debug1(
             '%s is or will be installed.', manifestitemname)
         return True
@@ -391,21 +403,31 @@ def process_install(manifestitem, cataloglist, installinfo,
     if item_pl.get('localized_strings'):
         iteminfo['localized_strings'] = item_pl['localized_strings']
 
-    if not dependencies_met:
-        display.display_warning(
-            'Didn\'t attempt to install %s because could not resolve all '
-            'dependencies.', manifestitemname)
-        # add information to managed_installs so we have some feedback
-        # to display in MSC.app
-        iteminfo['installed'] = False
-        iteminfo['note'] = ('Can\'t install %s because could not resolve all '
-                            'dependencies.' % iteminfo['display_name'])
-        iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
-        installinfo['managed_installs'].append(iteminfo)
-        return False
-
     installed_state = installationstate.installed_state(item_pl)
     if installed_state == 0:
+        # not installed, or older version present
+
+        if not dependencies_met:
+            if installationstate.some_version_installed(item_pl):
+                # we should not attempt to update
+                display.display_warning(
+                    'Didn\'t attempt to update %s because could not resolve '
+                    'all dependencies.', manifestitemname)
+            else:
+                # we should not attempt to install
+                display.display_warning(
+                    'Didn\'t attempt to install %s because could not resolve '
+                    'all dependencies.', manifestitemname)
+            # add information to managed_installs so we have some feedback
+            # to display in MSC.app
+            iteminfo['installed'] = False
+            iteminfo['note'] = (
+                'Can\'t install %s because could not resolve all '
+                'dependencies.' % iteminfo['display_name'])
+            iteminfo['version_to_install'] = item_pl.get('version', 'UNKNOWN')
+            installinfo['managed_installs'].append(iteminfo)
+            return False
+
         display.display_detail('Need to install %s', manifestitemname)
         iteminfo['installer_item_size'] = item_pl.get(
             'installer_item_size', 0)
@@ -561,8 +583,6 @@ def process_install(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            #if manifestitemname in installinfo['processed_installs']:
-            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except (fetch.GurlError, fetch.GurlDownloadError) as errmsg:
             display.display_warning(
@@ -576,8 +596,6 @@ def process_install(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            #if manifestitemname in installinfo['processed_installs']:
-            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
         except fetch.Error as errmsg:
             display.display_warning(
@@ -591,11 +609,14 @@ def process_install(manifestitem, cataloglist, installinfo,
                 if key in item_pl:
                     iteminfo[key] = item_pl[key]
             installinfo['managed_installs'].append(iteminfo)
-            #if manifestitemname in installinfo['processed_installs']:
-            #    installinfo['processed_installs'].remove(manifestitemname)
             return False
-    else: # some version installed
+    else: # same or higher version installed
         iteminfo['installed'] = True
+
+        if not dependencies_met:
+            display.display_warning(
+                'Could not resolve all dependencies for %s, but no install or '
+                'update needed.', manifestitemname)
 
         if item_pl.get("installer_type") == "stage_os_installer" and installed_state == 1:
             # installer appears to be staged; make sure the info is recorded
@@ -834,35 +855,45 @@ def process_removal(manifestitem, cataloglist, installinfo):
     # should use that item to do the removal
     uninstall_item = None
     packages_to_remove = []
-    # check for uninstall info
-    # and grab the first uninstall method we find.
-    if found_item.get('uninstallable') and 'uninstall_method' in found_item:
-        uninstallmethod = found_item['uninstall_method']
-        if uninstallmethod == 'removepackages':
-            packages_to_remove = get_receipts_to_remove(found_item)
-            if packages_to_remove:
-                uninstall_item = found_item
-        elif uninstallmethod.startswith('Adobe'):
-            # Adobe CS3/CS4/CS5/CS6/CC product
-            uninstall_item = found_item
-        elif uninstallmethod in ['remove_copied_items',
-                                 'remove_app',
-                                 'uninstall_script',
-                                 'remove_profile',
-                                 'uninstall_package']:
+    uninstallmethod = found_item.get('uninstall_method')
+    # check for uninstall info and find an uninstall method.
+    if not found_item.get('uninstallable'):
+        display.display_warning('Item %s is not marked as uninstallable.',
+                                manifestitemname_withversion)
+    elif not uninstallmethod:
+        display.display_warning('No uninstall_method in %s',
+                                manifestitemname_withversion)
+    elif uninstallmethod == 'removepackages':
+        packages_to_remove = get_receipts_to_remove(found_item)
+        if packages_to_remove:
             uninstall_item = found_item
         else:
-            # uninstall_method is a local script.
-            # Check to see if it exists and is executable
-            if os.path.exists(uninstallmethod) and \
-               os.access(uninstallmethod, os.X_OK):
-                uninstall_item = found_item
+            display.display_warning(
+                'uninstall_method for %s is removepackages, but no packages '
+                'found to remove', manifestitemname_withversion)
+    elif uninstallmethod.startswith('Adobe'):
+        # Adobe CS3/CS4/CS5/CS6/CC product
+        uninstall_item = found_item
+    elif uninstallmethod in [
+            'remove_copied_items',
+            'remove_app',
+            'uninstall_script',
+            'remove_profile',
+            'uninstall_package']:
+        uninstall_item = found_item
+    else:
+        # uninstall_method is a local script.
+        # Check to see if it exists and is executable
+        if (os.path.exists(uninstallmethod) and
+                os.access(uninstallmethod, os.X_OK)):
+            uninstall_item = found_item
+        else:
+            display.display_warning(
+                'uninstall_method "%s" in %s is not a valid method.',
+                uninstallmethod, manifestitemname_withversion)
 
     if not uninstall_item:
-        # the uninstall info for the item couldn't be matched
-        # to what's on disk
-        display.display_warning('Could not find uninstall info for %s.',
-                                manifestitemname_withversion)
+        # Could not find usable uninstall_method
         return False
 
     # if we got this far, we have enough info to attempt an uninstall.
@@ -966,14 +997,18 @@ def process_removal(manifestitem, cataloglist, installinfo):
     if packages_to_remove:
         # remove references for each package
         packages_to_really_remove = []
+        pkgdata = catalogs.analyze_installed_pkgs()
+        pkg_references_messages = []
         for pkg in packages_to_remove:
             display.display_debug1('Considering %s for removal...', pkg)
             # find pkg in pkgdata['pkg_references'] and remove the reference
             # so we only remove packages if we're the last reference to it
-            pkgdata = catalogs.analyze_installed_pkgs()
             if pkg in pkgdata['pkg_references']:
-                display.display_debug1('%s references are: %s', pkg,
-                                       pkgdata['pkg_references'][pkg])
+                msg = ('Package %s references are: %s'
+                       % (pkg, pkgdata['pkg_references'][pkg]))
+                display.display_debug1(msg)
+                # record these for possible later use
+                pkg_references_messages.append(msg)
                 if iteminfo['name'] in pkgdata['pkg_references'][pkg]:
                     pkgdata['pkg_references'][pkg].remove(iteminfo['name'])
                     if not pkgdata['pkg_references'][pkg]:
@@ -981,6 +1016,9 @@ def process_removal(manifestitem, cataloglist, installinfo):
                         display.display_debug1(
                             'Adding %s to removal list.', pkg)
                         packages_to_really_remove.append(pkg)
+                    else:
+                        display.display_debug1(
+                            'Will not attempt to remove %s.', pkg)
             else:
                 # This shouldn't happen
                 display.display_warning('pkg id %s missing from pkgdata', pkg)
@@ -990,6 +1028,8 @@ def process_removal(manifestitem, cataloglist, installinfo):
             # no packages that belong to this item only.
             display.display_warning('could not find unique packages to remove '
                                     'for %s', iteminfo['name'])
+            for msg in pkg_references_messages:
+                display.display_warning(msg)
             return False
 
     iteminfo['uninstall_method'] = uninstallmethod

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -61,21 +61,25 @@ def getPkgRestartInfo(filename):
     installerinfo = {}
     proc = subprocess.Popen(['/usr/sbin/installer',
                              '-query', 'RestartAction',
-                             '-pkg', filename],
+                             '-pkg', filename,
+                             '-plist'],
                             bufsize=-1,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
-    out = out.decode('UTF-8')
-    err = err.decode('UTF-8')
     if proc.returncode:
-        display.display_error("installer -query failed: %s %s", out, err)
+        display.display_error("installer -query failed: %s %s",
+                              out.decode("UTF-8"), err.decode("UTF-8"))
         return {}
 
     if out:
-        restartAction = out.rstrip('\n')
-        if restartAction != 'None':
-            installerinfo['RestartAction'] = restartAction
+        # have to use getFirstPlist since in macOS 14.4 Apple prints
+        # a deprecation warning to STDOUT before the actual plist
+        pliststr, _ = utils.getFirstPlist(out)
+        if pliststr:
+            plist = FoundationPlist.readPlistFromString(pliststr)
+            if plist.get('RestartAction') != 'None':
+                installerinfo['RestartAction'] = plist['RestartAction']
 
     return installerinfo
 
@@ -587,12 +591,6 @@ def getOnePackageInfo(pkgpath):
             pkginfo['packageid'] = 'BAD PLIST in %s' % \
                                     os.path.basename(pkgpath)
             pkginfo['version'] = '0.0'
-        ## now look for applications to suggest for blocking_applications
-        #bomlist = getBomList(pkgpath)
-        #if bomlist:
-        #    pkginfo['apps'] = [os.path.basename(item) for item in bomlist
-        #                        if item.endswith('.app')]
-
     else:
         # look for old-style .info files!
         infopath = os.path.join(
@@ -626,7 +624,8 @@ def getBundlePackageInfo(pkgpath):
             if item.endswith('.dist'):
                 filename = os.path.join(bundlecontents, item)
                 # return info using the distribution file
-                return parsePkgRefs(filename, path_to_pkg=bundlecontents)
+                receiptarray = parsePkgRefs(filename, path_to_pkg=bundlecontents)
+                return {"receipts": receiptarray}
 
         # no .dist file found, look for packages in subdirs
         dirsToSearch = []
@@ -670,7 +669,8 @@ def getReceiptInfo(pkgname):
             info = getBundlePackageInfo(pkgname)
 
     elif pkgname.endswith('.dist'):
-        info = parsePkgRefs(pkgname)
+        receiptarray = parsePkgRefs(pkgname)
+        info = {"receipts": receiptarray}
 
     return info
 
@@ -828,12 +828,16 @@ def getChoiceChangesXML(pkgitem):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out = proc.communicate()[0]
         if out:
-            plist = FoundationPlist.readPlistFromString(out)
+            # have to use getFirstPlist now because in macOS 14.4 Apple
+            # print deprecation warnings to STDOUT before the plist :-(
+            pliststr, _ = utils.getFirstPlist(out)
+            if pliststr:
+                plist = FoundationPlist.readPlistFromString(pliststr)
 
-            # list comprehension to populate choices with those items
-            # whose 'choiceAttribute' value is 'selected'
-            choices = [item for item in plist
-                       if 'selected' in item['choiceAttribute']]
+                # list comprehension to populate choices with those items
+                # whose 'choiceAttribute' value is 'selected'
+                choices = [item for item in plist
+                           if 'selected' in item['choiceAttribute']]
     except Exception:
         # No choices found or something went wrong
         pass
@@ -859,7 +863,7 @@ def getPackageMetaData(pkgitem):
               (some may not be installed on some machines)
     """
 
-    if not hasValidInstallerItemExt(pkgitem):
+    if not hasValidPackageExt(pkgitem):
         return {}
 
     # first query /usr/sbin/installer for restartAction

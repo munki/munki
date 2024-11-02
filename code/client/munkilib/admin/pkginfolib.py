@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2023 Greg Neagle.
+# Copyright 2017-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import optparse
 import os
 import re
 import sys
-import time
 
 # Apple frameworks via PyObjC
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
@@ -43,6 +42,7 @@ from Foundation import NSDate, NSUserName
 # our libs
 from .common import AttributeDict
 
+from .. import dateutils
 from .. import dmgutils
 from .. import info
 from .. import munkihash
@@ -73,26 +73,6 @@ created so we have a bit of an audit trail. Returns a dictionary.'''
     metadata['munki_version'] = info.get_version()
     metadata['os_version'] = osutils.getOsVersion(only_major_minor=False)
     return metadata
-
-
-def convert_date_string_to_nsdate(datetime_string):
-    '''Converts a string in the "2013-04-25T20:00:00Z" format or
-    "2013-04-25 20:00:00 +0000" format to an NSDate'''
-    nsdate_format = '%Y-%m-%dT%H:%M:%SZ'
-    iso_format = '%Y-%m-%d %H:%M:%S +0000'
-    fallback_format = '%Y-%m-%d %H:%M:%S'
-    try:
-        tobj = time.strptime(datetime_string, nsdate_format)
-    except ValueError:
-        try:
-            tobj = time.strptime(datetime_string, iso_format)
-        except ValueError:
-            try:
-                tobj = time.strptime(datetime_string, fallback_format)
-            except ValueError:
-                return None
-    iso_date_string = time.strftime(iso_format, tobj)
-    return NSDate.dateWithString_(iso_date_string)
 
 
 def get_catalog_info_from_path(pkgpath, options):
@@ -683,6 +663,7 @@ def makepkginfo(installeritem, options):
         if scriptstring:
             pkginfo['uninstall_script'] = scriptstring
             pkginfo['uninstall_method'] = 'uninstall_script'
+            pkginfo['uninstallable'] = True
     if options.autoremove:
         pkginfo['autoremove'] = True
     if options.minimum_munki_version:
@@ -700,8 +681,7 @@ def makepkginfo(installeritem, options):
     if options.arch:
         pkginfo['supported_architectures'] = options.arch
     if options.force_install_after_date:
-        date_obj = convert_date_string_to_nsdate(
-            options.force_install_after_date)
+        date_obj = dateutils.dateFromString(options.force_install_after_date)
         if date_obj:
             pkginfo['force_install_after_date'] = date_obj
         else:
@@ -724,6 +704,7 @@ def makepkginfo(installeritem, options):
         pkginfo['blocking_applications'] = options.blocking_application
     if options.uninstall_method:
         pkginfo['uninstall_method'] = options.uninstall_method
+        pkginfo['uninstallable'] = True
     if options.installer_environment:
         try:
             installer_environment_dict = dict(
@@ -1101,17 +1082,17 @@ def add_option_groups(parser):
     additional_options.add_option(
         '--update_for', '--update-for', '-u',
         action="append",
-        metavar='PKG_NAME',
-        help=('Specifies a package for which the current package is an update. '
-              'Can be specified multiple times to build an array of packages.')
+        metavar='ITEM_NAME',
+        help=('Specifies a Munki item for which the current package is an update. '
+              'Can be specified multiple times to build an array of items.')
         )
     additional_options.add_option(
         '--requires', '-r',
         action="append",
-        metavar='PKG_NAME',
-        help=('Specifies a package required by the current package. Can be '
+        metavar='ITEM_NAME',
+        help=('Specifies a Munki item required by the current item. Can be '
               'specified multiple times to build an array of required '
-              'packages.')
+              'item.')
         )
     additional_options.add_option(
         '--blocking_application', '--blocking-application', '-b',

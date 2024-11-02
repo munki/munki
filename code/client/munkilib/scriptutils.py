@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ def run_script(itemname, path, scriptname, suppress_error=False):
         return -1
 
     while True:
-        msg = proc.stdout.readline().decode('UTF-8')
+        msg = proc.stdout.readline().decode("UTF-8", "replace")
         if not msg and (proc.poll() != None):
             break
         # save all script output in case there is

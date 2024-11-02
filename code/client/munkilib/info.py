@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ from Foundation import NSString, NSUTF8StringEncoding
 # pylint: enable=E0611
 
 # our libs
+from . import dateutils
 from . import display
 from . import munkilog
 from . import osutils
@@ -54,6 +55,17 @@ from . import reports
 from . import utils
 from . import FoundationPlist
 from .wrappers import unicode_or_str
+
+# IOKit functions
+IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
+
+functions = [
+    ("IOServiceGetMatchingService", b"II@"),
+    ("IOServiceMatching", b"@*"),
+    ("IOServiceNameMatching", b"@*"),
+    ("IORegistryEntryCreateCFProperty", b"@I@@I"),
+]
+objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
 
 try:
     _ = xrange # pylint: disable=xrange-builtin
@@ -626,14 +638,6 @@ def get_serial_number():
     # Borrowed with love from
     # https://github.com/chilcote/unearth/blob/master/artifacts/serial_number.py
     # thanks, Joe!
-    IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
-
-    functions = [
-        ("IOServiceGetMatchingService", b"II@"),
-        ("IOServiceMatching", b"@*"),
-        ("IORegistryEntryCreateCFProperty", b"@I@@I"),
-    ]
-    objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
 
     kIOMasterPortDefault = 0
     kIOPlatformSerialNumberKey = "IOPlatformSerialNumber"
@@ -648,17 +652,9 @@ def get_serial_number():
 
     return serial
 
+
 def product_name():
     """Returns the product name from IORegistry"""
-    IOKit_bundle = NSBundle.bundleWithIdentifier_("com.apple.framework.IOKit")
-
-    functions = [
-        ("IOServiceGetMatchingService", b"II@"),
-        ("IOServiceNameMatching", b"@*"),
-        ("IORegistryEntryCreateCFProperty", b"@I@@I"),
-    ]
-    objc.loadBundleFunctions(IOKit_bundle, globals(), functions)
-
     kIOMasterPortDefault = 0
     kCFAllocatorDefault = None
 
@@ -673,6 +669,39 @@ def product_name():
         return NSString.alloc().initWithData_encoding_(product_name_data[0:-1], NSUTF8StringEncoding)
     else:
         return None
+
+
+def board_id():
+    """Returns board-id from IORegistry"""
+    kIOMasterPortDefault = 0
+    kCFAllocatorDefault = None
+
+    platformExpert = IOServiceGetMatchingService(
+        kIOMasterPortDefault, IOServiceMatching(b"IOPlatformExpertDevice")
+    )
+    raw_data = IORegistryEntryCreateCFProperty(
+        platformExpert, "board-id", kCFAllocatorDefault, 0
+    )
+    if raw_data:
+        return raw_data.bytes().tobytes().decode("utf-8").rstrip("\x00")
+    return "<none>"
+
+
+def device_id():
+    """Returns device id from IORegistry"""
+    kIOMasterPortDefault = 0
+    kCFAllocatorDefault = None
+
+    platformExpert = IOServiceGetMatchingService(
+        kIOMasterPortDefault, IOServiceMatching(b"IOPlatformExpertDevice")
+    )
+    raw_data = IORegistryEntryCreateCFProperty(
+        platformExpert, "target-sub-type", kCFAllocatorDefault, 0
+    )
+    if raw_data:
+        return raw_data.bytes().tobytes().decode("utf-8").rstrip("\x00")
+    return "<none>"
+
 
 def hardware_model():
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -701,6 +730,7 @@ def has_intel64support():
         b"hw.optional.x86_64", ctypes.byref(buf), ctypes.byref(size), None, 0)
 
     return buf.value == 1
+
 
 def available_disk_space(volumepath='/'):
     """Returns available diskspace in KBytes.
@@ -764,6 +794,8 @@ def getMachineFacts():
         machine['x86_64_capable'] = True
     elif machine['arch'] == 'i386':
         machine['x86_64_capable'] = has_intel64support()
+    machine['board_id'] = board_id()
+    machine['device_id'] = device_id()
     return machine
 
 
@@ -900,8 +932,8 @@ def predicate_info_object():
     # and add the timezone offset to it so we can compare
     # UTC dates as though they were local dates.
     info_object['date'] = add_tzoffset_to_date(
-        NSDate.dateWithString_(
-            reports.report.get('StartTime', reports.format_time())))
+        dateutils.dateFromString(
+            reports.report.get('StartTime', dateutils.format_timestamp())))
     # split os version into components for easier predicate comparison
     os_vers = machine['os_vers']
     os_vers = os_vers + '.0.0'
@@ -916,6 +948,8 @@ def predicate_info_object():
         info_object['machine_type'] = 'laptop'
     else:
         info_object['machine_type'] = 'desktop'
+    # add installed applications
+    info_object['applications'] = app_data()
     return info_object
 
 
@@ -927,13 +961,12 @@ def predicate_evaluates_as_true(predicate_string, additional_info=None):
         info_object.update(additional_info)
     try:
         predicate = NSPredicate.predicateWithFormat_(predicate_string)
-    except BaseException as err:
-        display.display_warning('%s', err)
-        # can't parse predicate, so return False
-        return False
-
-    result = predicate.evaluateWithObject_(info_object)
-    display.display_debug1('Predicate %s is %s', predicate_string, result)
+        result = predicate.evaluateWithObject_(info_object)
+        display.display_debug1('Predicate %s is %s', predicate_string, result)
+    except Exception as err:
+        display.display_warning(
+            'Predicate %s evaluation error: %s', predicate_string, err)
+        result = False
     return result
 
 

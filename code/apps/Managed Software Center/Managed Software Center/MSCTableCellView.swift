@@ -13,5 +13,6 @@ class MSCTableCellView: NSTableCellView {
     @IBOutlet weak var imgView: NSImageView!
     @IBOutlet weak var title: NSTextField!
     @IBOutlet weak var badge: NSButton!
+    @IBOutlet weak var spinner: NSProgressIndicator!
     
 }

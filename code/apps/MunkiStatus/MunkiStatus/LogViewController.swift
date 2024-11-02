@@ -3,7 +3,7 @@
 //  MunkiStatus
 //
 //  Created by Greg Neagle on 5/20/18.
-//  Copyright © 2018-2023 The Munki Project. All rights reserved.
+//  Copyright © 2018-2024 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -125,7 +125,7 @@ class LogViewController: NSViewController {
         logWindow.setFrame(windowRect, display: false)
         logWindow.makeKeyAndOrderFront(self)
         watchLogFile(logFileURL)
-        logView.setDraggingSourceOperationMask(.all, forLocal: false)
+        logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }
     
     func watchLogFile(_ logFileURL: URL) {

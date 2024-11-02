@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ Created by Greg Neagle on 2017-01-01.
 
 Functions for working with Munki catalogs
 """
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
+
 from __future__ import absolute_import, print_function
 
 import os
@@ -53,8 +57,8 @@ def make_catalog_db(catalogitems):
 
         # normalize the version number
         vers = pkgutils.trim_version_string(vers)
-        
-        # unicode normalize the name 
+
+        # unicode normalize the name
         name = unicodedata.normalize("NFC", name)
 
         # build indexes for items by name and version
@@ -202,7 +206,8 @@ def get_all_items_with_name(name, cataloglist):
 def get_auto_removal_items(installinfo, cataloglist):
     """Gets a list of items marked for automatic removal from the catalogs
     in cataloglist. Filters those against items in the processed_installs
-    list, which should contain everything that is supposed to be installed.
+    list, and managed_install list, which, togetherr, should contain everything
+    that is supposed to be installed.
     Then filters against the removals list, which contains all the removals
     that have already been processed.
     """
@@ -213,8 +218,11 @@ def get_auto_removal_items(installinfo, cataloglist):
 
     processed_installs_names = [split_name_and_version(item)[0]
                                 for item in installinfo['processed_installs']]
+    managed_installs_names = [item.get('name')
+                              for item in installinfo['managed_installs']]
     autoremovalnames = [item for item in autoremovalnames
                         if item not in processed_installs_names
+                        and item not in managed_installs_names
                         and item not in installinfo['processed_uninstalls']]
     return autoremovalnames
 

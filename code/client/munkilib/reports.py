@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -28,24 +28,13 @@ import subprocess
 import sys
 import time
 
-# PyLint cannot properly find names inside Cocoa libraries, so issues bogus
-# No name 'Foo' in module 'Bar' warnings. Disable them.
-# pylint: disable=E0611
-from Foundation import NSDate
-# pylint: enable=E0611
-
 from . import munkilog
 from . import prefs
 from . import FoundationPlist
 
-
-def format_time(timestamp=None):
-    """Return timestamp as an ISO 8601 formatted string, in the current
-    timezone.
-    If timestamp isn't given the current time is used."""
-    if timestamp is None:
-        return str(NSDate.new())
-    return str(NSDate.dateWithTimeIntervalSince1970_(timestamp))
+# This code is largely still compatible with Python 2, so for now, turn off
+# Python 3 style warnings
+# pylint: disable=consider-using-f-string
 
 
 def printreportitem(label, value, indent=0):

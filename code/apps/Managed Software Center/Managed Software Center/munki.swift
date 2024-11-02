@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 5/27/18.
-//  Copyright © 2018-2023 The Munki Project. All rights reserved.
+//  Copyright © 2018-2024 The Munki Project. All rights reserved.
 //
 
 import AppKit
@@ -303,7 +303,7 @@ func discardTimeZoneFromDate(_ theDate: Date) -> Date {
        In Los Angeles (PDT), '2011-06-20T12:00:00Z' becomes
        '2011-06-20 12:00:00 -0700'.
        In New York (EDT), it becomes '2011-06-20 12:00:00 -0400'. */
-    let timeZoneOffset = TimeZone.current.secondsFromGMT()
+    let timeZoneOffset = TimeZone.current.secondsFromGMT(for: theDate)
     return theDate.addingTimeInterval(TimeInterval(-timeZoneOffset))
 }
 

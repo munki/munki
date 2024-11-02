@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -249,6 +249,11 @@ def display_update_info():
         if item.get('RestartAction') == 'RequireLogout':
             display.display_info('       *Logout required')
             reports.report['LogoutRequired'] = True
+        '''Displays force install deadline if present'''
+        if item.get('force_install_after_date'):
+         force_install_after_date = str(item['force_install_after_date'])[0:-6]
+         display.display_info('       *Must be installed by %s',
+                 force_install_after_date)
 
     installinfo = get_installinfo()
     installcount = len(installinfo.get('managed_installs', []))

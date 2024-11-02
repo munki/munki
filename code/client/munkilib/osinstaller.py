@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2023 Greg Neagle.
+# Copyright 2017-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -107,17 +107,19 @@ def install_macos_app_is_stub(app_path):
                 os.path.exists(sharedsupport_dmg))
 
 
-def get_os_version(app_path):
-    '''Returns the os version from the OS Installer app'''
+def get_info_from_app(app_path):
+    '''Returns info parsed out of OS Installer app'''
+    app_info = {}
     installinfo_plist = os.path.join(
         app_path, 'Contents/SharedSupport/InstallInfo.plist')
     if os.path.isfile(installinfo_plist):
         try:
             install_info = FoundationPlist.readPlist(installinfo_plist)
-            return install_info['System Image Info']['version']
+            app_info['version'] =  install_info['System Image Info']['version']
         except (FoundationPlist.FoundationPlistException,
                 IOError, KeyError, AttributeError, TypeError):
-            return ''
+            app_info['version'] = ''
+        return app_info
     sharedsupport_dmg = os.path.join(
         app_path, 'Contents/SharedSupport/SharedSupport.dmg')
     if os.path.isfile(sharedsupport_dmg):
@@ -131,12 +133,44 @@ def get_os_version(app_path):
             )
             try:
                 plist = FoundationPlist.readPlist(plist_path)
-                return plist['Assets'][0]['OSVersion']
-            except FoundationPlist.FoundationPlistException:
-                return ''
+                app_info['version'] = plist['Assets'][0]['OSVersion']
+                models = []
+                for asset in plist.get("Assets", []):
+                    models.extend(asset.get('SupportedDeviceModels', []))
+                app_info['SupportedDeviceModels'] = models
+            except (FoundationPlist.FoundationPlistException, KeyError, AttributeError):
+                app_info['version'] = ''
             finally:
                 dmgutils.unmountdmg(mountpoints[0])
-    return ''
+    return app_info
+
+
+def generate_installable_condition(models):
+    """Generates an NSPredicate expression to be used as an installable
+    condition limiting the hardware models this item is applicable for"""
+    board_ids = ['"' + item + '"' for item in models if item.startswith('Mac-')]
+    if board_ids:
+        board_id_list = ", ".join(board_ids)
+        board_id_predicate = "board_id IN {%s}" % board_id_list
+    else:
+        board_id_predicate = ""
+
+    device_ids = ['"' + item + '"' for item in models
+                  if not item.startswith('Mac-')]
+    if device_ids:
+        device_id_list = ", ".join(device_ids)
+        device_id_predicate = "device_id IN {%s}" % device_id_list
+    else:
+        device_id_predicate = ""
+
+    predicate = ""
+    if board_id_predicate and device_id_predicate:
+        predicate = board_id_predicate + " OR " + device_id_predicate
+    elif board_id_predicate:
+        predicate = board_id_predicate
+    elif device_id_predicate:
+        predicate = device_id_predicate
+    return predicate
 
 
 def setup_authrestart_if_applicable():
@@ -279,7 +313,8 @@ class StartOSInstallRunner(object):
         startosinstall_path = os.path.join(
             app_path, 'Contents/Resources/startosinstall')
 
-        os_vers_to_install = get_os_version(app_path)
+        app_info = get_info_from_app(app_path)
+        os_vers_to_install = app_info.get('version')
         if not os_vers_to_install:
             display.display_warning(
                 'Could not get OS version to install from application bundle.')
@@ -470,7 +505,8 @@ def get_startosinstall_catalog_info(mounted_dmgpath):
     image, using the startosinstall installation method'''
     app_path = find_install_macos_app(mounted_dmgpath)
     if app_path:
-        vers = get_os_version(app_path)
+        app_info = get_info_from_app(app_path)
+        vers = app_info.get('version')
         minimum_munki_version = '3.0.0.3211'
         minimum_os_version = '10.8'
         if vers:
@@ -517,18 +553,28 @@ def get_startosinstall_catalog_info(mounted_dmgpath):
                 minimum_munki_version = '5.1.0'
                 minimum_os_version = '10.9'
 
-            return {'RestartAction': 'RequireRestart',
-                    'apple_item': True,
-                    'description': description,
-                    'display_name': display_name,
-                    'installed_size': installed_size,
-                    'installer_type': 'startosinstall',
-                    'minimum_munki_version': minimum_munki_version,
-                    'minimum_os_version': minimum_os_version,
-                    'name': name,
-                    'supported_architectures': ["x86_64"],
-                    'uninstallable': False,
-                    'version': vers}
+            catalog_info = {
+                'RestartAction': 'RequireRestart',
+                'apple_item': True,
+                'description': description,
+                'display_name': display_name,
+                'installed_size': installed_size,
+                'installer_type': 'startosinstall',
+                'minimum_munki_version': minimum_munki_version,
+                'minimum_os_version': minimum_os_version,
+                'name': name,
+                'supported_architectures': ["x86_64"],
+                'uninstallable': False,
+                'version': vers
+            }
+
+            models = app_info.get('SupportedDeviceModels')
+            if models:
+                catalog_info['installable_condition_disabled'] = \
+                    generate_installable_condition(models)
+
+            return catalog_info
+
     return None
 
 
@@ -613,7 +659,8 @@ def get_stage_os_installer_catalog_info(app_path):
     # convert to kbytes
     appsize = int(appsize/1024)
 
-    vers = get_os_version(app_path)
+    app_info = get_info_from_app(app_path)
+    vers = app_info.get('version')
     minimum_munki_version = '6.0.0'
     minimum_os_version = '10.9'
     if vers:
@@ -635,17 +682,26 @@ def get_stage_os_installer_catalog_info(app_path):
             # never be less than the highest version we know about
             installed_size = int(26 * 1024 * 1024) - appsize
 
-        return {'description': description,
-                'description_staged': description_staged,
-                'display_name': display_name,
-                'display_name_staged': display_name_staged,
-                'installed_size_staged': installed_size,
-                'installer_type': 'stage_os_installer',
-                'minimum_munki_version': minimum_munki_version,
-                'minimum_os_version': minimum_os_version,
-                'name': display_name_staged.replace(' ', '_'),
-                'uninstallable': True,
-                'version': vers}
+        catalog_info = {
+            'description': description,
+            'description_staged': description_staged,
+            'display_name': display_name,
+            'display_name_staged': display_name_staged,
+            'installed_size_staged': installed_size,
+            'installer_type': 'stage_os_installer',
+            'minimum_munki_version': minimum_munki_version,
+            'minimum_os_version': minimum_os_version,
+            'name': display_name_staged.replace(' ', '_'),
+            'uninstallable': True,
+            'version': vers
+        }
+
+        models = app_info.get('SupportedDeviceModels')
+        if models:
+            catalog_info['installable_condition_disabled'] = generate_installable_condition(models)
+
+        return catalog_info
+
     return {}
 
 

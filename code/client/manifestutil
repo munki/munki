@@ -1,7 +1,7 @@
 #!/usr/local/munki/munki-python
 # encoding: utf-8
 #
-# Copyright 2011-2023 Greg Neagle.
+# Copyright 2011-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ manifestutil
 Created by Greg Neagle on 2011-03-04.
 """
 from __future__ import absolute_import, print_function
-
-# TODO: add support for delete-manifest
 
 import fnmatch
 import optparse
@@ -559,6 +557,36 @@ def rename_manifest(repo, args):
         update_cached_manifest_list(repo)
         return 0
     else:
+        return 1 # Operation not permitted
+
+def delete_manifest(repo, args):
+    '''Deletes a manifest'''
+    parser = MyOptionParser()
+    parser.set_usage('''delete-manifest MANIFESTNAME
+       Deletes the specified manifest''')
+    try:
+        _, arguments = parser.parse_args(args)
+    except MyOptParseError as errmsg:
+        print(str(errmsg), file=sys.stderr)
+        return 22 # Invalid argument
+    except MyOptParseExit:
+        return 0
+
+    if len(arguments) != 1:
+        parser.print_usage(sys.stderr)
+        return 7 # Argument list too long
+    manifestname = arguments[0]
+    existing_manifest_names = get_manifest_names(repo)
+    if manifestname not in existing_manifest_names:
+        print('No such manifest: %s' % manifestname, file=sys.stderr)
+        return 2 # No such file or directory
+    manifest_ref = os.path.join('manifests', manifestname)
+    try:
+        repo.delete(manifest_ref)
+        update_cached_manifest_list(repo)
+        return 0
+    except munkirepo.RepoError as err:
+        print(u'Error deleting %s: %s' % (manifestname, err), file=sys.stderr)
         return 1 # Operation not permitted
 
 
@@ -1104,6 +1132,7 @@ def main():
             'new-manifest':              'default',
             'copy-manifest':             'manifests',
             'rename-manifest':           'manifests',
+            'delete-manifest':           'manifests',
             'refresh-cache':             'default',
             'exit':                      'default',
             'help':                      'default',

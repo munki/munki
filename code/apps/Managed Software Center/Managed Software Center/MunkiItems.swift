@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/7/18.
-//  Copyright © 2018-2023 The Munki Project. All rights reserved.
+//  Copyright © 2018-2024 The Munki Project. All rights reserved.
 //
 
 import AppKit
@@ -707,6 +707,7 @@ class OptionalItem: GenericItem {
         if status.isEmpty {
             my["status"] = _get_status()
         }
+        my["days_available"] = getDaysPending(name)
     }
     
     func _get_status() -> String {
@@ -841,8 +842,20 @@ class OptionalItem: GenericItem {
                 warning_text = Bundle.main.localizedString(forKey: note, value: note, table: nil)
             }
             start_text += "<span class=\"warning\">\(filtered_html(warning_text))</span><br/><br/>"
-        } else if !dependent_items.isEmpty {
-            start_text += dependency_description()
+        } else {
+            if let days_available = my["days_available"] as? Int {
+                if days_available > 2 {
+                    let format_str = NSLocalizedString(
+                        "This update has been pending for %@ days.",
+                        comment: "Pending days message")
+                    let formatted_str = NSString(format: format_str as NSString,
+                                             String(days_available) as NSString)
+                    start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
+                }
+            }
+            if !(dependent_items.isEmpty) {
+                start_text += dependency_description()
+            }
         }
         return start_text + (my["raw_description"] as? String ?? "")
     }

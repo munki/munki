@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,7 @@
 		C0787F7B2315C6210054D130 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0787F7A2315C6210054D130 /* main.swift */; };
 		C0A7937E20AFAE0300F56DD5 /* MunkiStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */; };
 		C0A7938020B0EA7800F56DD5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A7937F20B0EA7800F56DD5 /* Utils.swift */; };
+		C0F4B7B52C24F9EE00B421D9 /* BlurredBackgroundController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F4B7B42C24F9EE00B421D9 /* BlurredBackgroundController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +75,7 @@
 		C0787F7A2315C6210054D130 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiStatusViewController.swift; sourceTree = "<group>"; };
 		C0A7937F20B0EA7800F56DD5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		C0F4B7B42C24F9EE00B421D9 /* BlurredBackgroundController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackgroundController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				C0A7937D20AFAE0300F56DD5 /* MunkiStatusViewController.swift */,
 				C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */,
 				C0A7937F20B0EA7800F56DD5 /* Utils.swift */,
+				C0F4B7B42C24F9EE00B421D9 /* BlurredBackgroundController.swift */,
 				C0544D4D20AF0EDA00DC86F6 /* Assets.xcassets */,
 				C0544D4F20AF0EDA00DC86F6 /* MainMenu.xib */,
 				C077FCFC257EF513001AA249 /* Info.plist */,
@@ -149,7 +152,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 1540;
 				ORGANIZATIONNAME = "The Munki Project";
 				TargetAttributes = {
 					C0544D4720AF0EDA00DC86F6 = {
@@ -213,6 +216,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		C05BD40521B76FD40025F304 /* Embed version info */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -235,6 +239,7 @@
 				C0A7938020B0EA7800F56DD5 /* Utils.swift in Sources */,
 				C04F825D20BB15F500F9C57D /* Localization.swift in Sources */,
 				C0787F7B2315C6210054D130 /* main.swift in Sources */,
+				C0F4B7B52C24F9EE00B421D9 /* BlurredBackgroundController.swift in Sources */,
 				C0544D4C20AF0EDA00DC86F6 /* AppDelegate.swift in Sources */,
 				C0A7937E20AFAE0300F56DD5 /* MunkiStatusViewController.swift in Sources */,
 				C0168E9020B1E1D80027BD78 /* LogViewController.swift in Sources */,
@@ -425,7 +430,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -441,7 +447,10 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/MunkiStatus/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MunkiStatus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -462,7 +471,10 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/MunkiStatus/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MunkiStatus;
 				PRODUCT_NAME = "$(TARGET_NAME)";

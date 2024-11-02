@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2009-2023 Greg Neagle.
+# Copyright 2009-2024 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ Created by Greg Neagle on 2016-12-14.
 Functions for finding, listing, etc processes
 """
 from __future__ import absolute_import, print_function
+# pylint: disable=consider-using-f-string
 
 import os
 import signal
@@ -33,7 +34,7 @@ from . import display
 
 def get_running_processes():
     """Returns a list of paths of running processes"""
-    proc = subprocess.Popen(['/bin/ps', '-axo' 'comm='],
+    proc = subprocess.Popen(['/bin/ps', '-axo', 'comm='],
                             shell=False, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
@@ -45,7 +46,7 @@ def get_running_processes():
                         '/Versions/A/Support/LaunchCFMApp')
         if launchcfmapp in proc_list:
             # we have a really old Carbon app
-            proc = subprocess.Popen(['/bin/ps', '-axwwwo' 'args='],
+            proc = subprocess.Popen(['/bin/ps', '-axwwwo', 'args='],
                                     shell=False, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
@@ -57,8 +58,8 @@ def get_running_processes():
                 if carbon_apps:
                     proc_list.extend(carbon_apps)
         return proc_list
-    else:
-        return []
+    # else
+    return []
 
 
 def is_app_running(appname):
@@ -106,7 +107,7 @@ def blocking_applications_running(pkginfoitem):
         # from 'installs' list if it exists
         appnames = [os.path.basename(item.get('path'))
                     for item in pkginfoitem.get('installs', [])
-                    if item.get('type') == 'application']
+                    if item.get('path') and item.get('type') == 'application']
 
     display.display_debug1("Checking for %s" % appnames)
     running_apps = [appname for appname in appnames
@@ -172,21 +173,21 @@ def force_logout_now():
     try:
         procs = find_processes(exe=LOGINWINDOW)
         users = {}
-        for pid in procs:
-            users[procs[pid]['user']] = pid
+        for pid, proc_info in procs:
+            users[proc_info['user']] = pid
 
         if 'root' in users:
             del users['root']
 
         # force MSU GUI to raise
-        fileref = open('/private/tmp/com.googlecode.munki.installatlogout', 'w')
+        fileref = open('/private/tmp/com.googlecode.munki.installatlogout', 'wb')
         fileref.close()
 
         # kill loginwindows to cause logout of current users, whether
         # active or switched away via fast user switching.
-        for user in users:
+        for _, pid in users:
             try:
-                os.kill(users[user], signal.SIGKILL)
+                os.kill(pid, signal.SIGKILL)
             except OSError:
                 pass
 

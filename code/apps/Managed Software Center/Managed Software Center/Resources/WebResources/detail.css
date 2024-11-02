@@ -43,6 +43,7 @@ body.product .product-detail .product-info {
     -webkit-box-flex: 1
 }
 body.product .product-detail .product-info .title h1 {
+    -webkit-user-select: text;
     margin-bottom: 2px;
     font-family: -apple-system, "Helvetica Neue", Helvetica;
     font-size: 24px;
@@ -55,6 +56,7 @@ body.product .product-detail .product-info .title a {
     color: currentcolor
 }
 body.product .product-detail .product-info .product-review h4 {
+    -webkit-user-select: text;
     margin-bottom: 4px;
     font-family: -apple-system, "Helvetica Neue", Helvetica;
     font-size: 16px;
@@ -63,6 +65,7 @@ body.product .product-detail .product-info .product-review h4 {
     /*text-shadow: rgba(255,255,255,1) 0 1px 0*/
 }
 body.product .product-detail .product-info .product-review p,body.product .product-detail .product-info .product-review div,body.product .product-detail .product-info .product-review ul {
+    -webkit-user-select: text;
     font-size: 14px;
     line-height: 18px;
     color: var(--text-color-normal);
@@ -135,6 +138,7 @@ body.product .sidebar .more-by div.lockup li.genre {
 }*/
 
 div.product-review a {
+    -webkit-user-select: text;
     color: var(--install-btn-background);
     font-size: 14px;
     line-height: 24px;
@@ -145,6 +149,7 @@ div.app-info {
 }
 
 div.app-info .information-item {
+    -webkit-user-select: text;
     font-size: 14px;
     padding-bottom: 10px;
     width: 50%;
@@ -152,6 +157,9 @@ div.app-info .information-item {
 }
 div.app-info .information-item .label {
     color: var(--text-color-subdued);
+}
+div.app-info .information-item a {
+    -webkit-user-select: text;
 }
 
 div.more-by {

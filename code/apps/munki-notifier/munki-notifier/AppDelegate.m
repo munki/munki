@@ -3,7 +3,7 @@
 //  munki-notifier
 //
 //  Created by Greg Neagle on 2/23/17.
-//  Copyright © 2018-2023 The Munki Project. All rights reserved.
+//  Copyright © 2018-2024 The Munki Project. All rights reserved.
 //  Much code lifted and adapted from https://github.com/julienXX/terminal-notifier
 //
 
@@ -16,8 +16,12 @@ NSString * const MunkiAppURL = @"munki://";
 NSString * const MunkiNotificationURL = @"munki://notify";
 long const DefaultUseNotificationCenterDays = 3;
 
-
 @implementation AppDelegate
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+{
+    return NSTerminateNow;
+}
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
@@ -266,7 +270,6 @@ long const DefaultUseNotificationCenterDays = 3;
         sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
     }
-    
     [NSApp terminate: self];
 }
 

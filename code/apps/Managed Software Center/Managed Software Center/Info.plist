@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>6.2.0</string>
+	<string>6.6.1</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -49,7 +49,7 @@
 	<key>NSDockTilePlugIn</key>
 	<string>MSCDockTilePlugin.docktileplugin</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2019-2023 The Munki Project. All rights reserved.</string>
+	<string>Copyright © 2019-2024 The Munki Project. All rights reserved.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

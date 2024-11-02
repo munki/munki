@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/11/18.
-//  Copyright © 2018-2023 The Munki Project. All rights reserved.
+//  Copyright © 2018-2024 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -173,8 +173,9 @@ class MSCStatusController: NSObject {
     func initStatusSession() {
         // Initialize the main window for update status
         statusWindowController._update_in_progress = true
+        statusWindowController.displayUpdatesProgressSpinner(true)
         if statusWindowController.currentPageIsUpdatesPage() {
-            statusWindowController.makeUsUnobnoxious()
+            //statusWindowController.makeUsUnobnoxious()
             statusWindowController.load_page("updates.html")
             statusWindowController.displayUpdateCount()
         }
@@ -183,6 +184,8 @@ class MSCStatusController: NSObject {
     func cleanUpStatusSession() {
         // Clean up after status session ends
         session_started = false
+        // stop the progress spinner in the sidebar
+        statusWindowController.displayUpdatesProgressSpinner(false)
         // reset all our status variables
         statusWindowController._update_in_progress = false
         _status_stopBtnDisabled = false
