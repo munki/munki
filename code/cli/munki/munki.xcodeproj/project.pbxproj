@@ -220,6 +220,27 @@
 		C0B3A8572CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
+		C0BF62D02CEC00E90030885D /* repoclean.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0BF62CF2CEC00E90030885D /* repoclean.swift */; };
+		C0BF62D42CEC04BD0030885D /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
+		C0BF62D52CEC05450030885D /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C0BF62D92CEC05AE0030885D /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF62D82CEC05AE0030885D /* ArgumentParser */; };
+		C0BF62DA2CEC07660030885D /* FileRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD52C2B7F2100090743 /* FileRepo.swift */; };
+		C0BF62DB2CEC076A0030885D /* GitFileRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364482C2F8EFE008DB215 /* GitFileRepo.swift */; };
+		C0BF62DC2CEC07710030885D /* RepoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013644C2C30F5D8008DB215 /* RepoFactory.swift */; };
+		C0BF62DD2CEC07760030885D /* repoutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FA72C45814F0021DA9C /* repoutils.swift */; };
+		C0BF62DE2CEC077F0030885D /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0BF62DF2CEC07AA0030885D /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C0BF62E02CEC07E00030885D /* versionutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074EA2C34A6AD00B86310 /* versionutils.swift */; };
+		C0BF62E12CEC08330030885D /* pkgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E72C34932400B86310 /* pkgutils.swift */; };
+		C0BF62E22CEC086C0030885D /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
+		C0BF62E32CEC11310030885D /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
+		C0BF62E42CEC115B0030885D /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
+		C0BF62E52CEC11870030885D /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
+		C0BF62E62CEC11990030885D /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
+		C0BF62E72CEC119D0030885D /* munkistatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A52C62C12E0019A067 /* munkistatus.swift */; };
+		C0BF62E82CEC11B10030885D /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
+		C0BF62E92CEC11CB0030885D /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
+		C0BF62EA2CEC11EB0030885D /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA22C457E4E0021DA9C /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
@@ -353,6 +374,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		C0BF62CB2CEC00E90030885D /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		C0D9C2492C5C5C920019A067 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -461,6 +491,8 @@
 		C0848D172C94D1840008B463 /* iconimporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = iconimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0848D192C94D1840008B463 /* iconimporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconimporter.swift; sourceTree = "<group>"; };
 		C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = unusedsoftware.swift; sourceTree = "<group>"; };
+		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0BF62CF2CEC00E90030885D /* repoclean.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoclean.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
@@ -539,6 +571,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0848D1F2C94D4610008B463 /* ArgumentParser in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0BF62CA2CEC00E90030885D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0BF62D92CEC05AE0030885D /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -661,6 +701,7 @@
 				C0D9C28B2C5EDFAE0019A067 /* appusaged */,
 				C0209B902C63E3B7007664A0 /* launchapp */,
 				C0848D182C94D1840008B463 /* iconimporter */,
+				C0BF62CE2CEC00E90030885D /* repoclean */,
 				C07A6FA62C2A82B400090743 /* Products */,
 				C01364502C311DFA008DB215 /* Frameworks */,
 			);
@@ -679,6 +720,7 @@
 				C0D9C28A2C5EDFAE0019A067 /* appusaged */,
 				C0209B8F2C63E3B7007664A0 /* launchapp */,
 				C0848D172C94D1840008B463 /* iconimporter */,
+				C0BF62CD2CEC00E90030885D /* repoclean */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -805,6 +847,14 @@
 				C0848D192C94D1840008B463 /* iconimporter.swift */,
 			);
 			path = iconimporter;
+			sourceTree = "<group>";
+		};
+		C0BF62CE2CEC00E90030885D /* repoclean */ = {
+			isa = PBXGroup;
+			children = (
+				C0BF62CF2CEC00E90030885D /* repoclean.swift */,
+			);
+			path = repoclean;
 			sourceTree = "<group>";
 		};
 		C0D9C24C2C5C5C920019A067 /* app_usage_monitor */ = {
@@ -981,6 +1031,26 @@
 			productReference = C0848D172C94D1840008B463 /* iconimporter */;
 			productType = "com.apple.product-type.tool";
 		};
+		C0BF62CC2CEC00E90030885D /* repoclean */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0BF62D32CEC00E90030885D /* Build configuration list for PBXNativeTarget "repoclean" */;
+			buildPhases = (
+				C0BF62C92CEC00E90030885D /* Sources */,
+				C0BF62CA2CEC00E90030885D /* Frameworks */,
+				C0BF62CB2CEC00E90030885D /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = repoclean;
+			packageProductDependencies = (
+				C0BF62D82CEC05AE0030885D /* ArgumentParser */,
+			);
+			productName = repoclean;
+			productReference = C0BF62CD2CEC00E90030885D /* repoclean */;
+			productType = "com.apple.product-type.tool";
+		};
 		C0D9C24A2C5C5C920019A067 /* app_usage_monitor */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C0D9C24F2C5C5C920019A067 /* Build configuration list for PBXNativeTarget "app_usage_monitor" */;
@@ -1069,6 +1139,9 @@
 					C0848D162C94D1840008B463 = {
 						CreatedOnToolsVersion = 15.4;
 					};
+					C0BF62CC2CEC00E90030885D = {
+						CreatedOnToolsVersion = 15.4;
+					};
 					C0D9C24A2C5C5C920019A067 = {
 						CreatedOnToolsVersion = 15.4;
 					};
@@ -1106,6 +1179,7 @@
 				C0D9C2892C5EDFAE0019A067 /* appusaged */,
 				C0209B8E2C63E3B7007664A0 /* launchapp */,
 				C0848D162C94D1840008B463 /* iconimporter */,
+				C0BF62CC2CEC00E90030885D /* repoclean */,
 			);
 		};
 /* End PBXProject section */
@@ -1405,6 +1479,33 @@
 				C0848D292C94D8230008B463 /* cliutils.swift in Sources */,
 				C0848D202C94D7600008B463 /* FileRepo.swift in Sources */,
 				C0848D232C94D76A0008B463 /* repoutils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0BF62C92CEC00E90030885D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0BF62DC2CEC07710030885D /* RepoFactory.swift in Sources */,
+				C0BF62D02CEC00E90030885D /* repoclean.swift in Sources */,
+				C0BF62E02CEC07E00030885D /* versionutils.swift in Sources */,
+				C0BF62E42CEC115B0030885D /* constants.swift in Sources */,
+				C0BF62EA2CEC11EB0030885D /* plistutils.swift in Sources */,
+				C0BF62E72CEC119D0030885D /* munkistatus.swift in Sources */,
+				C0BF62DD2CEC07760030885D /* repoutils.swift in Sources */,
+				C0BF62E12CEC08330030885D /* pkgutils.swift in Sources */,
+				C0BF62DF2CEC07AA0030885D /* cliutils.swift in Sources */,
+				C0BF62DB2CEC076A0030885D /* GitFileRepo.swift in Sources */,
+				C0BF62E82CEC11B10030885D /* reports.swift in Sources */,
+				C0BF62E22CEC086C0030885D /* fileutils.swift in Sources */,
+				C0BF62DE2CEC077F0030885D /* errors.swift in Sources */,
+				C0BF62D42CEC04BD0030885D /* utils.swift in Sources */,
+				C0BF62E92CEC11CB0030885D /* prefs.swift in Sources */,
+				C0BF62E52CEC11870030885D /* display.swift in Sources */,
+				C0BF62D52CEC05450030885D /* version.swift in Sources */,
+				C0BF62DA2CEC07660030885D /* FileRepo.swift in Sources */,
+				C0BF62E32CEC11310030885D /* admincommon.swift in Sources */,
+				C0BF62E62CEC11990030885D /* munkilog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1773,6 +1874,28 @@
 			};
 			name = Release;
 		};
+		C0BF62D12CEC00E90030885D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 52ZFZKM6BK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C0BF62D22CEC00E90030885D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 52ZFZKM6BK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		C0D9C2502C5C5C920019A067 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1918,6 +2041,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C0BF62D32CEC00E90030885D /* Build configuration list for PBXNativeTarget "repoclean" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0BF62D12CEC00E90030885D /* Debug */,
+				C0BF62D22CEC00E90030885D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C0D9C24F2C5C5C920019A067 /* Build configuration list for PBXNativeTarget "app_usage_monitor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1965,6 +2097,11 @@
 			productName = ArgumentParser;
 		};
 		C0B3A8592CD04D380057BA0E /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+		C0BF62D82CEC05AE0030885D /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
