@@ -197,13 +197,21 @@ class FileRepo: Repo {
         var fileList = [String]()
         let searchPath = (root as NSString).appendingPathComponent(kind)
         let filemanager = FileManager.default
-        let dirEnum = filemanager.enumerator(atPath: searchPath)
-        while let file = dirEnum?.nextObject() as? String {
+        guard let dirEnum = filemanager.enumerator(atPath: searchPath) else {
+            return [String]()
+        }
+        while let file = dirEnum.nextObject() as? String {
             let fullpath = (searchPath as NSString).appendingPathComponent(file)
+            let basename = (file as NSString).lastPathComponent
             if !pathIsDirectory(fullpath) {
-                let basename = (file as NSString).lastPathComponent
                 if !basename.hasPrefix(".") {
                     fileList.append(file)
+                }
+            } else {
+                // path is directory
+                if basename.hasPrefix(".") {
+                    // skip this directory
+                    dirEnum.skipDescendants()
                 }
             }
         }
