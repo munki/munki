@@ -115,6 +115,7 @@
 		C030A9F42C435113007F0B34 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
 		C030A9F62C435183007F0B34 /* readline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9F52C435183007F0B34 /* readline.swift */; };
 		C030A9F72C435183007F0B34 /* readline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9F52C435183007F0B34 /* readline.swift */; };
+		C03EC5BF2CFA372F00D2F1CA /* repoclean.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0BF62CF2CEC00E90030885D /* repoclean.swift */; };
 		C043ED1F2C4822C70047C025 /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
 		C043ED202C4822C70047C025 /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
 		C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
@@ -220,7 +221,6 @@
 		C0B3A8572CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
-		C0BF62D02CEC00E90030885D /* repoclean.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0BF62CF2CEC00E90030885D /* repoclean.swift */; };
 		C0BF62D42CEC04BD0030885D /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
 		C0BF62D52CEC05450030885D /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C0BF62D92CEC05AE0030885D /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF62D82CEC05AE0030885D /* ArgumentParser */; };
@@ -1487,7 +1487,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0BF62DC2CEC07710030885D /* RepoFactory.swift in Sources */,
-				C0BF62D02CEC00E90030885D /* repoclean.swift in Sources */,
 				C0BF62E02CEC07E00030885D /* versionutils.swift in Sources */,
 				C0BF62E42CEC115B0030885D /* constants.swift in Sources */,
 				C0BF62EA2CEC11EB0030885D /* plistutils.swift in Sources */,
@@ -1498,6 +1497,7 @@
 				C0BF62DB2CEC076A0030885D /* GitFileRepo.swift in Sources */,
 				C0BF62E82CEC11B10030885D /* reports.swift in Sources */,
 				C0BF62E22CEC086C0030885D /* fileutils.swift in Sources */,
+				C03EC5BF2CFA372F00D2F1CA /* repoclean.swift in Sources */,
 				C0BF62DE2CEC077F0030885D /* errors.swift in Sources */,
 				C0BF62D42CEC04BD0030885D /* utils.swift in Sources */,
 				C0BF62E92CEC11CB0030885D /* prefs.swift in Sources */,
@@ -1880,6 +1880,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -1891,6 +1892,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
