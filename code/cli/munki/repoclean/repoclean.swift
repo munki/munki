@@ -447,14 +447,62 @@ class RepoCleaner {
 
     /// Deletes items from the repo
     func deleteItems() {
-        // TODO: implement
-        print("Would delete items")
+        // remove old pkginfo and referenced pkgs
+        for item in itemsToDelete {
+            if let resourceIdentifier = item["resource_identifier"] as? String {
+                print("Removing \(resourceIdentifier)")
+                do {
+                    try repo.delete(resourceIdentifier)
+                } catch {
+                    printStderr("Error deleting \(resourceIdentifier): \(error.localizedDescription)")
+                }
+            }
+            for key in ["pkg_path", "uninstallpkg_path"] {
+                if let pkgPath = item[key] as? String,
+                   !pkgPath.isEmpty,
+                   !pkgsToKeep.contains(pkgPath)
+                {
+                    let pkgToRemove = "pkgs/" + pkgPath
+                    print("Removing \(pkgToRemove)")
+                    do {
+                        try repo.delete(pkgToRemove)
+                    } catch {
+                        printStderr("Error deleting \(pkgToRemove): \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+        // remove orphaned pkgs
+        for pkg in orphanedPkgs {
+            let pkgToRemove = "pkgs/" + pkg
+            print("Removing \(pkgToRemove)")
+            do {
+                try repo.delete(pkgToRemove)
+            } catch {
+                printStderr("Error deleting \(pkgToRemove): \(error.localizedDescription)")
+            }
+        }
     }
 
-    /// Calls makecatalogs to rebuild our catalogs
+    /// Rebuilds our catalogs
     func makeCatalogs() {
-        // TODO: implement
-        print("Would makecatalogs")
+        let options = MakeCatalogOptions(
+            skipPkgCheck: false,
+            force: false,
+            verbose: false
+        )
+        do {
+            var catalogsmaker = try CatalogsMaker(repo: repo, options: options)
+            let errors = catalogsmaker.makecatalogs()
+            if !errors.isEmpty {
+                print("\nThe following issues occurred while building catalogs:\n")
+                for error in errors {
+                    printStderr(error)
+                }
+            }
+        } catch {
+            printStderr("Error building catalogs: \(error.localizedDescription)")
+        }
     }
 
     ///  Clean our repo!
