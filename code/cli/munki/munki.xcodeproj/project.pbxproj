@@ -15,6 +15,14 @@
 		C0011CB62C7EC5B60004ED70 /* msuutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB42C7EC5B60004ED70 /* msuutils.swift */; };
 		C0011CB82C7F86480004ED70 /* distributednotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB72C7F86480004ED70 /* distributednotifications.swift */; };
 		C0011CB92C7F86480004ED70 /* distributednotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB72C7F86480004ED70 /* distributednotifications.swift */; };
+		C008A0402D1640170073ADBA /* server.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C27C2C5EA2200019A067 /* server.swift */; };
+		C008A0412D16401F0073ADBA /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2812C5EA2A00019A067 /* common.swift */; };
+		C008A0422D1641490073ADBA /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
+		C008A0432D1641600073ADBA /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C008A0442D16416F0073ADBA /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
+		C008A0452D1641B90073ADBA /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
+		C008A0462D16433C0073ADBA /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
+		C008A0472D1643670073ADBA /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
 		C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
 		C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
 		C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -1530,8 +1538,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C008A0442D16416F0073ADBA /* plistutils.swift in Sources */,
+				C008A0412D16401F0073ADBA /* common.swift in Sources */,
+				C008A0472D1643670073ADBA /* prefs.swift in Sources */,
 				C0D9C28D2C5EDFAE0019A067 /* main.swift in Sources */,
+				C008A0462D16433C0073ADBA /* sqlite3.swift in Sources */,
+				C008A0432D1641600073ADBA /* errors.swift in Sources */,
 				C0D9C2912C5EDFD70019A067 /* launchd.swift in Sources */,
+				C008A0422D1641490073ADBA /* appusage.swift in Sources */,
+				C008A0402D1640170073ADBA /* server.swift in Sources */,
+				C008A0452D1641B90073ADBA /* constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1567,6 +1583,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -1578,6 +1595,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -1932,6 +1950,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -1943,6 +1962,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
