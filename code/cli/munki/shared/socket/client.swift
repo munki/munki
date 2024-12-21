@@ -124,7 +124,7 @@ class UNIXDomainSocketClient {
     /// - Parameter message: The message to log.
     private func log(_ message: String) {
         if debug {
-            print("ClientUnixSocket: \(message)")
+            print("UNIXDomainSocketClient: \(message)")
         }
     }
 
@@ -132,7 +132,7 @@ class UNIXDomainSocketClient {
     /// - Parameter message: The error message to log.
     private func logError(_ message: String) {
         if debug {
-            print("ClientUnixSocket: [ERROR] \(message)")
+            print("UNIXDomainSocketClient: [ERROR] \(message)")
         }
     }
 }
