@@ -217,6 +217,8 @@
 		C0848D392C94F6D70008B463 /* launchd.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2562C5D391C0019A067 /* launchd.swift */; };
 		C0848D3A2C94F70C0008B463 /* scriptutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A22C61939E0019A067 /* scriptutils.swift */; };
 		C0848D3B2C94F7190008B463 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
+		C087AC2E2CFFC81B00DC3D59 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
+		C087AC2F2CFFCCB600DC3D59 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8572CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
@@ -1499,6 +1501,8 @@
 				C0BF62E22CEC086C0030885D /* fileutils.swift in Sources */,
 				C03EC5BF2CFA372F00D2F1CA /* repoclean.swift in Sources */,
 				C0BF62DE2CEC077F0030885D /* errors.swift in Sources */,
+				C087AC2E2CFFC81B00DC3D59 /* makecatalogslib.swift in Sources */,
+				C087AC2F2CFFCCB600DC3D59 /* munkihash.swift in Sources */,
 				C0BF62D42CEC04BD0030885D /* utils.swift in Sources */,
 				C0BF62E92CEC11CB0030885D /* prefs.swift in Sources */,
 				C0BF62E52CEC11870030885D /* display.swift in Sources */,
