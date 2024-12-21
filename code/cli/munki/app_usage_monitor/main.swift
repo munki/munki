@@ -44,15 +44,15 @@ class AppUsageClient {
 
     /// Send a request to appusaged
     func sendRequest(_ request: PlistDict) throws -> String {
-        let requestStr = try plistToString(request)
-        socket.write(requestStr)
+        let requestData = try plistToData(request)
+        socket.sendData(requestData)
         if socket.errCode != .noError {
             throw AppUsageClientError.socketError(
                 code: socket.errCode,
                 description: "Failed to write to \(APPUSAGED_SOCKET)"
             )
         }
-        let reply = socket.read(timeout: 1)
+        let reply = socket.readString(timeout: 1)
         if reply.isEmpty {
             return "ERROR:No reply"
         }

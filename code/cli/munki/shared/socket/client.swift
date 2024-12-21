@@ -16,7 +16,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import CoreFoundation
 import Darwin
 import Foundation
 
@@ -25,157 +24,115 @@ enum UNIXDomainSocketClientErrorCode: Int {
 }
 
 /// A basic implementation of Unix domain sockets
-/// We use CFSocket calls when we can, and fallback to Darwin (BSD/C) API
-/// when we must.
 class UNIXDomainSocketClient {
-    var socketRef: CFSocket?
+    private var socketDescriptor: Int32?
     var errCode: UNIXDomainSocketClientErrorCode = .noError
+    private var debug = false
+
+    init(debug: Bool = false) {
+        self.debug = debug
+    }
 
     /// close the socket if it exists
     func close() {
-        if let socket = socketRef {
-            CFSocketInvalidate(socket)
-            socketRef = nil
+        if let socket = socketDescriptor {
+            Darwin.close(socket)
+            socketDescriptor = nil
         }
     }
 
-    /// Create a UNIX domain socket object and connect
-    func connect(to path: String) {
-        // get a CFData reference to our socket path
-        guard let adrDataRef = addrRefCreate(path) else {
-            errCode = .addressError
-            return
-        }
-        // create a CFSocket object
-        guard let socket = CFSocketCreate(kCFAllocatorDefault,
-                                          PF_UNIX,
-                                          SOCK_STREAM,
-                                          0,
-                                          0,
-                                          nil,
-                                          nil)
-        else {
+    /// Attempts to connect to the Unix socket.
+    func connect(to socketPath: String) {
+        log("Attempting to connect to socket path: \(socketPath)")
+
+        socketDescriptor = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
+        guard let socketDescriptor, socketDescriptor != -1 else {
+            logError("Error creating socket")
             errCode = .createError
             return
         }
-        // connect
-        guard CFSocketConnectToAddress(socket,
-                                       adrDataRef,
-                                       1) == .success
-        else {
+
+        var address = sockaddr_un()
+        address.sun_family = sa_family_t(AF_UNIX)
+        socketPath.withCString { ptr in
+            withUnsafeMutablePointer(to: &address.sun_path.0) { dest in
+                _ = strcpy(dest, ptr)
+            }
+        }
+
+        log("File exists: \(FileManager.default.fileExists(atPath: socketPath))")
+
+        if Darwin.connect(socketDescriptor, withUnsafePointer(to: &address) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, socklen_t(MemoryLayout<sockaddr_un>.size)) == -1 {
+            logError("Error connecting to socket - \(String(cString: strerror(errno)))")
             errCode = .connectError
             return
         }
-        // save the socket obj for later use
-        socketRef = socket
+
+        log("Successfully connected to socket")
     }
 
-    /// send text data to our socket
-    func write(_ text: String) {
-        // ensure we have a non-nil socketRef
-        guard let socket = socketRef else {
+    /// Reads data from the connected socket.
+    func readData(maxsize: Int = 1024, timeout: Int = 10) -> Data? {
+        guard let socketDescriptor else {
+            logError("Socket descriptor is nil")
             errCode = .socketError
-            return
-        }
-        if text.count == 0 || errCode != .noError {
-            return
-        }
-        // make a CFData reference from our text data
-        guard let data = text.data(using: .utf8) as CFData? else {
-            errCode = .writeError
-            return
-        }
-        errCode = .noError
-        guard CFSocketSendData(socket, nil, data, 30) == .success else {
-            errCode = .writeError
-            return
-        }
-    }
-
-    /// Replacement for FD_SET macro
-    private func fdSet(_ fd: Int32, set: inout fd_set) {
-        let intOffset = Int(fd / 32)
-        let bitOffset = fd % 32
-        let mask = Int32(1 << bitOffset)
-        switch intOffset {
-        case 0: set.fds_bits.0 = set.fds_bits.0 | mask
-        case 1: set.fds_bits.1 = set.fds_bits.1 | mask
-        case 2: set.fds_bits.2 = set.fds_bits.2 | mask
-        case 3: set.fds_bits.3 = set.fds_bits.3 | mask
-        case 4: set.fds_bits.4 = set.fds_bits.4 | mask
-        case 5: set.fds_bits.5 = set.fds_bits.5 | mask
-        case 6: set.fds_bits.6 = set.fds_bits.6 | mask
-        case 7: set.fds_bits.7 = set.fds_bits.7 | mask
-        case 8: set.fds_bits.8 = set.fds_bits.8 | mask
-        case 9: set.fds_bits.9 = set.fds_bits.9 | mask
-        case 10: set.fds_bits.10 = set.fds_bits.10 | mask
-        case 11: set.fds_bits.11 = set.fds_bits.11 | mask
-        case 12: set.fds_bits.12 = set.fds_bits.12 | mask
-        case 13: set.fds_bits.13 = set.fds_bits.13 | mask
-        case 14: set.fds_bits.14 = set.fds_bits.14 | mask
-        case 15: set.fds_bits.15 = set.fds_bits.15 | mask
-        case 16: set.fds_bits.16 = set.fds_bits.16 | mask
-        case 17: set.fds_bits.17 = set.fds_bits.17 | mask
-        case 18: set.fds_bits.18 = set.fds_bits.18 | mask
-        case 19: set.fds_bits.19 = set.fds_bits.19 | mask
-        case 20: set.fds_bits.20 = set.fds_bits.20 | mask
-        case 21: set.fds_bits.21 = set.fds_bits.21 | mask
-        case 22: set.fds_bits.22 = set.fds_bits.22 | mask
-        case 23: set.fds_bits.23 = set.fds_bits.23 | mask
-        case 24: set.fds_bits.24 = set.fds_bits.24 | mask
-        case 25: set.fds_bits.25 = set.fds_bits.25 | mask
-        case 26: set.fds_bits.26 = set.fds_bits.26 | mask
-        case 27: set.fds_bits.27 = set.fds_bits.27 | mask
-        case 28: set.fds_bits.28 = set.fds_bits.28 | mask
-        case 29: set.fds_bits.29 = set.fds_bits.29 | mask
-        case 30: set.fds_bits.30 = set.fds_bits.30 | mask
-        case 31: set.fds_bits.31 = set.fds_bits.31 | mask
-        default: break
-        }
-    }
-
-    /// uses POSIX select() to wait for data to be available on the socket
-    private func dataAvailable(timeout: Int = 10) -> Bool {
-        // ensure we have a non-nil socketRef
-        guard let socket = socketRef else {
-            errCode = .socketError
-            return false
-        }
-        var timer = timeval()
-        timer.tv_sec = timeout
-        timer.tv_usec = 0
-        let socket_fd = CFSocketGetNative(socket)
-        var readfds = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-        fdSet(socket_fd, set: &readfds)
-        let result = select(socket_fd + 1, &readfds, nil, nil, &timer)
-        return result > 0
-    }
-
-    /// read a message from our socket
-    func read(maxsize: Int = 1024, timeout: Int = 10) -> String {
-        // there's no CFSocketRead method, use BSD socket recv method instead
-        // ensure we have a non-nil socketRef
-        guard let socket = socketRef else {
-            errCode = .socketError
-            return ""
+            return nil
         }
         // wait up until timeout seconds for data to become available
-        if !dataAvailable(timeout: timeout) {
+        if !dataAvailable(socket: socketDescriptor, timeout: timeout) {
             errCode = .timeoutError
-            return ""
+            return nil
         }
-        // allocate some space for the return message.
-        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: maxsize)
-        defer { buffer.deallocate() }
-        // read from socket
-        let msg_len = recv(CFSocketGetNative(socket), buffer, maxsize, 0)
-        if let msg = NSString(bytes: buffer,
-                              length: msg_len,
-                              encoding: String.Encoding.utf8.rawValue) as String?
-        {
-            return msg
+        // read the data
+        let data = socket_read(socket: socketDescriptor, maxsize: maxsize)
+        if let data {
+            log("Received: \(data.count) bytes")
+            return data
+        } else {
+            logError("Error reading from socket or connection closed")
+            errCode = .readError
+            return nil
         }
-        errCode = .readError
+    }
+
+    func readString(maxsize: Int = 1024, timeout: Int = 10) -> String {
+        let data = readData(maxsize: maxsize, timeout: timeout)
+        if let data, let str = String(data: data, encoding: .utf8) {
+            return str
+        }
         return ""
+    }
+
+    /// Sends the provided data to the connected socket.
+    /// - Parameter data: The data to send.
+    func sendData(_ data: Data) {
+        guard let socketDescriptor else {
+            logError("Socket descriptor is nil")
+            errCode = .socketError
+            return
+        }
+        let bytesWritten = socket_write(socket: socketDescriptor, data: data)
+        if bytesWritten == -1 {
+            logError("Error sending data")
+            errCode = .writeError
+            return
+        }
+        log("\(bytesWritten) bytes written")
+    }
+
+    /// Logs a message.
+    /// - Parameter message: The message to log.
+    private func log(_ message: String) {
+        if debug {
+            print("ClientUnixSocket: \(message)")
+        }
+    }
+
+    /// Logs an error message.
+    /// - Parameter message: The error message to log.
+    private func logError(_ message: String) {
+        if debug {
+            print("ClientUnixSocket: [ERROR] \(message)")
+        }
     }
 }
