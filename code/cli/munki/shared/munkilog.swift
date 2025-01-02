@@ -68,7 +68,7 @@ func munkiLog(_ message: String, logFile: String = "") {
 }
 
 /// Rotate a log
-private func rotateLog(_ logFilePath: String) {
+func rotateLog(_ logFilePath: String) {
     if !pathExists(logFilePath) {
         // nothing to do
         return

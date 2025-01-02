@@ -54,6 +54,7 @@ func fdSet(_ fd: Int32, set: inout fd_set) {
 func dataAvailable(socket: Int32?, timeout: Int = 10) -> Bool {
     // ensure we have a non-nil socketRef
     guard let socket else {
+        // print("select error: socket is nil")
         return false
     }
     var timer = timeval()
@@ -62,33 +63,98 @@ func dataAvailable(socket: Int32?, timeout: Int = 10) -> Bool {
     var readfds = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
     fdSet(socket, set: &readfds)
     let result = select(socket + 1, &readfds, nil, nil, &timer)
+    // print("select result: \(result) on socket: \(socket)")
     return result > 0
 }
 
-/// Reads data from a socket.
-func socket_read(socket: Int32, maxsize: Int = 1024) -> Data? {
-    var buffer = [UInt8](repeating: 0, count: maxsize)
-    let bytesRead = read(socket, &buffer, buffer.count)
-    if bytesRead <= 0 {
-        return nil
-    }
-    let data = Data(buffer[..<bytesRead])
-    return data
+enum UNIXDomainSocketError: Error {
+    case addressError
+    case createError
+    case bindError
+    case listenError
+    case socketError
+    case connectError
+    case readError
+    case writeError
+    case timeoutError
 }
 
-/// Sends the provided data to the socket.
-/// - Parameters
-///  - socket: the socket
-///  - data: The data to send.
-///  Returns number of bytes written; -1 means an error occurred
-func socket_write(socket: Int32, data: Data) -> Int {
-    var bytesWritten = 0
-    if data.isEmpty {
-        return 0
+class UNIXDomainSocket {
+    var fd: Int32 = -1
+
+    init(fd: Int32) {
+        self.fd = fd
     }
-    data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-        let pointer = bytes.bindMemory(to: UInt8.self)
-        bytesWritten = Darwin.send(socket, pointer.baseAddress!, data.count, 0)
+
+    init() throws {
+        fd = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
+        if fd == -1 {
+            throw UNIXDomainSocketError.createError
+        }
     }
-    return bytesWritten
+
+    deinit {
+        if fd >= 0 {
+            close()
+        }
+    }
+
+    func close() {
+        if fd >= 0 {
+            Darwin.shutdown(fd, SHUT_WR)
+            Darwin.close(fd)
+            fd = -1
+        }
+    }
+
+    func read(maxsize: Int = 1024, timeout: Int = 0) throws -> Data {
+        if fd < 0 {
+            throw UNIXDomainSocketError.socketError
+        }
+        if timeout > 0 {
+            if !dataAvailable(socket: fd, timeout: timeout) {
+                throw UNIXDomainSocketError.timeoutError
+            }
+        }
+        var buffer = [UInt8](repeating: 0, count: maxsize)
+        let bytesRead = Darwin.read(fd, &buffer, buffer.count)
+        if bytesRead <= 0 {
+            throw UNIXDomainSocketError.readError
+        }
+        let data = Data(buffer[..<bytesRead])
+        return data
+    }
+
+    func readString(maxsize: Int = 1024, timeout: Int = 0) throws -> String {
+        let data = try read(maxsize: maxsize, timeout: timeout)
+        if let str = String(data: data, encoding: .utf8) {
+            return str
+        }
+        throw UNIXDomainSocketError.readError
+    }
+
+    func write(data: Data) throws -> Int {
+        if fd < 0 {
+            throw UNIXDomainSocketError.socketError
+        }
+        var bytesWritten = 0
+        if data.isEmpty {
+            return 0
+        }
+        data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+            let pointer = bytes.bindMemory(to: UInt8.self)
+            bytesWritten = Darwin.send(fd, pointer.baseAddress!, data.count, 0)
+        }
+        if bytesWritten < 0 {
+            throw UNIXDomainSocketError.writeError
+        }
+        return bytesWritten
+    }
+
+    func write(string: String) throws -> Int {
+        if let data = string.data(using: .utf8) {
+            return try write(data: data)
+        }
+        throw UNIXDomainSocketError.writeError
+    }
 }

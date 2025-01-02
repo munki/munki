@@ -4,7 +4,7 @@
 //
 //  Created by Greg Neagle on 8/1/24.
 //
-//  Copyright 2024 Greg Neagle.
+//  Copyright 2024-2025 Greg Neagle.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,38 +21,31 @@
 import AppKit
 import Foundation
 
-enum AppUsageClientError: Error {
-    case socketError(code: UNIXDomainSocketClientErrorCode, description: String)
-    case taskError(description: String)
-}
+private let DEBUG = false
+private let APPUSAGED_SOCKET = "/var/run/appusaged"
+
+class AppUsageClientError: MunkiError {}
 
 /// Handles communication with appusaged daemon
 class AppUsageClient {
-    let APPUSAGED_SOCKET = "/var/run/appusaged"
-    let socket = UNIXDomainSocketClient()
+    var client: UNIXDomainSocketClient?
 
     /// Connect to appusaged
     func connect() throws {
-        socket.connect(to: APPUSAGED_SOCKET)
-        if socket.errCode != .noError {
-            throw AppUsageClientError.socketError(
-                code: socket.errCode,
-                description: "Failed to connect to \(APPUSAGED_SOCKET)"
-            )
-        }
+        client = try UNIXDomainSocketClient(debug: DEBUG)
+        try client?.connect(to: APPUSAGED_SOCKET)
     }
 
     /// Send a request to appusaged
     func sendRequest(_ request: PlistDict) throws -> String {
-        let requestData = try plistToData(request)
-        socket.sendData(requestData)
-        if socket.errCode != .noError {
-            throw AppUsageClientError.socketError(
-                code: socket.errCode,
-                description: "Failed to write to \(APPUSAGED_SOCKET)"
-            )
+        guard let client else {
+            throw AppUsageClientError("No valid socket client")
         }
-        let reply = socket.readString(timeout: 1)
+        guard let requestData = try? plistToData(request) else {
+            throw AppUsageClientError("Failed to serialize request")
+        }
+        try client.sendData(requestData)
+        let reply = (try? client.readString(timeout: 1)) ?? ""
         if reply.isEmpty {
             return "ERROR:No reply"
         }
@@ -61,7 +54,7 @@ class AppUsageClient {
 
     /// Disconnect from appusaged
     func disconnect() {
-        socket.close()
+        client?.close()
     }
 
     /// Send a request and return the result
@@ -154,6 +147,8 @@ class NotificationHandler: NSObject {
                 ["event": event,
                  "app_dict": appDict]
             )
+            // TODO: report result?
+            // TODO: handle errors during usage.process (log them?)
         }
     }
 
@@ -180,6 +175,8 @@ class NotificationHandler: NSObject {
                  "name": installInfo["name"] ?? "unknown",
                  "version": installInfo["version"] ?? "unknown"]
             )
+            // TODO: report result?
+            // TODO: handle errors during usage.process (log them?)
         }
     }
 }

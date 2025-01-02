@@ -7,47 +7,33 @@
 
 import Foundation
 
-enum UNIXDomainSocketServerErrorCode: Int {
-    case noError = 0, addressError, createError, bindError, listenError, socketError, connectError, readError, writeError, timeoutError
-}
-
 class UNIXDomainSocketServer {
-    var serverSocket: Int32?
-    var clientSocket: Int32?
+    var serverSocket: UNIXDomainSocket?
     var debug = false
-    var errCode: UNIXDomainSocketServerErrorCode = .noError
+    var listening: Bool = false
 
-    init(socketPath: String, requestHandler _: @escaping (Int32) -> Void, debug: Bool = false) {
+    init(socketPath: String, debug: Bool = false) throws {
         self.debug = debug
-        createSocket()
-        bindSocket(to: socketPath)
+        serverSocket = try UNIXDomainSocket()
+        try bindSocket(to: socketPath)
     }
 
-    init(fd: Int32, requestHandler _: @escaping (Int32) -> Void, debug: Bool = false) {
+    init(fd: Int32, debug: Bool = false) {
         self.debug = debug
-        serverSocket = fd
+        serverSocket = UNIXDomainSocket(fd: fd)
     }
 
-    /// Starts the server and begins listening for connections.
-    func start() {
-        listenOnSocket()
-        waitForConnection()
-    }
-
-    /// Creates a socket for communication.
-    private func createSocket() {
-        serverSocket = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
-        guard serverSocket != nil, serverSocket != -1 else {
-            logError("Error creating socket")
-            errCode = .createError
-            return
+    deinit {
+        if listening {
+            stop()
         }
-        log("Socket created successfully")
     }
 
     /// Binds the created socket to a specific address.
-    private func bindSocket(to socketPath: String) {
-        guard let socket = serverSocket else { return }
+    private func bindSocket(to socketPath: String) throws {
+        guard let socket = serverSocket else {
+            throw UNIXDomainSocketError.socketError
+        }
 
         var address = sockaddr_un()
         address.sun_family = sa_family_t(AF_UNIX)
@@ -59,119 +45,115 @@ class UNIXDomainSocketServer {
 
         unlink(socketPath) // Remove any existing socket file
 
-        if Darwin.bind(socket, withUnsafePointer(to: &address) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, socklen_t(MemoryLayout<sockaddr_un>.size)) == -1 {
+        if Darwin.bind(socket.fd, withUnsafePointer(to: &address) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, socklen_t(MemoryLayout<sockaddr_un>.size)) == -1 {
             logError("Error binding socket - \(String(cString: strerror(errno)))")
-            errCode = .bindError
-            return
+            throw UNIXDomainSocketError.bindError
         }
-        log("Binding to socket path: \(socketPath)")
+        if debug {
+            log("Binding to socket path: \(socketPath)")
+        }
     }
 
     /// Listens for connections on the bound socket.
-    private func listenOnSocket() {
-        guard let socket = serverSocket else { return }
-
-        if Darwin.listen(socket, 1) == -1 {
-            logError("Error listening on socket - \(String(cString: strerror(errno)))")
-            errCode = .listenError
-            return
+    private func listenOnSocket() throws {
+        guard let socket = serverSocket else {
+            throw UNIXDomainSocketError.socketError
         }
-        log("Listening for connections...")
+
+        if Darwin.listen(socket.fd, 1) == -1 {
+            logError("Error listening on socket - \(String(cString: strerror(errno)))")
+            throw UNIXDomainSocketError.listenError
+        }
+        if debug {
+            log("Listening for connections...")
+        }
     }
 
     /// Waits for a connection and accepts it when available.
-    private func waitForConnection() {
-        DispatchQueue.global().async { [weak self] in
-            self?.acceptConnection()
+    private func waitForConnection(withTimeout timeout: Int = 0) async throws {
+        guard let socket = serverSocket else {
+            throw UNIXDomainSocketError.socketError
         }
-    }
-
-    /// function to be overridden in subclasses
-    func handleConnection() {
-        // override me!
+        if timeout > 0 {
+            if !dataAvailable(socket: socket.fd, timeout: timeout) {
+                throw UNIXDomainSocketError.timeoutError
+            }
+        }
+        try await acceptConnection()
     }
 
     /// Accepts a connection request from a client.
-    private func acceptConnection() {
-        guard let socket = serverSocket else { return }
+    private func acceptConnection() async throws {
+        guard let socket = serverSocket else {
+            throw UNIXDomainSocketError.socketError
+        }
 
         var clientAddress = sockaddr_un()
         var clientAddressLen = socklen_t(MemoryLayout<sockaddr_un>.size)
-        clientSocket = Darwin.accept(socket, withUnsafeMutablePointer(to: &clientAddress) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, &clientAddressLen)
+        let clientSocketFD = Darwin.accept(socket.fd, withUnsafeMutablePointer(to: &clientAddress) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, &clientAddressLen)
 
-        if clientSocket == -1 {
+        if clientSocketFD == -1 {
             logError("Error accepting connection - \(String(cString: strerror(errno)))")
-            errCode = .connectError
-            return
+            throw UNIXDomainSocketError.connectError
         }
-        log("Connection accepted!")
-        handleConnection()
+        if debug {
+            log("Connection accepted!")
+        }
+        let clientSocket = UNIXDomainSocket(fd: clientSocketFD)
+        await handleConnection(clientSocket)
     }
 
-    /// Reads data from the connected socket.
-    func readData(maxsize: Int = 1024, timeout: Int = 10) -> Data? {
-        guard let socketDescriptor = clientSocket else {
-            logError("Socket descriptor is nil")
-            errCode = .socketError
-            return nil
-        }
-        // wait up until timeout seconds for data to become available
-        if !dataAvailable(socket: socketDescriptor, timeout: timeout) {
-            errCode = .timeoutError
-            return nil
-        }
-        // read the data
-        let data = socket_read(socket: socketDescriptor, maxsize: maxsize)
-        if let data {
-            log("Received: \(data.count) bytes")
-            return data
-        } else {
-            logError("Error reading from socket or connection closed")
-            errCode = .readError
-            return nil
-        }
+    /// function to be overridden in subclasses
+    func handleConnection(_: UNIXDomainSocket) async {
+        // override me!
     }
 
-    /// Sends the provided data to the connected client.
-    /// - Parameter data: The data to send
-    func sendData(_ data: Data) {
-        guard let socketDescriptor = clientSocket else {
-            logError("Socket descriptor is nil")
-            errCode = .socketError
-            return
+    /// Starts the server and begins listening for connections.
+    func run(withTimeout timeout: Int = 0) async throws {
+        try listenOnSocket()
+        listening = true
+        while listening {
+            do {
+                try await waitForConnection(withTimeout: timeout)
+            } catch let e as UNIXDomainSocketError {
+                stop()
+                switch e {
+                case .timeoutError:
+                    if debug {
+                        log("Timeout waiting for connection")
+                    }
+                default:
+                    logError("\(e)")
+                }
+            }
         }
-        let bytesWritten = socket_write(socket: socketDescriptor, data: data)
-        if bytesWritten == -1 {
-            logError("Error sending data")
-            errCode = .writeError
-            return
-        }
-        log("\(bytesWritten) bytes written")
     }
 
     /// Stops the server and closes any open connections.
     func stop() {
-        if let clientSocket {
-            log("Closing client socket...")
-            close(clientSocket)
-        }
         if let socket = serverSocket {
-            log("Closing server socket...")
-            close(socket)
+            if debug {
+                log("Closing server socket...")
+            }
+            socket.close()
+            serverSocket = nil
         }
         // unlink(socketPath)
-        log("Broadcasting stopped.")
+        listening = false
+        if debug {
+            log("Broadcasting stopped.")
+        }
     }
 
     /// Logs a success message.
     /// - Parameter message: The message to log.
     func log(_ message: String) {
-        print("ServerUnixSocket: \(message)")
+        print("UNIXDomainSocketServer: \(message)")
     }
 
     /// Logs an error message.
     /// - Parameter message: The message to log.
     func logError(_ message: String) {
-        print("ServerUnixSocket: [ERROR] \(message)")
+        print("UNIXDomainSocketServer: [ERROR] \(message)")
     }
 }

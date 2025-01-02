@@ -16,40 +16,35 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Darwin
 import Foundation
-
-enum UNIXDomainSocketClientErrorCode: Int {
-    case noError = 0, addressError, createError, socketError, connectError, readError, writeError, timeoutError
-}
 
 /// A basic implementation of Unix domain sockets
 class UNIXDomainSocketClient {
-    private var socketDescriptor: Int32?
-    var errCode: UNIXDomainSocketClientErrorCode = .noError
+    private var socket: UNIXDomainSocket?
     private var debug = false
 
-    init(debug: Bool = false) {
+    init(debug: Bool = false) throws {
         self.debug = debug
+        socket = try UNIXDomainSocket()
+    }
+
+    deinit {
+        close()
     }
 
     /// close the socket if it exists
     func close() {
-        if let socket = socketDescriptor {
-            Darwin.close(socket)
-            socketDescriptor = nil
-        }
+        socket?.close()
+        socket = nil
     }
 
     /// Attempts to connect to the Unix socket.
-    func connect(to socketPath: String) {
+    func connect(to socketPath: String) throws {
         log("Attempting to connect to socket path: \(socketPath)")
 
-        socketDescriptor = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
-        guard let socketDescriptor, socketDescriptor != -1 else {
-            logError("Error creating socket")
-            errCode = .createError
-            return
+        guard let socket, socket.fd != -1 else {
+            logError("Invalid socket descriptor")
+            throw UNIXDomainSocketError.socketError
         }
 
         var address = sockaddr_un()
@@ -62,60 +57,48 @@ class UNIXDomainSocketClient {
 
         log("File exists: \(FileManager.default.fileExists(atPath: socketPath))")
 
-        if Darwin.connect(socketDescriptor, withUnsafePointer(to: &address) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, socklen_t(MemoryLayout<sockaddr_un>.size)) == -1 {
+        if Darwin.connect(socket.fd, withUnsafePointer(to: &address) { $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { $0 } }, socklen_t(MemoryLayout<sockaddr_un>.size)) == -1 {
             logError("Error connecting to socket - \(String(cString: strerror(errno)))")
-            errCode = .connectError
-            return
+            throw UNIXDomainSocketError.connectError
         }
 
         log("Successfully connected to socket")
     }
 
     /// Reads data from the connected socket.
-    func readData(maxsize: Int = 1024, timeout: Int = 10) -> Data? {
-        guard let socketDescriptor else {
-            logError("Socket descriptor is nil")
-            errCode = .socketError
-            return nil
-        }
-        // wait up until timeout seconds for data to become available
-        if !dataAvailable(socket: socketDescriptor, timeout: timeout) {
-            errCode = .timeoutError
-            return nil
+    func readData(maxsize: Int = 1024, timeout: Int = 10) throws -> Data {
+        guard let socket, socket.fd != -1 else {
+            logError("Invalid socket descriptor")
+            throw UNIXDomainSocketError.socketError
         }
         // read the data
-        let data = socket_read(socket: socketDescriptor, maxsize: maxsize)
-        if let data {
+        do {
+            let data = try socket.read(maxsize: maxsize, timeout: timeout)
             log("Received: \(data.count) bytes")
             return data
-        } else {
+        } catch let e as UNIXDomainSocketError {
             logError("Error reading from socket or connection closed")
-            errCode = .readError
-            return nil
+            throw e
         }
     }
 
-    func readString(maxsize: Int = 1024, timeout: Int = 10) -> String {
-        let data = readData(maxsize: maxsize, timeout: timeout)
-        if let data, let str = String(data: data, encoding: .utf8) {
-            return str
-        }
-        return ""
+    func readString(maxsize: Int = 1024, timeout: Int = 10) throws -> String {
+        let data = try readData(maxsize: maxsize, timeout: timeout)
+        return String(data: data, encoding: .utf8) ?? ""
     }
 
     /// Sends the provided data to the connected socket.
     /// - Parameter data: The data to send.
-    func sendData(_ data: Data) {
-        guard let socketDescriptor else {
-            logError("Socket descriptor is nil")
-            errCode = .socketError
-            return
+    func sendData(_ data: Data) throws {
+        guard let socket, socket.fd != -1 else {
+            logError("Invalid socket descriptor")
+            throw UNIXDomainSocketError.socketError
         }
-        let bytesWritten = socket_write(socket: socketDescriptor, data: data)
+        log("Sending \(data.count) bytes")
+        let bytesWritten = try socket.write(data: data)
         if bytesWritten == -1 {
             logError("Error sending data")
-            errCode = .writeError
-            return
+            throw UNIXDomainSocketError.writeError
         }
         log("\(bytesWritten) bytes written")
     }
