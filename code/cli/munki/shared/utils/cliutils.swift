@@ -19,16 +19,6 @@
 //  limitations under the License.
 
 import Darwin
-import Foundation
-
-/// similar to print() function, but prints to stderr
-func printStderr(_ items: Any..., separator: String = " ", terminator: String = "\n") {
-    let output = items
-        .map { String(describing: $0) }
-        .joined(separator: separator) + terminator
-
-    FileHandle.standardError.write(output.data(using: .utf8)!)
-}
 
 /// Removes a final newline character from a string if present
 func trimTrailingNewline(_ s: String) -> String {
