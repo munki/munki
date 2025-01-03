@@ -19,6 +19,7 @@
 //  limitations under the License.
 
 import Darwin
+import Foundation
 
 /// Removes a final newline character from a string if present
 func trimTrailingNewline(_ s: String) -> String {
