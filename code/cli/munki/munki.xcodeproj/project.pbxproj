@@ -36,6 +36,11 @@
 		C008A0592D25B21A0073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C008A05A2D25B21A0073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C008A05B2D25B25B0073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C008A05C2D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C008A05D2D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C008A05E2D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C008A05F2D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C008A0602D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
 		C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
 		C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -1213,6 +1218,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C008A05F2D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0209B922C63E3B7007664A0 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1456,6 +1462,7 @@
 				C07A6FDC2C2CF19600090743 /* cliutils.swift in Sources */,
 				C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */,
 				C01364452C2DD1BA008DB215 /* plistutils.swift in Sources */,
+				C008A05C2D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */,
 				C06C21532C90A6600023E9D9 /* munkistatus.swift in Sources */,
 				C07A6FCB2C2B5C3A00090743 /* prefs.swift in Sources */,
@@ -1532,6 +1539,7 @@
 				C0BF62DE2CEC077F0030885D /* errors.swift in Sources */,
 				C087AC2E2CFFC81B00DC3D59 /* makecatalogslib.swift in Sources */,
 				C087AC2F2CFFCCB600DC3D59 /* munkihash.swift in Sources */,
+				C008A0602D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0BF62D42CEC04BD0030885D /* utils.swift in Sources */,
 				C0BF62E92CEC11CB0030885D /* prefs.swift in Sources */,
 				C0BF62E52CEC11870030885D /* display.swift in Sources */,
@@ -1549,6 +1557,7 @@
 				C0D9C2522C5C5D1F0019A067 /* errors.swift in Sources */,
 				C0D9C24E2C5C5C920019A067 /* main.swift in Sources */,
 				C0D9C2852C5EA3410019A067 /* common.swift in Sources */,
+				C008A05E2D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0D9C2542C5C5EBC0019A067 /* constants.swift in Sources */,
 				C0D9C2552C5C5EC00019A067 /* plistutils.swift in Sources */,
 				C0D9C2832C5EA33A0019A067 /* client.swift in Sources */,
@@ -1593,6 +1602,7 @@
 				C0E9940A2C5BF56C006FDF44 /* version.swift in Sources */,
 				C0E994072C5BF52E006FDF44 /* plistutils.swift in Sources */,
 				C0E994042C5BF4DC006FDF44 /* prefs.swift in Sources */,
+				C008A05D2D2850E90073ADBA /* stderrout.swift in Sources */,
 				C06C21512C90A6320023E9D9 /* stoprequested.swift in Sources */,
 				C0E993FD2C5BEDFA006FDF44 /* display.swift in Sources */,
 			);
