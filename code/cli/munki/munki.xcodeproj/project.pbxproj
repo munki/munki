@@ -41,6 +41,7 @@
 		C008A05E2D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C008A05F2D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C008A0602D2850E90073ADBA /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C008A0622D2861220073ADBA /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C008A0612D2861220073ADBA /* ArgumentParser */; };
 		C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
 		C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
 		C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -248,6 +249,8 @@
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
+		C0B7FA012D288C2700CC14F0 /* authrestart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B7FA002D288C2700CC14F0 /* authrestart.swift */; };
+		C0B7FA022D288C2700CC14F0 /* authrestart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B7FA002D288C2700CC14F0 /* authrestart.swift */; };
 		C0BF62D42CEC04BD0030885D /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
 		C0BF62D52CEC05450030885D /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C0BF62D92CEC05AE0030885D /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0BF62D82CEC05AE0030885D /* ArgumentParser */; };
@@ -332,7 +335,6 @@
 		C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941D2C5C10FE006FDF44 /* ArgumentParser */; };
 		C0E994202C5C1103006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941F2C5C1103006FDF44 /* ArgumentParser */; };
 		C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994212C5C1109006FDF44 /* ArgumentParser */; };
-		C0E994242C5C110E006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994232C5C110E006FDF44 /* ArgumentParser */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -518,6 +520,7 @@
 		C0848D172C94D1840008B463 /* iconimporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = iconimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0848D192C94D1840008B463 /* iconimporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconimporter.swift; sourceTree = "<group>"; };
 		C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = unusedsoftware.swift; sourceTree = "<group>"; };
+		C0B7FA002D288C2700CC14F0 /* authrestart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = authrestart.swift; sourceTree = "<group>"; };
 		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0BF62CF2CEC00E90030885D /* repoclean.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoclean.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
@@ -627,7 +630,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0E994242C5C110E006FDF44 /* ArgumentParser in Frameworks */,
+				C008A0622D2861220073ADBA /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -818,6 +821,7 @@
 				C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */,
 				C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */,
 				C06C21442C8F8C390023E9D9 /* appleupdates.swift */,
+				C0B7FA002D288C2700CC14F0 /* authrestart.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1128,7 +1132,7 @@
 			);
 			name = removepackages;
 			packageProductDependencies = (
-				C0E994232C5C110E006FDF44 /* ArgumentParser */,
+				C008A0612D2861220073ADBA /* ArgumentParser */,
 			);
 			productName = removepackages;
 			productReference = C0E993F52C5BEDAB006FDF44 /* removepackages */;
@@ -1334,6 +1338,7 @@
 				C0D9C2972C6012C80019A067 /* dmg.swift in Sources */,
 				C07AED6B2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07A6FA92C2A82B400090743 /* managedsoftwareupdate.swift in Sources */,
+				C0B7FA012D288C2700CC14F0 /* authrestart.swift in Sources */,
 				C0D9C2A32C61939E0019A067 /* scriptutils.swift in Sources */,
 				C0D9C29D2C6151350019A067 /* installer.swift in Sources */,
 				C0D9C29A2C607D390019A067 /* xattr.swift in Sources */,
@@ -1382,6 +1387,7 @@
 				C01792EC2C75089F008CBC22 /* licensing.swift in Sources */,
 				C0D00FB72C45BCB90021DA9C /* errors.swift in Sources */,
 				C07A9D9E2C86CB3A00D5D4B2 /* msuoptions.swift in Sources */,
+				C0B7FA022D288C2700CC14F0 /* authrestart.swift in Sources */,
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
 				C06C213B2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */,
@@ -2171,6 +2177,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C008A0612D2861220073ADBA /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
 		C0848D1E2C94D4610008B463 /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
@@ -2202,11 +2213,6 @@
 			productName = ArgumentParser;
 		};
 		C0E994212C5C1109006FDF44 /* ArgumentParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
-			productName = ArgumentParser;
-		};
-		C0E994232C5C110E006FDF44 /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
