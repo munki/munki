@@ -46,9 +46,6 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
     task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
 
-    // set up input pipe
-    let inPipe = Pipe()
-    task.standardInput = inPipe
     // set up our stdout and stderr pipes and handlers
     let outputPipe = Pipe()
     outputPipe.fileHandleForReading.readabilityHandler = { fh in
@@ -68,8 +65,19 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
             results.error.append(String(data: data, encoding: .utf8)!)
         }
     }
+    let inputPipe = Pipe()
+    inputPipe.fileHandleForWriting.writeabilityHandler = { fh in
+        if !stdIn.isEmpty {
+            if let data = stdIn.data(using: .utf8) {
+                fh.write(data)
+            }
+        }
+        fh.closeFile()
+        inputPipe.fileHandleForWriting.writeabilityHandler = nil
+    }
     task.standardOutput = outputPipe
     task.standardError = errorPipe
+    task.standardInput = inputPipe
 
     do {
         try task.run()
@@ -78,23 +86,17 @@ func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLI
         results.exitcode = -1
         return results
     }
-    if stdIn != "" {
-        if let data = stdIn.data(using: .utf8) {
-            inPipe.fileHandleForWriting.write(data)
-        }
-    }
-    inPipe.fileHandleForWriting.closeFile()
     // task.waitUntilExit()
     while task.isRunning {
         // loop until process exits
-        usleep(100)
+        usleep(10000)
     }
 
     while outputPipe.fileHandleForReading.readabilityHandler != nil ||
         errorPipe.fileHandleForReading.readabilityHandler != nil
     {
         // loop until stdout and stderr pipes close
-        usleep(100)
+        usleep(10000)
     }
 
     results.exitcode = Int(task.terminationStatus)
@@ -144,7 +146,7 @@ class AsyncProcessRunner {
     init(_ tool: String,
          arguments: [String] = [],
          environment: [String: String] = [:],
-         stdIn _: String = "")
+         stdIn: String = "")
     {
         task.executableURL = URL(fileURLWithPath: tool)
         task.arguments = arguments
@@ -174,8 +176,19 @@ class AsyncProcessRunner {
                 self.processError(String(data: data, encoding: .utf8)!)
             }
         }
+        let inputPipe = Pipe()
+        inputPipe.fileHandleForWriting.writeabilityHandler = { fh in
+            if !stdIn.isEmpty {
+                if let data = stdIn.data(using: .utf8) {
+                    fh.write(data)
+                }
+            }
+            fh.closeFile()
+            inputPipe.fileHandleForWriting.writeabilityHandler = nil
+        }
         task.standardOutput = outputPipe
         task.standardError = errorPipe
+        task.standardInput = inputPipe
     }
 
     deinit {
