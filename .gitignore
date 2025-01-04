@@ -12,3 +12,6 @@ code/apps/munkishim/build/
 # ignore any pkgs build by tool scripts
 munkitools*.pkg
 Python.framework
+
+# ignore paths related to building swift munki
+code/cli/munki/build/
