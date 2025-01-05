@@ -160,3 +160,39 @@ func performAuthRestart(
     displayError(result.error)
     return false
 }
+
+/// Do a shutdown if needed, or an authrestart if allowed/possible, else do a normal restart.
+func doAuthorizedOrNormalRestart(
+    username: String = "",
+    password: String = "",
+    shutdown: Bool = false
+) {
+    if shutdown {
+        // we need a shutdown here instead of any type of restart
+        displayInfo("Shutting down now.")
+        displayDebug1("Performing a regular shutdown...")
+        _ = runCLI("/sbin/shutdown", arguments: ["-h", "-o", "now"])
+        return
+    }
+    displayInfo("Restarting now.")
+    let performAuthRestarts = boolPref("PerformAuthRestarts") ?? false
+    let haveRecoveryKeyFile = !(stringPref("RecoveryKeyFile") ?? "").isEmpty
+    if filevaultIsActive(),
+       performAuthRestarts,
+       haveRecoveryKeyFile || !password.isEmpty
+    {
+        displayDebug1("Configured to perform AuthRestarts...")
+        // try to perform an auth restart
+        if !performAuthRestart(username: username, password: password) {
+            // if we got to here then the auth restart failed
+            // notify that it did then perform a normal restart
+            displayWarning("Authorized Restart failed. Performing normal restart...")
+        } else {
+            // we sucessfully triggered an authrestart
+            return
+        }
+    }
+    // fall back to normal restart
+    displayDebug1("Performing a regular restart...")
+    _ = runCLI("/sbin/shutdown", arguments: ["-r", "now"])
+}
