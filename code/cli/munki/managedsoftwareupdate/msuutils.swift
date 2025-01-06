@@ -263,9 +263,9 @@ func doRestart(shutdown: Bool = false) {
         // no-one is logged in or we're at the loginwindow
         usleep(5_000_000)
         if shutdown {
-            // TODO: doAuthorizedOrNormalRestart(shutdown: shutdown)
-        } else if false { // TODO: !authrestartdRestart() {
-            // TODO: doAuthorizedOrNormalRestart(shutdown: shutdown)
+            doAuthorizedOrNormalRestart(shutdown: shutdown)
+        } else if !performAuthRestart() {
+            doAuthorizedOrNormalRestart()
         }
     } else {
         if DisplayOptions.munkistatusoutput {
