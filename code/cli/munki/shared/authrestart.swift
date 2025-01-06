@@ -18,6 +18,8 @@
 
 import Foundation
 
+// TODO: these functions are all called by authrestartd. In that context, using the displayFOO() functions makes no sense. Figure out something better.
+
 /// Check if FileVault is enabled; returns true or false accordingly.
 func filevaultIsActive() -> Bool {
     displayDebug1("Checking if FileVault is enabled...")

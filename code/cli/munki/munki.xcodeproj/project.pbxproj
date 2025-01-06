@@ -303,6 +303,11 @@
 		C0D00FB82C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
 		C0D00FB92C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
 		C0D00FBA2C45BCB90021DA9C /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0D66AB42D2C82CF009EF807 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
+		C0D66AB52D2C82E4009EF807 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C0D66AB62D2C82F5009EF807 /* display.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364572C3265D6008DB215 /* display.swift */; };
+		C0D66AB72D2C830B009EF807 /* munkistatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A52C62C12E0019A067 /* munkistatus.swift */; };
+		C0D66AB82D2C832E009EF807 /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
 		C0D9C24E2C5C5C920019A067 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C24D2C5C5C920019A067 /* main.swift */; };
 		C0D9C2522C5C5D1F0019A067 /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
 		C0D9C2542C5C5EBC0019A067 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
@@ -1292,9 +1297,14 @@
 				C00519AA2D2A5C370060DDB6 /* authrestart.swift in Sources */,
 				C00519AC2D2ADF530060DDB6 /* server.swift in Sources */,
 				C00519B22D2AE3AD0060DDB6 /* munkilog.swift in Sources */,
+				C0D66AB82D2C832E009EF807 /* reports.swift in Sources */,
+				C0D66AB62D2C82F5009EF807 /* display.swift in Sources */,
 				C00519B32D2B65FA0060DDB6 /* plistutils.swift in Sources */,
 				C00519AB2D2ADF470060DDB6 /* errors.swift in Sources */,
+				C0D66AB42D2C82CF009EF807 /* prefs.swift in Sources */,
 				C00519AD2D2ADF5A0060DDB6 /* common.swift in Sources */,
+				C0D66AB52D2C82E4009EF807 /* cliutils.swift in Sources */,
+				C0D66AB72D2C830B009EF807 /* munkistatus.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1702,11 +1712,14 @@
 		C00519A62D2A5B850060DDB6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				INSTALL_PATH = /usr/local/munki;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -1714,11 +1727,14 @@
 		C00519A72D2A5B850060DDB6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 52ZFZKM6BK;
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				INSTALL_PATH = /usr/local/munki;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

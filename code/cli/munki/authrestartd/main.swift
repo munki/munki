@@ -67,6 +67,7 @@ class FDEUtil {
                 let password = server.storedPassword ?? ""
                 let username = server.storedUsername ?? ""
                 doAuthorizedOrNormalRestart(username: username, password: password)
+                server.log("Triggered restart")
                 return "RESTARTING"
             } else {
                 throw FDEUtilError(logAndReturn("Restart request denied: request must come from root"))
@@ -82,6 +83,7 @@ class FDEUtil {
                 let username = server.storedUsername ?? ""
                 let delayMinutes = request["delayminutes"] as? Int ?? -1
                 if performAuthRestart(username: username, password: password, delayMinutes: delayMinutes) {
+                    server.log("Configured delayed auth restart")
                     return "DONE"
                 } else {
                     throw FDEUtilError(logAndReturn("Delayed auth restart request failed"))
@@ -334,19 +336,25 @@ func main() async -> Int32 {
         return -1
     }
 
-    /* do {
-        let daemon = try AuthRestartServer(socketPath: "/Users/Shared/authrestartd.socket", debug: DEBUG)
-     } catch {
-         munkiLog("Could not initialize \(APPNAME): \(error)", logFile: LOGFILENAME)
-         return -1
-     } */
+    /*
+     guard let daemon = try? AuthRestartServer(socketPath: "/var/run/authrestartd", debug: DEBUG)
+      else {
+          munkiLog("Could not initialize \(APPNAME)", logFile: LOGFILENAME)
+          return -1
+      }
+     */
     let daemon = AuthRestartServer(fd: socketFD, debug: DEBUG)
     daemon.rotateServerLog()
     // daemon.log("\(APPNAME) starting")
     do {
         try await daemon.run(withTimeout: 10)
+        // try await daemon.run()
     } catch {
         daemon.logError("\(APPNAME) failed: \(error)")
+        return -1
     }
     return 0
 }
+
+/// run it!
+await exit(main())
