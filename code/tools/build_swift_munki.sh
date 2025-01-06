@@ -9,7 +9,7 @@ check_exit_code() {
 
 SWIFT_MUNKI_DIR="./cli/munki"
 
-for TOOL in managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged launchapp iconimporter repoclean ; do
+for TOOL in managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged authrestartd launchapp iconimporter repoclean ; do
     xcodebuild -project "$SWIFT_MUNKI_DIR/munki.xcodeproj" -configuration Release -scheme $TOOL build
     check_exit_code "$?" "Error building $TOOL"
 done
