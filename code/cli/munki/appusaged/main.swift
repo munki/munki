@@ -233,17 +233,19 @@ func main() async -> Int32 {
         return -1
     }
 
-    /* do {
-        let daemon = try AppUsageServer(socketPath: "/Users/Shared/appusaged.socket", debug: DEBUG)
-     } catch {
-         munkiLog("Could not initialize \(APPNAME): \(error)", logFile: LOGFILENAME)
-         return -1
-     } */
+    /*
+     guard let daemon = try? AppUsageServer(socketPath: "/Users/Shared/appusaged.socket", debug: DEBUG)
+     else {
+          munkiLog("Could not initialize \(APPNAME)", logFile: LOGFILENAME)
+          return -1
+      }
+     */
     let daemon = AppUsageServer(fd: socketFD, debug: DEBUG)
     daemon.rotateServerLog()
     // daemon.log("\(APPNAME) starting")
     do {
         try await daemon.run(withTimeout: 10)
+        // try await daemon.run()
     } catch {
         daemon.logError("\(APPNAME) failed: \(error)")
     }
