@@ -225,3 +225,51 @@ func currentExecutableDir(appendingPathComponent: String = "") -> String {
     }
     return appendingPathComponent
 }
+
+/// Check the permissions on a given file path; fail if owner or group
+/// is not root/admin or the group is not 'wheel', or
+/// if other users are able to write to the file. This prevents
+/// escalated execution of arbitrary code.
+func verifyPathOwnershipAndPermissions(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    var attributes: NSDictionary
+    do {
+        attributes = try filemanager.attributesOfItem(atPath: path) as NSDictionary
+    } catch {
+        printStderr("\(path): could not get filesystem attributes")
+        return false
+    }
+    let owner = attributes.fileOwnerAccountName()
+    let group = attributes.fileGroupOwnerAccountName()
+    let mode = attributes.filePosixPermissions()
+    if owner != "root" {
+        printStderr("\(path) owner is not root!")
+        return false
+    }
+    if !["admin", "wheel"].contains(group) {
+        printStderr("\(path) group is not in wheel or admin!")
+        return false
+    }
+    if UInt16(mode) & S_IWOTH != 0 {
+        printStderr("\(path) is world writable!")
+        return false
+    }
+    // passed all the tests!
+    return true
+}
+
+/// Make sure that the executable and all containing directories are owned
+/// by root:wheel or root:admin, and not writeable by other users.
+func verifyExecutableOwnershipAndPermissions() -> Bool {
+    guard var path = Bundle.main.executablePath else {
+        printStderr("Could not get path to this executable!")
+        return false
+    }
+    while path != "/" {
+        if !verifyPathOwnershipAndPermissions(path) {
+            return false
+        }
+        path = (path as NSString).deletingLastPathComponent
+    }
+    return true
+}
