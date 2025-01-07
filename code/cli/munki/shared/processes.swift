@@ -24,23 +24,6 @@ func getRunningProcesses() -> [String] {
     return processPaths
 }
 
-/// Returns a list of tuples containing the pid and executable path of running processes
-func runningProcessesWithPids() -> [(pid: Int32, path: String)] {
-    let procList = UNIXProcessList()
-    var processTuples = [(Int32, String)]()
-    for proc in procList {
-        if proc.pid != 0,
-           let data = argumentData(for: proc.pid)
-        {
-            let args = (try? parseArgumentData(data)) ?? []
-            if !args.isEmpty {
-                processTuples.append((pid: proc.pid, path: args[0]))
-            }
-        }
-    }
-    return processTuples
-}
-
 /// Tries to determine if the application in appname is currently running
 func isAppRunning(_ appName: String) -> Bool {
     displayDetail("Checking if \(appName) is running...")
@@ -106,8 +89,8 @@ func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
 /// this is used to see if the managedsoftwareupdate script is already running
 func pythonScriptRunning(_ scriptName: String) -> Int32? {
     let ourPid = ProcessInfo().processIdentifier
-    let processTuples = runningProcessesWithPids()
-    for item in processTuples {
+    let processes = UNIXProcessListWithPaths()
+    for item in processes {
         if item.pid == ourPid {
             continue
         }
@@ -133,8 +116,8 @@ func pythonScriptRunning(_ scriptName: String) -> Int32? {
 /// as long as it isn't our pid
 func executableRunning(_ name: String) -> Int32? {
     let ourPid = ProcessInfo().processIdentifier
-    let processTuples = runningProcessesWithPids()
-    for item in processTuples {
+    let processes = UNIXProcessListWithPaths()
+    for item in processes {
         if item.pid == ourPid {
             continue
         }

@@ -52,6 +52,7 @@ let INSTALLATSTARTUPFLAG = "/Users/Shared/.com.googlecode.munki.installatstartup
 let INSTALLATLOGOUTFLAG = "/private/tmp/com.googlecode.munki.installatlogout"
 let UPDATECHECKLAUNCHFILE = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
+let MSCLAUNCHFILE = "/var/run/com.googlecode.munki.ManagedSoftwareCenter"
 
 /// postinstall actions
 enum PostAction: Int, Codable, Comparable {

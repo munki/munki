@@ -118,7 +118,7 @@ private func stringValueForIOServiceProperty(service: io_registry_entry_t, key: 
 
 // MARK: info functions that call IOKit
 
-/// Returns mouse/keyboard idel time in nanoseconds
+/// Returns mouse/keyboard idle time in nanoseconds
 /// (1/1000000000) of a second
 func hidIdleTime() -> Int {
     let idleTime = IORegistryEntryCreateCFProperty(
