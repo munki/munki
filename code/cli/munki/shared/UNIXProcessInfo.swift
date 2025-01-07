@@ -163,3 +163,36 @@ func executableAndArgsForPid(_ pid: Int32) -> [String]? {
     }
     return nil
 }
+
+struct UNIXProcessInfoWithPath {
+    let pid: Int32
+    let ppid: Int32
+    let uid: UInt32
+    let command: String
+    let path: String
+}
+
+/// Returns a list of running processes with pid, ppid, uid, command, and path
+func UNIXProcessListWithPaths() -> [UNIXProcessInfoWithPath] {
+    let procList = UNIXProcessList()
+    var processes = [UNIXProcessInfoWithPath]()
+    for proc in procList {
+        if proc.pid != 0,
+           let data = argumentData(for: proc.pid)
+        {
+            let args = (try? parseArgumentData(data)) ?? []
+            if !args.isEmpty {
+                processes.append(
+                    UNIXProcessInfoWithPath(
+                        pid: proc.pid,
+                        ppid: proc.ppid,
+                        uid: proc.uid,
+                        command: proc.command,
+                        path: args[0]
+                    )
+                )
+            }
+        }
+    }
+    return processes
+}
