@@ -140,7 +140,7 @@ func extractAppBitsFromPkgArchive(_ archivePath: String, exportDir: String) -> I
                     "*.app/Contents/Info.plist",
                     "*.app/Contents/Resources/*.icns"]
     )
-    if result.exitcode != 0 {
+    if result.exitcode != 0, pathExists("/usr/bin/aa") {
         // pax failed. Maybe this Payload is an Apple Archive
         result = runCLI(
             "/usr/bin/aa",
