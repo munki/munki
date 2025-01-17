@@ -55,7 +55,7 @@ class AuthRestartClient(object):
         '''Send a request to authrestartd'''
         self.socket.send(writePlistToString(request))
         # use select so we don't hang indefinitely if authrestartd dies
-        ready = select.select([self.socket.fileno()], [], [], 2)
+        ready = select.select([self.socket.fileno()], [], [], 10)
         if ready[0]:
             reply = self.socket.recv(8192).decode("UTF-8")
         else:
