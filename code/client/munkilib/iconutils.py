@@ -124,7 +124,7 @@ def extractAppBitsFromPkgArchive(archive_path, target_dir):
                '*.app/Contents/Info.plist',
                '*.app/Contents/Resources/*.icns']
         result = subprocess.call(cmd)
-        if result != 0:
+        if result != 0 and os.path.exists("/usr/bin/aa"):
             # pax failed. Maybe Apple Archive format?
             cmd = ["/usr/bin/aa", "extract",
                    "-i", archive_path,
