@@ -149,6 +149,7 @@ class NotificationHandler: NSObject {
             )
             // TODO: report result?
             // TODO: handle errors during usage.process (log them?)
+            // (Note: Python version does nothing with result or errors)
         }
     }
 
@@ -177,6 +178,7 @@ class NotificationHandler: NSObject {
             )
             // TODO: report result?
             // TODO: handle errors during usage.process (log them?)
+            // (Note: Python version does nothing with result or errors)
         }
     }
 }
