@@ -65,10 +65,6 @@ struct MakePkgInfo: ParsableCommand {
     ))
     var installerItem: String?
 
-    mutating func validate() throws {
-        // TODO: validate installerEnvironment
-    }
-
     mutating func run() throws {
         if version {
             print(getVersion())
