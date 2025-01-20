@@ -65,8 +65,6 @@ struct MunkiImport: AsyncParsableCommand {
     var installerItem = ""
 
     mutating func validate() throws {
-        // TODO: validate installerEnvironment
-
         if munkiImportOptions.version {
             return
         }

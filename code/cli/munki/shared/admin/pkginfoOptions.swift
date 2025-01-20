@@ -199,7 +199,7 @@ struct ApplePackageOptions: ParsableArguments {
     mutating func validate() throws {
         // each element of installerEnvironment should translate to one dict element
         if installerEnvironment.count != installerEnvironmentDict.keys.count {
-            throw ValidationError("'installer-environment' values must take the form of 'key=value")
+            throw ValidationError("'installer-environment' values must take the form of 'key=value', and 'key' may not be repeated.")
         }
     }
 }
