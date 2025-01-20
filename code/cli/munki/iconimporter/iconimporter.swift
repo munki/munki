@@ -91,6 +91,7 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, item: PlistDict) {
 
 /// Generate a PNG from a disk image containing an application
 // TODO: handle case where there are multiple apps in items_to_copy
+// (Python version just picks the first one, so that would be an enhancement)
 func generatePNGFromDMGItem(_ repo: Repo, item: PlistDict) {
     let itemName = item["name"] as? String ?? "UNKNOWN"
     guard let dmgPath = getInstallerItemPath(repo: repo, pkginfo: item) else {
