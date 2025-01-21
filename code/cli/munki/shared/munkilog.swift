@@ -19,6 +19,7 @@
 //  limitations under the License.
 
 import Foundation
+import OSLog
 
 /// Returns the logging level
 func loggingLevel() -> Int {
@@ -42,19 +43,18 @@ func logNamed(_ name: String) -> String {
 
 /// General logging function
 func munkiLog(_ message: String, logFile: String = "") {
-    // TODO: add support for logging to /var/log/system.log
-    // TODO: add support for logging to Apple unified logging
-
     // date format like `Jul 01 2024 17:30:36 -0700`
     let dateformatter = DateFormatter()
     dateformatter.dateFormat = "MMM dd yyyy HH:mm:ss Z"
     let timestamp = dateformatter.string(from: Date())
     let logString = "\(timestamp) \(message)\n"
     var logPath = ""
+    var subsystem = "com.googlecode.munki.managedsoftwareupdate"
     if logFile.isEmpty {
         logPath = mainLogPath()
     } else {
         logPath = logNamed(logFile)
+        subsystem = "com.googlecode.munki.\(logFile)"
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
         if !pathExists(logPath) {
@@ -64,6 +64,11 @@ func munkiLog(_ message: String, logFile: String = "") {
             let _ = fh.seekToEndOfFile()
             fh.write(logData)
         }
+    }
+    // log to Apple unified logging
+    if #available(macOS 11.0, *), boolPref("LogToSyslog") ?? false {
+        let logger = Logger(subsystem: subsystem, category: "")
+        logger.log("\(message, privacy: .public)")
     }
 }
 

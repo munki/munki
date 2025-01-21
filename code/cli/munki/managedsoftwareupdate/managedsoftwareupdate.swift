@@ -511,7 +511,6 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         configureDisplayOptions()
         await doCleanupTasks(runType: runtype)
         initializeReport()
-        // TODO: support logging to syslog and unified logging
 
         // install handlers for SIGINT and SIGTERM
         let sigintSrc = installSignalHandler(SIGINT)
