@@ -43,9 +43,10 @@ func logNamed(_ name: String) -> String {
 
 /// General logging function
 func munkiLog(_ message: String, logFile: String = "") {
-    // date format like `Jul 01 2024 17:30:36 -0700`
-    let dateformatter = DateFormatter()
-    dateformatter.dateFormat = "MMM dd yyyy HH:mm:ss Z"
+    // RFC 3339 date format like `2024-07-01T17:30:32-08:00`
+    let dateformatter = ISO8601DateFormatter()
+    dateformatter.timeZone = TimeZone.current
+    dateformatter.formatOptions = [.withInternetDateTime, .withSpaceBetweenDateAndTime, .withFractionalSeconds]
     let timestamp = dateformatter.string(from: Date())
     let logString = "\(timestamp) \(message)\n"
     var logPath = ""
