@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright 2009-2024 Greg Neagle.
+# Copyright 2009-2025 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
