@@ -4,7 +4,7 @@
 //
 //  Created by Greg Neagle on 7/2/24.
 //  Functions for comparing version strings
-//  Copyright 2024 Greg Neagle.
+//  Copyright 2024-2025 Greg Neagle.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
