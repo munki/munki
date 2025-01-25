@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/7/18.
-//  Copyright © 2018-2024 The Munki Project. All rights reserved.
+//  Copyright © 2018-2025 The Munki Project. All rights reserved.
 //
 
 import AppKit
