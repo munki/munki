@@ -628,7 +628,8 @@ class Gurl(NSObject):
         self.log('Allowing OS to handle authentication request')
         return False
 
-    # getCertRefs_
+    # getCertRefs_ takes a certificate ref, and attempts to construct the certificate chain.
+    # this requires that any certificates in the chain, are present in the Keychain.
     def getCertChainRefs_(self, cert_ref):
         status, trust = SecTrustCreateWithCertificates(cert_ref, SecPolicyCreateBasicX509(), None)
         if status != errSecSuccess:
@@ -734,11 +735,13 @@ class Gurl(NSObject):
                 cert_data = SecCertificateCopyData(cert_ref)
                 cert = Certificate.load(cert_data.bytes().tobytes())
 
-                # attempt to get the full certificate chain to walk, rather than
-                # 
-                certChainRefs = self.getCertChainRefs_(cert_ref)
+                # includes the certificate issuer in the accepted subjects, 
+                # to retain pre-chain behaviour
                 certSubjects = [dict(cert.native["tbs_certificate"]["issuer"])]
 
+                # if we get a chain result back from the keychain
+                # also use the subjects of issuing CAs as part of the trust evaluation
+                certChainRefs = self.getCertChainRefs_(cert_ref)
                 if certChainRefs != None:
                     for c in certChainRefs:
                         cert_data = SecCertificateCopyData(c)
