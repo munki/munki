@@ -20,6 +20,7 @@ Created by Greg Neagle on 2013-11-21.
 Modified in Feb 2016 to add support for NSURLSession.
 Updated June 2019 for compatibility with Python 3 and PyObjC 5.1.2+
 Updated May 2022 for compatibilty with PyObjC 8.5 on macOS Mojave
+Updated Feb 2025 to add support for Certificate Chains when using Client Certificates
 
 curl replacement using NSURLConnection and friends
 
@@ -65,7 +66,12 @@ from Security import (errSecSuccess,
                       kSecReturnRef,
                       SecCertificateCopyData, SecIdentityCopyCertificate,
                       SecIdentityGetTypeID,
-                      SecItemCopyMatching)
+                      SecItemCopyMatching,                      
+                      SecPolicyCreateBasicX509,
+                      SecTrustCreateWithCertificates,
+                      SecTrustEvaluateWithError,
+                      SecTrustGetCertificateCount,
+                      SecTrustGetCertificateAtIndex)
 
 from asn1crypto.x509 import Certificate, Name
 
@@ -622,6 +628,23 @@ class Gurl(NSObject):
         self.log('Allowing OS to handle authentication request')
         return False
 
+    # getCertRefs_ takes a certificate ref, and attempts to construct the certificate chain.
+    # this requires that any certificates in the chain, are present in the Keychain.
+    def getCertChainRefs_(self, cert_ref):
+        status, trust = SecTrustCreateWithCertificates(cert_ref, SecPolicyCreateBasicX509(), None)
+        if status != errSecSuccess:
+            return None
+        
+        evaluated, evalErr = SecTrustEvaluateWithError(trust, None)
+        if evalErr != None:
+            return None
+
+        certRefs = []
+        for i in range(0, SecTrustGetCertificateCount(trust), 1):
+            certRefs.append(SecTrustGetCertificateAtIndex(trust, i))
+        
+        return certRefs
+
     def handleChallenge_withCompletionHandler_(
             self, challenge, completionHandler):
         '''Handle an authentication challenge'''
@@ -711,10 +734,28 @@ class Gurl(NSObject):
                     continue
                 cert_data = SecCertificateCopyData(cert_ref)
                 cert = Certificate.load(cert_data.bytes().tobytes())
-                issuer_dict = dict(cert.native["tbs_certificate"]["issuer"])
-                if issuer_dict in expected_issuer_dicts:
-                    self.log("Found matching identity")
-                    break
+
+                # includes the certificate issuer in the accepted subjects, 
+                # to retain pre-chain behaviour
+                certSubjects = [dict(cert.native["tbs_certificate"]["issuer"])]
+
+                # if we get a chain result back from the keychain
+                # also use the subjects of issuing CAs as part of the trust evaluation
+                certChainRefs = self.getCertChainRefs_(cert_ref)
+                if certChainRefs != None:
+                    for c in certChainRefs:
+                        cert_data = SecCertificateCopyData(c)
+                        cert = Certificate.load(cert_data.bytes().tobytes())
+                        certSubjects.append(dict(cert.native["tbs_certificate"]["subject"]))
+
+                for certSubject in certSubjects:
+                    if certSubject in expected_issuer_dicts:
+                        self.log("Found matching identity")
+                        break
+                else:
+                    continue
+                # this break is only excuted if we found a certificate
+                break
             else:
                 self.log('Could not find matching identity')
                 if completionHandler:
@@ -730,7 +771,7 @@ class Gurl(NSObject):
             self.log("Will attempt to authenticate")
             credential = NSURLCredential.credentialWithIdentity_certificates_persistence_(
                 identity_ref,
-                None,
+                certChainRefs,
                 NSURLCredentialPersistenceForSession
             )
             if completionHandler:
