@@ -108,6 +108,55 @@ func hasInternalBattery() -> Bool {
     return false
 }
 
+/// Get the current PowerManager assertions. Returns a dictionary.
+func getPMAssertions() -> [String: [String]] {
+    var assertions = [String: [String]]()
+    var assertionsByProcess: Unmanaged<CFDictionary>?
+    if IOPMCopyAssertionsByProcess(&assertionsByProcess) == kIOReturnSuccess,
+       let assertionsByProcess
+    {
+        let cfd = assertionsByProcess.takeUnretainedValue()
+        let d = cfd as! [CFNumber: [[String: Any]]]
+        for aList in d.values {
+            for item in aList {
+                if let processName = item["Process Name"] as? String,
+                   let assertionType = item["AssertionTrueType"] as? String
+                {
+                    if assertions[processName] == nil {
+                        assertions[processName] = [assertionType]
+                    } else {
+                        assertions[processName] = assertions[processName]! + [assertionType]
+                    }
+                }
+            }
+        }
+    }
+    return assertions
+}
+
+/// Detect if there is an app actively making an idle sleep assertion, e.g.
+/// Keynote, PowerPoint, Zoom, Webex, etc
+/// See: https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes
+/// Intent is to avoid user notifications when a user is presenting or in a virtual meeting
+/// Idea borrowed from Installomator
+func activeDisplaySleepAssertion() -> Bool {
+    let assertions = getPMAssertions()
+    for processName in assertions.keys {
+        if processName == "coreaudiod" {
+            continue
+        }
+        if let assertionTypes = assertions[processName],
+           assertionTypes.contains("NoDisplaySleepAssertion") ||
+           assertionTypes.contains("NoIdleSleepAssertion") ||
+           assertionTypes.contains("PreventUserIdleDisplaySleep") ||
+           assertionTypes.contains("PreventUserIdleSystemSleep")
+        {
+            return true
+        }
+    }
+    return false
+}
+
 // MARK: no sleep assertions
 
 /// Uses IOKit functions to prevent sleep.
