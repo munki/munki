@@ -576,14 +576,14 @@ def notifyUserOfUpdates(force=False):
             # subtract 6 hours
             interval = interval - (6 * 60 * 60)
         nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
-    if activeDisplaySleepAssertion():
-        # display sleep assertions are made by Zoom during a meeting,
-        # PowerPoint and Keynote when presenting, and Chrome when playing
-        # a movie. Other apps may make these assertions as well, If we see
-        # such an assertion, don't notify this time.
-        munkilog.log("Skipping user notification.")
-        return False
     if force or now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
+        if not force and activeDisplaySleepAssertion():
+            # display sleep assertions are made by Zoom during a meeting,
+            # PowerPoint and Keynote when presenting, and Chrome when playing
+            # a movie. Other apps may make these assertions as well, If we see
+            # such an assertion, don't notify this time.
+            munkilog.log("Skipping user notification because of assertion preventing display sleep")
+            return False
         # record current notification date
         prefs.set_pref('LastNotifiedDate', now)
 
