@@ -169,6 +169,28 @@ func recordUpdateCheckResult(_ result: UpdateCheckResult) {
     setPref("LastCheckResult", result.rawValue)
 }
 
+/// Detect if there is an app actively making an idle sleep assertion, e.g.
+/// Keynote, PowerPoint, Zoom, Webex, etc
+/// See: https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes
+/// Intent is to avoid user notifications when a user is presenting or in a virtual meeting
+/// Idea borrowed from Installomator
+func activeDisplaySleepAssertion() -> Bool {
+    let assertions = getPMAssertions()
+    for processName in assertions.keys {
+        if processName == "coreaudiod" {
+            continue
+        }
+        if let assertionTypes = assertions[processName],
+           assertionTypes.contains("NoDisplaySleepAssertion") ||
+           assertionTypes.contains("PreventUserIdleDisplaySleep")
+        {
+            munkiLog("\(processName) has an active display sleep assertion")
+            return true
+        }
+    }
+    return false
+}
+
 /// Notify the logged-in user of available updates.
 ///
 /// Args:
@@ -202,6 +224,12 @@ func notifyUserOfUpdates(force: Bool = false) {
         0.0
     }
     if force || now.timeIntervalSince(lastNotifiedDate) >= interval {
+        if !force, activeDisplaySleepAssertion() {
+            // user may be in a virtual meeting or presenting.
+            // Skip the notification; hopefully we'll be able to notify later.
+            munkiLog("Skipping user notification.")
+            return
+        }
         // record current notification date
         setPref("LastNotifiedDate", now)
         munkiLog("Notifying user of available updates.")
