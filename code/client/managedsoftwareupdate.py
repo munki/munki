@@ -537,7 +537,8 @@ def activeDisplaySleepAssertion():
             ("PreventUserIdleDisplaySleep" in assertions or
              "NoDisplaySleepAssertion" in assertions)
         ):
-            munkilog.log("%s has an assertion preventing display sleep")
+            munkilog.log(
+                "%s has an assertion preventing display sleep" % processName)
             return True
     return False
 
