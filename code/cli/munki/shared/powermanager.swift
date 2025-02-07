@@ -134,29 +134,6 @@ func getPMAssertions() -> [String: [String]] {
     return assertions
 }
 
-/// Detect if there is an app actively making an idle sleep assertion, e.g.
-/// Keynote, PowerPoint, Zoom, Webex, etc
-/// See: https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes
-/// Intent is to avoid user notifications when a user is presenting or in a virtual meeting
-/// Idea borrowed from Installomator
-func activeDisplaySleepAssertion() -> Bool {
-    let assertions = getPMAssertions()
-    for processName in assertions.keys {
-        if processName == "coreaudiod" {
-            continue
-        }
-        if let assertionTypes = assertions[processName],
-           assertionTypes.contains("NoDisplaySleepAssertion") ||
-           assertionTypes.contains("NoIdleSleepAssertion") ||
-           assertionTypes.contains("PreventUserIdleDisplaySleep") ||
-           assertionTypes.contains("PreventUserIdleSystemSleep")
-        {
-            return true
-        }
-    }
-    return false
-}
-
 // MARK: no sleep assertions
 
 /// Uses IOKit functions to prevent sleep.
