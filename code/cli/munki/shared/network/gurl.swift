@@ -437,14 +437,52 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             completionHandler(.useCredential, credential)
         } else if authenticationMethod == NSURLAuthenticationMethodClientCertificate {
             options.log("Client certificate required")
+            // Right now, we can't handle it
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+            // TODO: handle NSURLAuthenticationMethodClientCertificate
             // get issuers info from the response
+            var expectedIssuerDicts = [[String: Any]]() // will need to adjust type of the dictionary
             if let distinguishedNames = protectionSpace.distinguishedNames {
                 // distinguishedNames is an array of Data blobs
                 // each blob is DER encoded
                 // TODO: decode this stuff and handle it
+                for dn in distinguishedNames {
+                    let name = [String: Any]() // again, faking this for now
+                    expectedIssuerDicts.append(name)
+                    options.log("Accepted certificate-issuing authority: \(name)") // more faking
+                }
             }
-            // but right now, we can't handle it
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            if expectedIssuerDicts.isEmpty {
+                options.log("The server didn't send the list of acceptable certificate-issuing authorities")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+            // search for a matching identity (cert paired with private key)
+            var identityRefs: CFTypeRef?
+            let query = [
+                kSecClass: kSecClassIdentity,
+                kSecReturnRef: kCFBooleanTrue!,
+                kSecMatchLimit: kSecMatchLimitAll
+            ] as CFDictionary
+            let status = SecItemCopyMatching(query, &identityRefs)
+            if status != errSecSuccess {
+                options.log("Could not list keychain certificates: \(status)")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+                return
+            }
+            // loop through results to find cert that matches issuer
+            if let identityRefs {
+                for identityRef in unsafeBitCast(identityRefs, to: [SecIdentity].self)
+                {
+                    var certRef: SecCertificate?
+                    let status = SecIdentityCopyCertificate(identityRef, &certRef)
+                    if status != errSecSuccess {
+                        continue
+                    }
+                    //if let issuer = SecCertificateCopyNormalizedIssuerSequence(<#T##certificate: SecCertificate##SecCertificate#>)
+                }
+            }
+            
         } else {
             // fall back to system-provided default behavior
             options.log("Allowing OS to handle authentication request")
