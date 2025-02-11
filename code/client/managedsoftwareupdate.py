@@ -73,6 +73,7 @@ else:
     from munkilib import munkistatus
     from munkilib import osinstaller
     from munkilib import osutils
+    from munkilib import powermgr
     from munkilib import prefs
     from munkilib import processes
     from munkilib import reports
@@ -528,6 +529,20 @@ def sendEndNotification():
         userInfo)
 
 
+def activeDisplaySleepAssertion():
+    """Returns a boolean to indicate we have an active assertion preventing
+    display sleep. Idea borrowed from Installomator."""
+    for processName, assertions in powermgr.getIOPMAssertions().items():
+        if (processName != "coreaudiod" and
+            ("PreventUserIdleDisplaySleep" in assertions or
+             "NoDisplaySleepAssertion" in assertions)
+        ):
+            munkilog.log(
+                "%s has an assertion preventing display sleep" % processName)
+            return True
+    return False
+
+
 def notifyUserOfUpdates(force=False):
     """Notify the logged-in user of available updates.
 
@@ -563,6 +578,13 @@ def notifyUserOfUpdates(force=False):
             interval = interval - (6 * 60 * 60)
         nextNotifyDate = lastNotifiedDate.dateByAddingTimeInterval_(interval)
     if force or now.timeIntervalSinceDate_(nextNotifyDate) >= 0:
+        if not force and activeDisplaySleepAssertion():
+            # display sleep assertions are made by Zoom during a meeting,
+            # PowerPoint and Keynote when presenting, and Chrome when playing
+            # a movie. Other apps may make these assertions as well, If we see
+            # such an assertion, don't notify this time.
+            munkilog.log("Skipping user notification because of assertion preventing display sleep")
+            return False
         # record current notification date
         prefs.set_pref('LastNotifiedDate', now)
 
