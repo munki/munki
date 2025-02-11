@@ -20,6 +20,7 @@ Munki module to handle Power Manager tasks
 from __future__ import absolute_import, print_function
 
 import objc
+import os
 
 # PyLint cannot properly find names inside Cocoa libraries, so issues bogus
 # No name 'Foo' in module 'Bar' warnings. Disable them.
@@ -28,6 +29,9 @@ from Foundation import NSBundle
 # pylint:enable=no-name-in-module
 
 from . import display
+from . import prefs
+from . import constants
+from . import osutils
 
 # lots of camelCase names
 # pylint: disable=invalid-name
@@ -89,25 +93,40 @@ def hasInternalBattery():
             return True
     return False
 
-def assertNoIdleSleep(reason=None):
-    """Uses IOKit functions to prevent idle sleep."""
-    kIOPMAssertionTypeNoIdleSleep = "NoIdleSleepAssertion"
+
+def assertSleepPrevention(reason=None):
+    """Uses IOKit functions to prevent either idle or display sleep."""
+    prevent_display_sleep = (
+           prefs.pref('SuspendDisplaySleepDuringBootstrap') and
+           os.path.exists(constants.CHECKANDINSTALLATSTARTUPFLAG) and
+           osutils.getconsoleuser() == u"loginwindow"
+       )
+    if prevent_display_sleep:
+        display.display_info('Display sleep suspended due to SuspendDisplaySleepDuringBootstrap preference enabled, bootstrap flag set, and currently at loginwindow.')
+        kIOPMAssertionType = "NoDisplaySleepAssertion"
+    else:
+        kIOPMAssertionType = "NoIdleSleepAssertion"
     kIOPMAssertionLevelOn = 255
-    display.display_info('Preventing idle sleep')
+    
     if not reason:
         reason = 'Munki is installing software'
+    
+    display.display_info(f'Preventing {"display" if prevent_display_sleep else "idle"} sleep due to: {reason}')
+    
     # pylint: disable=undefined-variable
     errcode, assertID = IOPMAssertionCreateWithName(
-        kIOPMAssertionTypeNoIdleSleep,
+        kIOPMAssertionType,
         kIOPMAssertionLevelOn,
         reason, None)
     # pylint: enable=undefined-variable
+    
     if errcode:
+        display.display_error('Failed to create sleep prevention assertion.')
         return None
     return assertID
 
 
-def removeNoIdleSleepAssertion(assertion_id):
+def removeSleepPreventionAssertion(assertion_id):
     """Uses IOKit functions to remove a "no idle sleep" assertion."""
     if assertion_id:
         display.display_info('Allowing idle sleep')
@@ -116,17 +135,16 @@ def removeNoIdleSleepAssertion(assertion_id):
 
 
 class Caffeinator(object):
-    """A simple object that prevents idle sleep and automagically
-    removes the assertion when the object goes out of scope"""
+    """An object that prevents sleep and automatically removes the assertion when the object goes out of scope."""
     # pylint: disable=too-few-public-methods
-
+    
     def __init__(self, reason=None):
-        """Make Power Manager assertion and store the assertion_id"""
-        self.assertion_id = assertNoIdleSleep(reason=reason)
-
+        """Make a Power Manager assertion to prevent sleep and store the assertion ID."""
+        self.assertion_id = assertSleepPrevention(reason)
+    
     def __del__(self):
-        """Remove our Power Manager assertion"""
-        removeNoIdleSleepAssertion(self.assertion_id)
+        """Remove our Power Manager assertion upon object deletion."""
+        removeSleepPreventionAssertion(self.assertion_id)
 
 
 if __name__ == '__main__':
