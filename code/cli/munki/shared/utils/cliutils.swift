@@ -39,12 +39,19 @@ struct CLIResults {
 /// Runs a command line tool synchronously, returns CLIResults
 /// this implementation attempts to handle scenarios in which a large amount of stdout
 /// or sterr output is generated
-func runCLI(_ tool: String, arguments: [String] = [], stdIn: String = "") -> CLIResults {
+func runCLI(_ tool: String,
+            arguments: [String] = [],
+            environment: [String: String] = [:],
+            stdIn: String = "") -> CLIResults
+{
     var results = CLIResults()
 
     let task = Process()
     task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
+    if !environment.isEmpty == false {
+        task.environment = environment
+    }
 
     // set up our stdout and stderr pipes and handlers
     let outputPipe = Pipe()
@@ -113,8 +120,17 @@ enum ProcessError: Error {
 }
 
 /// like Python's subprocess.check_output
-func checkOutput(_ tool: String, arguments: [String] = [], stdIn: String = "") throws -> String {
-    let result = runCLI(tool, arguments: arguments, stdIn: stdIn)
+func checkOutput(_ tool: String,
+                 arguments: [String] = [],
+                 environment: [String: String] = [:],
+                 stdIn: String = "") throws -> String
+{
+    let result = runCLI(
+        tool,
+        arguments: arguments,
+        environment: environment,
+        stdIn: stdIn
+    )
     if result.exitcode != 0 {
         throw ProcessError.error(description: result.error)
     }
@@ -298,8 +314,17 @@ class AsyncProcessRunner {
 }
 
 /// a basic wrapper intended to be used just as you would runCLI, but async
-func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") async -> CLIResults {
-    let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
+func runCliAsync(_ tool: String,
+                 arguments: [String] = [],
+                 environment: [String: String] = [:],
+                 stdIn: String = "") async -> CLIResults
+{
+    let proc = AsyncProcessRunner(
+        tool,
+        arguments: arguments,
+        environment: environment,
+        stdIn: stdIn
+    )
     await proc.run()
     return proc.results
 }
@@ -307,8 +332,18 @@ func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "") a
 /// a basic wrapper intended to be used just as you would runCLI, but async and with
 /// a timeout
 /// throws ProcessError.timeout if the process times out
-func runCliAsync(_ tool: String, arguments: [String] = [], stdIn: String = "", timeout: Int) async throws -> CLIResults {
-    let proc = AsyncProcessRunner(tool, arguments: arguments, stdIn: stdIn)
+func runCliAsync(_ tool: String,
+                 arguments: [String] = [],
+                 environment: [String: String] = [:],
+                 stdIn: String = "",
+                 timeout: Int) async throws -> CLIResults
+{
+    let proc = AsyncProcessRunner(
+        tool,
+        arguments: arguments,
+        environment: environment,
+        stdIn: stdIn
+    )
     try await proc.run(timeout: timeout)
     return proc.results
 }
