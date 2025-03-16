@@ -131,7 +131,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
     } else if pref("UseClientCertificate") as? Bool ?? false,
               pref("UseClientCertificateCNAsClientIdentifier") as? Bool ?? false
     {
-        // TODO: implement using client cert common name as ClientIdentifier
+        clientIdentifier = getClientCertCommonName() ?? ""
     } else {
         clientIdentifier = pref("ClientIdentifier") as? String ?? ""
     }
