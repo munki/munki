@@ -218,6 +218,16 @@ func baseName(_ str: String) -> String {
     }
 }
 
+/// Return a dirname string.
+/// Examples::
+///    "/path/foo.dmg" => "/path"
+///    "/path" => "/"
+///    "/" => "/"
+///    "foo.dmg" => ""
+func dirName(_ str: String) -> String {
+    return (str as NSString).lastPathComponent
+}
+
 /// Return the path to the current executable's directory
 func currentExecutableDir(appendingPathComponent: String = "") -> String {
     if let executablePath = Bundle.main.executablePath {
