@@ -518,7 +518,8 @@ def getFlatPackageInfo(pkgpath):
 
         productversion = None
         for toc_entry in [item for item in toc
-                          if item.startswith('Distribution')]:
+                          if item.startswith('Distribution') and not
+                          item.startswith('Distribution.pkg')]:
             # Extract the Distribution file
             cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
             result = subprocess.call(cmd_extract)
