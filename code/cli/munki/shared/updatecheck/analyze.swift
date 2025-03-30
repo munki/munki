@@ -447,7 +447,8 @@ func processInstall(
         }
 
         if let installerType = pkginfo["installer_type"] as? String,
-           installerType == "stage_os_installer"
+           installerType == "stage_os_installer",
+           installedState == .thisVersionInstalled
         {
             // installer appears to be staged; make sure the info is recorded
             // so we know we can launch the installer later
