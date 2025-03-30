@@ -5,19 +5,23 @@
 //  Created by Greg Neagle on 7/13/24.
 //
 
-// TODO: better implementation
-func getInput(prompt: String? = nil, defaultText: String? = nil, addToHistory: Bool = false) -> String? {
-    var finalPrompt = prompt ?? ""
-    if let defaultText {
-        finalPrompt = "\(finalPrompt) [\(defaultText)] "
+import Foundation
+
+func getInput(prompt: String? = nil, defaultText: String? = nil) -> String? {
+    // A really awful hack to get default text since
+    // the readline implmentation is so broken
+    let queue = OperationQueue()
+    let insertOperation = BlockOperation {
+        usleep(10000)
+        rl_set_prompt(prompt ?? "")
+        if let defaultText {
+            rl_insert_text(defaultText)
+        }
+        rl_forced_update_display()
     }
-    guard let cString = readline(finalPrompt) else { return nil }
+    queue.addOperation(insertOperation)
+
+    guard let cString = readline("") else { return nil }
     defer { free(cString) }
-    if addToHistory { add_history(cString) }
-    let str = String(cString: cString)
-    if str.isEmpty {
-        return defaultText ?? ""
-    } else {
-        return str
-    }
+    return String(cString: cString)
 }
