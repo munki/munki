@@ -294,6 +294,7 @@ func getProductVersionFromDist(_ filepath: String) -> String {
     guard let data = NSData(contentsOfFile: filepath) else { return "" }
     guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
     guard let products = try? doc.nodes(forXPath: "//product") else { return "" }
+    if products.isEmpty { return "" }
     guard let product = products[0] as? XMLElement else { return "" }
     guard let versionAttr = product.attribute(forName: "version") else { return "" }
     return versionAttr.stringValue ?? ""
@@ -304,7 +305,9 @@ func getMinOSVersFromDist(_ filepath: String) -> String {
     guard let data = NSData(contentsOfFile: filepath) else { return "" }
     guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
     guard let volumeChecks = try? doc.nodes(forXPath: "//volume-check") else { return "" }
+    if volumeChecks.isEmpty { return "" }
     guard let allowedOSVersions = try? volumeChecks[0].nodes(forXPath: "child::allowed-os-versions") else { return "" }
+    if allowedOSVersions.isEmpty { return "" }
     guard let osVersions = try? allowedOSVersions[0].nodes(forXPath: "child::os-version") else { return "" }
     var minOSVersionStrings = [String]()
     for osVersion in osVersions {
@@ -343,6 +346,7 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
                 pkginfo["version"] = version
             }
             if let payloads = try? element.nodes(forXPath: "child::payload") {
+                if payloads.isEmpty { continue }
                 guard let payload = payloads[0] as? XMLElement else { continue }
                 if let sizeAttr = payload.attribute(forName: "installKBytes") {
                     if let size = sizeAttr.stringValue {
