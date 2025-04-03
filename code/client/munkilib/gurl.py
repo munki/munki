@@ -27,6 +27,7 @@ curl replacement using NSURLConnection and friends
 """
 from __future__ import absolute_import, print_function
 
+from datetime import datetime, timezone
 import os
 import xattr
 
@@ -734,6 +735,12 @@ class Gurl(NSObject):
                     continue
                 cert_data = SecCertificateCopyData(cert_ref)
                 cert = Certificate.load(cert_data.bytes().tobytes())
+
+                # do not consider certificates that are not yet valid, or have
+                # expired.
+                now = datetime.now(timezone.utc)
+                if now < cert.not_valid_before or now > cert.not_valid_after:
+                    continue
 
                 # includes the certificate issuer in the accepted subjects, 
                 # to retain pre-chain behaviour
