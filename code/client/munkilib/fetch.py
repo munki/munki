@@ -236,6 +236,9 @@ def get_url(url, destinationpath,
     # only works with NSURLSession (10.9 and newer)
     ignore_system_proxy = prefs.pref('IgnoreSystemProxies')
 
+    # allow using an expired client certificate
+    allow_expired_client_cert = prefs.pref('AllowExpiredClientCertificate')
+
     options = {'url': url,
                'file': tempdownloadpath,
                'follow_redirects': follow_redirects,
@@ -245,7 +248,8 @@ def get_url(url, destinationpath,
                'download_only_if_changed': onlyifnewer,
                'cache_data': cache_data,
                'logging_function': display.display_debug2,
-               'pkginfo': pkginfo}
+               'pkginfo': pkginfo,
+               'allow_expired_client_cert': allow_expired_client_cert}
     display.display_debug2('Options: %s' % options)
 
     # Allow middleware to modify options

@@ -248,6 +248,8 @@ class Gurl(NSObject):
             'download_only_if_changed', False)
         self.cache_data = options.get('cache_data')
         self.connection_timeout = options.get('connection_timeout', 60)
+        self.allow_expired_client_cert = options.get(
+            'allow_expired_client_cert')
         if NSURLSESSION_AVAILABLE:
             self.minimum_tls_protocol = options.get(
                 'minimum_tls_protocol', kTLSProtocol1)
@@ -736,11 +738,13 @@ class Gurl(NSObject):
                 cert_data = SecCertificateCopyData(cert_ref)
                 cert = Certificate.load(cert_data.bytes().tobytes())
 
-                # do not consider certificates that are not yet valid, or have
-                # expired.
-                now = datetime.now(timezone.utc)
-                if now < cert.not_valid_before or now > cert.not_valid_after:
-                    continue
+                if not self.allow_expired_client_cert:
+                    # do not consider certificates that are not yet valid, or
+                    # have expired.
+                    now = datetime.now(timezone.utc)
+                    if (now < cert.not_valid_before or 
+                            now > cert.not_valid_after):
+                        continue
 
                 # includes the certificate issuer in the accepted subjects, 
                 # to retain pre-chain behaviour
