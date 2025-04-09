@@ -235,8 +235,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
     await Report.shared.record(getMachineFacts(), to: "MachineInfo")
 
-    // TODO: initialize our Munki keychain if we are using custom certs or CAs
-    // MunkiKeychain()
+    // initialize our Munki keychain if we are using custom certs or CAs
+    let dummyKeychainObj = MunkiKeychain()
 
     if DisplayOptions.munkistatusoutput {
         munkiStatusActivate()

@@ -261,6 +261,8 @@
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
+		C0B715BE2DA6F43E00F255FB /* X509 in Frameworks */ = {isa = PBXBuildFile; productRef = C0B715BD2DA6F43E00F255FB /* X509 */; };
+		C0B715C02DA71F2900F255FB /* X509 in Frameworks */ = {isa = PBXBuildFile; productRef = C0B715BF2DA71F2900F255FB /* X509 */; };
 		C0B7FA012D288C2700CC14F0 /* authrestart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B7FA002D288C2700CC14F0 /* authrestart.swift */; };
 		C0B7FA022D288C2700CC14F0 /* authrestart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B7FA002D288C2700CC14F0 /* authrestart.swift */; };
 		C0BF62D42CEC04BD0030885D /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD12C2B654300090743 /* utils.swift */; };
@@ -375,6 +377,8 @@
 		C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941D2C5C10FE006FDF44 /* ArgumentParser */; };
 		C0E994202C5C1103006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941F2C5C1103006FDF44 /* ArgumentParser */; };
 		C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994212C5C1109006FDF44 /* ArgumentParser */; };
+		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
+		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -608,6 +612,7 @@
 		C0D9C2AF2C62D4120019A067 /* powermanager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = powermanager.swift; sourceTree = "<group>"; };
 		C0E993F52C5BEDAB006FDF44 /* removepackages */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = removepackages; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0E993F72C5BEDAB006FDF44 /* removepackages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = removepackages.swift; sourceTree = "<group>"; };
+		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -651,6 +656,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0B715C02DA71F2900F255FB /* X509 in Frameworks */,
 				C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -659,6 +665,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0B715BE2DA6F43E00F255FB /* X509 in Frameworks */,
 				C0E9941A2C5C10E1006FDF44 /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -959,6 +966,7 @@
 				C07AED712C67F77000DE6119 /* sslerrors.swift */,
 				C01792D22C6BC81B008CBC22 /* fetch.swift */,
 				C01792D82C6EC09C008CBC22 /* urls.swift */,
+				C0EEC9A62DA7335900F92942 /* clientcerts.swift */,
 			);
 			path = network;
 			sourceTree = "<group>";
@@ -1110,6 +1118,7 @@
 			name = managedsoftwareupdate;
 			packageProductDependencies = (
 				C0B3A8592CD04D380057BA0E /* ArgumentParser */,
+				C0B715BF2DA71F2900F255FB /* X509 */,
 			);
 			productName = munki;
 			productReference = C07A6FA52C2A82B400090743 /* managedsoftwareupdate */;
@@ -1130,6 +1139,7 @@
 			name = munkitester;
 			packageProductDependencies = (
 				C0E994192C5C10E1006FDF44 /* ArgumentParser */,
+				C0B715BD2DA6F43E00F255FB /* X509 */,
 			);
 			productName = munkitester;
 			productReference = C07A6FB72C2B5ADE00090743 /* munkitester */;
@@ -1336,6 +1346,7 @@
 			mainGroup = C07A6F9C2C2A82B400090743;
 			packageReferences = (
 				C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+				C0B715BC2DA6F43E00F255FB /* XCRemoteSwiftPackageReference "swift-certificates" */,
 			);
 			productRefGroup = C07A6FA62C2A82B400090743 /* Products */;
 			projectDirPath = "";
@@ -1484,6 +1495,7 @@
 				C06C213A2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */,
 				C06C21402C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C01792EB2C75089F008CBC22 /* licensing.swift in Sources */,
+				C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */,
 				C06C213D2C88CACE0023E9D9 /* SignalHandler.swift in Sources */,
 				C07074E82C34932400B86310 /* pkgutils.swift in Sources */,
 				C07074E52C34910F00B86310 /* osutils.swift in Sources */,
@@ -1566,6 +1578,7 @@
 				C01792DD2C6FFAC6008CBC22 /* catalogs.swift in Sources */,
 				C0D9C2A12C6175A10019A067 /* processes.swift in Sources */,
 				C030A9F62C435183007F0B34 /* readline.swift in Sources */,
+				C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */,
 				C07AED672C66D0A000DE6119 /* facts.swift in Sources */,
 				C0D9C2572C5D391C0019A067 /* LaunchdJob.swift in Sources */,
 				C008A04D2D18B6570073ADBA /* appusage.swift in Sources */,
@@ -2435,6 +2448,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		C0B715BC2DA6F43E00F255FB /* XCRemoteSwiftPackageReference "swift-certificates" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-certificates.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.1;
+			};
+		};
 		C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-argument-parser.git";
@@ -2460,6 +2481,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
+		};
+		C0B715BD2DA6F43E00F255FB /* X509 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0B715BC2DA6F43E00F255FB /* XCRemoteSwiftPackageReference "swift-certificates" */;
+			productName = X509;
+		};
+		C0B715BF2DA71F2900F255FB /* X509 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0B715BC2DA6F43E00F255FB /* XCRemoteSwiftPackageReference "swift-certificates" */;
+			productName = X509;
 		};
 		C0BF62D82CEC05AE0030885D /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
