@@ -94,7 +94,7 @@ func getMunkiClientCertInfo() -> [String: Any] {
     ] as [String: Any]
 
     // should we use a client cert at all?
-    if pref("UseClientCertificate") as? Bool ?? false {
+    if !(pref("UseClientCertificate") as? Bool ?? false) {
         return certInfo
     }
     // get client cert if it exists
