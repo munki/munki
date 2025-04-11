@@ -29,6 +29,7 @@ func enoughDiskSpaceFor(
             alreadyDownloadedSize = getSize(downloadedPath) / 1024 // KBytes
         }
     }
+    displayDebug2("\tAlready downloaded size: \(alreadyDownloadedSize)KB")
     var installerItemSize = item["installer_item_size"] as? Int ?? 0 // KBytes
     var installedSize = item["installed_size"] as? Int ?? installerItemSize // KBytes
     if uninstalling {
@@ -38,23 +39,35 @@ func enoughDiskSpaceFor(
             installerItemSize = uninstallerItemSize // KBytes
         }
     }
+    displayDebug2("\tInstaller item size: \(installerItemSize)KB")
+    displayDebug2("\tInstalled size: \(installedSize)KB")
     let diskSpaceNeeded = installerItemSize - alreadyDownloadedSize + installedSize + fudgefactor
+    displayDebug2("\tDisk space needed: \(diskSpaceNeeded)KB")
 
     var diskSpace = availableDiskSpace() // KBytes
+    displayDebug2("\tAvailable disk space: \(diskSpace)KB")
+    var additionalItemSpace = 0
     for additionalItem in installList {
         // subtract space needed for other items that are to be installed
-        diskSpace -= (additionalItem["installed_size"] as? Int ?? 0)
+        if additionalItem["installer_item"] != nil,
+           let installedSize = additionalItem["installed_size"] as? Int
+        {
+            additionalItemSpace += installedSize
+            if let name = additionalItem["name"] as? String {
+                displayDebug2("\tSubtracting \(installedSize)KB needed for \(name)...")
+            }
+        }
     }
+    diskSpace -= additionalItemSpace
+    displayDebug2("\tAvailable disk space after subtracting additional items: \(diskSpace)KB")
 
     if diskSpaceNeeded > diskSpace, !precaching {
         // try to clear space by deleting some precached items
+        displayDebug2("\tAttempting to free up space by clearing precached items...")
         uncache(diskSpaceNeeded - diskSpace)
         // now re-calc
-        diskSpace = availableDiskSpace()
-        for additionalItem in installList {
-            // subtract space needed for other items that are to be installed
-            diskSpace -= (additionalItem["installed_size"] as? Int ?? 0)
-        }
+        diskSpace = availableDiskSpace() - additionalItemSpace
+        displayDebug2("\tAvailable disk space after clearing precached items: \(diskSpace)KB")
     }
 
     if diskSpace >= diskSpaceNeeded {
