@@ -562,8 +562,8 @@ func fetchMunkiResourceByURL(
     verify: Bool = false,
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
+    displayDebug2("Fetching URL: \(url)")
     let customHeaders = pref(ADDITIONAL_HTTP_HEADERS_KEY) as? [String]
-
     return try getResourceIfChangedAtomically(
         url,
         destinationPath: destinationPath,
