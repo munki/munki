@@ -336,7 +336,7 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
             if munkiUpdatesContainItemWithInstallerType("startosinstall") {
                 Report.shared.save()
                 // install macOS
-                // TODO: implement this (install macOS)
+                // TODO: implement this (install macOS via startOSInstall)
             }
         }
     }
