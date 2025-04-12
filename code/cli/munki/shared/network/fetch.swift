@@ -246,7 +246,7 @@ func getURL(
             errorCode = session.SSLerror
             errorDescription = sslErrorForCode(errorCode)
             displayDetail("SSL error \(errorCode) detail: \(errorDescription)")
-            // TODO: keychain debug output
+            debugKeychainOutput()
         }
         displayDetail("Headers: \(session.headers ?? [:])")
         if pathExists(tempDownloadPath) {
