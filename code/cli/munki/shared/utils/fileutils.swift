@@ -225,7 +225,7 @@ func baseName(_ str: String) -> String {
 ///    "/" => "/"
 ///    "foo.dmg" => ""
 func dirName(_ str: String) -> String {
-    return (str as NSString).lastPathComponent
+    return (str as NSString).deletingLastPathComponent
 }
 
 /// Return the path to the current executable's directory
