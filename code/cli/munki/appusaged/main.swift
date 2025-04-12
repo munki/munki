@@ -22,7 +22,6 @@ import Foundation
 
 private let DEBUG = false
 private let APPNAME = "appusaged"
-private let LOGFILENAME = "appusaged.log"
 
 class AppUsageHandlerError: MunkiError {}
 
@@ -175,6 +174,8 @@ class AppUsageServerRequestHandler {
 }
 
 class AppUsageServer: UNIXDomainSocketServer {
+    var logger = MunkiLogger(logname: APPUSAGED_LOGFILENAME)
+
     /// Handle an incoming appusage event
     override func handleConnection(_ clientSocket: UNIXDomainSocket) async {
         let connectionHandler = AppUsageServerRequestHandler(
@@ -185,22 +186,20 @@ class AppUsageServer: UNIXDomainSocketServer {
     }
 
     override func log(_ message: String) {
-        munkiLog(message, logFile: LOGFILENAME)
+        logger.notice(message)
     }
 
     func debugLog(_ message: String) {
-        if debug {
-            log(message)
-        }
+        logger.debug(message)
     }
 
     override func logError(_ message: String) {
-        munkiLog("ERROR: " + message, logFile: LOGFILENAME)
+        logger.error("ERROR: " + message)
     }
 
     /// Rotate our log if it's too large
     func rotateServerLog() {
-        let logPath = logNamed(LOGFILENAME)
+        let logPath = logNamed(APPUSAGED_LOGFILENAME)
         let MAX_LOGFILE_SIZE = 1_000_000
         if pathIsRegularFile(logPath),
            let attributes = try? FileManager.default.attributesOfItem(atPath: logPath)
@@ -228,7 +227,7 @@ func main() async -> Int32 {
 
     // get socket file descriptor from launchd
     guard let socketFD = try? getSocketFd(APPNAME) else {
-        munkiLog("Could not get socket decriptor from launchd", logFile: LOGFILENAME)
+        munkiLog("Could not get socket decriptor from launchd", logFile: APPUSAGED_LOGFILENAME)
         usleep(1_000_000 * 10)
         return -1
     }

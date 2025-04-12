@@ -73,7 +73,7 @@ func shouldBeRemovedIfUnused(_ pkginfo: PlistDict) -> Bool {
         return false
     }
     displayDebug1("\t\tNumber of days until removal is \(removalDays)")
-    let usage = ApplicationUsageQuery()
+    let usage = ApplicationUsageQuery(logger: MunkiLogger())
     let usageDataDays = usage.daysOfData()
     if usageDataDays < removalDays {
         // we don't have usage data old enough to judge
