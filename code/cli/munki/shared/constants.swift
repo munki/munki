@@ -33,12 +33,12 @@ let EXIT_STATUS_INVALID_PARAMETERS: Int32 = 200
 let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
 #if DEBUG
-    let BUNDLE_ID = "ManagedInstallsDebug" as CFString
-    let DEFAULT_MANAGED_INSTALLS_DIR = "/Users/Shared/Managed Installs"
+    var env = ProcessInfo.processInfo.environment
+    let BUNDLE_ID = (env["MUNKI_BUNDLE_ID"] ?? "ManagedInstalls") as CFString
 #else
     let BUNDLE_ID = "ManagedInstalls" as CFString
-    let DEFAULT_MANAGED_INSTALLS_DIR = "/Library/Managed Installs"
 #endif
+let DEFAULT_MANAGED_INSTALLS_DIR = "/Library/Managed Installs"
 let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
 
