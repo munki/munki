@@ -209,11 +209,7 @@ func datePref(_ prefName: String) -> Date? {
 /// Convenience function to return the path to the Managed Installs dir
 /// or a subpath of that directory
 func managedInstallsDir(subpath: String? = nil) -> String {
-    #if DEBUG
-        let managedInstallsDir = "/Users/Shared/Managed Installs"
-    #else
-        let managedInstallsDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
-    #endif
+    let managedInstallsDir = pref("ManagedInstallDir") as? String ?? DEFAULT_MANAGED_INSTALLS_DIR
     if let subpath {
         return (managedInstallsDir as NSString).appendingPathComponent(subpath)
     }
