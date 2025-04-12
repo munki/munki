@@ -120,7 +120,7 @@ func generateInstallableCondition(_ models: [String]) -> String {
     return predicates.joined(separator: " OR ")
 }
 
-// TODO: implement setup_authrestart_if_applicable()
+// TODO: implement setup_authrestart_if_applicable() (not needed unless we implement support for StartOSInstall)
 
 // TODO: implement StartOSInstallRunner and related functions
 
