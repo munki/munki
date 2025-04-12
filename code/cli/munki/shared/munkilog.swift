@@ -21,24 +21,26 @@
 import Foundation
 import OSLog
 
+let MAIN_LOG_NAME = "ManagedSoftwareUpdate.log"
+
 /// Returns the logging level
 func loggingLevel() -> Int {
     return pref("LoggingLevel") as? Int ?? 1
 }
 
 /// Returns the path to the main log
-func mainLogPath() -> String {
+func mainLogDir() -> String {
     #if DEBUG
-        return "/Users/Shared/Managed Installs/Logs/ManagedSoftwareUpdate.log"
+        return "/Users/Shared/Managed Installs/Logs"
     #else
-        return pref("LogFile") as? String ?? managedInstallsDir(subpath: "Logs/ManagedSoftwareUpdate.log")
+        return pref("LogFile") as? String
     #endif
 }
 
 /// Returns the path to a log with the given name in the same directory as our main log
 func logNamed(_ name: String) -> String {
     // returns path to log file in same dir as main log
-    return ((mainLogPath() as NSString).deletingLastPathComponent as NSString).appendingPathComponent(name)
+    return (mainLogDir() as NSString).appendingPathComponent(name)
 }
 
 /// General logging function
@@ -52,7 +54,7 @@ func munkiLog(_ message: String, logFile: String = "") {
     var logPath = ""
     var subsystem = "com.googlecode.munki.managedsoftwareupdate"
     if logFile.isEmpty {
-        logPath = mainLogPath()
+        logPath = logNamed(MAIN_LOG_NAME)
     } else {
         logPath = logNamed(logFile)
         subsystem = "com.googlecode.munki.\((logFile as NSString).deletingPathExtension)"
@@ -102,13 +104,77 @@ func munkiLogResetWarnings() {
 /// Rotate our main log if it's too large
 func munkiLogRotateMainLog() {
     let MAX_LOGFILE_SIZE = 1_000_000
-    let mainLog = mainLogPath()
+    let mainLog = logNamed(MAIN_LOG_NAME)
     if pathIsRegularFile(mainLog),
        let attributes = try? FileManager.default.attributesOfItem(atPath: mainLog)
     {
         let filesize = (attributes as NSDictionary).fileSize()
         if filesize > MAX_LOGFILE_SIZE {
             rotateLog(mainLog)
+        }
+    }
+}
+
+/// A nicer abstraction for the various Munki logging functions
+class MunkiLogger {
+    let logname: String
+    var level = loggingLevel()
+
+    init(logname: String = MAIN_LOG_NAME) {
+        self.logname = logname
+    }
+
+    func rotate() {
+        rotateLog(logNamed(logname))
+    }
+
+    func emergency(_ message: String) {
+        munkiLog(message, logFile: logname)
+    }
+
+    func alert(_ message: String) {
+        munkiLog(message, logFile: logname)
+    }
+
+    func critical(_ message: String) {
+        munkiLog(message, logFile: logname)
+    }
+
+    func error(_ message: String) {
+        munkiLog(message, logFile: logname)
+    }
+
+    func warning(_ message: String) {
+        munkiLog(message, logFile: logname)
+    }
+
+    func notice(_ message: String) {
+        if level > 0 {
+            munkiLog(message, logFile: logname)
+        }
+    }
+
+    func info(_ message: String) {
+        if level > 1 {
+            munkiLog(message, logFile: logname)
+        }
+    }
+
+    func debug(_ message: String) {
+        if level > 2 {
+            munkiLog(message, logFile: logname)
+        }
+    }
+
+    func debug1(_ message: String) {
+        if level > 2 {
+            munkiLog(message, logFile: logname)
+        }
+    }
+
+    func debug2(_ message: String) {
+        if level > 3 {
+            munkiLog(message, logFile: logname)
         }
     }
 }

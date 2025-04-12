@@ -7,6 +7,8 @@
 
 import Foundation
 
+let APPUSAGED_LOGFILENAME = "appusaged.log"
+
 /// Returns path to our appusage DB
 func appUsageDBPath() -> String {
     return managedInstallsDir(subpath: "application_usage.sqlite")
@@ -15,6 +17,8 @@ func appUsageDBPath() -> String {
 /// Tracks application launches, activations, and quits.
 /// Also tracks Munki selfservice install and removal requests.
 class ApplicationUsageRecorder {
+    var logger = MunkiLogger(logname: APPUSAGED_LOGFILENAME)
+
     func _connect(_ databasePath: String = "") throws -> SQL3Connection {
         var db = ""
         if !databasePath.isEmpty {
@@ -159,15 +163,13 @@ class ApplicationUsageRecorder {
 
     /// log application usage and add to database
     func log_application_usage(event: String, appData: [String: String]) {
-        if appData["bundle_id"] == nil {
-            // TODO: log.warning "Application object had no bundle_id"
+        guard let bundleId = appData["bundle_id"] else {
+            logger.warning("Application object had no bundle_id")
             return
         }
-        // TODO: log.debug
-        /* logging.debug('%s: bundle_id: %s version: %s path: %s', event,
-         app_dict.get('bundle_id'),
-         app_dict.get('version'),
-         app_dict.get('path')) */
+        let version = appData["version"] ?? "<no version>"
+        let path = appData["path"] ?? "<no path>"
+        logger.debug("\(event): bundle_id: \(bundleId) version: \(version) path:\(path)")
 
         do {
             let conn = try _connect()
@@ -177,21 +179,21 @@ class ApplicationUsageRecorder {
             }
             try _insert_application_usage(conn, event: event, appData: appData)
         } catch {
-            // TODO: logging.error("Could not add app launch/quit event to database")
+            logger.error("Could not add app launch/quit event to database")
         }
     }
 
     /// log install requests and add to database
     func log_install_request(_ request: [String: String]) {
-        if request["event"] == nil || request["name"] == nil {
-            // TODO: logging.warning("Request dict is missing event or name:")
+        guard let event = request["event"],
+              let name = request["name"]
+        else {
+            logger.warning("Request dict is missing event or name")
             return
         }
-        // TODO: log.debug
-        /* logging.debug('%s: name: %s version: %s',
-         request_dict.get('event'),
-         request_dict.get('name'),
-         request_dict.get('version')) */
+        let version = request["version"] ?? "<no_version>"
+        logger.debug("\(event): name: \(name) version: \(version)")
+
         do {
             let conn = try _connect()
             defer { _close(conn) }
@@ -200,7 +202,7 @@ class ApplicationUsageRecorder {
             }
             try _insert_install_request(conn, request: request)
         } catch {
-            // TODO: logging.error("Could not add install/remove event to database")
+            logger.error("Could not add install/remove event to database")
         }
     }
 }
@@ -211,13 +213,15 @@ class ApplicationUsageQuery {
     let db = appUsageDBPath()
     let dayInSeconds = 24 * 60 * 60
     var conn: SQL3Connection?
+    var logger: MunkiLogger
 
     // open connection to DB
-    init() {
+    init(logger: MunkiLogger) {
+        self.logger = logger
         do {
             try conn = SQL3Connection(db)
         } catch {
-            // TODO: log_error("Error connecting to \(db): \(error.localizedDescription)")
+            logger.error("Error connecting to \(db): \(error.localizedDescription)")
             conn = nil
         }
     }
@@ -244,7 +248,7 @@ class ApplicationUsageQuery {
                 return Int(timeDiff / dayInSeconds)
             }
         } catch {
-            // TODO: log_error("Error querying \(db): \(error.localizedDescription)")
+            logger.error("Error querying \(db): \(error.localizedDescription)")
         }
         return 0
     }
@@ -272,7 +276,7 @@ class ApplicationUsageQuery {
                 return -1
             }
         } catch {
-            // TODO: log_error("Error querying \(db): \(error.localizedDescription)")
+            logger.error("Error querying \(db): \(error.localizedDescription)")
             return -2
         }
     }
@@ -300,7 +304,7 @@ class ApplicationUsageQuery {
                 return -1
             }
         } catch {
-            // TODO: log_error("Error querying \(db): \(error.localizedDescription)")
+            logger.error("Error querying \(db): \(error.localizedDescription)")
             return -2
         }
     }
