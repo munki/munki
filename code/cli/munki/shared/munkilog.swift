@@ -30,11 +30,10 @@ func loggingLevel() -> Int {
 
 /// Returns the path to the main log
 func mainLogDir() -> String {
-    #if DEBUG
-        return "/Users/Shared/Managed Installs/Logs"
-    #else
-        return pref("LogFile") as? String
-    #endif
+    if let logFile = pref("LogFile") as? String {
+        return (logFile as NSString).deletingLastPathComponent
+    }
+    return managedInstallsDir(subpath: "Logs")
 }
 
 /// Returns the path to a log with the given name in the same directory as our main log
