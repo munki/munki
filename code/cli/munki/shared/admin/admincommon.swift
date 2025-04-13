@@ -39,16 +39,10 @@ func adminPref(_ pref_name: String) -> Any? {
 func setAdminPref(_ prefName: String, _ prefValue: Any?) {
     if let key = prefName as CFString? {
         if prefValue == nil {
-            CFPreferencesSetValue(
-                key, nil, ADMIN_BUNDLE_ID,
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost
-            )
-            CFPreferencesAppSynchronize(BUNDLE_ID)
+            CFPreferencesSetAppValue(key, nil, ADMIN_BUNDLE_ID)
+            CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
         } else if let value = prefValue as CFPropertyList? {
-            CFPreferencesSetValue(
-                key, value, ADMIN_BUNDLE_ID,
-                kCFPreferencesAnyUser, kCFPreferencesCurrentHost
-            )
+            CFPreferencesSetAppValue(key, value, ADMIN_BUNDLE_ID)
             CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
         } else {
             // raise error about illegal value?
