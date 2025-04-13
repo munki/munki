@@ -83,8 +83,8 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
 
 /// Helper to specifically run Munki preflight or postflight scripts
 func runPreOrPostScript(name: String, runType: String) async -> Int {
-    // first check the same directory where managedsoftwareupdate lives
-    var scriptPath = currentExecutableDir(appendingPathComponent: name)
+    // check the same directory where managedsoftwareupdate lives
+    let scriptPath = currentExecutableDir(appendingPathComponent: name)
     if !pathIsExecutableFile(scriptPath) {
         return 0
     }
