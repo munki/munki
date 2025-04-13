@@ -12,7 +12,7 @@ func configure(promptList: [(String, String)]) {
     var editedPrefs = PlistDict()
     for (key, prompt) in promptList {
         let newValue = getInput(
-            prompt: prompt,
+            prompt: prompt + ": ",
             defaultText: adminPref(key) as? String ?? ""
         )
         editedPrefs[key] = newValue
