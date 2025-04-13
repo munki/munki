@@ -159,6 +159,13 @@
 		C043ED202C4822C70047C025 /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
 		C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
 		C043ED242C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
+		C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C05DB20B2DAC62530081FACD /* ArgumentParser */; };
+		C05DB20D2DAC66810081FACD /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
+		C05DB20E2DAC66E50081FACD /* readline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9F52C435183007F0B34 /* readline.swift */; };
+		C05DB20F2DAC66F00081FACD /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
+		C05DB2102DAC66F80081FACD /* configure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01CE24A2CA7ADD400542FA1 /* configure.swift */; };
+		C05DB2112DAC671C0081FACD /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
+		C05DB2132DAC681F0081FACD /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
 		C06C21342C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C06C213A2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
@@ -418,6 +425,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		C05DB2002DAC53150081FACD /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		C07A6FA32C2A82B400090743 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -551,6 +567,8 @@
 		C030A9F52C435183007F0B34 /* readline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readline.swift; sourceTree = "<group>"; };
 		C043ED1E2C4822C70047C025 /* sqlite3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sqlite3.swift; sourceTree = "<group>"; };
 		C043ED222C483EEE0047C025 /* rmpkgs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rmpkgs.swift; sourceTree = "<group>"; };
+		C05DB2022DAC53150081FACD /* manifestutil */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manifestutil; sourceTree = BUILT_PRODUCTS_DIR; };
+		C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "manifestutil-Bridging-Header.h"; sourceTree = "<group>"; };
 		C06C21332C8793720023E9D9 /* bootstrapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bootstrapping.swift; sourceTree = "<group>"; };
 		C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNIXProcessInfo.swift; sourceTree = "<group>"; };
 		C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHandler.swift; sourceTree = "<group>"; };
@@ -617,6 +635,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C00519A22D2A5B850060DDB6 /* authrestartd */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = authrestartd; sourceTree = "<group>"; };
+		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
 		C0D66AC02D2CA1DE009EF807 /* logouthelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = logouthelper; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -649,6 +668,15 @@
 			files = (
 				C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */,
 				C030A9F42C435113007F0B34 /* libedit.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C05DB1FF2DAC53150081FACD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C05DB2132DAC681F0081FACD /* libedit.tbd in Frameworks */,
+				C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -733,6 +761,7 @@
 				C0011CAE2C7A98280004ED70 /* Predicates.h */,
 				C030A9EF2C43505B007F0B34 /* munkiimport-Bridging-Header.h */,
 				C030A9EE2C43505B007F0B34 /* munkitester-Bridging-Header.h */,
+				C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */,
 			);
 			path = headers;
 			sourceTree = "<group>";
@@ -823,6 +852,7 @@
 				C0BF62CE2CEC00E90030885D /* repoclean */,
 				C00519A22D2A5B850060DDB6 /* authrestartd */,
 				C0D66AC02D2CA1DE009EF807 /* logouthelper */,
+				C05DB2032DAC53150081FACD /* manifestutil */,
 				C07A6FA62C2A82B400090743 /* Products */,
 				C01364502C311DFA008DB215 /* Frameworks */,
 			);
@@ -844,6 +874,7 @@
 				C0BF62CD2CEC00E90030885D /* repoclean */,
 				C00519A12D2A5B850060DDB6 /* authrestartd */,
 				C0D66ABF2D2CA1DE009EF807 /* logouthelper */,
+				C05DB2022DAC53150081FACD /* manifestutil */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1103,6 +1134,29 @@
 			productReference = C030A9CD2C41F798007F0B34 /* munkiimport */;
 			productType = "com.apple.product-type.tool";
 		};
+		C05DB2012DAC53150081FACD /* manifestutil */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C05DB2082DAC53150081FACD /* Build configuration list for PBXNativeTarget "manifestutil" */;
+			buildPhases = (
+				C05DB1FE2DAC53150081FACD /* Sources */,
+				C05DB1FF2DAC53150081FACD /* Frameworks */,
+				C05DB2002DAC53150081FACD /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C05DB2032DAC53150081FACD /* manifestutil */,
+			);
+			name = manifestutil;
+			packageProductDependencies = (
+				C05DB20B2DAC62530081FACD /* ArgumentParser */,
+			);
+			productName = manifestutil;
+			productReference = C05DB2022DAC53150081FACD /* manifestutil */;
+			productType = "com.apple.product-type.tool";
+		};
 		C07A6FA42C2A82B400090743 /* managedsoftwareupdate */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C07A6FAC2C2A82B400090743 /* Build configuration list for PBXNativeTarget "managedsoftwareupdate" */;
@@ -1288,7 +1342,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
+				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
 					C00519A02D2A5B850060DDB6 = {
@@ -1303,6 +1357,9 @@
 					C030A9CC2C41F798007F0B34 = {
 						CreatedOnToolsVersion = 15.4;
 						LastSwiftMigration = 1540;
+					};
+					C05DB2012DAC53150081FACD = {
+						CreatedOnToolsVersion = 16.3;
 					};
 					C07A6FA42C2A82B400090743 = {
 						CreatedOnToolsVersion = 15.4;
@@ -1365,6 +1422,7 @@
 				C0BF62CC2CEC00E90030885D /* repoclean */,
 				C00519A02D2A5B850060DDB6 /* authrestartd */,
 				C0D66ABE2D2CA1DE009EF807 /* logouthelper */,
+				C05DB2012DAC53150081FACD /* manifestutil */,
 			);
 		};
 /* End PBXProject section */
@@ -1480,6 +1538,18 @@
 				C030A9F72C435183007F0B34 /* readline.swift in Sources */,
 				C0D00FAE2C45841D0021DA9C /* makecatalogslib.swift in Sources */,
 				C01CE24C2CA7ADD400542FA1 /* configure.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C05DB1FE2DAC53150081FACD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C05DB20D2DAC66810081FACD /* version.swift in Sources */,
+				C05DB20E2DAC66E50081FACD /* readline.swift in Sources */,
+				C05DB2102DAC66F80081FACD /* configure.swift in Sources */,
+				C05DB20F2DAC66F00081FACD /* admincommon.swift in Sources */,
+				C05DB2112DAC671C0081FACD /* constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1946,6 +2016,32 @@
 			};
 			name = Release;
 		};
+		C05DB2062DAC53150081FACD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 52ZFZKM6BK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "shared/headers/manifestutil-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C05DB2072DAC53150081FACD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 52ZFZKM6BK;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "shared/headers/manifestutil-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		C07A6FAA2C2A82B400090743 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2355,6 +2451,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C05DB2082DAC53150081FACD /* Build configuration list for PBXNativeTarget "manifestutil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C05DB2062DAC53150081FACD /* Debug */,
+				C05DB2072DAC53150081FACD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C07A6FA02C2A82B400090743 /* Build configuration list for PBXProject "munki" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2468,6 +2573,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		C008A0612D2861220073ADBA /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+		C05DB20B2DAC62530081FACD /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
