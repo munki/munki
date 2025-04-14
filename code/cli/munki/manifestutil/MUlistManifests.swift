@@ -21,13 +21,13 @@
 import ArgumentParser
 import Foundation
 
-func getManifestNames(repo: Repo) throws -> [String] {
+func getManifestNames(repo: Repo) -> [String]? {
     do {
         let manifestNames = try repo.list("manifests")
         return manifestNames.sorted()
     } catch {
         printStderr("Could not retrieve manifests: \(error.localizedDescription)")
-        throw ExitCode(-1)
+        return nil
     }
 }
 
@@ -44,7 +44,9 @@ extension ManifestUtil {
 
         func run() throws {
             let repo = try connectToRepo()
-            let manifestNames = try getManifestNames(repo: repo)
+            guard let manifestNames = getManifestNames(repo: repo) else {
+                return
+            }
             if globString.isEmpty {
                 print(manifestNames.joined(separator: "\n"))
             } else {
