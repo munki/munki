@@ -1,5 +1,5 @@
 //
-//  main.swift
+//  manifestutil.swift
 //  manifestutil
 //
 //  Created by Greg Neagle on 4/13/25.
@@ -28,7 +28,7 @@ func connectToRepo() throws -> Repo {
     }
     var plugin = adminPref("plugin") as? String ?? "FileRepo"
     if plugin.isEmpty {
-        plugin = "FileRepo"git 
+        plugin = "FileRepo"
     }
     // connect to the repo
     var repo: Repo
@@ -55,8 +55,9 @@ struct ManifestUtil: AsyncParsableCommand {
             //RemoveCatalog.self,
             //RemoveIncludedManifest.self,
             ListCatalogs.self,
-            //ListCatalogItems.self,
-            //DisplayManifest.self,
+            ListCatalogItems.self,
+            ListManifests.self,
+            DisplayManifest.self,
             //ExpandIncludedManifests.self,
             //Find.self,
             //NewManifest.self,
