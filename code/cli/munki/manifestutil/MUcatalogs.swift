@@ -26,7 +26,7 @@ func getCatalogNames(repo: Repo) throws -> [String] {
     do {
         let catalogNames = try repo.list("catalogs")
         return catalogNames.sorted()
-    } catch let error {
+    } catch {
         printStderr("Could not retrieve catalogs: \(error.localizedDescription)")
         throw ExitCode(-1)
     }
@@ -37,7 +37,7 @@ extension ManifestUtil {
     struct ListCatalogs: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists available catalogs in Munki repo.")
-        
+
         func run() throws {
             let repo = try connectToRepo()
             let catalogNames = try getCatalogNames(repo: repo)
@@ -57,7 +57,7 @@ func getInstallerItemNames(repo: Repo, catalogs: [String]) throws -> [String] {
                 if let catalog = try readPlist(fromData: data) as? [PlistDict] {
                     let itemNames = catalog.filter {
                         ($0["update_for"] as? String ?? "").isEmpty &&
-                        !(($0["name"] as? String ?? "").isEmpty)
+                            !(($0["name"] as? String ?? "").isEmpty)
                     }.map {
                         $0["name"] as? String ?? ""
                     }
@@ -65,7 +65,7 @@ func getInstallerItemNames(repo: Repo, catalogs: [String]) throws -> [String] {
                 } else {
                     printStderr("Catalog \(catalogName) is malformed")
                 }
-            } catch let error  {
+            } catch {
                 printStderr("Could not retrieve catalog: \(catalogName): \(error.localizedDescription)")
             }
         }
@@ -78,23 +78,23 @@ extension ManifestUtil {
     struct ListCatalogItems: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists items in the given catalogs.")
-        
+
         @Argument(help: ArgumentHelp(
             "Catalog name",
             valueName: "catalog-name"
         ))
         var catalogNames: [String] = []
-        
+
         func validate() throws {
             if catalogNames.isEmpty {
                 throw ValidationError("At least one catalog name must be provided.")
             }
         }
-        
+
         func run() throws {
             let repo = try connectToRepo()
             let avaliableCatalogs = try getCatalogNames(repo: repo)
-            
+
             for catalogName in catalogNames {
                 if !avaliableCatalogs.contains(catalogName) {
                     printStderr("Catalog '\(catalogName)' does not exist.")

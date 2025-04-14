@@ -25,7 +25,7 @@ func getManifestNames(repo: Repo) throws -> [String] {
     do {
         let manifestNames = try repo.list("manifests")
         return manifestNames.sorted()
-    } catch let error {
+    } catch {
         printStderr("Could not retrieve manifests: \(error.localizedDescription)")
         throw ExitCode(-1)
     }
@@ -35,13 +35,13 @@ extension ManifestUtil {
     struct ListManifests: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists available manifest in Munki repo.")
-        
+
         @Argument(help: ArgumentHelp(
             "String to match manifest names similar to file name globbing. To avoid the shell expanding wildcards, wrap the string in quotes.",
             valueName: "match-string"
         ))
         var globString: String = ""
-        
+
         func run() throws {
             let repo = try connectToRepo()
             let manifestNames = try getManifestNames(repo: repo)
