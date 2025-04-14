@@ -21,33 +21,55 @@
 import ArgumentParser
 import Foundation
 
+func connectToRepo() throws -> Repo {
+    guard let repoURL = adminPref("repo_url") as? String else {
+        printStderr("No repo URL defined. Run manifestutil config to define one.")
+        throw ExitCode(-1)
+    }
+    var plugin = adminPref("plugin") as? String ?? "FileRepo"
+    if plugin.isEmpty {
+        plugin = "FileRepo"git 
+    }
+    // connect to the repo
+    var repo: Repo
+    do {
+        repo = try repoConnect(url: repoURL, plugin: plugin)
+    } catch let error as MunkiError {
+        printStderr("Repo connection error: \(error.description)")
+        throw ExitCode(-1)
+    }
+    return repo
+}
+
 @main
 struct ManifestUtil: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
-            abstract: "A utility for working with Munki manifests.",
-            subcommands: [
-                //AddPkg.self,
-                //AddCatalog.self,
-                //AddIncludedManifest.self,
-                //RemovePkg.self,
-                //MoveInstallToUninstall.self,
-                //RemoveCatalog.self,
-                //RemoveIncludedManifest.self,
-                //ListCatalogs.self,
-                //ListCatalogItems.self,
-                //DisplayManifest.self,
-                //ExpandIncludedManifests.self,
-                //Find.self,
-                //NewManifest.self,
-                //CopyManifest.self,
-                //RenameManifest.self,
-                //DeleteManifest.self,
-                //RefreshCache.self,
-                Exit.self,
-                Help.self,
-                Configure.self,
-                Version.self],
-            defaultSubcommand: RunInteractive.self)
+        commandName: "manifestutil",
+        abstract: "A utility for working with Munki manifests.",
+        subcommands: [
+            //AddPkg.self,
+            //AddCatalog.self,
+            //AddIncludedManifest.self,
+            //RemovePkg.self,
+            //MoveInstallToUninstall.self,
+            //RemoveCatalog.self,
+            //RemoveIncludedManifest.self,
+            ListCatalogs.self,
+            //ListCatalogItems.self,
+            //DisplayManifest.self,
+            //ExpandIncludedManifests.self,
+            //Find.self,
+            //NewManifest.self,
+            //CopyManifest.self,
+            //RenameManifest.self,
+            //DeleteManifest.self,
+            //RefreshCache.self,
+            Exit.self,
+            Help.self,
+            Configure.self,
+            Version.self],
+        defaultSubcommand: RunInteractive.self
+    )
 }
 
 extension ManifestUtil {
@@ -63,7 +85,7 @@ extension ManifestUtil {
 
 extension ManifestUtil {
     struct Help: ParsableCommand {
-        static var configuration = CommandConfiguration(abstract: "Show this help message.")
+        static var configuration = CommandConfiguration(abstract: "Show help information.")
         
         func run() throws {
             print(ManifestUtil.helpMessage())
