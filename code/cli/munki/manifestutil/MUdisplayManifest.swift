@@ -124,7 +124,7 @@ extension ManifestUtil {
     }
 }
 
-/// Prints contents of a given manifest, expanding inlcuded maniifests
+/// Prints contents of a given manifest, expanding included maniifests
 extension ManifestUtil {
     struct ExpandIncludedManifests: ParsableCommand {
         static var configuration = CommandConfiguration(
