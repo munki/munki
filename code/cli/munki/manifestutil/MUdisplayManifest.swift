@@ -46,7 +46,7 @@ func printPlistItem(_ label: String, _ value: Any?, indent: Int = 0) {
             if !label.isEmpty {
                 print("\(INDENTSPACE)\(label):")
             }
-           for subkey in dict.keys.sorted() {
+            for subkey in dict.keys.sorted() {
                 printPlistItem(subkey, dict[subkey], indent: indent + 1)
             }
         } else {
@@ -66,25 +66,84 @@ func printPlist(_ plist: PlistDict) {
     }
 }
 
+/// Recursive expansion of included manifests.
+/// Input: a "normal" manifest
+/// Output: a manifest with the included\_manifest names replaced with dictionaries containing
+///       the actual content of the included manifestd
+func expandIncludedManifests(repo: Repo, manifest: PlistDict) -> PlistDict {
+    // No infinite loop checking! Be wary!
+    var expandedManifest = manifest
+    if let includedManifests = manifest["included_manifests"] as? [String] {
+        var expandedIncludedManifests = [PlistDict]()
+        for name in includedManifests {
+            if var includedManifest = getManifest(repo: repo, name: name) {
+                includedManifest = expandIncludedManifests(repo: repo, manifest: includedManifest)
+                expandedIncludedManifests.append([name: includedManifest])
+            }
+        }
+        expandedManifest["included_manifests"] = expandedIncludedManifests
+    }
+    return expandedManifest
+}
+
 /// Prints contents of a given manifest
 extension ManifestUtil {
     struct DisplayManifest: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Displays a manifest.")
-        
-        @Flag(name: [.long, .customShort("X")],
+
+        @Flag(name: .shortAndLong,
+              help: "Expand included manifests.")
+        var expand: Bool = false
+
+        @Flag(name: .shortAndLong,
               help: "Display manifest in XML format.")
         var xml: Bool = false
-        
+
         @Argument(help: ArgumentHelp(
             "Prints the contents of the specified manifest",
             valueName: "manifest-name"
         ))
         var manifestName: String
-        
+
         func run() throws {
             let repo = try connectToRepo()
-            if let manifest = getManifest(repo: repo, name: manifestName) {
+            if var manifest = getManifest(repo: repo, name: manifestName) {
+                if expand {
+                    manifest = expandIncludedManifests(repo: repo, manifest: manifest)
+                }
+                if xml {
+                    print((try? plistToString(manifest)) ?? "")
+                } else {
+                    printPlist(manifest)
+                }
+            } else {
+                printStderr("Manifest data was malformed or not found.")
+            }
+        }
+    }
+}
+
+/// Prints contents of a given manifest, expanding inlcuded maniifests
+extension ManifestUtil {
+    struct ExpandIncludedManifests: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Displays a manifest, expanding included manifests.")
+
+        @Flag(name: .shortAndLong,
+              help: "Display manifest in XML format.")
+        var xml: Bool = false
+
+        @Argument(help: ArgumentHelp(
+            "Prints the contents of the specified manifest",
+            valueName: "manifest-name"
+        ))
+        var manifestName: String
+
+        func run() throws {
+            let repo = try connectToRepo()
+            if var manifest = getManifest(repo: repo, name: manifestName) {
+                manifest = expandIncludedManifests(repo: repo, manifest: manifest)
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
                 } else {
