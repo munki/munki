@@ -21,47 +21,55 @@
 import ArgumentParser
 import Foundation
 
-/// Adds a catalog to a manifest.
-func addCatalog(repo: Repo, manifestName: String, catalogName: String) -> Bool {
-    let availableCatalogs = getCatalogNames(repo: repo) ?? []
-    if !availableCatalogs.contains(catalogName) {
-        printStderr("Unknown catalog name: \(catalogName)")
-        return false
-    }
+/// Adds an item to a section of a manifest
+func addManifestItem(repo: Repo, manifestName: String, section: String, item: String, addToTop: Bool = false) -> Bool {
     guard var manifest = getManifest(repo: repo, name: manifestName) else {
         return false
     }
-    var catalogs = manifest["catalogs"] as? [String] ?? []
-    if catalogs.contains(catalogName) {
-        printStderr("Catalog \(catalogName) is already in manifest \(manifestName)")
+    var sectionItems = manifest[section] as? [String] ?? []
+    if sectionItems.contains(item) {
+        printStderr("'\(item)' is already in \(section) of manifest \(manifestName)")
         return false
     }
-    // put it at the front of the catalog list as that is usually
-    // what is wanted...
-    catalogs.insert(catalogName, at: 0)
-    manifest["catalogs"] = catalogs
+    if addToTop {
+        sectionItems.insert(item, at: 0)
+    } else {
+        sectionItems.append(item)
+    }
+    manifest[section] = sectionItems
     if saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
-        print("Added \(catalogName) to catalogs of manifest \(manifestName).")
+        print("Added '\(item)' to \(section) of manifest \(manifestName).")
         return true
     }
     return false
 }
 
-func removeCatalog(repo: Repo, manifestName: String, catalogName: String) -> Bool {
+/// Remove item from section of manifest
+func removeManifestItem(repo: Repo, manifestName: String, section: String, item: String) -> Bool {
     guard var manifest = getManifest(repo: repo, name: manifestName) else {
         return false
     }
-    var catalogs = manifest["catalogs"] as? [String] ?? []
-    if let index = catalogs.firstIndex(of: catalogName) {
-        catalogs.remove(at: index)
-        manifest["catalogs"] = catalogs
+    var sectionItems = manifest[section] as? [String] ?? []
+    if let index = sectionItems.firstIndex(of: item) {
+        sectionItems.remove(at: index)
+        manifest[section] = sectionItems
         if saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
-            print("Removed \(catalogName) from catalogs of manifest \(manifestName).")
+            print("Removed '\(item)' from \(section) of manifest \(manifestName).")
             return true
         }
     }
-    printStderr("Catalog \(catalogName) is not in manifest \(manifestName).")
+    printStderr("'\(item)' is not in \(section) of manifest \(manifestName).")
     return false
+}
+
+/// Adds a catalog to a manifest.
+func addCatalog(repo: Repo, manifestName: String, catalogName: String) -> Bool {
+    let availableCatalogs = getCatalogNames(repo: repo) ?? []
+    if !availableCatalogs.contains(catalogName) {
+        printStderr("Unknown catalog name: '\(catalogName)'")
+        return false
+    }
+    return addManifestItem(repo: repo, manifestName: manifestName, section: "catalogs", item: catalogName, addToTop: true)
 }
 
 /// Add a catalog to a manifest
@@ -105,7 +113,7 @@ extension ManifestUtil {
 
         func run() throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = removeCatalog(repo: repo, manifestName: manifest, catalogName: catalogName)
+            _ = removeManifestItem(repo: repo, manifestName: manifest, section: "catalogs", item: catalogName)
         }
     }
 }
