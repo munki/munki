@@ -43,8 +43,9 @@ extension ManifestUtil {
         var globString: String = ""
 
         func run() throws {
-            let repo = try connectToRepo()
-            guard let manifestNames = getManifestNames(repo: repo) else {
+            guard let repo = try? connectToRepo(),
+                  let manifestNames = getManifestNames(repo: repo)
+            else {
                 return
             }
             if globString.isEmpty {
