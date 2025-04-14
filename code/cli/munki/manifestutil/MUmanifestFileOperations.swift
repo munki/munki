@@ -107,7 +107,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() throws {
-            let repo = try connectToRepo()
+            guard let repo = try? connectToRepo() else { return }
             _ = newManifest(repo: repo, name: manifestName)
         }
     }
@@ -132,7 +132,7 @@ extension ManifestUtil {
         var destinationName: String
 
         func run() throws {
-            let repo = try connectToRepo()
+            guard let repo = try? connectToRepo() else { return }
             _ = copyOrRenameManifest(
                 repo: repo,
                 sourceName: sourceName,
@@ -161,7 +161,7 @@ extension ManifestUtil {
         var destinationName: String
 
         func run() throws {
-            let repo = try connectToRepo()
+            guard let repo = try? connectToRepo() else { return }
             _ = copyOrRenameManifest(
                 repo: repo,
                 sourceName: sourceName,
@@ -185,7 +185,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() throws {
-            let repo = try connectToRepo()
+            guard let repo = try? connectToRepo() else { return }
             _ = deleteManifest(repo: repo, name: manifestName)
         }
     }

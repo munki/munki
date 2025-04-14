@@ -107,7 +107,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() throws {
-            let repo = try connectToRepo()
+            guard let repo = try? connectToRepo() else { return }
             if var manifest = getManifest(repo: repo, name: manifestName) {
                 if expand {
                     manifest = expandIncludedManifests(repo: repo, manifest: manifest)
@@ -141,7 +141,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() throws {
-            let repo = try connectToRepo()
+            guard let repo = try? connectToRepo() else { return }
             if var manifest = getManifest(repo: repo, name: manifestName) {
                 manifest = expandIncludedManifests(repo: repo, manifest: manifest)
                 if xml {

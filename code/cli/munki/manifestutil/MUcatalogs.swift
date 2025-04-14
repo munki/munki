@@ -22,13 +22,13 @@ import ArgumentParser
 import Foundation
 
 /// Returns a list of available catalogs
-func getCatalogNames(repo: Repo) throws -> [String] {
+func getCatalogNames(repo: Repo) -> [String]? {
     do {
         let catalogNames = try repo.list("catalogs")
         return catalogNames.sorted()
     } catch {
         printStderr("Could not retrieve catalogs: \(error.localizedDescription)")
-        throw ExitCode(-1)
+        return nil
     }
 }
 
@@ -39,9 +39,11 @@ extension ManifestUtil {
             abstract: "Lists available catalogs in Munki repo.")
 
         func run() throws {
-            let repo = try connectToRepo()
-            let catalogNames = try getCatalogNames(repo: repo)
-            print(catalogNames.joined(separator: "\n"))
+            if let repo = try? connectToRepo(),
+               let catalogNames = getCatalogNames(repo: repo)
+            {
+                print(catalogNames.joined(separator: "\n"))
+            }
         }
     }
 }
@@ -49,7 +51,9 @@ extension ManifestUtil {
 /// Returns a list of unique installer item (pkg) names from the given list of catalogs
 func getInstallerItemNames(repo: Repo, catalogs: [String]) throws -> [String] {
     var itemList = [String]()
-    let catalogNames = try getCatalogNames(repo: repo)
+    guard let catalogNames = getCatalogNames(repo: repo) else {
+        return itemList
+    }
     for catalogName in catalogNames {
         if catalogs.contains(catalogName) {
             do {
@@ -92,11 +96,14 @@ extension ManifestUtil {
         }
 
         func run() throws {
-            let repo = try connectToRepo()
-            let avaliableCatalogs = try getCatalogNames(repo: repo)
+            guard let repo = try? connectToRepo(),
+                  let availableCatalogs = getCatalogNames(repo: repo)
+            else {
+                return
+            }
 
             for catalogName in catalogNames {
-                if !avaliableCatalogs.contains(catalogName) {
+                if !availableCatalogs.contains(catalogName) {
                     printStderr("Catalog '\(catalogName)' does not exist.")
                     throw ExitCode(-1)
                 }
