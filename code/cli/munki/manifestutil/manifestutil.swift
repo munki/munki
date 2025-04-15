@@ -59,7 +59,7 @@ struct ManifestUtil: AsyncParsableCommand {
             ListManifests.self,
             DisplayManifest.self,
             ExpandIncludedManifests.self,
-            // Find.self,
+            Find.self,
             NewManifest.self,
             CopyManifest.self,
             RenameManifest.self,
