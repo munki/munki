@@ -51,7 +51,7 @@ struct ManifestUtil: AsyncParsableCommand {
             AddCatalog.self,
             // AddIncludedManifest.self,
             RemovePkg.self,
-            // MoveInstallToUninstall.self,
+            MoveInstallToUninstall.self,
             RemoveCatalog.self,
             // RemoveIncludedManifest.self,
             ListCatalogs.self,
