@@ -47,10 +47,10 @@ struct ManifestUtil: AsyncParsableCommand {
         commandName: "manifestutil",
         abstract: "A utility for working with Munki manifests.",
         subcommands: [
-            // AddPkg.self,
+            AddPkg.self,
             AddCatalog.self,
             // AddIncludedManifest.self,
-            // RemovePkg.self,
+            RemovePkg.self,
             // MoveInstallToUninstall.self,
             RemoveCatalog.self,
             // RemoveIncludedManifest.self,

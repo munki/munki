@@ -49,7 +49,7 @@ extension ManifestUtil {
 }
 
 /// Returns a list of unique installer item (pkg) names from the given list of catalogs
-func getInstallerItemNames(repo: Repo, catalogs: [String]) throws -> [String] {
+func getInstallerItemNames(repo: Repo, catalogs: [String]) -> [String] {
     var itemList = [String]()
     guard let catalogNames = getCatalogNames(repo: repo) else {
         return itemList
@@ -58,7 +58,7 @@ func getInstallerItemNames(repo: Repo, catalogs: [String]) throws -> [String] {
         if catalogs.contains(catalogName) {
             do {
                 let data = try repo.get("catalogs/\(catalogName)")
-                if let catalog = try readPlist(fromData: data) as? [PlistDict] {
+                if let catalog = (try? readPlist(fromData: data)) as? [PlistDict] {
                     let itemNames = catalog.filter {
                         ($0["update_for"] as? String ?? "").isEmpty &&
                             !(($0["name"] as? String ?? "").isEmpty)
@@ -108,7 +108,7 @@ extension ManifestUtil {
                     throw ExitCode(-1)
                 }
             }
-            let installerItemNames = try getInstallerItemNames(repo: repo, catalogs: catalogNames)
+            let installerItemNames = getInstallerItemNames(repo: repo, catalogs: catalogNames)
             print(installerItemNames.joined(separator: "\n"))
         }
     }
