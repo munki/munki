@@ -66,7 +66,6 @@ struct ManifestUtil: AsyncParsableCommand {
             DeleteManifest.self,
             // RefreshCache.self,
             Exit.self,
-            Help.self,
             Configure.self,
             Version.self,
         ],
@@ -81,16 +80,6 @@ extension ManifestUtil {
 
         func run() throws {
             throw ExitCode(0)
-        }
-    }
-}
-
-extension ManifestUtil {
-    struct Help: ParsableCommand {
-        static var configuration = CommandConfiguration(abstract: "Show help information.")
-
-        func run() throws {
-            print(ManifestUtil.helpMessage())
         }
     }
 }
