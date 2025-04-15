@@ -95,7 +95,7 @@ func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String =
         printStderr("Section name: '\(section)' is not supported for adding packages")
         return false
     }
-    guard var manifest = getManifest(repo: repo, name: manifestName) else {
+    guard let manifest = getManifest(repo: repo, name: manifestName) else {
         return false
     }
     if mutuallyExclusiveSections.contains(section) {
@@ -122,6 +122,36 @@ func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String =
         }
     }
     return addManifestItem(repo: repo, manifestName: manifestName, section: section, item: pkgName)
+}
+
+/// Moves an item from managed\_installs to managed\_uninstalls
+func moveInstallToUninstall(repo: Repo, manifestName: String, item: String) -> Bool {
+    guard var manifest = getManifest(repo: repo, name: manifestName) else {
+        return false
+    }
+    var managedInstalls = manifest["managed_installs"] as? [String] ?? []
+    if let index = managedInstalls.firstIndex(of: item) {
+        managedInstalls.remove(at: index)
+    } else {
+        printStderr("Item '\(item)' not found in managed_installs of manifest \(manifestName). No changes made.")
+        return false
+    }
+    var managedUninstalls = manifest["managed_uninstalls"] as? [String] ?? []
+    var managedUninstallsMessage = ""
+    if managedUninstalls.contains(item) {
+        managedUninstallsMessage = "Item '\(item)' is already in managed_uninstalls of manifest \(manifestName)."
+    } else {
+        managedUninstalls.append(item)
+        managedUninstallsMessage = "Added '\(item)' to managed_uninstalls of manifest \(manifestName)."
+    }
+    manifest["managed_installs"] = managedInstalls
+    manifest["managed_uninstalls"] = managedUninstalls
+    if saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
+        print("Removed '\(item)' from managed_installs of manifest \(manifestName)")
+        print(managedUninstallsMessage)
+        return true
+    }
+    return false
 }
 
 /// Add a (pkg) item to a manifest
@@ -174,6 +204,29 @@ extension ManifestUtil {
         func run() throws {
             guard let repo = try? connectToRepo() else { return }
             _ = removeManifestItem(repo: repo, manifestName: manifest, section: section, item: pkgName)
+        }
+    }
+}
+
+/// Move a pkg from managed\_installs to managed\_uninstalls in a manifest
+extension ManifestUtil {
+    struct MoveInstallToUninstall: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Moves a pkgitem from managed_installs to managed_uninstalls in a manifest")
+
+        @Option(help: ArgumentHelp("Name of manifest",
+                                   valueName: "manifest-name"))
+        var manifest: String
+
+        @Argument(help: ArgumentHelp(
+            "Name of the pkgitem to be moved",
+            valueName: "pkgitem-name"
+        ))
+        var pkgName: String
+
+        func run() throws {
+            guard let repo = try? connectToRepo() else { return }
+            _ = moveInstallToUninstall(repo: repo, manifestName: manifest, item: pkgName)
         }
     }
 }
