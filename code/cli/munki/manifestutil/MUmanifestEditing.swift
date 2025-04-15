@@ -154,6 +154,25 @@ func moveInstallToUninstall(repo: Repo, manifestName: String, item: String) -> B
     return false
 }
 
+/// Adds an included manifest to a manifest.
+func addIncludedManifest(repo: Repo, manifestName: String, includedManifestName: String) -> Bool {
+    if manifestName == includedManifestName {
+        printStderr("You cannot add a manifest to itself as an included_manifest!")
+        return false
+    }
+    let availableManifests = getManifestNames(repo: repo) ?? []
+    if !availableManifests.contains(includedManifestName) {
+        printStderr("Unknown manifest name: '\(includedManifestName)'")
+        return false
+    }
+    return addManifestItem(
+        repo: repo,
+        manifestName: manifestName,
+        section: "included_manifests",
+        item: includedManifestName
+    )
+}
+
 /// Add a (pkg) item to a manifest
 extension ManifestUtil {
     struct AddPkg: ParsableCommand {
@@ -273,6 +292,52 @@ extension ManifestUtil {
         func run() throws {
             guard let repo = try? connectToRepo() else { return }
             _ = removeManifestItem(repo: repo, manifestName: manifest, section: "catalogs", item: catalogName)
+        }
+    }
+}
+
+/// Add an inlcuded_manifest to a manifest
+extension ManifestUtil {
+    struct AddIncludedManifest: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Adds an included manifest to a manifest")
+
+        @Option(help: ArgumentHelp("Name of manifest",
+                                   valueName: "manifest-name"))
+        var manifest: String
+
+        @Argument(help: ArgumentHelp(
+            "Name of the included manifest to be added",
+            valueName: "included-manifest-name"
+        ))
+        var includedManifestName: String
+
+        func run() throws {
+            guard let repo = try? connectToRepo() else { return }
+            _ = addIncludedManifest(repo: repo, manifestName: manifest, includedManifestName: includedManifestName)
+        }
+    }
+}
+
+/// Remove an included\_manifest from a manifest
+extension ManifestUtil {
+    struct RemoveIncludedManifest: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Removes an included manifest from a manifest")
+
+        @Option(help: ArgumentHelp("Name of manifest",
+                                   valueName: "manifest-name"))
+        var manifest: String
+
+        @Argument(help: ArgumentHelp(
+            "Name of the catalog to be removed",
+            valueName: "included-manifest-name"
+        ))
+        var includedManifestName: String
+
+        func run() throws {
+            guard let repo = try? connectToRepo() else { return }
+            _ = removeManifestItem(repo: repo, manifestName: manifest, section: "included_manifests", item: includedManifestName)
         }
     }
 }
