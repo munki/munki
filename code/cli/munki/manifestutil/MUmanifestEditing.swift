@@ -72,6 +72,112 @@ func addCatalog(repo: Repo, manifestName: String, catalogName: String) -> Bool {
     return addManifestItem(repo: repo, manifestName: manifestName, section: "catalogs", item: catalogName, addToTop: true)
 }
 
+/// Adds a pkg (item) to a manifest
+func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String = "managed_installs") -> Bool {
+    let validPkgSections = [
+        "managed_installs",
+        "managed_uninstalls",
+        "managed_updates",
+        "optional_installs",
+        "featured_items",
+        "default_installs",
+    ]
+    let mutuallyExclusiveSections = [
+        "managed_installs",
+        "managed_uninstalls",
+        "optional_installs",
+    ]
+    let optionalInstallsNeededSections = [
+        "featured_items",
+        "default_installs",
+    ]
+    if !validPkgSections.contains(section) {
+        printStderr("Section name: '\(section)' is not supported for adding packages")
+        return false
+    }
+    guard var manifest = getManifest(repo: repo, name: manifestName) else {
+        return false
+    }
+    if mutuallyExclusiveSections.contains(section) {
+        for checkSection in mutuallyExclusiveSections {
+            if let sectionItems = manifest[checkSection] as? [String] {
+                if sectionItems.contains(pkgName) {
+                    printStderr("Item '\(pkgName)' is already in \(checkSection) of manifest \(manifestName)")
+                    return false
+                }
+            }
+        }
+    }
+    let defaultInstallsItems = manifest["optional_installs"] as? [String] ?? []
+    if optionalInstallsNeededSections.contains(section), !defaultInstallsItems.contains(pkgName) {
+        printStderr("Item '\(pkgName)' must also be in optional_installs of manifest \(manifestName)")
+        return false
+    }
+    if let manifestCatalogs = manifest["catalogs"] as? [String],
+       !manifestCatalogs.isEmpty
+    {
+        let availablePkgNames = getInstallerItemNames(repo: repo, catalogs: manifestCatalogs)
+        if !availablePkgNames.contains(pkgName) {
+            printStderr("WARNING: Item '\(pkgName)' is not available in any catalog of manifest \(manifestName)")
+        }
+    }
+    return addManifestItem(repo: repo, manifestName: manifestName, section: section, item: pkgName)
+}
+
+/// Add a (pkg) item to a manifest
+extension ManifestUtil {
+    struct AddPkg: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Adds a package to a manifest")
+
+        @Option(help: ArgumentHelp("Name of manifest",
+                                   valueName: "manifest-name"))
+        var manifest: String
+
+        @Option(help: ArgumentHelp("Manifest section",
+                                   valueName: "manifest-section"))
+        var section: String = "managed_installs"
+
+        @Argument(help: ArgumentHelp(
+            "Name of the pkgitem to be added",
+            valueName: "pkgitem-name"
+        ))
+        var pkgName: String
+
+        func run() throws {
+            guard let repo = try? connectToRepo() else { return }
+            _ = addPkg(repo: repo, manifestName: manifest, pkgName: pkgName, section: section)
+        }
+    }
+}
+
+/// Remove a pkg from a manifest
+extension ManifestUtil {
+    struct RemovePkg: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Removes a package from a manifest")
+
+        @Option(help: ArgumentHelp("Name of manifest",
+                                   valueName: "manifest-name"))
+        var manifest: String
+
+        @Option(help: ArgumentHelp("Manifest section",
+                                   valueName: "manifest-section"))
+        var section: String = "managed_installs"
+
+        @Argument(help: ArgumentHelp(
+            "Name of the pkgitem to be removed",
+            valueName: "pkgitem-name"
+        ))
+        var pkgName: String
+
+        func run() throws {
+            guard let repo = try? connectToRepo() else { return }
+            _ = removeManifestItem(repo: repo, manifestName: manifest, section: section, item: pkgName)
+        }
+    }
+}
+
 /// Add a catalog to a manifest
 extension ManifestUtil {
     struct AddCatalog: ParsableCommand {
