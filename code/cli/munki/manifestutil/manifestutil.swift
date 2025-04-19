@@ -65,11 +65,12 @@ struct ManifestUtil: AsyncParsableCommand {
             RenameManifest.self,
             DeleteManifest.self,
             // RefreshCache.self,
-            Exit.self,
+            // Exit.self,
             Configure.self,
             Version.self,
+            // RunInteractive.self,
         ],
-        defaultSubcommand: RunInteractive.self
+        // defaultSubcommand: RunInteractive.self
     )
 }
 
@@ -106,14 +107,5 @@ extension ManifestUtil {
         func run() throws {
             print(CLI_TOOLS_VERSION)
         }
-    }
-}
-
-extension ManifestUtil {
-    struct RunInteractive: ParsableCommand {
-        static var configuration = CommandConfiguration(
-            abstract: "Runs this utility in interactive mode.")
-
-        func run() throws {}
     }
 }
