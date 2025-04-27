@@ -8,9 +8,10 @@ check_exit_code() {
     fi
 }
 
+TOOLS="managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged authrestartd launchapp logouthelper iconimporter repoclean manifestutil"
 SWIFT_MUNKI_DIR="./cli/munki"
 BUILD_DIR="./build"
-BINARIES_DIR="./binaries"
+BINARIES_DIR="./build/binaries"
 
 if [ ! -d "${BUILD_DIR}" ] ; then
     mkdir "${BUILD_DIR}"
@@ -20,13 +21,7 @@ if [ ! -d "${BINARIES_DIR}" ] ; then
     mkdir "${BINARIES_DIR}"
 fi
 
-xcodebuild \
-    -project "${SWIFT_MUNKI_DIR}/munki.xcodeproj" \
-    -alltargets \
-    -derivedDataPath "${BUILD_DIR}" \
-    build
-
-for TOOL in managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged authrestartd launchapp logouthelper iconimporter repoclean ; do
+for TOOL in ${TOOLS} ; do
     xcodebuild \
         -project "${SWIFT_MUNKI_DIR}/munki.xcodeproj" \
         -configuration Release \
