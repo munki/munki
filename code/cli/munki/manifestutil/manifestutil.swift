@@ -42,7 +42,7 @@ func connectToRepo() throws -> Repo {
 }
 
 @main
-struct ManifestUtil: AsyncParsableCommand {
+struct ManifestUtil: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "manifestutil",
         abstract: "A utility for working with Munki manifests.",
