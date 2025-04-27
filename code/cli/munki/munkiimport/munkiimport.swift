@@ -126,8 +126,14 @@ struct MunkiImport: AsyncParsableCommand {
             hidden: hiddenOptions
         )
 
+        // install handlers for SIGINT and SIGTERM
+        let sigintSrc = installSignalHandler(SIGINT, cleanUpFunction: cleanupReadline)
+        sigintSrc.activate()
+        let sigtermSrc = installSignalHandler(SIGTERM, cleanUpFunction: cleanupReadline)
+        sigtermSrc.activate()
+
         if pathIsDirectory(installerItem) {
-            let dmgPath = await makeDmg(installerItem)
+            let dmgPath = makeDmg(installerItem)
             if !dmgPath.isEmpty {
                 installerItem = dmgPath
             } else {
@@ -139,7 +145,7 @@ struct MunkiImport: AsyncParsableCommand {
         if let uninstallerItem = pkginfoOptions.pkg.uninstalleritem,
            pathIsDirectory(uninstallerItem)
         {
-            let dmgPath = await makeDmg(uninstallerItem)
+            let dmgPath = makeDmg(uninstallerItem)
             if !dmgPath.isEmpty {
                 pkginfoOptions.pkg.uninstalleritem = dmgPath
             } else {
