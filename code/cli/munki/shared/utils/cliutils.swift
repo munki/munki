@@ -36,6 +36,158 @@ struct CLIResults {
     var error: String = ""
 }
 
+/// A class to run processes synchronously
+class ProcessRunner {
+    let task = Process()
+    var results = CLIResults()
+    // var delegate: ProcessDelegate?
+
+    init(_ tool: String,
+         arguments: [String] = [],
+         environment: [String: String] = [:],
+         stdIn: String = "")
+    {
+        task.executableURL = URL(fileURLWithPath: tool)
+        task.arguments = arguments
+        if !environment.isEmpty {
+            task.environment = environment
+        }
+
+        // set up input pipe
+        let inPipe = Pipe()
+        task.standardInput = inPipe
+        // set up our stdout and stderr pipes and handlers
+        let outputPipe = Pipe()
+        outputPipe.fileHandleForReading.readabilityHandler = { fh in
+            let data = fh.availableData
+            if data.isEmpty { // EOF on the pipe
+                outputPipe.fileHandleForReading.readabilityHandler = nil
+            } else {
+                self.processOutput(String(data: data, encoding: .utf8)!)
+            }
+        }
+        let errorPipe = Pipe()
+        errorPipe.fileHandleForReading.readabilityHandler = { fh in
+            let data = fh.availableData
+            if data.isEmpty { // EOF on the pipe
+                errorPipe.fileHandleForReading.readabilityHandler = nil
+            } else {
+                self.processError(String(data: data, encoding: .utf8)!)
+            }
+        }
+        let inputPipe = Pipe()
+        inputPipe.fileHandleForWriting.writeabilityHandler = { fh in
+            if !stdIn.isEmpty {
+                if let data = stdIn.data(using: .utf8) {
+                    fh.write(data)
+                }
+            }
+            fh.closeFile()
+            inputPipe.fileHandleForWriting.writeabilityHandler = nil
+        }
+        task.standardOutput = outputPipe
+        task.standardError = errorPipe
+        task.standardInput = inputPipe
+    }
+
+    deinit {
+        // make sure the task gets terminated
+        cancel()
+    }
+
+    func cancel() {
+        task.terminate()
+    }
+
+    func run() {
+        if !task.isRunning {
+            do {
+                try task.run()
+            } catch {
+                // task didn't start
+                displayError("error running \(task.executableURL?.path ?? "")")
+                displayError(error.localizedDescription)
+                results.exitcode = -1
+                // delegate?.processUpdated()
+                return
+            }
+            // delegate?.processUpdated()
+        }
+        // task.waitUntilExit()
+        while task.isRunning {
+            // loop until process exits
+            usleep(10000)
+        }
+
+        while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
+            (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
+        {
+            // loop until stdout and stderr pipes close
+            usleep(10000)
+        }
+
+        results.exitcode = Int(task.terminationStatus)
+        // delegate?.processUpdated()
+    }
+
+    // making this a seperate method so the non-timeout calls
+    // don't need to worry about catching exceptions
+    // NOTE: the timeout here is _not_ an idle timeout;
+    // it's the maximum time the process can run
+    func run(timeout: Int = -1) throws {
+        var deadline: Date?
+        if !task.isRunning {
+            do {
+                if timeout > 0 {
+                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                }
+                try task.run()
+            } catch {
+                // task didn't start
+                displayError("ERROR running \(task.executableURL?.path ?? "")")
+                displayError(error.localizedDescription)
+                results.exitcode = -1
+                // delegate?.processUpdated()
+                return
+            }
+            // delegate?.processUpdated()
+        }
+        // task.waitUntilExit()
+        while task.isRunning {
+            // loop until process exits
+            if let deadline {
+                if Date() >= deadline {
+                    displayError("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                    task.terminate()
+                    results.exitcode = Int.max // maybe we should define a specific code
+                    throw ProcessError.timeout
+                }
+            }
+            usleep(10000)
+        }
+
+        while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
+            (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
+        {
+            // loop until stdout and stderr pipes close
+            usleep(10000)
+        }
+
+        results.exitcode = Int(task.terminationStatus)
+        // delegate?.processUpdated()
+    }
+
+    func processOutput(_ str: String) {
+        // can be overridden by subclasses
+        results.output.append(str)
+    }
+
+    func processError(_ str: String) {
+        // can be overridden by subclasses
+        results.error.append(str)
+    }
+}
+
 /// Runs a command line tool synchronously, returns CLIResults
 /// this implementation attempts to handle scenarios in which a large amount of stdout
 /// or sterr output is generated
