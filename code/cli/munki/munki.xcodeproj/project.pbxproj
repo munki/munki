@@ -180,6 +180,8 @@
 		C05DB2212DAC98840081FACD /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
 		C05DB2222DAC98970081FACD /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
 		C05DB2232DAC98C70081FACD /* reports.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DE2C33B9A000B86310 /* reports.swift */; };
+		C0684DCB2DB3F0780091E774 /* SignalHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */; };
+		C0684DCC2DB3F0A00091E774 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
 		C06C21342C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C06C213A2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
@@ -1523,12 +1525,14 @@
 				C0D00FB42C458EAA0021DA9C /* version.swift in Sources */,
 				C030A9E42C42415C007F0B34 /* dmgutils.swift in Sources */,
 				C030A9EA2C42417D007F0B34 /* iconutils.swift in Sources */,
+				C0684DCB2DB3F0780091E774 /* SignalHandler.swift in Sources */,
 				C030A9D02C41F798007F0B34 /* munkiimport.swift in Sources */,
 				C030A9E82C424175007F0B34 /* osinstaller.swift in Sources */,
 				C06C21502C90A5EC0023E9D9 /* LaunchdJob.swift in Sources */,
 				C06C21432C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C030A9E52C424160007F0B34 /* display.swift in Sources */,
 				C030A9D92C424057007F0B34 /* prefs.swift in Sources */,
+				C0684DCC2DB3F0A00091E774 /* UNIXProcessInfo.swift in Sources */,
 				C030A9E32C424158007F0B34 /* plistutils.swift in Sources */,
 				C030A9DF2C42408C007F0B34 /* admincommon.swift in Sources */,
 				C030A9DB2C424065007F0B34 /* cliutils.swift in Sources */,
