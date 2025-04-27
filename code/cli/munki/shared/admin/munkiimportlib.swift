@@ -579,8 +579,8 @@ func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict,
     return [String]()
 }
 
-/// A subclass of AsyncProcessRunner to create disk images
-class HdiUtilCreateFromFolderRunner: AsyncProcessRunner {
+/// A subclass of ProcessRunner to create disk images
+class HdiUtilCreateFromFolderRunner: ProcessRunner {
     init(sourceDir: String, outputPath: String) {
         let tool = "/usr/bin/hdiutil"
         let arguments = ["create", "-fs", "HFS+", "-srcfolder", sourceDir, outputPath]
@@ -602,8 +602,8 @@ class HdiUtilCreateFromFolderRunner: AsyncProcessRunner {
 
 /// Wraps dirPath (generally an app bundle or bundle-style pkg into a disk image.
 /// Returns path to the created dmg file
-/// async because it can take a while, depending on the size of the item
-func makeDmg(_ dirPath: String) async -> String {
+/// It can take a while, depending on the size of the item
+func makeDmg(_ dirPath: String) -> String {
     let itemname = (dirPath as NSString).lastPathComponent
     print("Making disk image containing \(itemname)...")
     let dmgName = (itemname as NSString).deletingPathExtension + ".dmg"
@@ -613,7 +613,7 @@ func makeDmg(_ dirPath: String) async -> String {
     }
     let dmgPath = (tmpDir as NSString).appendingPathComponent(dmgName)
     let dmgCreator = HdiUtilCreateFromFolderRunner(sourceDir: dirPath, outputPath: dmgPath)
-    await dmgCreator.run()
+    dmgCreator.run()
     if dmgCreator.results.exitcode != 0 {
         printStderr("Disk image creation failed.")
         return ""
