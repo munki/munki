@@ -9,9 +9,19 @@ check_exit_code() {
 }
 
 TOOLS="managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged authrestartd launchapp logouthelper iconimporter repoclean manifestutil"
-SWIFT_MUNKI_DIR="./cli/munki"
-BUILD_DIR="./build"
-BINARIES_DIR="./build/binaries"
+
+TOOLSDIR=$(dirname "$0")
+# Convert to absolute path.
+TOOLSDIR=$(cd "${TOOLSDIR}" ; pwd)
+CODEDIR=$(dirname "${TOOLSDIR}")
+
+MUNKI_PROJ="${CODEDIR}/cli/munki/munki.xcodeproj"
+if [ ! -e "${MUNKI_PROJ}" ] ; then
+    check_exit_code 1 "${MUNKI_PROJ} doesn't exist"
+fi
+
+BUILD_DIR="${CODEDIR}/build"
+BINARIES_DIR="${CODEDIR}/build/binaries"
 
 if [ ! -d "${BUILD_DIR}" ] ; then
     mkdir "${BUILD_DIR}"
@@ -23,12 +33,12 @@ fi
 
 for TOOL in ${TOOLS} ; do
     xcodebuild \
-        -project "${SWIFT_MUNKI_DIR}/munki.xcodeproj" \
+        -project "${MUNKI_PROJ}" \
         -configuration Release \
-        -scheme ${TOOL} \
+        -scheme "${TOOL}" \
         -destination "generic/platform=macOS" \
         -derivedDataPath "${BUILD_DIR}" \
         build
     check_exit_code "$?" "Error building ${TOOL}"
-    cp "$BUILD_DIR/Build/Products/Release/${TOOL}" "${BINARIES_DIR}/"
+    cp "${BUILD_DIR}/Build/Products/Release/${TOOL}" "${BINARIES_DIR}/"
 done
