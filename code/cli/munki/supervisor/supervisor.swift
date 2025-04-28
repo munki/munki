@@ -27,27 +27,33 @@ private let signalName = [
     SIGINT: "SIGINT",
     SIGTERM: "SIGTERM",
 ]
+private let LOGNAME = "supervisor.log"
+private func log(_ message: String) {
+    munkiLog(message, logFile: LOGNAME)
+}
+
 
 func signalHandler(_ sig: Int32) -> DispatchSourceSignal {
     // the intent here is to kill our child process(es) when we get a SIGINT or SIGTERM
     // (sadly we can't do it for SIGKILL) so they don't keep running if we're stopped
     // by the user (or killed by another process)
-    signal(sig, SIG_IGN) // // Make sure the signal does not terminate the application.
+    signal(sig, SIG_IGN) // Make sure the signal does not immediately terminate this process
 
     let sigSrc = DispatchSource.makeSignalSource(signal: sig, queue: .main)
     sigSrc.setEventHandler {
-        printStderr("Got signal \(signalName[sig] ?? String(sig))")
+        log("Got signal \(signalName[sig] ?? String(sig))")
         // kill all our child processes
         let ourPid = ProcessInfo.processInfo.processIdentifier
         for task in processesWithPPID(ourPid) {
-            printStderr("Sending signal \(signalName[sig] ?? String(sig)) to \(task.command), pid \(task.pid)...")
+            log("Sending signal \(signalName[sig] ?? String(sig)) to \(task.command), pid \(task.pid)...")
             let osErr = kill(task.pid, sig)
             if osErr != noErr {
-                printStderr("Got err \(osErr) when sending \(signalName[sig] ?? String(sig)) to \(task.command), pid \(task.pid)")
+                log("ERROR: Got err \(osErr) when sending \(signalName[sig] ?? String(sig)) to \(task.command), pid \(task.pid)")
             }
         }
         // reset the signal handler to default
         signal(sig, SIG_DFL)
+        // resend the signal to ourselves
         kill(ourPid, sig)
     }
     return sigSrc
@@ -65,21 +71,28 @@ class SupervisorProcessRunner {
 
     deinit {
         // make sure the task gets terminated
-        killTask()
+        if task.isRunning {
+            killTask()
+        }
     }
 
     func killTask() {
         let KILL_WAIT_TIME_USEC = useconds_t(1_000_000)
+        let commandName = task.executableURL?.path ?? ""
+        let pid = task.processIdentifier
+        
+        log("Sending SIGTERM to \(commandName) (pid \(pid))")
         task.terminate() // sends SIGTERM
         usleep(KILL_WAIT_TIME_USEC)
         if !task.isRunning {
             return
         }
-        let pid = task.processIdentifier
+        
+        log("Sending SIGKILL to \(commandName) (pid \(pid))")
         _signal.kill(pid, SIGKILL)
         usleep(KILL_WAIT_TIME_USEC)
         if task.isRunning {
-            // log("pid \(pid) won't die")
+            log("ERROR: \(commandName) (pid \(pid)) won't die")
         }
     }
 
@@ -93,8 +106,8 @@ class SupervisorProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                printStderr("ERROR running \(task.executableURL?.path ?? "")")
-                printStderr(error.localizedDescription)
+                log("ERROR running \(task.executableURL?.path ?? "")")
+                log(error.localizedDescription)
                 return PROCESS_DID_NOT_START
             }
         }
@@ -102,7 +115,7 @@ class SupervisorProcessRunner {
             // loop until process exits
             if let deadline {
                 if Date() >= deadline {
-                    printStderr("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                    log("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     killTask()
                     return PROCESS_TIMED_OUT
                 }
@@ -127,9 +140,18 @@ class Supervisor {
     }
 
     func execute() async -> Int32 {
-        // log("Executing \(command) with arguments: \(arguments)")
+        var delayMessage = ""
+        var timeoutMessage = ""
+        if delayRandom > 0 {
+            delayMessage = ", random delay 0-\(delayRandom) seconds"
+        }
+        if timeout > 0 {
+            timeoutMessage = ", timeout: \(timeout) seconds"
+        }
+        log("Executing \(command) with arguments: \(arguments)\(delayMessage)\(timeoutMessage)")
         if delayRandom > 0 {
             let randomDelay = Int.random(in: 0 ... delayRandom)
+            log("Sleeping for \(randomDelay) seconds...")
             usleep(useconds_t(randomDelay * 1_000_000))
         }
         return await SupervisorProcessRunner(command, arguments: arguments, timeout: timeout).run()
@@ -162,6 +184,8 @@ struct SupervisorCommand: AsyncParsableCommand {
         sigintSrc.activate()
         let sigtermSrc = signalHandler(SIGTERM)
         sigtermSrc.activate()
+        
+        rotateLog(LOGNAME, ifLargerThan: 1_000_000)
 
         let command = commandAndArgs[0]
         let arguments = Array(commandAndArgs[1...])
