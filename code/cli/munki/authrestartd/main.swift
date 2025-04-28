@@ -303,16 +303,7 @@ class AuthRestartServer: UNIXDomainSocketServer {
 
     /// Rotate our log if it's too large
     func rotateServerLog() {
-        let logPath = logNamed(LOGFILENAME)
-        let MAX_LOGFILE_SIZE = 1_000_000
-        if pathIsRegularFile(logPath),
-           let attributes = try? FileManager.default.attributesOfItem(atPath: logPath)
-        {
-            let filesize = (attributes as NSDictionary).fileSize()
-            if filesize > MAX_LOGFILE_SIZE {
-                rotateLog(logPath)
-            }
-        }
+        rotateLog(LOGFILENAME, ifLargerThan: 1_000_000)
     }
 }
 
@@ -336,19 +327,10 @@ func main() async -> Int32 {
         return -1
     }
 
-    /*
-     guard let daemon = try? AuthRestartServer(socketPath: "/var/run/authrestartd", debug: DEBUG)
-      else {
-          munkiLog("Could not initialize \(APPNAME)", logFile: LOGFILENAME)
-          return -1
-      }
-     */
     let daemon = AuthRestartServer(fd: socketFD, debug: DEBUG)
     daemon.rotateServerLog()
-    // daemon.log("\(APPNAME) starting")
     do {
         try await daemon.run(withTimeout: 10)
-        // try await daemon.run()
     } catch {
         daemon.logError("\(APPNAME) failed: \(error)")
         return -1
