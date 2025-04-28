@@ -20,3 +20,8 @@
 
 /// one single place to define a version for CLI tools
 let CLI_TOOLS_VERSION = "7.0.0"
+
+/// Returns version of Munki tools
+func getVersion() -> String {
+    return CLI_TOOLS_VERSION
+}

@@ -40,67 +40,6 @@ func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
     return 0
 }
 
-/// Creates any missing intermediate directories so we can copy item.
-/// Returns boolean to indicate success or failure
-func createMissingDirs(_ path: String) -> Bool {
-    let filemanager = FileManager.default
-    if filemanager.fileExists(atPath: path) {
-        // the path exists; don't need to create anything
-        return true
-    }
-    var parentPath = path
-    // find a parent path that actually exists
-    while !filemanager.fileExists(atPath: parentPath) {
-        parentPath = (parentPath as NSString).deletingLastPathComponent
-    }
-    // get the owner, group and mode of this directory
-    do {
-        let attrs = try filemanager.attributesOfItem(atPath: parentPath)
-        let user = (attrs as NSDictionary).fileOwnerAccountID() ?? NSNumber(0)
-        let group = (attrs as NSDictionary).fileGroupOwnerAccountID() ?? NSNumber(0)
-        var mode = (attrs as NSDictionary).filePosixPermissions()
-        if mode == 0 {
-            mode = 0o755
-        }
-        let preservedAttrs = [
-            FileAttributeKey.ownerAccountID: user,
-            FileAttributeKey.groupOwnerAccountID: group,
-            FileAttributeKey.posixPermissions: mode,
-        ] as [FileAttributeKey: Any]
-        try filemanager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: preservedAttrs)
-        return true
-    } catch {
-        displayError("Error creating path \(path): \(error.localizedDescription)")
-        return false
-    }
-}
-
-/// Removes com.apple.quarantine xattr from a path
-func removeQuarantineXattrFromItem(_ path: String) {
-    do {
-        let xattrs = try listXattrs(atPath: path)
-        if xattrs.contains("com.apple.quarantine") {
-            try removeXattr("com.apple.quarantine", atPath: path)
-        }
-    } catch let err as MunkiError {
-        displayWarning("\(err.description)")
-    } catch {
-        displayWarning("\(error)")
-    }
-}
-
-/// Removes com.apple.quarantine xattr from a path, recursively if needed
-func removeQuarantineXattrsRecursively(_ path: String) {
-    removeQuarantineXattrFromItem(path)
-    if pathIsDirectory(path) {
-        let dirEnum = FileManager.default.enumerator(atPath: path)
-        while let item = dirEnum?.nextObject() as? String {
-            let itempath = (path as NSString).appendingPathComponent(item)
-            removeQuarantineXattrFromItem(itempath)
-        }
-    }
-}
-
 /// Validates source and destination for item to be copied from a mounted disk image.
 /// Returns a tuple of (success, source_path, destination_path)
 func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool, String, String) {
@@ -268,5 +207,40 @@ func copyFromDmg(dmgPath: String, itemList: [PlistDict]) async -> Int {
     } else {
         displayError("Could not mount disk image file \((dmgPath as NSString).lastPathComponent)")
         return -1
+    }
+}
+
+/// Creates any missing intermediate directories so we can copy item.
+/// Returns boolean to indicate success or failure
+func createMissingDirs(_ path: String) -> Bool {
+    let filemanager = FileManager.default
+    if filemanager.fileExists(atPath: path) {
+        // the path exists; don't need to create anything
+        return true
+    }
+    var parentPath = path
+    // find a parent path that actually exists
+    while !filemanager.fileExists(atPath: parentPath) {
+        parentPath = (parentPath as NSString).deletingLastPathComponent
+    }
+    // get the owner, group and mode of this directory
+    do {
+        let attrs = try filemanager.attributesOfItem(atPath: parentPath)
+        let user = (attrs as NSDictionary).fileOwnerAccountID() ?? NSNumber(0)
+        let group = (attrs as NSDictionary).fileGroupOwnerAccountID() ?? NSNumber(0)
+        var mode = (attrs as NSDictionary).filePosixPermissions()
+        if mode == 0 {
+            mode = 0o755
+        }
+        let preservedAttrs = [
+            FileAttributeKey.ownerAccountID: user,
+            FileAttributeKey.groupOwnerAccountID: group,
+            FileAttributeKey.posixPermissions: mode,
+        ] as [FileAttributeKey: Any]
+        try filemanager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: preservedAttrs)
+        return true
+    } catch {
+        displayError("Error creating path \(path): \(error.localizedDescription)")
+        return false
     }
 }

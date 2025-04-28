@@ -364,7 +364,7 @@ func precache() {
     displayInfo("###   Beginning precaching session   ###")
     for item in itemsToPrecache(installInfo) {
         do {
-            _ = try downloadInstallerItem(
+            let result = try downloadInstallerItem(
                 item, installInfo: installInfo, precaching: true
             )
         } catch {

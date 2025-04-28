@@ -74,3 +74,29 @@ func getXattr(named name: String, atPath path: String) throws -> Data {
     }
     return Data(bytes: buf, count: bufLength)
 }
+
+/// Removes com.apple.quarantine xattr from a path
+func removeQuarantineXattrFromItem(_ path: String) {
+    do {
+        let xattrs = try listXattrs(atPath: path)
+        if xattrs.contains("com.apple.quarantine") {
+            try removeXattr("com.apple.quarantine", atPath: path)
+        }
+    } catch let err as MunkiError {
+        displayWarning("\(err.description)")
+    } catch {
+        displayWarning("\(error)")
+    }
+}
+
+/// Removes com.apple.quarantine xattr from a path, recursively if needed
+func removeQuarantineXattrsRecursively(_ path: String) {
+    removeQuarantineXattrFromItem(path)
+    if pathIsDirectory(path) {
+        let dirEnum = FileManager.default.enumerator(atPath: path)
+        while let item = dirEnum?.nextObject() as? String {
+            let itempath = (path as NSString).appendingPathComponent(item)
+            removeQuarantineXattrFromItem(itempath)
+        }
+    }
+}
