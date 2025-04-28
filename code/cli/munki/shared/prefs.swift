@@ -340,21 +340,3 @@ func printConfig() {
     }
 }
 
-/// Prints the current Munki configuration in plist format
-func printConfigPlist() {
-    var plist = [PlistDict]()
-    for prefName in CONFIG_KEY_NAMES.sorted() {
-        let value = pref(prefName)
-        let level = getConfigLevel(BUNDLE_ID as String, prefName, value)
-        var reprValue: Any = "None"
-        if let value {
-            reprValue = value
-        }
-        plist.append([
-            "preference": prefName,
-            "value": reprValue,
-            "source": level,
-        ])
-    }
-    print((try? plistToString(plist)) ?? "")
-}
