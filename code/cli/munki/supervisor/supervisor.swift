@@ -18,6 +18,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+// A basic implementation of the supervisor tool. The Python original was written and
+// contributed by Google MacOps, and has features that Google may have used, but Munki
+// did not. This implementation does not support the following options:
+// --error-exec, --error-exec-exit-codes, or --debug
+
 import ArgumentParser
 import Foundation
 
@@ -31,7 +36,6 @@ private let LOGNAME = "supervisor.log"
 private func log(_ message: String) {
     munkiLog(message, logFile: LOGNAME)
 }
-
 
 func signalHandler(_ sig: Int32) -> DispatchSourceSignal {
     // the intent here is to kill our child process(es) when we get a SIGINT or SIGTERM
@@ -59,6 +63,7 @@ func signalHandler(_ sig: Int32) -> DispatchSourceSignal {
     return sigSrc
 }
 
+/// A class to run a process and kill it if it runs too long
 class SupervisorProcessRunner {
     let task = Process()
     var timeout: Int = 0
@@ -126,6 +131,8 @@ class SupervisorProcessRunner {
     }
 }
 
+
+/// A class to supervise a running process, optionally sleeping a random number of seconds before starting the process
 class Supervisor {
     var timeout: Int
     var delayRandom: Int
@@ -154,7 +161,9 @@ class Supervisor {
             log("Sleeping for \(randomDelay) seconds...")
             usleep(useconds_t(randomDelay * 1_000_000))
         }
-        return await SupervisorProcessRunner(command, arguments: arguments, timeout: timeout).run()
+        return await SupervisorProcessRunner(command,
+                                             arguments: arguments,
+                                             timeout: timeout).run()
     }
 }
 
