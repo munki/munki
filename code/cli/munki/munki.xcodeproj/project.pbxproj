@@ -217,7 +217,6 @@
 		C0684DFB2DBFE8130091E774 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C0684DFC2DBFE8130091E774 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C0684E212DBFF81B0091E774 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0684E202DBFF81B0091E774 /* ArgumentParser */; };
-		C0684E232DC0029B0091E774 /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C0684E252DC008A30091E774 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
 		C0684E262DC024480091E774 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C0684E272DC024630091E774 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
@@ -1752,7 +1751,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0684E252DC008A30091E774 /* UNIXProcessInfo.swift in Sources */,
-				C0684E232DC0029B0091E774 /* stderrout.swift in Sources */,
 				C0684E272DC024630091E774 /* prefs.swift in Sources */,
 				C0684E262DC024480091E774 /* munkilog.swift in Sources */,
 				C0684E282DC028940091E774 /* constants.swift in Sources */,
