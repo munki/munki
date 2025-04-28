@@ -19,6 +19,7 @@
 //  limitations under the License.
 
 import CryptoKit
+import Foundation
 import Security
 
 private let DEFAULT_KEYCHAIN_NAME = "munki.keychain"
