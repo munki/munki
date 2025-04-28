@@ -35,7 +35,7 @@ PARENTDIRNAME=$(basename "$PARENTDIR")
 if [ "$PARENTDIRNAME" == "code" ]; then
     GRANDPARENTDIR=$(dirname "$PARENTDIR")
     GRANDPARENTDIRNAME=$(basename "$GRANDPARENTDIR")
-    if [ "$GRANDPARENTDIRNAME" == "Munki2" ]; then
+    if [ "$GRANDPARENTDIRNAME" == "munki" ]; then
         MUNKIROOT="$GRANDPARENTDIR"
     fi
 fi
@@ -428,8 +428,7 @@ mkdir -m 755 "$COREROOT/usr/local"
 mkdir -m 755 "$COREROOT/usr/local/munki"
 # Copy command line utilities.
 # edit this if list of tools changes!
-# ptyexec supervisor
-for TOOL in authrestartd launchapp logouthelper removepackages managedsoftwareupdate precache_agent
+for TOOL in authrestartd launchapp logouthelper removepackages managedsoftwareupdate precache_agent supervisor
 do
     cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
     # sign tool
@@ -648,7 +647,7 @@ chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
 # edit this if list of tools changes!
 for TOOL in appusaged app_usage_monitor
 do
-	cp -X "$MUNKIROOT/code/client/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
+	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
@@ -929,7 +928,7 @@ cat > "$DISTFILE" <<EOF
     <title>Munki - Software Management for $ORGNAME</title>
     <volume-check>
         <allowed-os-versions>
-            <os-version min="10.13"/>
+            <os-version min="10.15"/>
         </allowed-os-versions>
     </volume-check>
     <options hostArchitectures="x86_64,arm64" customize="allow" allow-external-scripts="no"/>

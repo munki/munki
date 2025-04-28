@@ -8,7 +8,7 @@ check_exit_code() {
     fi
 }
 
-TOOLS="managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged authrestartd launchapp logouthelper iconimporter repoclean manifestutil precache_agent"
+TOOLS="managedsoftwareupdate makecatalogs makepkginfo munkiimport removepackages app_usage_monitor appusaged authrestartd launchapp logouthelper iconimporter repoclean manifestutil precache_agent supervisor"
 
 TOOLSDIR=$(dirname "$0")
 # Convert to absolute path.
