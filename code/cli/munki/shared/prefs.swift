@@ -306,37 +306,3 @@ func getConfigLevel(_ domain: String, _ prefName: String, _ value: Any?) -> Stri
     }
     return "unknown"
 }
-
-/// Prints the current Munki configuration
-func printConfig() {
-    print("Current Munki configuration:")
-    let maxPrefNameLen = CONFIG_KEY_NAMES.max(by: { $1.count > $0.count })?.count ?? 0
-    let padding = "                                                  "
-    for prefName in CONFIG_KEY_NAMES.sorted() {
-        let value = pref(prefName)
-        let level = getConfigLevel(BUNDLE_ID as String, prefName, value)
-        var reprValue = "None"
-        // it's hard to distinguish a boolean from a number in a CFPropertyList item,
-        // so we look at the type of the default value if defined
-        if let numberValue = value as? NSNumber {
-            if DEFAULT_PREFS[prefName] is Bool {
-                if numberValue != 0 {
-                    reprValue = "True"
-                } else {
-                    reprValue = "False"
-                }
-            } else {
-                reprValue = "\(numberValue)"
-            }
-        } else if let stringValue = value as? String {
-            reprValue = "\"\(stringValue)\""
-        } else if let arrayValue = value as? NSArray {
-            reprValue = "\(arrayValue)"
-        }
-        // print(('%' + str(max_pref_name_len) + 's: %5s %s ') % (
-        //       pref_name, repr_value, level))
-        let paddedPrefName = (padding + prefName).suffix(maxPrefNameLen)
-        print("\(paddedPrefName): \(reprValue) [\(level)]")
-    }
-}
-
