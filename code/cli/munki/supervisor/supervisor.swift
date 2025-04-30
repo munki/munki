@@ -85,14 +85,14 @@ class SupervisorProcessRunner {
         let KILL_WAIT_TIME_USEC = useconds_t(1_000_000)
         let commandName = task.executableURL?.path ?? ""
         let pid = task.processIdentifier
-        
+
         log("Sending SIGTERM to \(commandName) (pid \(pid))")
         task.terminate() // sends SIGTERM
         usleep(KILL_WAIT_TIME_USEC)
         if !task.isRunning {
             return
         }
-        
+
         log("Sending SIGKILL to \(commandName) (pid \(pid))")
         _signal.kill(pid, SIGKILL)
         usleep(KILL_WAIT_TIME_USEC)
@@ -130,7 +130,6 @@ class SupervisorProcessRunner {
         return task.terminationStatus
     }
 }
-
 
 /// A class to supervise a running process, optionally sleeping a random number of seconds before starting the process
 class Supervisor {
@@ -193,7 +192,7 @@ struct SupervisorCommand: AsyncParsableCommand {
         sigintSrc.activate()
         let sigtermSrc = signalHandler(SIGTERM)
         sigtermSrc.activate()
-        
+
         rotateLog(LOGNAME, ifLargerThan: 1_000_000)
 
         let command = commandAndArgs[0]

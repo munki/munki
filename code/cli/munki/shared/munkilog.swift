@@ -59,7 +59,7 @@ func munkiLog(_ message: String, logFile: String = "") {
         subsystem = "com.googlecode.munki.\((logFile as NSString).deletingPathExtension)"
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
-        if !FileManager.default.fileExists(atPath:logPath) {
+        if !FileManager.default.fileExists(atPath: logPath) {
             FileManager.default.createFile(atPath: logPath, contents: nil)
         }
         if let fh = FileHandle(forUpdatingAtPath: logPath) {
@@ -103,8 +103,7 @@ func munkiLogResetWarnings() {
 /// Rotate a log if it's too large
 func rotateLog(_ logname: String, ifLargerThan maxSize: Int) {
     let logpath = logNamed(logname)
-    if let attributes = try? FileManager.default.attributesOfItem(atPath: logpath)
-    {
+    if let attributes = try? FileManager.default.attributesOfItem(atPath: logpath) {
         let filesize = (attributes as NSDictionary).fileSize()
         if filesize > maxSize {
             rotateLog(logpath)
@@ -116,8 +115,7 @@ func rotateLog(_ logname: String, ifLargerThan maxSize: Int) {
 func munkiLogRotateMainLog() {
     let MAX_LOGFILE_SIZE = 1_000_000
     let mainLog = logNamed(MAIN_LOG_NAME)
-    if let attributes = try? FileManager.default.attributesOfItem(atPath: mainLog)
-    {
+    if let attributes = try? FileManager.default.attributesOfItem(atPath: mainLog) {
         let filesize = (attributes as NSDictionary).fileSize()
         if filesize > MAX_LOGFILE_SIZE {
             rotateLog(mainLog)
