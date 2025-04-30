@@ -16,6 +16,7 @@ CONFPKG=""
 # consistent with old SVN repo
 MAGICNUMBER=482
 PYTHONPKG=NO
+PYTHONLIBS=NO
 PKGSIGNINGCERT=""
 APPSIGNINGCERT=""
 BOOTSTRAPPKG=NO
@@ -40,6 +41,7 @@ if [ "$PARENTDIRNAME" == "code" ]; then
     fi
 fi
 
+
 usage() {
     cat <<EOF
 Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
@@ -48,7 +50,9 @@ Usage: $(basename "$0") [-i id] [-r root] [-o dir] [-c package] [-s cert]
     -r root     Specify the Munki source root
     -o dir      Specify the output directory
     -n orgname  Specify the name of the organization
-    -p          Build and include a Python component pkg
+    -p          Build and include a Python interpreter package (munki-python)
+    -P          Include a package that installs the Munki python libraries 
+                (munkilib)
     -B          Include a package that sets Munki's bootstrap mode
     -A          Auto run managedsoftwareupdate immediately after install. This
                 really should be used only with DEP/ADM enrollments.
@@ -68,7 +72,7 @@ EOF
 }
 
 
-while getopts "i:r:o:n:c:s:S:T:pBAhR" option
+while getopts "i:r:o:n:c:s:S:T:pPBAhR" option
 do
     case $option in
         "i")
@@ -95,6 +99,9 @@ do
             ;;
         "p")
             PYTHONPKG=YES
+            ;;
+        "P")
+            PYTHONLIBS=YES
             ;;
         "B")
             BOOTSTRAPPKG=YES
@@ -202,7 +209,7 @@ fi
 cd "$MUNKIROOT"
 # generate a pseudo-svn revision number for the core tools (and admin tools)
 # from the list of Git revisions
-GITREV=$(git log -n1 --format="%H" -- code/client)
+GITREV=$(git log -n1 --format="%H" -- code/cli/munki)
 GITREVINDEX=$(git rev-list --count "$GITREV")
 SVNREV=$((GITREVINDEX + MAGICNUMBER))
 DISTPKGSVNREV=$SVNREV
@@ -215,6 +222,28 @@ APPSSVNREV=$((GITREVINDEX + MAGICNUMBER))
 if [ $APPSSVNREV -gt $DISTPKGSVNREV ] ; then
     DISTPKGSVNREV=$APPSSVNREV
 fi
+
+MUNKLIBVERS=6.6.5
+if [ "$PYTHONLIBS" == "YES" ] ; then
+    # generate a version number for the Python libs
+    MUNKLIBVERSFILE="$MUNKIROOT/code/client/munkilib/version"
+    # Check to see if file exists
+    if [ -f "MUNKLIBVERSFILE.plist" ]; then
+        # Get the version
+        MUNKLIBVERS=$(defaults read "$MUNKLIBVERSFILE" CFBundleShortVersionString)
+        if [ "$?" != "0" ]; then
+            echo "${MUNKLIBVERSFILE}.plist can not be read" 1>&2
+            exit 1
+        fi
+    fi
+    # generate a pseudo-svn revision number for the python libs
+    # from the list of Git revisions
+    PYTHONLIBSGITREV=$(git log -n1 --format="%H" -- code/client/munkilib)
+    GITREVINDEX=$(git rev-list --count "$GITREV")
+    PYTHONLIBSSVNREV=$((GITREVINDEX + MAGICNUMBER))
+    PYTHONLIBSVERSION=$MUNKLIBVERS.$SVNREV
+fi
+
 # get base apps version from MSC.app
 APPSVERSION=$(defaults read "$MUNKIROOT/code/apps/Managed Software Center/Managed Software Center/Info" CFBundleShortVersionString)
 # append the APPSSVNREV
@@ -233,6 +262,7 @@ if [ -e "$MUNKIROOT/launchd/version.plist" ]; then
     LAUNCHDVERSION=$(defaults read "$MUNKIROOT/launchd/version" CFBundleShortVersionString)
 fi
 LAUNCHDVERSION=$LAUNCHDVERSION.$LAUNCHDSVNREV
+
 # get a pseudo-svn revision number for the Python pkg.
 # Yes this is a bit broad, but better than too narrow!
 PYTHONGITREV=$(git log -n1 --format="%H" -- code/tools)
@@ -282,6 +312,10 @@ echo
 echo "  Include Python pkg: $PYTHONPKG"
 if [ "$PYTHONPKG" == "YES" ] ; then
     echo "    Python package version: $PYTHONVERSION"
+fi
+echo "  Include Python libraries (munkilib) pkg: $PYTHONLIBS"
+if [ "$PYTHONLIBS" == "YES" ]; then
+    echo "    Python libs package version: $PYTHONLIBSVERSION"
 fi
 echo "  Include bootstrap pkg: $BOOTSTRAPPKG"
 echo "  Include autorun pkg: $AUTORUNPKG"
@@ -443,12 +477,6 @@ do
     fi
 done
 
-# add Build Number and Git Revision to version.plist
-#/usr/libexec/PlistBuddy -c "Delete :BuildNumber" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
-#/usr/libexec/PlistBuddy -c "Add :BuildNumber string $SVNREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
-#/usr/libexec/PlistBuddy -c "Delete :GitRevision" "$COREROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
-#/usr/libexec/PlistBuddy -c "Add :GitRevision string $GITREV" "$COREROOT/usr/local/munki/munkilib/version.plist"
-
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
@@ -491,7 +519,6 @@ mkdir -m 755 "$ADMINROOT/usr/local"
 mkdir -m 755 "$ADMINROOT/usr/local/munki"
 # Copy command line admin utilities.
 # edit this if list of tools changes!
-# installhelper
 for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean 
 do
     cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$ADMINROOT/usr/local/munki/" 2>&1
@@ -604,13 +631,37 @@ echo "Creating launchd package source..."
 LAUNCHDROOT="$PKGTMP/munki_launchd"
 mkdir -m 1775 "$LAUNCHDROOT"
 mkdir -m 1775 "$LAUNCHDROOT/Library"
-mkdir -m 755 "$LAUNCHDROOT/Library/LaunchAgents"
-mkdir -m 755 "$LAUNCHDROOT/Library/LaunchDaemons"
+mkdir -m  755 "$LAUNCHDROOT/Library/LaunchAgents"
+mkdir -m  755 "$LAUNCHDROOT/Library/LaunchDaemons"
+mkdir -m  755 "$LAUNCHDROOT/usr"
+mkdir -m  755 "$LAUNCHDROOT/usr/local"
+mkdir -m  755 "$LAUNCHDROOT/usr/local/munki"
+
 # Copy launch daemons and launch agents.
 cp -X "$MUNKIROOT/launchd/LaunchAgents/"*.plist "$LAUNCHDROOT/Library/LaunchAgents/"
 chmod 644 "$LAUNCHDROOT/Library/LaunchAgents/"*
 cp -X "$MUNKIROOT/launchd/LaunchDaemons/"*.plist "$LAUNCHDROOT/Library/LaunchDaemons/"
 chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
+
+# Copy tools.
+# edit this if list of tools changes!
+for TOOL in installhelper
+do
+	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$LAUNCHDROOT/usr/local/munki/" 2>&1
+    # sign tool
+    if [ "$APPSIGNINGCERT" != "" ]; then
+        echo "Signing $TOOL..."
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$LAUNCHDROOT/usr/local/munki/$TOOL"
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing $TOOL: $SIGNING_RESULT"
+            exit 2
+        fi
+    fi
+done
+# Set permissions.
+chmod -R go-w "$LAUNCHDROOT/usr/local/munki"
+chmod +x "$LAUNCHDROOT/usr/local/munki"
 
 # copy in launchd cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
@@ -645,7 +696,7 @@ cp -X "$MUNKIROOT/launchd/app_usage_LaunchDaemon/"*.plist "$APPUSAGEROOT/Library
 chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
 # Copy tools.
 # edit this if list of tools changes!
-for TOOL in appusaged app_usage_monitor
+for TOOL in appusaged app_usage_monitor installhelper
 do
 	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
     # sign tool
@@ -710,6 +761,39 @@ if [ "$PYTHONPKG" == "YES" ] ; then
     # Create package info file.
     makeinfo python "$PKGTMP/info" norestart
 fi
+
+
+################
+## pythonlibs ##
+################
+if [ "$PYTHONLIBS" == "YES" ] ; then
+    echo "Creating python libraries source..."
+
+    # Create directory structure.
+    PYTHONLIBSROOT="$PKGTMP/munki_pythonlibs"
+    mkdir -m 1775 "$PYTHONLIBSROOT"
+    mkdir -m  755 "$PYTHONLIBSROOT/usr"
+    mkdir -m  755 "$PYTHONLIBSROOT/usr/local"
+    mkdir -m  755 "$PYTHONLIBSROOT/usr/local/munki"
+
+    # Copy python libraries.
+    rsync -a --exclude '*.pyc' --exclude '.DS_Store' "$MUNKIROOT/code/client/munkilib/" "$PYTHONLIBSROOT/usr/local/munki/munkilib/"
+    # Copy munki version.
+    cp -X "$MUNKIROOT/code/client/munkilib/version.plist" "$PYTHONLIBSROOT/usr/local/munki/munkilib/"
+
+    # add Build Number and Git Revision to version.plist
+    /usr/libexec/PlistBuddy -c "Delete :BuildNumber" "$PYTHONLIBSROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
+    /usr/libexec/PlistBuddy -c "Add :BuildNumber string $SVNREV" "$PYTHONLIBSROOT/usr/local/munki/munkilib/version.plist"
+    /usr/libexec/PlistBuddy -c "Delete :GitRevision" "$PYTHONLIBSROOT/usr/local/munki/munkilib/version.plist" 2>/dev/null
+    /usr/libexec/PlistBuddy -c "Add :GitRevision string $GITREV" "$PYTHONLIBSROOT/usr/local/munki/munkilib/version.plist"
+    # Set permissions.
+    chmod -R go-w "$PYTHONLIBSROOT/usr/local/munki"
+    chmod +x "$PYTHONLIBSROOT/usr/local/munki"
+    
+    # Create package info file.
+    makeinfo pythonlibs "$PKGTMP/info" norestart
+fi
+
 
 ###############
 ## bootstrap ##
@@ -833,24 +917,37 @@ PKGDEST="$METAROOT"
 # Create Distribution file.
 CORETITLE="Munki core tools"
 COREDESC="Core command-line tools used by Munki."
+
 ADMINTITLE="Munki admin tools"
 ADMINDESC="Command-line munki admin tools."
+
 APPTITLE="Managed Software Center"
 APPDESC="Managed Software Center application."
+
 LAUNCHDTITLE="Munki launchd files"
 LAUNCHDDESC="Core Munki launch daemons and launch agents."
+
 APPUSAGETITLE="Munki app usage monitoring tool"
 APPUSAGEDESC="Munki app usage monitoring tool and launchdaemon. Optional install; if installed Munki can use data collected by this tool to automatically remove unused software."
+
 PYTHONTITLE="Munki embedded Python"
 PYTHONDESC="Embedded Python 3 framework for Munki."
+
+PYTHONLIBSTITLE="Munki Python libraries"
+PYTHONLIBSDESC="Python libraries for Munki."
+
 BOOTSTRAPTITLE="Munki bootstrap setup"
 BOOTSTRAPDESC="Enables bootstrap mode for the Munki tools."
+
 AUTORUNTITLE="Munki auto run setup"
 AUTORUNDESC="Triggers an managedsoftwareupdate --auto run immediately after install."
+
 CONFTITLE="Munki tools configuration"
 CONFDESC="Sets initial preferences for Munki tools."
+
 ROSETTA2TITLE="Install Rosetta2"
 ROSETTA2DESC="Installs Rosetta2 for ARM-based hardware."
+
 CLIENTCERTTITLE="Munki client certificate"
 CLIENTCERTDESC="Required client certificate for Munki."
 
@@ -863,6 +960,17 @@ if [ "$PYTHONPKG" == "YES" ] ; then
         <pkg-ref id=\"$PKGID.python\"/>
     </choice>"
     PYTHONREF="<pkg-ref id=\"$PKGID.python\" auth=\"Root\">${PKGPREFIX}munkitools_python.pkg</pkg-ref>"
+fi
+
+PYTHONLIBSOUTLINE=""
+PYTHONLIBSCHOICE=""
+PYTHONLIBSREF=""
+if [ "$PYTHONLIBS" == "YES" ] ; then
+    PYTHONLIBSOUTLINE="<line choice=\"pythonlibs\"/>"
+    PYTHONLIBSCHOICE="<choice id=\"pythonlibs\" title=\"$PYTHONLIBSTITLE\" description=\"$PYTHONLIBSDESC\">
+        <pkg-ref id=\"$PKGID.pythonlibs\"/>
+    </choice>"
+    PYTHONLIBSREF="<pkg-ref id=\"$PKGID.pythonlibs\" auth=\"Root\">${PKGPREFIX}munkitools_pythonlibs.pkg</pkg-ref>"
 fi
 
 BOOTSTRAPOUTLINE=""
@@ -941,6 +1049,7 @@ cat > "$DISTFILE" <<EOF
         <line choice="app_usage"/>
         <line choice="launchd"/>
         $PYTHONOUTLINE
+        $PYTHONLIBSOUTLINE
         $BOOTSTRAPOUTLINE
         $CONFOUTLINE
         $CLIENTCERTOUTLINE
@@ -966,6 +1075,7 @@ cat > "$DISTFILE" <<EOF
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $PYTHONCHOICE
+    $PYTHONLIBSCHOICE
     $BOOTSTRAPCHOICE
     $CONFCHOICE
     $CLIENTCERTCHOICE
@@ -977,6 +1087,7 @@ cat > "$DISTFILE" <<EOF
     <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
     $PYTHONREF
+    $PYTHONLIBSREF
     $BOOTSTRAPREF
     $CONFREF
     $CLIENTCERTREF
@@ -1014,6 +1125,10 @@ if [ "$PYTHONPKG" == "YES" ] ; then
     sudo chown -hR root:wheel "$PYTHONROOT/usr"
 fi
 
+if [ "$PYTHONLIBS" == "YES" ] ; then
+    sudo chown -hR root:wheel "$PYTHONLIBSROOT/usr"
+fi
+
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$BOOTSTRAPROOT"
 fi
@@ -1037,6 +1152,9 @@ fi
 ALLPKGS="core admin app launchd app_usage"
 if [ "$PYTHONPKG" == "YES" ] ; then 
     ALLPKGS="${ALLPKGS} python"
+fi
+if [ "$PYTHONLIBS" == "YES" ] ; then 
+    ALLPKGS="${ALLPKGS} pythonlibs"
 fi
 if [ "$BOOTSTRAPPKG" == "YES" ] ; then
     ALLPKGS="${ALLPKGS} bootstrap"
@@ -1066,7 +1184,6 @@ for pkg in $ALLPKGS ; do
             ;;
         "launchd")
             ver="$LAUNCHDVERSION"
-            SCRIPTS=""
             SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_launchd"
             ;;
         "app_usage")
@@ -1076,6 +1193,10 @@ for pkg in $ALLPKGS ; do
         "python")
             ver="$PYTHONVERSION"
             SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_python"
+            ;;
+        "pythonlibs")
+            ver="$PYTHONLIBSVERSION"
+            SCRIPTS=""
             ;;
         "bootstrap")
             ver="1.0"
