@@ -32,8 +32,10 @@ func trimTrailingNewline(_ s: String) -> String {
 
 struct CLIResults {
     var exitcode: Int = 0
-    var output: String = ""
-    var error: String = ""
+    var output: String = "" // process stdout
+    var error: String = "" // process stderr
+    var timedOut: Bool = false
+    var failureDetail: String = "" // error text from this code
 }
 
 /// A class to run processes synchronously
@@ -105,8 +107,8 @@ class ProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("error running \(task.executableURL?.path ?? "")")
-                displayError(error.localizedDescription)
+                results.failureDetail.append("error running \(task.executableURL?.path ?? "")")
+                results.failureDetail.append(error.localizedDescription)
                 results.exitcode = -1
                 // delegate?.processUpdated()
                 return
@@ -144,8 +146,8 @@ class ProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("ERROR running \(task.executableURL?.path ?? "")")
-                displayError(error.localizedDescription)
+                results.failureDetail.append("ERROR running \(task.executableURL?.path ?? "")")
+                results.failureDetail.append(error.localizedDescription)
                 results.exitcode = -1
                 // delegate?.processUpdated()
                 return
@@ -157,9 +159,10 @@ class ProcessRunner {
             // loop until process exits
             if let deadline {
                 if Date() >= deadline {
-                    displayError("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                    results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
+                    results.timedOut = true
                     throw ProcessError.timeout
                 }
             }
@@ -374,8 +377,8 @@ class AsyncProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("error running \(task.executableURL?.path ?? "")")
-                displayError(error.localizedDescription)
+                results.failureDetail.append("error running \(task.executableURL?.path ?? "")")
+                results.failureDetail.append(error.localizedDescription)
                 results.exitcode = -1
                 status.phase = .ended
                 delegate?.processUpdated()
@@ -417,8 +420,8 @@ class AsyncProcessRunner {
                 try task.run()
             } catch {
                 // task didn't start
-                displayError("ERROR running \(task.executableURL?.path ?? "")")
-                displayError(error.localizedDescription)
+                results.failureDetail.append("ERROR running \(task.executableURL?.path ?? "")")
+                results.failureDetail.append(error.localizedDescription)
                 results.exitcode = -1
                 status.phase = .ended
                 delegate?.processUpdated()
@@ -432,9 +435,10 @@ class AsyncProcessRunner {
             // loop until process exits
             if let deadline {
                 if Date() >= deadline {
-                    displayError("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                    results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
+                    results.timedOut = true
                     throw ProcessError.timeout
                 }
             }

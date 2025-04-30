@@ -33,8 +33,7 @@ let EXIT_STATUS_INVALID_PARAMETERS: Int32 = 200
 let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
 #if DEBUG
-    var env = ProcessInfo.processInfo.environment
-    let BUNDLE_ID = (env["MUNKI_BUNDLE_ID"] ?? "ManagedInstalls") as CFString
+    let BUNDLE_ID = (ProcessInfo.processInfo.environment["MUNKI_BUNDLE_ID"] ?? "ManagedInstalls") as CFString
 #else
     let BUNDLE_ID = "ManagedInstalls" as CFString
 #endif
