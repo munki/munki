@@ -75,11 +75,13 @@ func installSignalHandler(_ sig: Int32, cleanUpFunction: (() -> Void)? = nil) ->
 
     let sigSrc = DispatchSource.makeSignalSource(signal: sig, queue: .main)
     sigSrc.setEventHandler {
-        munkiLog("Got signal \(signalName(sig))")
+        // TODO: would be nice to log these for managedsoftware update,
+        // yet don't want the munkilog calls for munkiimport, etc
+        //munkiLog("Got signal \(signalName(sig))")
         // kill all our child processes
         let ourPid = ProcessInfo.processInfo.processIdentifier
         for task in processesWithPPID(ourPid) {
-            munkiLog("Sending signal \(signalName(sig)) to \(task.command), pid \(task.pid)...")
+            //munkiLog("Sending signal \(signalName(sig)) to \(task.command), pid \(task.pid)...")
             let osErr = kill(task.pid, sig)
             if osErr != noErr {
                 printStderr("Got err \(osErr) when sending \(signalName(sig)) to \(task.command), pid \(task.pid)")

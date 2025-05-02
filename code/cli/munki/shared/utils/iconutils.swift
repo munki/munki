@@ -160,7 +160,7 @@ func extractAppBitsFromPkgArchive(_ archivePath: String, exportDir: String) -> I
 func extractAppIconsFromFlatPkg(_ pkgPath: String) -> [String] {
     let result = runCLI("/usr/sbin/pkgutil", arguments: ["--bom", pkgPath])
     if result.exitcode != 0 {
-        displayError("Could not get bom files from \(pkgPath): \(result.error)")
+        printStderr("Could not get bom files from \(pkgPath): \(result.error)")
         return [String]()
     }
     let bomFilePaths = result.output.components(separatedBy: .newlines)
@@ -177,7 +177,7 @@ func extractAppIconsFromFlatPkg(_ pkgPath: String) -> [String] {
         }
         let result = runCLI("/usr/bin/lsbom", arguments: ["-s", bomFile])
         if result.exitcode != 0 {
-            displayError("Could not get contents of bom: \(bomFile): \(result.error)")
+            printStderr("Could not get contents of bom: \(bomFile): \(result.error)")
             continue
         }
         let outputLines = result.output.components(separatedBy: .newlines)
@@ -219,12 +219,12 @@ func extractAppIconsFromFlatPkg(_ pkgPath: String) -> [String] {
                         }
                     }
                 } else {
-                    displayError("pax could not read files from \(archivePath)")
+                    printStderr("pax could not read files from \(archivePath)")
                     return iconPaths
                 }
             }
         } else {
-            displayError("Could not expand \(pkgPath): \(expandResult.error)")
+            printStderr("Could not expand \(pkgPath): \(expandResult.error)")
         }
     }
     return iconPaths
