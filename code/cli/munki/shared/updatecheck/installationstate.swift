@@ -54,6 +54,19 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
         // return .thisVersionInstalled so we're marked as not needing to be installed
         return .thisVersionInstalled
     }
+    if pkginfo["version_script"] is String {
+        // if a version_script is defined, use that to determine installedState
+        let compareResult = await compareUsingVersionScript(pkginfo)
+        if compareResult == .notPresent || compareResult == .older {
+            return .thisVersionNotInstalled
+        }
+        if compareResult == .newer {
+            return .newerVersionInstalled
+        }
+        if compareResult == .same {
+            return .thisVersionInstalled
+        }
+    }
     let installerType = pkginfo["installer_type"] as? String ?? ""
     if installerType == "startosinstall",
        var installerItemVersion = pkginfo["version"] as? String
@@ -178,6 +191,15 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
         // that an install is not needed. We hope it's the latter.
         return retcode != 0
     }
+    if pkginfo["version_script"] is String {
+        // if there's a version_script, let's use that to determine
+        // if some version installed
+        let comparsionResult = await compareUsingVersionScript(pkginfo)
+        if comparsionResult == .notPresent {
+            return false
+        }
+        return true
+    }
     if let installerType = pkginfo["installer_type"] as? String,
        installerType == "startosinstall" || installerType == "stage_os_installer"
     {
@@ -259,6 +281,14 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
         // non-zero could be an error or successfully indicating
         // that an install is not needed. We hope it's the latter.
         return retcode != 0
+    }
+    if pkginfo["version_script"] is String {
+        // if a comparison using a version_script returns anything
+        // other than .notPresent that's evidence the item is installed
+        let comparisonResult = await compareUsingVersionScript(pkginfo)
+        if comparisonResult != .notPresent {
+            return true
+        }
     }
     if let installerType = pkginfo["installer_type"] as? String,
        installerType == "startosinstall" || installerType == "stage_os_installer"

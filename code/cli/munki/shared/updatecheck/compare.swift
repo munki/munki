@@ -35,6 +35,25 @@ func compareVersions(_ thisVersion: String, _ thatVersion: String) -> MunkiCompa
     return .newer
 }
 
+func compareUsingVersionScript(_ item: PlistDict) async -> MunkiComparisonResult {
+    let itemVersion = item["version"] as? String ?? "0"
+    let results = await runEmbeddedScriptAndReturnResults(name: "version_script", pkginfo: item, suppressError: true)
+    if results.exitcode != 0 {
+        // treat an error as .notPresent
+        displayDebug1("\tVersion script error \(results.exitcode): \(results.error)")
+        return .notPresent
+    }
+    let installedVersion = results.output.trimmingCharacters(in: .whitespacesAndNewlines)
+    if installedVersion.isEmpty {
+        displayDebug1("\tNo version info returned from version script.")
+        return .notPresent
+    }
+    displayDebug1("\tVersion script returned: \(installedVersion)")
+    let comparisonResult = compareVersions(installedVersion, itemVersion)
+    displayDebug1("\tInstalled item is \(comparisonResultDescriptions[comparisonResult.rawValue + 1])")
+    return comparisonResult
+}
+
 /// Gets the version string from the plist at path and compares versions with plistItem
 /// May throw a MunkiError if there's an error in the input
 func comparePlistVersion(_ item: PlistDict) throws -> MunkiComparisonResult {
