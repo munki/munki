@@ -82,6 +82,28 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     return result.exitcode
 }
 
+/// Runs a script, Returns CLIResults.
+func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false) async -> CLIResults {
+    if suppressError {
+        displayDetail("Running \(scriptName) for \(itemName)")
+    } else {
+        displayMinorStatus("Running \(scriptName) for \(itemName)")
+    }
+    if DisplayOptions.munkistatusoutput {
+        // set indeterminate progress bar
+        munkiStatusPercent(-1)
+    }
+
+    let results = await runCliAsync(path)
+
+    if DisplayOptions.munkistatusoutput {
+        // clear indeterminate progress bar
+        munkiStatusPercent(0)
+    }
+
+    return results
+}
+
 /// Runs a script embedded in the pkginfo.
 /// Returns the result code.
 func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = false) async -> Int {
@@ -103,6 +125,27 @@ func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = f
     } else {
         displayError("Failed to create executable file for \(name)")
         return -1
+    }
+}
+
+/// Runs a script embedded in the pkginfo.
+/// Returns CLIResults
+func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppressError: Bool = false) async -> CLIResults {
+    // get the script text
+    let itemName = pkginfo["name"] as? String ?? "<unknown>"
+    guard let scriptText = pkginfo[name] as? String else {
+        return CLIResults(exitcode: -1, error: "Missing script \(name) for \(itemName)")
+    }
+
+    // write the script to a temp file
+    guard let tempdir = TempDir.shared.makeTempDir() else {
+        return CLIResults(exitcode: -1, error: "Could not create a temporary directory for \(name)")
+    }
+    let scriptPath = (tempdir as NSString).appendingPathComponent(name)
+    if createExecutableFile(atPath: scriptPath, withStringContents: scriptText) {
+        return await runScriptAndReturnResults(scriptPath, itemName: itemName, scriptName: name, suppressError: suppressError)
+    } else {
+        return CLIResults(exitcode: -1, error: "Failed to create executable file for \(name)")
     }
 }
 

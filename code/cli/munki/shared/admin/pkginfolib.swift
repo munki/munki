@@ -487,6 +487,11 @@ func makepkginfo(_ filepath: String?,
             pkginfo["uninstallable"] = true
         }
     }
+    if let versionScript = options.script.versionScript {
+        if let scriptText = try? String(contentsOfFile: versionScript, encoding: .utf8) {
+            pkginfo["version_script"] = scriptText
+        }
+    }
     // more options and pkginfo bits
     if !installeritem.isEmpty || options.type.nopkg {
         pkginfo["_metadata"] = pkginfoMetadata()

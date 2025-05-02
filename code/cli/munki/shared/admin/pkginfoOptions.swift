@@ -123,6 +123,10 @@ struct ScriptOptions: ParsableArguments {
     @Option(name: [.long, .customLong("uninstall_script")],
             help: ArgumentHelp("Path to a script to be run in order to uninstall this item.", valueName: "path"))
     var uninstallScript: String? = nil
+
+    @Option(name: [.long, .customLong("version_script")],
+            help: ArgumentHelp("Path to a script to be run in order to determine the version of this item if it is presently installed.", valueName: "path"))
+    var versionScript: String? = nil
 }
 
 /// "Drag-n-drop" Disk Image Options
