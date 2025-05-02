@@ -202,9 +202,8 @@ func getURL(
     var storedPercentComplete = -1
     var storedBytesReceived = 0
     session.start()
-    // TODO: add support for Control-C, etc
     while true {
-        // if we did `while not session.isDone()` we'd miss printing
+        // if we did `while !session.isDone()` we'd miss printing
         // messages and displaying percentages if we exit the loop first
         let done = session.isDone()
         if !displayMessage.isEmpty, session.status != 0, session.status != 304 {
