@@ -130,7 +130,13 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             displayError("Could not mount disk image file \(dmgPath)")
             return (-99, false)
         }
-        defer { unmountdmg(mountpoint) }
+        defer {
+            do {
+                try unmountdmg(mountpoint)
+            } catch {
+                displayError(error.localizedDescription)
+            }
+        }
 
         if let pkgPath = pkginfo["package_path"] as? String,
            hasValidPackageExt(pkgPath)

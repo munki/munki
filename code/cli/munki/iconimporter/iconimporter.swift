@@ -71,7 +71,13 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, item: PlistDict) {
         printStderr("Could not mount the disk image for \(itemName). Skipping.")
         return
     }
-    defer { unmountdmg(mountpoint) }
+    defer {
+        do {
+            try unmountdmg(mountpoint)
+        } catch {
+            printStderr(error.localizedDescription)
+        }
+    }
     guard let appPath = findInstallMacOSApp(mountpoint) else {
         printStderr("Could not find Install macOS app for \(itemName). Skipping.")
         return
@@ -102,7 +108,13 @@ func generatePNGFromDMGItem(_ repo: Repo, item: PlistDict) {
         printStderr("Could not mount the disk image for \(itemName). Skipping.")
         return
     }
-    defer { unmountdmg(mountpoint) }
+    defer {
+        do {
+            try unmountdmg(mountpoint)
+        } catch {
+            printStderr(error.localizedDescription)
+        }
+    }
     let itemsToCopy = item["items_to_copy"] as? [PlistDict] ?? []
     let apps = itemsToCopy.filter {
         ($0["source_item"] as? String ?? "").hasSuffix(".app")
@@ -166,7 +178,11 @@ func generatePNGsFromPkg(_ repo: Repo, item: PlistDict) {
         }
     }
     if let savedMountPoint {
-        unmountdmg(savedMountPoint)
+        do {
+            try unmountdmg(savedMountPoint)
+        } catch {
+            printStderr(error.localizedDescription)
+        }
     }
     if iconPaths.count == 1 {
         if let iconTemp = tempFile(),

@@ -402,7 +402,11 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemn
     do {
         let mountpoint = try mountdmg(installerDMG)
         defer {
-            unmountdmg(mountpoint)
+            do {
+                try unmountdmg(mountpoint)
+            } catch {
+                printStderr(error.localizedDescription)
+            }
         }
         if let appPath = findInstallMacOSApp(mountpoint),
            let iconPath = findIconForApp(appPath)
@@ -429,7 +433,11 @@ func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) t
     do {
         let mountpoint = try mountdmg(dmgPath)
         defer {
-            unmountdmg(mountpoint)
+            do {
+                try unmountdmg(mountpoint)
+            } catch {
+                printStderr(error.localizedDescription)
+            }
         }
         if let itemsToCopy = pkginfo["items_to_copy"] as? [PlistDict] {
             let apps = itemsToCopy.filter {
@@ -470,7 +478,11 @@ func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, imp
     var mountpoint = ""
     defer {
         if !mountpoint.isEmpty {
-            unmountdmg(mountpoint)
+            do {
+                try unmountdmg(mountpoint)
+            } catch {
+                printStderr(error.localizedDescription)
+            }
         }
     }
     if hasValidDiskImageExt(itemPath) {

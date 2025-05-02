@@ -520,7 +520,6 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
 /// Get some package info (receipts, version, etc) and return as a dict
 func getPackageInfo(_ pkgpath: String) throws -> PlistDict {
     guard hasValidPackageExt(pkgpath) else { return PlistDict() }
-    displayDebug2("Examining \(pkgpath)...")
     if pathIsDirectory(pkgpath) {
         return try getBundlePackageInfo(pkgpath)
     }
@@ -542,7 +541,7 @@ func getPackageInfo(_ pkgpath: String) throws -> PlistDict {
 func getPackageMetaData(_ pkgpath: String) throws -> PlistDict {
     var pkginfo = PlistDict()
     if !hasValidPackageExt(pkgpath) {
-        displayError("\(pkgpath) does not appear to be an Apple installer package.")
+        printStderr("\(pkgpath) does not appear to be an Apple installer package.")
         return pkginfo
     }
 
@@ -634,36 +633,6 @@ func getChoiceChangesXML(_ pkgpath: String) -> [PlistDict]? {
         // nothing right now
     }
     return choices
-}
-
-/// Checks a package id against the receipts to determine if a package is already installed.
-/// Returns the version string of the installed pkg if it exists, or an empty string if it does not
-func getInstalledPackageVersion(_ pkgid: String) -> String? {
-    let results = runCLI(
-        "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid]
-    )
-    if results.exitcode == 0 {
-        guard let receipt = (try? readPlist(fromString: results.output)) as? PlistDict else {
-            displayDebug2("Unable to parse output from pkgutil")
-            return nil
-        }
-        guard let foundpkgid = receipt["pkgid"] as? String else {
-            displayDebug2("No pkgid in pkgutil output")
-            return nil
-        }
-        guard let foundversion = receipt["pkg-version"] as? String else {
-            displayDebug2("No version in pkgutil output")
-            return nil
-        }
-        if foundpkgid == pkgid {
-            displayDebug1(
-                "\tThis machine has \(pkgid), version \(foundversion)")
-            return foundversion
-        }
-    }
-    // This package does not appear to be currently installed
-    displayDebug1("\tThis machine does not have \(pkgid)")
-    return nil
 }
 
 /// Splits a string into name and version

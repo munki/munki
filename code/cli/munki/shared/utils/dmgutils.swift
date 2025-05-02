@@ -178,7 +178,6 @@ func mountdmg(_ dmgPath: String,
     var stdIn = ""
     if dmgHasSLA(dmgPath) {
         stdIn = "Y\n"
-        displayDetail("NOTE: \(dmgName) has embedded Software License Agreement")
     }
     var arguments = ["attach", dmgPath, "-nobrowse"]
     if randomMountpoint {
@@ -202,17 +201,15 @@ func mountdmg(_ dmgPath: String,
 }
 
 /// Unmounts the dmg at mountpoint
-func unmountdmg(_ mountpoint: String) {
+func unmountdmg(_ mountpoint: String) throws {
     var arguments = ["detach", mountpoint]
     let results = runCLI("/usr/bin/hdiutil", arguments: arguments)
     if results.exitcode != 0 {
         // regular unmount failed; try to force unmount
-        displayError("Polite unmount failed: \(results.error)")
-        displayError("Attempting to force unmount \(mountpoint)")
         arguments.append("-force")
         let results = runCLI("/usr/bin/hdiutil", arguments: arguments)
         if results.exitcode != 0 {
-            displayWarning("WARNING: Failed to unmount \(mountpoint): \(results.error)")
+            throw MunkiError("Failed to unmount \(mountpoint): \(results.error)")
         }
     }
 }
