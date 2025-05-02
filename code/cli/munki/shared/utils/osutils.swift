@@ -19,6 +19,7 @@
 //  limitations under the License.
 
 import Foundation
+import IOKit
 import SystemConfiguration
 
 /// Returns the macOS version

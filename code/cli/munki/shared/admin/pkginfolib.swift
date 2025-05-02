@@ -301,7 +301,11 @@ func createPkgInfoFromDmg(_ dmgpath: String,
     }
     // eject the dmg
     if !wasAlreadyMounted {
-        unmountdmg(mountpoint)
+        do {
+            try unmountdmg(mountpoint)
+        } catch {
+            printStderr(error.localizedDescription)
+        }
     }
     return info
 }

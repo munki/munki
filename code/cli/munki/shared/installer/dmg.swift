@@ -202,7 +202,11 @@ func copyFromDmg(dmgPath: String, itemList: [PlistDict]) async -> Int {
         if retcode == 0 {
             displayMinorStatus("The software was successfully installed.")
         }
-        unmountdmg(mountpoint)
+        do {
+            try unmountdmg(mountpoint)
+        } catch {
+            displayError(error.localizedDescription)
+        }
         return retcode
     } else {
         displayError("Could not mount disk image file \((dmgPath as NSString).lastPathComponent)")

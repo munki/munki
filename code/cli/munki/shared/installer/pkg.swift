@@ -247,7 +247,13 @@ func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) asy
                     return (-1, false)
                 }
                 // makre sure we unmount this when done
-                defer { unmountdmg(mountpoint) }
+                defer {
+                    do {
+                        try unmountdmg(mountpoint)
+                    } catch {
+                        displayError(error.localizedDescription)
+                    }
+                }
                 // call us recursively to install a pkg at the root of this diskimage
                 return await installFromDirectory(mountpoint, options: options)
             }

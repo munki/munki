@@ -274,6 +274,36 @@ func compareReceipt(_ item: PlistDict) async throws -> MunkiComparisonResult {
     return .notPresent
 }
 
+/// Checks a package id against the receipts to determine if a package is already installed.
+/// Returns the version string of the installed pkg if it exists, or an empty string if it does not
+func getInstalledPackageVersion(_ pkgid: String) -> String? {
+    let results = runCLI(
+        "/usr/sbin/pkgutil", arguments: ["--pkg-info-plist", pkgid]
+    )
+    if results.exitcode == 0 {
+        guard let receipt = (try? readPlist(fromString: results.output)) as? PlistDict else {
+            displayDebug2("Unable to parse output from pkgutil")
+            return nil
+        }
+        guard let foundpkgid = receipt["pkgid"] as? String else {
+            displayDebug2("No pkgid in pkgutil output")
+            return nil
+        }
+        guard let foundversion = receipt["pkg-version"] as? String else {
+            displayDebug2("No version in pkgutil output")
+            return nil
+        }
+        if foundpkgid == pkgid {
+            displayDebug1(
+                "\tThis machine has \(pkgid), version \(foundversion)")
+            return foundversion
+        }
+    }
+    // This package does not appear to be currently installed
+    displayDebug1("\tThis machine does not have \(pkgid)")
+    return nil
+}
+
 /// Attempts to determine the currently installed version of an item.
 ///
 /// Args:
