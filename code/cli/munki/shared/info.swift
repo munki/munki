@@ -91,16 +91,20 @@ func getIPAddresses(_ kind: String) async -> [String] {
 /// Returns a reference to an IOKit service matching on IOService class name,
 /// typically something like "IOPlatformExpertDevice"
 private func serviceMatching(_ className: String) -> io_registry_entry_t {
-    return IOServiceGetMatchingService(
-        kIOMasterPortDefault, IOServiceMatching(className)
-    )
+    if #available(macOS 12.0, *) {
+        return IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching(className))
+    } else {
+        return IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching(className))
+    }
 }
 
 /// Returns a reference to an IOKit service matching on IOService name
 private func serviceNameMatching(_ name: String) -> io_registry_entry_t {
-    return IOServiceGetMatchingService(
-        kIOMasterPortDefault, IOServiceNameMatching(name)
-    )
+    if #available(macOS 12.0, *) {
+        return IOServiceGetMatchingService(kIOMainPortDefault, IOServiceNameMatching(name))
+    } else {
+        return IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceNameMatching(name))
+    }
 }
 
 /// Attempts to return a string value for the given property key
