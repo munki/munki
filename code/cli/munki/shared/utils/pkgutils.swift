@@ -362,8 +362,11 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
 
 /// Converts the partial file urls found in Distribution pkg-refs to relative file paths
 func partialFileURLToRelativePath(_ partialURL: String) -> String {
-    // TODO: handle pkg-ref content that starts with "file:"
-
+    if partialURL.hasPrefix("file:") {
+        if let url = URL(string: partialURL) {
+            return url.relativePath
+        }
+    }
     var temp = partialURL
     if temp.hasPrefix("#") {
         temp.removeFirst()
@@ -656,10 +659,9 @@ func nameAndVersion(_ str: String, onlySplitOnHyphens: Bool = true) -> (String, 
 
     // more loosey-goosey method (used when importing items)
     // use regex
-    if let versionRange = str.range(
-        of: "[0-9]+(\\.[0-9]+)((\\.|a|b|d|v)[0-9]+)+",
-        options: .regularExpression
-    ) {
+    // let REGEX = "[0-9]+(\\.[0-9]+)((\\.|a|b|d|v)[0-9]+)+"
+    let REGEX = "[0-9]+(\\.[0-9]+)+[\\.|a|b|d|v][0-9]+"
+    if let versionRange = str.range(of: REGEX, options: .regularExpression) {
         let version = String(str[versionRange.lowerBound...])
         var name = String(str[..<versionRange.lowerBound])
         if let range = name.range(of: "[ v\\._-]+$", options: .regularExpression) {
