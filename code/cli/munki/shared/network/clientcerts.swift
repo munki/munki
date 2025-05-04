@@ -20,14 +20,20 @@ func getCertChainRefs(_ certRef: SecCertificate) -> [SecCertificate]? {
     }
 
     var evalErr: CFError?
-    let evaluated = SecTrustEvaluateWithError(trust, &evalErr)
+    _ = SecTrustEvaluateWithError(trust, &evalErr)
     if evalErr != nil {
         return nil
     }
 
     var certRefs = [SecCertificate]()
-    for i in 0 ..< SecTrustGetCertificateCount(trust) {
-        certRefs.append(SecTrustGetCertificateAtIndex(trust, i)!)
+    if #available(macOS 12.0, *) {
+        if let chain = SecTrustCopyCertificateChain(trust) as? [SecCertificate] {
+            certRefs = chain
+        }
+    } else {
+        for i in 0 ..< SecTrustGetCertificateCount(trust) {
+            certRefs.append(SecTrustGetCertificateAtIndex(trust, i)!)
+        }
     }
     return certRefs
 }
