@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Uses URL to compose a URL from basURL and additional relative path
+/// Uses URL to compose a url string from base url and additional relative path
 func composedURLWithBase(_ baseURLString: String, adding path: String) -> String {
     let baseURL = URL(string: baseURLString)
     let composedURL = URL(string: path, relativeTo: baseURL)
