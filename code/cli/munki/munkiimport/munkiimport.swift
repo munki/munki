@@ -73,6 +73,16 @@ struct MunkiImport: AsyncParsableCommand {
             return
         }
 
+        // validate repoURL
+        if munkiImportOptions.repoURL == nil {
+            munkiImportOptions.repoURL = adminPref("repo_url") as? String? ?? nil
+        }
+        if munkiImportOptions.repoURL == nil ||
+            munkiImportOptions.repoURL == ""
+        {
+            throw ValidationError("No repo URL found. Please run this tool with the --configure option, or use the --repo-url option.")
+        }
+
         // validate installerItem
         if installerItem.isEmpty {
             throw ValidationError("Missing expected argument '<installer-item>'")
