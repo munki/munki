@@ -239,9 +239,9 @@ if [ "$PYTHONLIBS" == "YES" ] ; then
     # generate a pseudo-svn revision number for the python libs
     # from the list of Git revisions
     PYTHONLIBSGITREV=$(git log -n1 --format="%H" -- code/client/munkilib)
-    GITREVINDEX=$(git rev-list --count "$GITREV")
+    GITREVINDEX=$(git rev-list --count "$PYTHONLIBSGITREV")
     PYTHONLIBSSVNREV=$((GITREVINDEX + MAGICNUMBER))
-    PYTHONLIBSVERSION=$MUNKLIBVERS.$SVNREV
+    PYTHONLIBSVERSION=$MUNKLIBVERS.$PYTHONLIBSSVNREV
 fi
 
 # get base apps version from MSC.app
