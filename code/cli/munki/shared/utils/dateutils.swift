@@ -2,8 +2,6 @@
 //  dateutils.swift
 //  munki
 //
-//  Created by Greg Neagle on 1/7/25.
-//
 //  Created by Greg Neagle on 1/6/25.
 //
 //  Copyright 2024-2025 Greg Neagle.
