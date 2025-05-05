@@ -112,6 +112,12 @@ struct MunkiImport: AsyncParsableCommand {
             return
         }
 
+        // install handlers for SIGINT and SIGTERM
+        let sigintSrc = installSignalHandler(SIGINT, cleanUpFunction: cleanupReadline)
+        sigintSrc.activate()
+        let sigtermSrc = installSignalHandler(SIGTERM, cleanUpFunction: cleanupReadline)
+        sigtermSrc.activate()
+
         if munkiImportOptions.configure {
             let promptList = [
                 ("repo_url", "Repo URL (example: afp://munki.example.com/repo)"),
@@ -135,12 +141,6 @@ struct MunkiImport: AsyncParsableCommand {
             other: additionalOptions,
             hidden: hiddenOptions
         )
-
-        // install handlers for SIGINT and SIGTERM
-        let sigintSrc = installSignalHandler(SIGINT, cleanUpFunction: cleanupReadline)
-        sigintSrc.activate()
-        let sigtermSrc = installSignalHandler(SIGTERM, cleanUpFunction: cleanupReadline)
-        sigtermSrc.activate()
 
         if pathIsDirectory(installerItem) {
             let dmgPath = makeDmg(installerItem)
