@@ -439,7 +439,7 @@ func makepkginfo(_ filepath: String?,
     // process items for installs array
     var installs = [PlistDict]()
     for var file in options.installs.file {
-        if file.hasSuffix("/") {
+        if file != "/", file.hasSuffix("/") {
             file.removeLast()
         }
         if FileManager.default.fileExists(atPath: file) {
@@ -536,10 +536,10 @@ func makepkginfo(_ filepath: String?,
         pkginfo["update_for"] = options.other.updateFor
     }
     if !options.other.requires.isEmpty {
-        pkginfo["update_for"] = options.other.requires
+        pkginfo["requires"] = options.other.requires
     }
     if !options.other.blockingApplication.isEmpty {
-        pkginfo["update_for"] = options.other.blockingApplication
+        pkginfo["blocking_application"] = options.other.blockingApplication
     }
     if let uninstallMethod = options.override.uninstallMethod {
         pkginfo["uninstall_method"] = uninstallMethod
