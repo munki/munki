@@ -39,6 +39,7 @@ struct CatalogsMaker {
     var pkgsList: [String]
     var catalogs: [String: [PlistDict]]
     var errors: [String]
+    var warnings: [String]
 
     init(repo: Repo,
          options: MakeCatalogOptions = MakeCatalogOptions()) throws
@@ -47,6 +48,7 @@ struct CatalogsMaker {
         self.options = options
         catalogs = [String: [PlistDict]]()
         errors = [String]()
+        warnings = [String]()
         pkgsinfoList = [String]()
         pkgsList = [String]()
         try getPkgsinfoList()
@@ -131,7 +133,7 @@ struct CatalogsMaker {
         // Build path to installer item
         let installeritemlocation = pkginfo["installer_item_location"] as? String ?? ""
         if installeritemlocation.isEmpty {
-            errors.append(
+            warnings.append(
                 "WARNING: empty or invalid installer_item_location in \(identifier)")
             return false
         }
@@ -141,11 +143,11 @@ struct CatalogsMaker {
         if !(pkgsList.contains(installeritempath)) {
             // didn't find it in the pkgsList; let's look case-insensitive
             if let match = caseInsensitivePkgsListContains(installeritempath) {
-                errors.append(
+                warnings.append(
                     "WARNING: \(identifier) refers to installer item: \(installeritemlocation). The pathname of the item in the repo has different case: \(match). This may cause issues depending on the case-sensitivity of the underlying filesystem."
                 )
             } else {
-                errors.append(
+                warnings.append(
                     "WARNING: \(identifier) refers to missing installer item: \(installeritemlocation)"
                 )
                 return false
@@ -155,7 +157,7 @@ struct CatalogsMaker {
         // uninstaller checking
         if let uninstalleritemlocation = pkginfo["uninstaller_item_location"] as? String {
             if uninstalleritemlocation.isEmpty {
-                errors.append(
+                warnings.append(
                     "WARNING: empty or invalid uninstaller_item_location in \(identifier)")
                 return false
             }
@@ -164,11 +166,11 @@ struct CatalogsMaker {
             if !(pkgsList.contains(uninstalleritempath)) {
                 // didn't find it in the pkgsList; let's look case-insensitive
                 if let match = caseInsensitivePkgsListContains(uninstalleritempath) {
-                    errors.append(
+                    warnings.append(
                         "WARNING: \(identifier) refers to uninstaller item: \(uninstalleritemlocation). The pathname of the item in the repo has different case: \(match). This may cause issues depending on the case-sensitivity of the underlying filesystem."
                     )
                 } else {
-                    errors.append(
+                    warnings.append(
                         "WARNING: \(identifier) refers to missing uninstaller item: \(uninstalleritemlocation)"
                     )
                     return false
@@ -194,7 +196,7 @@ struct CatalogsMaker {
                 continue
             }
             if !(pkginfo.keys.contains("name")) {
-                errors.append("WARNING: \(pkginfoIdentifier)is missing name key")
+                warnings.append("WARNING: \(pkginfoIdentifier) is missing name key")
                 continue
             }
             // don't copy admin notes to catalogs
@@ -219,7 +221,7 @@ struct CatalogsMaker {
             catalogs["all"]?.append(pkginfo)
             if let catalog_list = pkginfo["catalogs"] as? [String] {
                 if catalog_list.isEmpty {
-                    errors.append("WARNING: \(pkginfoIdentifier)) has an empty catalogs array!")
+                    warnings.append("WARNING: \(pkginfoIdentifier) has an empty catalogs array!")
                 } else {
                     for catalog in catalog_list {
                         if !catalogs.keys.contains(catalog) {
@@ -232,7 +234,7 @@ struct CatalogsMaker {
                     }
                 }
             } else {
-                errors.append("WARNING: \(pkginfoIdentifier)) has no catalogs array!")
+                warnings.append("WARNING: \(pkginfoIdentifier) has no catalogs array!")
             }
         }
         // look for catalog names that differ only in case
@@ -244,7 +246,7 @@ struct CatalogsMaker {
             }
         }
         if !duplicateCatalogs.isEmpty {
-            errors.append(
+            warnings.append(
                 "WARNING: There are catalogs with names that differ only by case. " +
                     "This may cause issues depending on the case-sensitivity of the " +
                     "underlying filesystem: \(duplicateCatalogs)")
@@ -273,7 +275,7 @@ struct CatalogsMaker {
     /// Assembles all pkginfo files into catalogs.
     /// User calling this needs to be able to write to the repo/catalogs directory.
     /// Returns a list of any errors it encountered
-    mutating func makecatalogs() -> [String] {
+    mutating func makecatalogs() {
         // process pkgsinfo items
         processPkgsinfo()
 
@@ -321,6 +323,6 @@ struct CatalogsMaker {
                 errors.append("Unexpected error creating \(iconHashesIdentifier): \(error)")
             }
         }
-        return errors
+        return
     }
 }

@@ -97,28 +97,34 @@ struct MakeCatalogs: ParsableCommand {
             // TODO: implement repo defining its own makecatalogs method
             // let errors = try repo.makecatalogs(options: options)
             var catalogsmaker = try CatalogsMaker(repo: repo, options: options)
-            let errors = catalogsmaker.makecatalogs()
-            if !errors.isEmpty {
-                for error in errors {
+            catalogsmaker.makecatalogs()
+            for warning in catalogsmaker.warnings {
+                printStderr(warning)
+            }
+            if !catalogsmaker.errors.isEmpty {
+                for error in catalogsmaker.errors {
                     printStderr(error)
                 }
-                throw ExitCode(-1)
+                throw ExitCode.failure
             }
         } catch let error as MunkiError {
             printStderr("Repo error: \(error.description)")
-            throw ExitCode(-1)
+            throw ExitCode.failure
         } catch let error as MakeCatalogsError {
             switch error {
             case let .CatalogWriteError(description):
                 printStderr("Catalog write error: \(description)")
-                throw ExitCode(-1)
+                throw ExitCode.failure
             case let .PkginfoAccessError(description):
                 printStderr("Pkginfo read error: \(description)")
-                throw ExitCode(-1)
+                throw ExitCode.failure
             }
         } catch {
+            if let e = error as? ExitCode {
+                throw error
+            }
             printStderr("Unexpected error: \(error)")
-            throw ExitCode(-1)
+            throw ExitCode.failure
         }
     }
 }
