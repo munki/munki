@@ -493,10 +493,10 @@ class RepoCleaner {
         )
         do {
             var catalogsmaker = try CatalogsMaker(repo: repo, options: options)
-            let errors = catalogsmaker.makecatalogs()
-            if !errors.isEmpty {
+            catalogsmaker.makecatalogs()
+            if !catalogsmaker.errors.isEmpty {
                 print("\nThe following issues occurred while building catalogs:\n")
-                for error in errors {
+                for error in catalogsmaker.errors {
                     printStderr(error)
                 }
             }
