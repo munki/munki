@@ -275,6 +275,7 @@
 		C0684E9D2DC7E58D0091E774 /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
 		C0684E9E2DC7E59B0091E774 /* stoprequested.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B852C63C9FD007664A0 /* stoprequested.swift */; };
 		C0684EA02DC7E5CD0091E774 /* X509 in Frameworks */ = {isa = PBXBuildFile; productRef = C0684E9F2DC7E5CD0091E774 /* X509 */; };
+		C0684EA92DC83B9A0091E774 /* appleupdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21442C8F8C390023E9D9 /* appleupdates.swift */; };
 		C06C21342C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21332C8793720023E9D9 /* bootstrapping.swift */; };
 		C06C213A2C88CA1F0023E9D9 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
@@ -1920,6 +1921,7 @@
 				C0684E9E2DC7E59B0091E774 /* stoprequested.swift in Sources */,
 				C0684E892DC7E2470091E774 /* gurl.swift in Sources */,
 				C0684E8A2DC7E2470091E774 /* clientcerts.swift in Sources */,
+				C0684EA92DC83B9A0091E774 /* appleupdates.swift in Sources */,
 				C0684E852DC7C6220091E774 /* download.swift in Sources */,
 				C0684E942DC7E3BC0091E774 /* dmgutils.swift in Sources */,
 				C0684E992DC7E5440091E774 /* unusedsoftware.swift in Sources */,

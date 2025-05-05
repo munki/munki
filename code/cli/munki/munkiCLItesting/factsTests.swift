@@ -85,4 +85,12 @@ struct predicateTests {
         ) == false
         )
     }
+
+    @Test func predicateEvaluatesAsFalseWithUndefinedValue() async throws {
+        #expect(predicateEvaluatesAsTrue(
+            "undefined_key == 'Hello'",
+            infoObject: info
+        ) == false
+        )
+    }
 }
