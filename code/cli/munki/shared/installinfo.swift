@@ -236,8 +236,17 @@ func displayUpdateInfo() {
         }
         // Displays force install deadline if present
         if let forceInstallAfterDate = item["force_install_after_date"] as? Date {
-            // TODO: fix this to not show timezone
-            displayInfo("       *Must be installed by \(forceInstallAfterDate)")
+            // format string representation to not include timezone
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [
+                .withFullDate,
+                .withDashSeparatorInDate,
+                .withTime,
+                .withColonSeparatorInTime,
+                .withSpaceBetweenDateAndTime,
+            ]
+            let formattedDate = formatter.string(from: forceInstallAfterDate)
+            displayInfo("       *Must be installed by \(formattedDate)")
         }
     }
 
