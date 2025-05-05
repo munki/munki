@@ -41,16 +41,6 @@ struct MunkiImportOptions: ParsableArguments {
     var verbose = false
 
     mutating func validate() throws {
-        // validate repoURL
-        if repoURL == nil {
-            repoURL = adminPref("repo_url") as? String? ?? nil
-        }
-        if repoURL == nil ||
-            repoURL == ""
-        {
-            throw ValidationError("No repo URL found. Please run this tool with the --configure option, or use the --repo-url option.")
-        }
-
         // update plugin (not really a validation, but close enough)
         if plugin == nil {
             plugin = adminPref("plugin") as? String ?? "FileRepo"
