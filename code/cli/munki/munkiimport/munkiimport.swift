@@ -439,9 +439,9 @@ struct MunkiImport: AsyncParsableCommand {
             {
                 let makecatalogOptions = MakeCatalogOptions()
                 var catalogsmaker = try CatalogsMaker(repo: repo, options: makecatalogOptions)
-                let errors = catalogsmaker.makecatalogs()
-                if !errors.isEmpty {
-                    for error in errors {
+                catalogsmaker.makecatalogs()
+                if !catalogsmaker.errors.isEmpty {
+                    for error in catalogsmaker.errors {
                         printStderr(error)
                     }
                 }
