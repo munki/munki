@@ -308,7 +308,9 @@ struct MunkiImport: AsyncParsableCommand {
             let catalogs = pkginfo["catalogs"] as? [String] ?? ["testing"]
             let defaultValue = catalogs.joined(separator: ",")
             if let newValue = getInput(prompt: prompt, defaultText: defaultValue) {
-                pkginfo["catalogs"] = newValue.components(separatedBy: ",")
+                pkginfo["catalogs"] = newValue.components(separatedBy: ",").map {
+                    $0.trimmingCharacters(in: .whitespaces)
+                }
             }
             // warn if no 'is installed' criteria
             let installerType = pkginfo["installer_type"] as? String ?? ""
