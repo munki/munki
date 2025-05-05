@@ -94,3 +94,84 @@ struct predicateTests {
         )
     }
 }
+
+struct applicationDataTesting {
+    let applicationData: [PlistDict] = [
+        [
+            "bundleid": "com.macromates.TextMate",
+            "name": "TextMate",
+            "path": "/Applications/TextMate.app",
+            "version": "2.0.23",
+        ],
+        [
+            "bundleid": "us.zoom.xos",
+            "name": "zoom.us",
+            "path": "/Applications/zoom.us.app",
+            "version": "6.4.6 (53970)",
+        ],
+        [
+            "bundleid": "com.adobe.Photoshop",
+            "name": "Photoshop 2025",
+            "path": "/Applications/Adobe Photoshop 2025/Adobe Photoshop 2025.app",
+            "version": "26.5.0",
+        ],
+        [
+            "bundleid": "com.apple.dt.Xcode",
+            "name": "Xcode",
+            "path": "/Applications/Xcode.app",
+            "version": "16.3",
+        ],
+        [
+            "bundleid": "com.google.Chrome",
+            "name": "Chrome",
+            "path": "/Applications/Google Chrome.app",
+            "version": "136.0.7103.49",
+        ],
+        [
+            "bundleid": "com.microsoft.Word",
+            "name": "Word",
+            "path": "/Applications/Microsoft Word.app",
+            "version": "16.96.2",
+        ],
+    ]
+
+    @Test func fullPathExists() {
+        let info: PlistDict = ["applications": applicationData]
+        #expect(predicateEvaluatesAsTrue(
+            "ANY applications.path == '/Applications/Microsoft Word.app'",
+            infoObject: info
+        ))
+    }
+
+    @Test func pathEndsWith() {
+        let info: PlistDict = ["applications": applicationData]
+        #expect(predicateEvaluatesAsTrue(
+            "ANY applications.path ENDSWITH '/Microsoft Word.app'",
+            infoObject: info
+        ))
+    }
+
+    @Test func bundleBeginsWith() {
+        let info: PlistDict = ["applications": applicationData]
+        #expect(predicateEvaluatesAsTrue(
+            "ANY applications.bundleid BEGINSWITH 'com.adobe.'",
+            infoObject: info
+        ))
+    }
+
+    @Test func specificAppVersion() {
+        let info: PlistDict = ["applications": applicationData]
+        #expect(predicateEvaluatesAsTrue(
+            "SUBQUERY(applications, $app, $app.bundleid == 'com.microsoft.Word' AND $app.version == '16.96.2').@count > 0",
+            infoObject: info
+        ))
+    }
+
+    @Test func bundleNotPresent() {
+        let info: PlistDict = ["applications": applicationData]
+        #expect(predicateEvaluatesAsTrue(
+            "ANY applications.bundleid == 'DoesNotExist.bundle'",
+            infoObject: info
+        ) == false)
+    }
+}
