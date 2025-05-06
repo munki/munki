@@ -7,6 +7,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Sets owner, group and mode for path from info in itemInfo.
 /// Returns 0 on success, non-zero otherwise.
 func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
@@ -20,19 +22,19 @@ func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
     // set owner and group
     let user = itemInfo["user"] as? String ?? "root"
     let group = itemInfo["group"] as? String ?? "admin"
-    displayDetail("Setting owner and group for '\(itemName)' to '\(user):\(group)'")
+    display.detail("Setting owner and group for '\(itemName)' to '\(user):\(group)'")
     let chownResult = runCLI("/usr/sbin/chown", arguments: ["-R", user + ":" + group, path])
     if chownResult.exitcode != 0 {
-        displayError("Error setting owner and group for \(itemName): (\(chownResult.exitcode)) \(chownResult.error)")
+        display.error("Error setting owner and group for \(itemName): (\(chownResult.exitcode)) \(chownResult.error)")
         return chownResult.exitcode
     }
 
     // set mode
     let mode = itemInfo["mode"] as? String ?? "o-w,go+rX"
-    displayDetail("Setting mode for '\(itemName)' to '\(mode)'")
+    display.detail("Setting mode for '\(itemName)' to '\(mode)'")
     let chmodResult = runCLI("/bin/chmod", arguments: ["-R", mode, path])
     if chmodResult.exitcode != 0 {
-        displayError("Error setting mode for \(itemName): \(chmodResult.error)")
+        display.error("Error setting mode for \(itemName): \(chmodResult.error)")
         return chownResult.exitcode
     }
 
@@ -45,13 +47,13 @@ func setPermissions(_ itemInfo: PlistDict, path: String) -> Int {
 func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool, String, String) {
     // Ensure source item is defined
     guard let sourceItemName = item["source_item"] as? String else {
-        displayError("Missing name of item to copy!")
+        display.error("Missing name of item to copy!")
         return (false, "", "")
     }
     // Ensure source item exists
     let sourceItemPath = (mountpoint as NSString).appendingPathComponent(sourceItemName)
     if !pathExists(sourceItemPath) {
-        displayError("Source item \(sourceItemName) does not exist!")
+        display.error("Source item \(sourceItemName) does not exist!")
         return (false, "", "")
     }
     // get destination path and name
@@ -66,7 +68,7 @@ func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool,
     }
     if destinationPath.isEmpty {
         // fatal!
-        displayError("Missing destination path for item!")
+        display.error("Missing destination path for item!")
         return (false, "", "")
     }
     // create any needed intermediate directories for the destpath or fail
@@ -135,7 +137,7 @@ func dittoWithProgress(sourcePath: String, destinationPath: String) async -> Int
 /// Returns 0 if no issues; some error code otherwise.
 func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async -> Int {
     guard let tempDestinationDir = TempDir.shared.makeTempDir() else {
-        displayError("Could not create a temporary directory!")
+        display.error("Could not create a temporary directory!")
         return -1
     }
     for item in itemList {
@@ -144,18 +146,23 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
             return -1
         }
         // validation passed, OK to copy
-        displayMinorStatus("Copying \((sourcePath as NSString).lastPathComponent) to \(destinationPath)")
+        display.minorStatus("Copying \((sourcePath as NSString).lastPathComponent) to \(destinationPath)")
         let tempDestinationPath = (tempDestinationDir as NSString).appendingPathComponent((destinationPath as NSString).lastPathComponent)
         // copy the file or directory, removing the quarantine xattr and
         // preserving HFS+ compression
         let dittoresult = await dittoWithProgress(sourcePath: sourcePath, destinationPath: tempDestinationPath)
         if dittoresult != 0 {
-            displayError("Error copying \(sourcePath) to \(tempDestinationPath)")
+            display.error("Error copying \(sourcePath) to \(tempDestinationPath)")
             return dittoresult
         }
         // remove com.apple.quarantine xattr since `man ditto` lies and doesn't
         // seem to actually always remove it
-        removeQuarantineXattrsRecursively(tempDestinationPath)
+        do {
+            try removeQuarantineXattrsRecursively(tempDestinationPath)
+        } catch {
+            display.error(
+                "Failed to remove quarantine xattr for \(destinationPath): \(error.localizedDescription)")
+        }
         // set desired permissions for item
         let permsresult = setPermissions(item, path: tempDestinationPath)
         if permsresult != 0 {
@@ -167,10 +174,10 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
             do {
                 try FileManager.default.removeItem(atPath: destinationPath)
             } catch let err as NSError {
-                displayError("Error removing existing item at destination: \(err.localizedDescription)")
+                display.error("Error removing existing item at destination: \(err.localizedDescription)")
                 return -1
             } catch {
-                displayError("Error removing existing item at destination: \(error)")
+                display.error("Error removing existing item at destination: \(error)")
                 return -1
             }
         }
@@ -178,10 +185,10 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
         do {
             try FileManager.default.moveItem(atPath: tempDestinationPath, toPath: destinationPath)
         } catch let err as NSError {
-            displayError("Error moving item to destination: \(err.localizedDescription)")
+            display.error("Error moving item to destination: \(err.localizedDescription)")
             return -1
         } catch {
-            displayError("Error moving item to destination: \(error)")
+            display.error("Error moving item to destination: \(error)")
             return -1
         }
     }
@@ -193,23 +200,23 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
 /// Copies items from disk image to local disk
 func copyFromDmg(dmgPath: String, itemList: [PlistDict]) async -> Int {
     if itemList.isEmpty {
-        displayError("No items to copy!")
+        display.error("No items to copy!")
         return -1
     }
-    displayMinorStatus("Mounting disk image \((dmgPath as NSString).lastPathComponent)")
+    display.minorStatus("Mounting disk image \((dmgPath as NSString).lastPathComponent)")
     if let mountpoint = try? mountdmg(dmgPath, skipVerification: true) {
         let retcode = await copyItemsFromMountpoint(mountpoint, itemList: itemList)
         if retcode == 0 {
-            displayMinorStatus("The software was successfully installed.")
+            display.minorStatus("The software was successfully installed.")
         }
         do {
             try unmountdmg(mountpoint)
         } catch {
-            displayError(error.localizedDescription)
+            display.error(error.localizedDescription)
         }
         return retcode
     } else {
-        displayError("Could not mount disk image file \((dmgPath as NSString).lastPathComponent)")
+        display.error("Could not mount disk image file \((dmgPath as NSString).lastPathComponent)")
         return -1
     }
 }
@@ -244,7 +251,7 @@ func createMissingDirs(_ path: String) -> Bool {
         try filemanager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: preservedAttrs)
         return true
     } catch {
-        displayError("Error creating path \(path): \(error.localizedDescription)")
+        display.error("Error creating path \(path): \(error.localizedDescription)")
         return false
     }
 }

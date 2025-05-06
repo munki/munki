@@ -26,6 +26,7 @@ func updateAvailableLicenseSeats(_ optionalInstalls: [PlistDict]) -> [PlistDict]
         return optionalInstalls
     }
 
+    let display = DisplayAndLog.main
     var mutableOptionalInstalls = optionalInstalls
 
     var licenseInfo = PlistDict()
@@ -62,16 +63,16 @@ func updateAvailableLicenseSeats(_ optionalInstalls: [PlistDict]) -> [PlistDict]
             // too long; drop an item and see if we're under 256 characters
             endIndex -= 1
         }
-        displayDebug1("Fetching licensed seat data from \(url)")
+        display.debug1("Fetching licensed seat data from \(url)")
         do {
             if let licenseData = try getDataFromURL(url) {
-                displayDebug1("Got: \(String(data: licenseData, encoding: .utf8) ?? "")")
+                display.debug1("Got: \(String(data: licenseData, encoding: .utf8) ?? "")")
                 if let licenseDict = try readPlist(fromData: licenseData) as? PlistDict {
                     licenseInfo.merge(licenseDict) { _, second in second }
                 }
             }
         } catch {
-            displayError("Error getting license data: \(error.localizedDescription)")
+            display.error("Error getting license data: \(error.localizedDescription)")
         }
         // next loop, start where we ended
         startIndex = endIndex
@@ -83,10 +84,10 @@ func updateAvailableLicenseSeats(_ optionalInstalls: [PlistDict]) -> [PlistDict]
             continue
         }
         if itemsToCheck.contains(itemName) {
-            displayDebug2("Looking for license info for \(itemName)")
+            display.debug2("Looking for license info for \(itemName)")
             var seatsAvailable = false
             let seatInfo = licenseInfo[itemName] as? Int ?? 0
-            displayDebug1("\(seatInfo) seats available for \(itemName)")
+            display.debug1("\(seatInfo) seats available for \(itemName)")
             if seatInfo > 0 {
                 seatsAvailable = true
             }

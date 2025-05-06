@@ -7,7 +7,8 @@
 
 import Foundation
 
-let PRIMARY_MANIFEST_TAG = "_primary_manifest_"
+private let PRIMARY_MANIFEST_TAG = "_primary_manifest_"
+private let display = DisplayAndLog.main
 
 enum ManifestError: Error {
     case invalid(_ description: String)
@@ -83,7 +84,7 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     }
 
     // try to get the manifest from the server
-    displayDetail("Getting manifest \(name)...")
+    display.detail("Getting manifest \(name)...")
     let message = "Retrieving list of software for this machine..."
     do {
         _ = try fetchMunkiResource(
@@ -96,12 +97,12 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
         throw ManifestError.connection(errorCode: errorCode, description: description)
     } catch let FetchError.http(errorCode, description) {
         if !suppressErrors {
-            displayError("Could not retrieve manifest \(name) from the server. HTTP error \(errorCode): \(description)")
+            display.error("Could not retrieve manifest \(name) from the server. HTTP error \(errorCode): \(description)")
         }
         throw ManifestError.http(errorCode: errorCode, description: description)
     } catch {
         if !suppressErrors {
-            displayError("Could not retrieve manifest \(name) from the server: \(error.localizedDescription)")
+            display.error("Could not retrieve manifest \(name) from the server: \(error.localizedDescription)")
         }
         throw ManifestError.notRetrieved(error.localizedDescription)
     }
@@ -110,14 +111,14 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     do {
         _ = try readPlist(fromFile: manifestLocalPath)
     } catch {
-        displayError("Manifest returned for \(name) is invalid.")
+        display.error("Manifest returned for \(name) is invalid.")
         try? FileManager.default.removeItem(atPath: manifestLocalPath)
         throw ManifestError.invalid(
             "Manifest returned for \(name) is invalid: \(error.localizedDescription)")
     }
 
     // got a valid plist
-    displayDetail("Retreived manifest \(name)")
+    display.detail("Retreived manifest \(name)")
     Manifests.shared.set(name, path: manifestLocalPath)
     return manifestLocalPath
 }
@@ -141,7 +142,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
         manifest = try getManifest(clientIdentifier)
     } else {
         // no clientIdentifer specified. Try a variety of possible identifiers
-        displayDetail("No client identifier specified. Trying default manifest resolution...")
+        display.detail("No client identifier specified. Trying default manifest resolution...")
         var identifiers = [String]()
 
         let uname_hostname = hostname()
@@ -158,14 +159,14 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
         identifiers.append("site_default")
 
         for (index, identifier) in identifiers.enumerated() {
-            displayDetail("Requesting manifest \(identifier)...")
+            display.detail("Requesting manifest \(identifier)...")
             do {
                 manifest = try getManifest(identifier, suppressErrors: true)
             } catch {
                 if error is ManifestError,
                    index + 1 < identifiers.count // not last attempt
                 {
-                    displayDetail("Manifest \(identifier) not found...")
+                    display.detail("Manifest \(identifier) not found...")
                     continue // try the next identifier
                 } else {
                     // juse rethrow it
@@ -182,7 +183,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
     // record info and return the path to the manifest
     Manifests.shared.set(PRIMARY_MANIFEST_TAG, path: manifest)
     Report.shared.record(clientIdentifier, to: "ManifestName")
-    displayDetail("Using primary manifest: \(clientIdentifier)")
+    display.detail("Using primary manifest: \(clientIdentifier)")
     return manifest
 }
 
@@ -202,17 +203,17 @@ func manifestData(_ path: String) -> PlistDict? {
                 return plist
             } else {
                 // could not coerce to correct format
-                displayError("\(path) is the wrong format")
+                display.error("\(path) is the wrong format")
             }
         } catch let PlistError.readError(description) {
-            displayError("file error for \(path): \(description)")
+            display.error("file error for \(path): \(description)")
         } catch {
-            displayError("file error for \(path): \(error.localizedDescription)")
+            display.error("file error for \(path): \(error.localizedDescription)")
         }
         // if we get here there's something wrong with the file. Try to remove it
         try? FileManager.default.removeItem(atPath: path)
     } else {
-        displayError("\(path) does not exist")
+        display.error("\(path) does not exist")
     }
     return nil
 }
@@ -223,7 +224,7 @@ func getManifestValue(_ path: String, forKey key: String) -> Any? {
         if let value = manifest[key] {
             return value
         } else {
-            displayError("Failed to get manifest value for key: \(key) (\(path))")
+            display.error("Failed to get manifest value for key: \(key) (\(path))")
         }
     }
     return nil
@@ -231,10 +232,10 @@ func getManifestValue(_ path: String, forKey key: String) -> Any? {
 
 /// Remove the given itemname from the self-serve manifest's managed_uninstalls list
 func removeItemFromSelfServeSection(itemname: String, section: String) {
-    displayDebug1("Removing \(itemname) from SelfServeManifest's \(section)...")
+    display.debug1("Removing \(itemname) from SelfServeManifest's \(section)...")
     let manifestPath = managedInstallsDir(subpath: "manifests/SelfServeManifest")
     if !pathExists(manifestPath) {
-        displayDebug1("\(manifestPath) doesn't exist.")
+        display.debug1("\(manifestPath) doesn't exist.")
         return
     }
     guard var manifest = manifestData(manifestPath) else {
@@ -243,7 +244,7 @@ func removeItemFromSelfServeSection(itemname: String, section: String) {
     }
     // section should be a list of strings
     guard var sectionContents = manifest[section] as? [String] else {
-        displayDebug1("\(manifestPath): missing or invalid \(section)")
+        display.debug1("\(manifestPath): missing or invalid \(section)")
         return
     }
     sectionContents = sectionContents.filter {
@@ -253,7 +254,7 @@ func removeItemFromSelfServeSection(itemname: String, section: String) {
     do {
         try writePlist(manifest, toFile: manifestPath)
     } catch {
-        displayDebug1("Error writing \(manifestPath): \(error.localizedDescription)")
+        display.debug1("Error writing \(manifestPath): \(error.localizedDescription)")
     }
 }
 
@@ -292,7 +293,7 @@ func processManifest(
     }
 
     if catalogList.isEmpty {
-        displayWarning("Manifest \(manifestName) has no catalogs")
+        display.warning("Manifest \(manifestName) has no catalogs")
         return
     }
 
@@ -315,13 +316,13 @@ func processManifest(
 
     // process conditional items
     if let conditionalItems = manifestdata["conditional_items"] as? [PlistDict] {
-        displayDebug1("** Processing conditional_items in \(manifestName)")
+        display.debug1("** Processing conditional_items in \(manifestName)")
         // conditionalitems should be an array of dicts
         // each dict has a predicate; the rest consists of the
         // same keys as a manifest
         for item in conditionalItems {
             guard let predicate = item["condition"] as? String else {
-                displayWarning("Missing predicate for conditional_item \(item)")
+                display.warning("Missing predicate for conditional_item \(item)")
                 continue
             }
             if await predicateEvaluatesAsTrue(
@@ -395,7 +396,7 @@ func processManifest(
     installInfo: inout PlistDict,
     parentCatalogs: [String] = []
 ) async throws {
-    displayDebug1("** Processing manifest \(baseName(manifestPath)) for \(key)")
+    display.debug1("** Processing manifest \(baseName(manifestPath)) for \(key)")
     if let manifestdata = manifestData(manifestPath) {
         try await processManifest(
             manifestdata,

@@ -20,6 +20,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Do spotlight search for type applications within the
 /// list of directories provided. Returns a list of paths to applications.
 /// dirList is actually a list of NSMetadataQuery search scopes, which
@@ -45,7 +47,7 @@ func findAppsInDirs(_ dirList: [String]) -> [[String: String]] {
     query.stop()
 
     if runtime >= maxRuntime {
-        displayWarning(
+        display.warning(
             "Spotlight search for applications terminated due to excessive time. Possible causes: Spotlight indexing is turned off for a volume; Spotlight is reindexing a volume."
         )
     }
@@ -125,16 +127,16 @@ func spApplicationData() async -> PlistDict {
             throw PlistError.readError(description: "output is wrong format")
         }
     } catch let PlistError.readError(description) {
-        displayWarning("Could not parse output from system_profiler; skipping SPApplicationsDataType query: \(description)")
+        display.warning("Could not parse output from system_profiler; skipping SPApplicationsDataType query: \(description)")
         return applicationData
     } catch ProcessError.timeout {
-        displayWarning("system_profiler hung; skipping SPApplicationsDataType query")
+        display.warning("system_profiler hung; skipping SPApplicationsDataType query")
         return applicationData
     } catch let ProcessError.error(description) {
-        displayWarning("Unexpected error with system_profiler; skipping SPApplicationsDataType query: \(description)")
+        display.warning("Unexpected error with system_profiler; skipping SPApplicationsDataType query: \(description)")
         return applicationData
     } catch {
-        displayWarning("Unexpected error with system_profiler; skipping SPApplicationsDataType query")
+        display.warning("Unexpected error with system_profiler; skipping SPApplicationsDataType query")
         return applicationData
     }
 
@@ -147,7 +149,7 @@ func getAppData() -> [[String: String]] {
     // one thing I'm not at all sure about is what iOS/iPadOS apps
     // installed on Apple silicon Macs look like and how/if
     // Launch Services, Spotlight, and system_profiler report them
-    displayDebug1("Getting info on currently installed applications...")
+    display.debug1("Getting info on currently installed applications...")
     let lsApps = launchServicesInstalledApps()
     let spotlightApps = spotlightInstalledApps()
 
@@ -240,6 +242,6 @@ func saveAppData() {
         let appInventoryPath = managedInstallsDir(subpath: "ApplicationInventory.plist")
         try writePlist(appInventory, toFile: appInventoryPath)
     } catch {
-        displayWarning("Unable to save application inventory: \(error.localizedDescription)")
+        display.warning("Unable to save application inventory: \(error.localizedDescription)")
     }
 }

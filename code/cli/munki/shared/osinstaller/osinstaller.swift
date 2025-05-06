@@ -20,6 +20,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 // TODO: implement setup_authrestart_if_applicable() (not needed unless we implement support for StartOSInstall)
 
 // TODO: implement StartOSInstallRunner and related functions
@@ -27,12 +29,12 @@ import Foundation
 /// Attempts to trigger a "verification" process against the staged macOS
 /// installer. This improves the launch time.
 func verifyStagedOSInstaller(_ appPath: String) {
-    displayMinorStatus("Verifying macOS installer...")
+    display.minorStatus("Verifying macOS installer...")
     displayPercentDone(current: -1, maximum: 100)
     let startOSInstallPath = (appPath as NSString).appendingPathComponent("Contents/Resources/startosinstall")
     let result = runCLI(startOSInstallPath, arguments: ["--usage"])
     if result.exitcode != 0 {
-        displayWarning("Error verifying macOS installer: \(result.error)")
+        display.warning("Error verifying macOS installer: \(result.error)")
     }
 }
 
@@ -41,13 +43,13 @@ func verifyStagedOSInstaller(_ appPath: String) {
 func recordStagedOSInstaller(_ iteminfo: PlistDict) {
     let infoPath = stagedOSInstallerInfoPath()
     guard let stagedOSInstallerInfo = createOSInstallerInfo(iteminfo) else {
-        displayError("Error recording staged macOS installer: could not get os installer path")
+        display.error("Error recording staged macOS installer: could not get os installer path")
         return
     }
     do {
         try writePlist(stagedOSInstallerInfo, toFile: infoPath)
     } catch {
-        displayError("Error recording staged macOS installer: \(error.localizedDescription)")
+        display.error("Error recording staged macOS installer: \(error.localizedDescription)")
     }
     // finally, trigger a verification
     if let osInstallerPath = stagedOSInstallerInfo["osinstaller_path"] as? String {
@@ -63,7 +65,7 @@ func getStagedOSInstallerInfo() -> PlistDict? {
     }
     do {
         guard let osInstallerInfo = try readPlist(fromFile: infoPath) as? PlistDict else {
-            displayError("Error reading \(infoPath): wrong format")
+            display.error("Error reading \(infoPath): wrong format")
             return nil
         }
         let appPath = osInstallerInfo["osinstaller_path"] as? String ?? ""
@@ -73,7 +75,7 @@ func getStagedOSInstallerInfo() -> PlistDict? {
         }
         return osInstallerInfo
     } catch {
-        displayError("Error reading \(infoPath): \(error.localizedDescription)")
+        display.error("Error reading \(infoPath): \(error.localizedDescription)")
         return nil
     }
 }
@@ -88,12 +90,12 @@ func removeStagedOSInstallerInfo() {
 func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
     guard let item = info else { return }
     Report.shared.record(item, to: "StagedOSInstaller")
-    displayInfo("")
-    displayInfo("The following macOS upgrade is available to install:")
+    display.info("")
+    display.info("The following macOS upgrade is available to install:")
     let name = item["display_name"] as? String ?? item["name"] as? String ?? ""
     let version = item["version_to_install"] as? String ?? ""
-    displayInfo("    + \(name)-\(version)")
-    displayInfo("       *Must be manually installed")
+    display.info("    + \(name)-\(version)")
+    display.info("       *Must be manually installed")
 }
 
 // MARK: functions for determining if a user is a volume owner
@@ -189,7 +191,7 @@ func getAdminOpenPath() -> String? {
 
     """
     guard let tempdir = TempDir.shared.path else {
-        displayError("Could not get temp directory for adminopen tool")
+        display.error("Could not get temp directory for adminopen tool")
         return nil
     }
     let scriptPath = (tempdir as NSString).appendingPathComponent("adminopen")
@@ -199,7 +201,7 @@ func getAdminOpenPath() -> String? {
         posixPermissions: 0o744
     )
     else {
-        displayError("Could not get temp directory for adminopen tool")
+        display.error("Could not get temp directory for adminopen tool")
         return nil
     }
     return scriptPath
@@ -214,30 +216,30 @@ func launchInstallerApp(_ appPath: String) -> Bool {
     let username = getConsoleUser()
     if username.isEmpty || username == "loginwindow" {
         // we're at the loginwindow. Bail.
-        displayError("Could not launch macOS installer application: No current GUI user.")
+        display.error("Could not launch macOS installer application: No current GUI user.")
         return false
     }
 
     // if we're on Apple silicon -- is the user a volume owner?
     if isAppleSilicon(), !userIsVolumeOwner(username) {
-        displayError("Could not launch macOS installer application: Current GUI user \(username) is not a volume owner.")
+        display.error("Could not launch macOS installer application: Current GUI user \(username) is not a volume owner.")
         return false
     }
 
     // create the adminopen tool and get its path
     guard let adminOpenPath = getAdminOpenPath() else {
-        displayError("Error launching macOS installer: Can't create adminopen tool.")
+        display.error("Error launching macOS installer: Can't create adminopen tool.")
         return false
     }
 
     // make sure the Install macOS app is present
     if !pathExists(appPath) {
-        displayError("Error launching macOS installer: \(appPath) doesn't exist.")
+        display.error("Error launching macOS installer: \(appPath) doesn't exist.")
         return false
     }
 
     // OK, all preconditions are met, let's go!
-    displayMajorStatus("Launching macOS installer...")
+    display.majorStatus("Launching macOS installer...")
     let cmd = [adminOpenPath, appPath]
     do {
         let job = try LaunchdJob(cmd: cmd, cleanUpAtExit: false)
@@ -252,8 +254,8 @@ func launchInstallerApp(_ appPath: String) -> Bool {
             throw MunkiError("(\(exitcode)) \(errorMsg)")
         }
     } catch {
-        displayError("Failed to launch macOS installer due to launchd error.")
-        displayError(error.localizedDescription)
+        display.error("Failed to launch macOS installer due to launchd error.")
+        display.error(error.localizedDescription)
         return false
     }
 
@@ -261,7 +263,7 @@ func launchInstallerApp(_ appPath: String) -> Bool {
     do {
         try setBootstrapMode()
     } catch {
-        displayWarning("Could not set up Munki to run at boot after OS upgrade is complete: \(error.localizedDescription)")
+        display.warning("Could not set up Munki to run at boot after OS upgrade is complete: \(error.localizedDescription)")
     }
     // return true to indicate we launched the Install macOS app
     return true
@@ -272,7 +274,7 @@ func launchStagedOSInstaller() -> Bool {
     guard let osInstallerInfo = getStagedOSInstallerInfo(),
           let osInstallerPath = osInstallerInfo["osinstaller_path"] as? String
     else {
-        displayError("Could not get path to staged OS installer.")
+        display.error("Could not get path to staged OS installer.")
         return false
     }
     if boolPref("SuppressStopButtonOnInstall") ?? false {

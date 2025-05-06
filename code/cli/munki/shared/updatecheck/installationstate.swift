@@ -20,6 +20,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 enum InstallationState: Int {
     case thisVersionNotInstalled = 0
     case thisVersionInstalled = 1
@@ -35,7 +37,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
     var foundNewer = false
     if pkginfo["OnDemand"] as? Bool ?? false {
         // we always need to install these items
-        displayDebug1("This is an OnDemand item. Must install.")
+        display.debug1("This is an OnDemand item. Must install.")
         return .thisVersionNotInstalled
     }
     if pkginfo["installcheck_script"] is String {
@@ -44,7 +46,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
             pkginfo: pkginfo,
             suppressError: true
         )
-        displayDebug1("installcheck_script returned \(retcode)")
+        display.debug1("installcheck_script returned \(retcode)")
         // retcode 0 means install IS needed
         if retcode == 0 {
             return .thisVersionNotInstalled
@@ -117,7 +119,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
                     return .thisVersionNotInstalled
                 }
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
                 // return .thisVersionInstalled so we don't attempt an install
                 return .thisVersionInstalled
             }
@@ -137,7 +139,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
                     foundNewer = true
                 }
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
                 // return .thisVersionInstalled so we don't attempt an install
                 return .thisVersionInstalled
             }
@@ -154,7 +156,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
                 }
 
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
                 // return .thisVersionInstalled so we don't attempt an install
                 return .thisVersionInstalled
             }
@@ -172,7 +174,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
 func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
     if pkginfo["OnDemand"] as? Bool ?? false {
         // These should never be counted as installed
-        displayDebug1("This is an OnDemand item.")
+        display.debug1("This is an OnDemand item.")
         return false
     }
     if pkginfo["installcheck_script"] is String {
@@ -184,7 +186,7 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
             pkginfo: pkginfo,
             suppressError: true
         )
-        displayDebug1("installcheck_script returned \(retcode)")
+        display.debug1("installcheck_script returned \(retcode)")
         // retcode 0 means install is needed
         // (ie, item is not installed)
         // non-zero could be an error or successfully indicating
@@ -215,7 +217,7 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
                     return false
                 }
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
                 return false
             }
         }
@@ -228,7 +230,7 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
                 }
 
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
                 // return .thisVersionInstalled so we don't attempt an install
                 return false
             }
@@ -247,7 +249,7 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
 func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
     if pkginfo["OnDemand"] as? Bool ?? false {
         // These should never be counted as installed
-        displayDebug1("This is an OnDemand item.")
+        display.debug1("This is an OnDemand item.")
         return false
     }
     if pkginfo["uninstallcheck_script"] is String {
@@ -259,7 +261,7 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
             pkginfo: pkginfo,
             suppressError: true
         )
-        displayDebug1("uninstallcheck_script returned \(retcode)")
+        display.debug1("uninstallcheck_script returned \(retcode)")
         // retcode 0 means uninstall is needed
         // (ie, item is installed)
         // non-zero could be an error or successfully indicating
@@ -275,7 +277,7 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
             pkginfo: pkginfo,
             suppressError: true
         )
-        displayDebug1("installcheck_script returned \(retcode)")
+        display.debug1("installcheck_script returned \(retcode)")
         // retcode 0 means install is needed
         // (ie, item is not installed)
         // non-zero could be an error or successfully indicating
@@ -300,17 +302,17 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
     if let installItems = pkginfo["installs"] as? [PlistDict],
        (pkginfo["uninstall_method"] as? String ?? "") != "removepackages"
     {
-        displayDebug2("Checking 'installs' items...")
+        display.debug2("Checking 'installs' items...")
         foundAllInstallItems = true
         for item in installItems {
             if let path = item["path"] as? String, !pathExists(path) {
                 // this item isn't present
-                displayDebug2("\(path) not found on disk.")
+                display.debug2("\(path) not found on disk.")
                 foundAllInstallItems = false
             }
         }
         if foundAllInstallItems {
-            displayDebug2("Found all installs items")
+            display.debug2("Found all installs items")
             return true
         }
     }
@@ -318,16 +320,16 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
        let receipts = pkginfo["receipts"] as? [PlistDict],
        !receipts.isEmpty
     {
-        displayDebug2("Checking receipts...")
+        display.debug2("Checking receipts...")
         let pkgdata = await analyzeInstalledPkgs()
 
         if let installedNames = pkgdata["installed_names"] as? [String],
            installedNames.contains(itemName)
         {
-            displayDebug2("Found matching receipts")
+            display.debug2("Found matching receipts")
             return true
         }
-        displayDebug2("Installed receipts don't match for \(itemName)")
+        display.debug2("Installed receipts don't match for \(itemName)")
     }
     // if we got this far, we failed all the tests, so the item
     // must not be installed (or we don't have the right info...)

@@ -176,12 +176,12 @@ class Caffeinator {
     var assertionID: IOPMAssertionID?
 
     init(reason: String = "") {
-        displayInfo("Preventing idle sleep")
+        DisplayAndLog.main.info("Preventing idle sleep")
         assertionID = assertNoIdleSleep(reason: reason)
     }
 
     deinit {
-        displayInfo("Allowing idle sleep")
+        DisplayAndLog.main.info("Allowing idle sleep")
         removeNoSleepAssertion(assertionID)
     }
 }

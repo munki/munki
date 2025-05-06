@@ -7,6 +7,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// For a URL, return the path that the download should cache to.
 func getDownloadCachePath(_ urlString: String) -> String {
     return managedInstallsDir(subpath: "Cache/" + baseName(urlString))
@@ -29,7 +31,7 @@ func enoughDiskSpaceFor(
             alreadyDownloadedSize = getSize(downloadedPath) / 1024 // KBytes
         }
     }
-    displayDebug2("\tAlready downloaded size: \(alreadyDownloadedSize)KB")
+    display.debug2("\tAlready downloaded size: \(alreadyDownloadedSize)KB")
     var installerItemSize = item["installer_item_size"] as? Int ?? 0 // KBytes
     var installedSize = item["installed_size"] as? Int ?? installerItemSize // KBytes
     if uninstalling {
@@ -39,13 +41,13 @@ func enoughDiskSpaceFor(
             installerItemSize = uninstallerItemSize // KBytes
         }
     }
-    displayDebug2("\tInstaller item size: \(installerItemSize)KB")
-    displayDebug2("\tInstalled size: \(installedSize)KB")
+    display.debug2("\tInstaller item size: \(installerItemSize)KB")
+    display.debug2("\tInstalled size: \(installedSize)KB")
     let diskSpaceNeeded = installerItemSize - alreadyDownloadedSize + installedSize + fudgefactor
-    displayDebug2("\tDisk space needed: \(diskSpaceNeeded)KB")
+    display.debug2("\tDisk space needed: \(diskSpaceNeeded)KB")
 
     var diskSpace = availableDiskSpace() // KBytes
-    displayDebug2("\tAvailable disk space: \(diskSpace)KB")
+    display.debug2("\tAvailable disk space: \(diskSpace)KB")
     var additionalItemSpace = 0
     for additionalItem in installList {
         // subtract space needed for other items that are to be installed
@@ -54,20 +56,20 @@ func enoughDiskSpaceFor(
         {
             additionalItemSpace += installedSize
             if let name = additionalItem["name"] as? String {
-                displayDebug2("\tSubtracting \(installedSize)KB needed for \(name)...")
+                display.debug2("\tSubtracting \(installedSize)KB needed for \(name)...")
             }
         }
     }
     diskSpace -= additionalItemSpace
-    displayDebug2("\tAvailable disk space after subtracting additional items: \(diskSpace)KB")
+    display.debug2("\tAvailable disk space after subtracting additional items: \(diskSpace)KB")
 
     if diskSpaceNeeded > diskSpace, !precaching {
         // try to clear space by deleting some precached items
-        displayDebug2("\tAttempting to free up space by clearing precached items...")
+        display.debug2("\tAttempting to free up space by clearing precached items...")
         uncache(diskSpaceNeeded - diskSpace)
         // now re-calc
         diskSpace = availableDiskSpace() - additionalItemSpace
-        displayDebug2("\tAvailable disk space after clearing precached items: \(diskSpace)KB")
+        display.debug2("\tAvailable disk space after clearing precached items: \(diskSpace)KB")
     }
 
     if diskSpace >= diskSpaceNeeded {
@@ -78,11 +80,11 @@ func enoughDiskSpaceFor(
     if warn {
         let itemName = item["name"] as? String ?? "<unknown>"
         if uninstalling {
-            displayWarning("There is insufficient disk space to download the uninstaller for \(itemName)")
+            display.warning("There is insufficient disk space to download the uninstaller for \(itemName)")
         } else {
-            displayWarning("There is insufficient disk space to download and install \(itemName)")
+            display.warning("There is insufficient disk space to download and install \(itemName)")
         }
-        displayWarning("\(Int(diskSpaceNeeded / 1024))MB needed, \(Int(diskSpace / 1024))MB available")
+        display.warning("\(Int(diskSpaceNeeded / 1024))MB needed, \(Int(diskSpace / 1024))MB available")
     }
     return false
 }
@@ -125,13 +127,13 @@ func downloadInstallerItem(
     }
 
     let pkgName = baseName(location)
-    displayDebug2("Package name is: \(pkgName)")
+    display.debug2("Package name is: \(pkgName)")
     if !alternatePkgURL.isEmpty {
-        displayDebug2("Download URL is: \(alternatePkgURL)")
+        display.debug2("Download URL is: \(alternatePkgURL)")
     }
 
     let destinationPath = getDownloadCachePath(location)
-    displayDebug2("Downloading to: \(destinationPath)")
+    display.debug2("Downloading to: \(destinationPath)")
 
     if !pathExists(destinationPath) {
         // check to see if there is enough free space to download and install
@@ -148,7 +150,7 @@ func downloadInstallerItem(
             )
         }
     }
-    displayDetail("Downloading \(pkgName) from \(location)")
+    display.detail("Downloading \(pkgName) from \(location)")
     let downloadMessage = "Downloading \(pkgName)..."
     let expectedHash = item[itemHashKey] as? String
     if alternatePkgURL.isEmpty {
@@ -197,7 +199,7 @@ func getIconHashes() -> [String: String] {
         )
         return try readPlist(fromFile: iconsHashesPlist) as? [String: String] ?? [:]
     } catch {
-        displayDebug1("Error while retreiving icon hashes: \(error.localizedDescription)")
+        display.debug1("Error while retreiving icon hashes: \(error.localizedDescription)")
         return [String: String]()
     }
 }
@@ -234,7 +236,7 @@ func downloadIcons(_ itemList: [PlistDict]) {
         if !pathIsDirectory(iconSubDir) {
             let success = createMissingDirs(iconSubDir)
             if !success {
-                displayError("Could not create \(iconSubDir)")
+                display.error("Could not create \(iconSubDir)")
                 continue
             }
         }
@@ -256,7 +258,7 @@ func downloadIcons(_ itemList: [PlistDict]) {
                 )
                 _ = storeCachedChecksum(toPath: iconPath)
             } catch {
-                displayDebug1("Error when retrieving icon \(iconName) from the server: \(error.localizedDescription)")
+                display.debug1("Error when retrieving icon \(iconName) from the server: \(error.localizedDescription)")
             }
         }
     }
@@ -290,7 +292,7 @@ func downloadClientResources() {
     if !pathIsDirectory(resourceDir) {
         let success = createMissingDirs(resourceDir)
         if !success {
-            displayError("Could not create \(resourceDir)")
+            display.error("Could not create \(resourceDir)")
             return
         }
     }
@@ -308,7 +310,7 @@ func downloadClientResources() {
             downloadedResourcePath = resourceArchivePath
             break
         } catch {
-            displayDebug1("Could not retrieve client resources with name \(filename): \(error.localizedDescription)")
+            display.debug1("Could not retrieve client resources with name \(filename): \(error.localizedDescription)")
         }
     }
     if downloadedResourcePath.isEmpty {
@@ -317,7 +319,7 @@ func downloadClientResources() {
             do {
                 try FileManager.default.removeItem(atPath: resourceArchivePath)
             } catch {
-                displayError("Could not remove stale \(resourceArchivePath): \(error.localizedDescription)")
+                display.error("Could not remove stale \(resourceArchivePath): \(error.localizedDescription)")
             }
         }
     }
@@ -326,7 +328,7 @@ func downloadClientResources() {
 /// Attempt to download a catalog from the Munki server. Returns the path to the downloaded catalog file.
 func downloadCatalog(_ catalogName: String) -> String? {
     let catalogPath = managedInstallsDir(subpath: "catalogs/\(catalogName)")
-    displayDetail("Getting catalog \(catalogName)...")
+    display.detail("Getting catalog \(catalogName)...")
     let message = "Retrieving catalog \(catalogName)..."
     do {
         _ = try fetchMunkiResource(
@@ -337,7 +339,7 @@ func downloadCatalog(_ catalogName: String) -> String? {
         )
         return catalogPath
     } catch {
-        displayError("Could not retrieve catalog \(catalogName) from server: \(error.localizedDescription)")
+        display.error("Could not retrieve catalog \(catalogName) from server: \(error.localizedDescription)")
     }
     return nil
 }
@@ -361,7 +363,7 @@ func precache() {
         // nothing to do
         return
     }
-    displayInfo("###   Beginning precaching session   ###")
+    display.info("###   Beginning precaching session   ###")
     for item in itemsToPrecache(installInfo) {
         do {
             _ = try downloadInstallerItem(
@@ -369,10 +371,10 @@ func precache() {
             )
         } catch {
             let itemName = item["name"] as? String ?? "<unknown>"
-            displayWarning("Failed to precache the installer for \(itemName) because \(error.localizedDescription)")
+            display.warning("Failed to precache the installer for \(itemName) because \(error.localizedDescription)")
         }
     }
-    displayInfo("###   Ending precaching session   ###")
+    display.info("###   Ending precaching session   ###")
 }
 
 /// Discard precached items to free up space for managed installs
@@ -436,7 +438,7 @@ func uncache(_ spaceNeededInKB: Int) {
             try filemanager.removeItem(atPath: path)
             deletedKB += size
         } catch {
-            displayError("Could not remove precached item \(path): \(error.localizedDescription)")
+            display.error("Could not remove precached item \(path): \(error.localizedDescription)")
         }
     }
 }
@@ -448,7 +450,7 @@ let PRECACHING_AGENT_LABEL = "com.googlecode.munki.precache_agent"
 func startPrecachingAgent() {
     if itemsToPrecache(getInstallInfo() ?? PlistDict()).isEmpty {
         // nothing to precache
-        displayDebug1("Nothing found to precache.")
+        display.debug1("Nothing found to precache.")
         return
     }
     // first look in same dir as the current executable
@@ -457,8 +459,8 @@ func startPrecachingAgent() {
         precacheAgentPath = "/usr/local/munki/precache_agent"
     }
     if pathExists(precacheAgentPath) {
-        displayInfo("Starting precaching agent")
-        displayDebug1("Launching precache_agent from \(precacheAgentPath)")
+        display.info("Starting precaching agent")
+        display.debug1("Launching precache_agent from \(precacheAgentPath)")
         do {
             let job = try LaunchdJob(
                 cmd: [precacheAgentPath],
@@ -467,10 +469,10 @@ func startPrecachingAgent() {
             )
             try job.start()
         } catch {
-            displayError("Error with launchd job (\(precacheAgentPath)): \(error.localizedDescription)")
+            display.error("Error with launchd job (\(precacheAgentPath)): \(error.localizedDescription)")
         }
     } else {
-        displayError("Could not find precache_agent")
+        display.error("Could not find precache_agent")
     }
 }
 
@@ -480,12 +482,12 @@ func stopPrecachingAgent() {
     if agentInfo.state != .unknown {
         // it's either running or stopped. Removing it will stop it.
         if agentInfo.state == .running {
-            displayInfo("Stopping precaching agent")
+            display.info("Stopping precaching agent")
         }
         do {
             try removeLaunchdJob(PRECACHING_AGENT_LABEL)
         } catch {
-            displayError("Error stopping precaching agent: \(error.localizedDescription)")
+            display.error("Error stopping precaching agent: \(error.localizedDescription)")
         }
     }
 }

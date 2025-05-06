@@ -28,6 +28,7 @@ func getSearchDomains() -> [String]? {
 /// Tries a few default URLs and returns the first one that doesn't fail
 /// utterly, or the default
 func guessRepoURL() -> String {
+    let display = DisplayAndLog.main
     guard let searchDomains = getSearchDomains() else {
         return DEFAULT_INSECURE_REPO_URL
     }
@@ -41,12 +42,12 @@ func guessRepoURL() -> String {
         ]
         for url in possibleURLs {
             do {
-                displayInfo("Checking for Munki repo at \(url)")
+                display.info("Checking for Munki repo at \(url)")
                 _ = try getDataFromURL(url + "/catalogs/all")
                 // success: just return this url
                 return url
             } catch {
-                displayInfo("URL error: \(error.localizedDescription)")
+                display.info("URL error: \(error.localizedDescription)")
             }
         }
     }
@@ -56,6 +57,7 @@ func guessRepoURL() -> String {
 /// If Munki repo URL is not defined, (or is the insecure default) attempt to
 /// discover one. If successful, record the discovered URL in Munki's preferences.
 func autodetectRepoURLIfNeeded() {
+    let display = DisplayAndLog.main
     if let softwareRepoURL = pref("SoftwareRepoURL") as? String,
        !softwareRepoURL.isEmpty,
        softwareRepoURL != DEFAULT_INSECURE_REPO_URL
@@ -78,13 +80,13 @@ func autodetectRepoURLIfNeeded() {
         return
     }
 
-    displayInfo("Looking for local Munki repo server...")
+    display.info("Looking for local Munki repo server...")
     let detectedURL = guessRepoURL()
     if detectedURL != DEFAULT_INSECURE_REPO_URL {
-        displayInfo("Auto-detected Munki repo at \(detectedURL)")
+        display.info("Auto-detected Munki repo at \(detectedURL)")
         // save it to Munki's prefs
         setPref("SoftwareRepoURL", detectedURL)
     } else {
-        displayInfo("Using insecure default URL: \(DEFAULT_INSECURE_REPO_URL)")
+        display.info("Using insecure default URL: \(DEFAULT_INSECURE_REPO_URL)")
     }
 }

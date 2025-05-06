@@ -20,6 +20,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Gets some facts about this machine we use to determine if a given
 /// installer is applicable to this OS or hardware
 func generateMachineFacts() async -> PlistDict {
@@ -101,7 +103,7 @@ func getConditions() async -> PlistDict {
     }
 
     if !pathIsDirectory(conditionalScriptDir) {
-        displayWarning("\(conditionalScriptDir) exists but is not a directory.")
+        display.warning("\(conditionalScriptDir) exists but is not a directory.")
         return PlistDict()
     }
 
@@ -119,7 +121,7 @@ func getConditions() async -> PlistDict {
             do {
                 let _ = try await runExternalScript(itemPath, timeout: 60)
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
             }
         }
         if pathExists(conditionalItemsPath) {
@@ -130,18 +132,18 @@ func getConditions() async -> PlistDict {
                     return conditions
                 } else {
                     // data is in wrong formet
-                    displayWarning("\(conditionalItemsPath) contents are in an unexpected format.")
+                    display.warning("\(conditionalItemsPath) contents are in an unexpected format.")
                 }
             } catch {
                 // file was invalid
-                displayWarning("\(conditionalItemsPath) contents are invalid.")
+                display.warning("\(conditionalItemsPath) contents are invalid.")
             }
         } else {
             // file doesn't exist. Not an error to warn about
         }
     } else {
         // could not get script items from dir
-        displayWarning("Unexpected filesystem issue getting contents of \(conditionalScriptDir)")
+        display.warning("Unexpected filesystem issue getting contents of \(conditionalScriptDir)")
     }
     return PlistDict() // empty results
 }
@@ -227,14 +229,14 @@ func predicateEvaluatesAsTrue(
     if let additionalInfo {
         ourObject.merge(additionalInfo) { _, new in new }
     }
-    displayDebug1("Evaluating predicate: `\(predicateString)`")
+    display.debug1("Evaluating predicate: `\(predicateString)`")
     var err: NSError?
     let result = objCpredicateEvaluatesAsTrue(predicateString, ourObject, &err)
-    displayDebug1("Predicate `\(predicateString)` is \(result == 1)")
+    display.debug1("Predicate `\(predicateString)` is \(result == 1)")
     if result == -1 {
         // exception
         let description = err?.localizedDescription ?? ""
-        displayError("Predicate `\(predicateString)` raised an NSException: \(description)")
+        display.error("Predicate `\(predicateString)` raised an NSException: \(description)")
     }
     return result == 1
 }

@@ -23,6 +23,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Determines if an item is in a list of processed items.
 ///
 /// Returns true if the item has already been processed (it's in the list)
@@ -105,13 +107,13 @@ func alreadyProcessed(_ itemName: String, installInfo: PlistDict, sections: [Str
         if let listOfNames = installInfo[section] as? [String],
            listOfNames.contains(itemName)
         {
-            displayDebug1("\(itemName) has already been processed for \(description[section] ?? "")")
+            display.debug1("\(itemName) has already been processed for \(description[section] ?? "")")
             return true
         } else if let listOfPkgInfos = installInfo[section] as? [PlistDict] {
             for pkginfo in listOfPkgInfos {
                 if let pkginfoName = pkginfo["name"] as? String {
                     if itemName == pkginfoName {
-                        displayDebug1("\(itemName) has already been processed for \(description[section] ?? "")")
+                        display.debug1("\(itemName) has already been processed for \(description[section] ?? "")")
                         return true
                     }
                 }
@@ -143,25 +145,25 @@ func processInstall(
     }
 
     let manifestItemName = (manifestItem as NSString).lastPathComponent
-    displayDebug1("* Processing manifest item \(manifestItemName) for install")
+    display.debug1("* Processing manifest item \(manifestItemName) for install")
     let (manifestItemNameWithoutVersion, includedVersion) = nameAndVersion(manifestItemName, onlySplitOnHyphens: true)
 
     // have we processed this already?
     if let processedInstalls = installInfo["processed_installs"] as? [String],
        processedInstalls.contains(manifestItemName)
     {
-        displayDebug1("\(manifestItemName) has already been processed for install.")
+        display.debug1("\(manifestItemName) has already been processed for install.")
         return true
     }
     if let processedUninstalls = installInfo["processed_uninstalls"] as? [String],
        processedUninstalls.contains(manifestItemNameWithoutVersion)
     {
-        displayDebug1("Will not process \(manifestItemName) for install because it has already been processed for uninstall!")
+        display.debug1("Will not process \(manifestItemName) for install because it has already been processed for uninstall!")
         return false
     }
 
     guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
-        displayWarning("Could not process item \(manifestItemName) for install. No pkginfo found in catalogs: \(catalogList)")
+        display.warning("Could not process item \(manifestItemName) for install. No pkginfo found in catalogs: \(catalogList)")
         return false
     }
 
@@ -185,12 +187,12 @@ func processInstall(
 
         if problemItemNames.contains(itemName) {
             // item was processed, but not successfully downloaded
-            displayDebug1("\(manifestItemName) was processed earlier, but download failed.")
+            display.debug1("\(manifestItemName) was processed earlier, but download failed.")
             return false
         }
 
         // item was processed successfully
-        displayDebug1("\(manifestItem) is or will be installed.")
+        display.debug1("\(manifestItem) is or will be installed.")
         return true
     }
 
@@ -228,7 +230,7 @@ func processInstall(
         dependencies = [requires]
     }
     for item in dependencies {
-        displayDetail("\(name)-\(version) requires \(item). Getting info on \(item)...")
+        display.detail("\(name)-\(version) requires \(item). Getting info on \(item)...")
         let success = await processInstall(
             item,
             catalogList: catalogList,
@@ -254,7 +256,7 @@ func processInstall(
     if installedState == .thisVersionNotInstalled {
         if !dependenciesMet {
             // we should not attempt to install
-            displayWarning("Didn't attempt ro install \(manifestItemName) because could not resolve all dependencies.")
+            display.warning("Didn't attempt ro install \(manifestItemName) because could not resolve all dependencies.")
             // add information to managed_installs so we have some feedback
             // to display in MSC.app
             processedItem["installed"] = false
@@ -263,7 +265,7 @@ func processInstall(
             return false
         }
 
-        displayDetail("Need to install \(manifestItemName)")
+        display.detail("Need to install \(manifestItemName)")
         processedItem["installed"] = false
         processedItem["version_to_install"] = version
         let installerItemSize = pkginfo["installer_item_size"] as? Int ?? 0
@@ -287,7 +289,7 @@ func processInstall(
                     // item was in cache and unchanged
                 }
             } catch let FetchError.fileSystem(description) {
-                displayWarning("Can't install \(manifestItemName) because \(description).")
+                display.warning("Can't install \(manifestItemName) because \(description).")
                 processedItem["installed"] = false
                 processedItem["note"] = description
                 if let installerItemLocation = pkginfo["installer_item_location"] as? String {
@@ -304,20 +306,20 @@ func processInstall(
                 if let err = error as? FetchError {
                     switch err {
                     case .verification:
-                        displayWarning("Can't install \(manifestItemName) because the integrity check failed.")
+                        display.warning("Can't install \(manifestItemName) because the integrity check failed.")
                         processedItem["note"] = "Integrity check failed"
                         processedItem["partial_installer_item"] = nil
                     case let .fileSystem(description):
-                        displayWarning("Can't install \(manifestItemName) because \(description).")
+                        display.warning("Can't install \(manifestItemName) because \(description).")
                         processedItem["note"] = description
                     case let .connection(errorCode, description),
                          let .download(errorCode, description),
                          let .http(errorCode, description):
-                        displayWarning("Download of \(manifestItemName) failed: error \(errorCode): \(description)")
+                        display.warning("Download of \(manifestItemName) failed: error \(errorCode): \(description)")
                         processedItem["note"] = "Download failed: \(description)"
                     }
                 } else {
-                    displayWarning("Can't install \(manifestItemName) because \(error.localizedDescription)")
+                    display.warning("Can't install \(manifestItemName) because \(error.localizedDescription)")
                     processedItem["note"] = error.localizedDescription
                 }
                 processedItem["version_to_install"] = version
@@ -331,7 +333,7 @@ func processInstall(
             if installerItemSize >= 1024, downloadSeconds > 0 {
                 let downloadSpeed = Int(Double(installerItemSize) / downloadSeconds)
                 processedItem["download_kbytes_per_sec"] = downloadSpeed
-                displayDetail("\(filename) downloaded at \(downloadSpeed) KB/sec")
+                display.detail("\(filename) downloaded at \(downloadSpeed) KB/sec")
             }
         }
         processedItem["installer_item"] = filename
@@ -340,7 +342,7 @@ func processInstall(
         if (pkginfo["unattended_install"] as? Bool ?? false) || (pkginfo["forced_install"] as? Bool ?? false) {
             let restartAction = pkginfo["RestartAction"] as? String ?? "None"
             if restartAction != "None" {
-                displayWarning("Ignoring unattended_install key for \(name) because RestartAction is \(restartAction).")
+                display.warning("Ignoring unattended_install key for \(name) because RestartAction is \(restartAction).")
             } else {
                 processedItem["unattended_install"] = true
             }
@@ -443,7 +445,7 @@ func processInstall(
         processedItem["installed"] = true
 
         if !dependenciesMet {
-            displayWarning("Could not resolve all dependencies for \(manifestItemName), but no install or update needed.")
+            display.warning("Could not resolve all dependencies for \(manifestItemName), but no install or update needed.")
         }
 
         if let installerType = pkginfo["installer_type"] as? String,
@@ -453,7 +455,7 @@ func processInstall(
             // installer appears to be staged; make sure the info is recorded
             // so we know we can launch the installer later
             // TODO: maybe filter the actual info recorded
-            displayInfo("Recording staged macOS installer...")
+            display.info("Recording staged macOS installer...")
             recordStagedOSInstaller(pkginfo)
         }
         // record installed size and version
@@ -471,7 +473,7 @@ func processInstall(
             processedItem["installed_version"] = installedVersion
         }
         appendToProcessedManagedInstalls(processedItem)
-        displayDetail("\(manifestItemNameWithoutVersion) version \(version) (or newer) is already installed.")
+        display.detail("\(manifestItemNameWithoutVersion) version \(version) (or newer) is already installed.")
 
         // now look for update_for items
         var updateList = [String]()
@@ -514,7 +516,7 @@ func processInstall(
     // of processed installs so we don't process it again in the future
     // (unless it is a managed_update)
     if !isManagedUpdate {
-        displayDebug2("Adding \(manifestItemName) to the list of processed installs")
+        display.debug2("Adding \(manifestItemName) to the list of processed installs")
         var processedInstalls = installInfo["processed_installs"] as? [String] ?? []
         processedInstalls.append(manifestItemName)
         installInfo["processed_installs"] = processedInstalls
@@ -529,7 +531,7 @@ func processManagedUpdate(
     installInfo: inout PlistDict
 ) async {
     let manifestItemName = (manifestItem as NSString).lastPathComponent
-    displayDebug1("* Processing manifest item \(manifestItemName) for update")
+    display.debug1("* Processing manifest item \(manifestItemName) for update")
 
     if alreadyProcessed(
         manifestItemName,
@@ -538,7 +540,7 @@ func processManagedUpdate(
     ) { return }
 
     guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
-        displayWarning("Could not process item \(manifestItemName) for update. No pkginfo found in catalogs: \(catalogList) ")
+        display.warning("Could not process item \(manifestItemName) for update. No pkginfo found in catalogs: \(catalogList) ")
         return
     }
 
@@ -556,7 +558,7 @@ func processManagedUpdate(
             isManagedUpdate: true
         )
     } else {
-        displayDebug1("\(manifestItemName) does not appear to be installed, so no managed updates.")
+        display.debug1("\(manifestItemName) does not appear to be installed, so no managed updates.")
     }
 }
 
@@ -568,7 +570,7 @@ func processOptionalInstall(
     installInfo: inout PlistDict
 ) async {
     let manifestItemName = (manifestItem as NSString).lastPathComponent
-    displayDebug1("* Processing manifest item \(manifestItemName) for optional install")
+    display.debug1("* Processing manifest item \(manifestItemName) for optional install")
 
     if alreadyProcessed(
         manifestItemName,
@@ -606,7 +608,7 @@ func processOptionalInstall(
             // found an item that requires a higher OS version
             let pkginfoName = pkginfo["name"] as? String ?? "<unknown>"
             let pkginfoVersion = pkginfo["version"] as? String ?? "<unknown>"
-            displayDebug1("Found \(pkginfoName), version \(pkginfoVersion) that requires a higher os version")
+            display.debug1("Found \(pkginfoName), version \(pkginfoVersion) that requires a higher os version")
             // insert a note about the OS version requirement
             if let minimumOSVersion = pkginfo["minimum_os_version"] {
                 processedItem["note"] = "Requires macOS version \(minimumOSVersion)."
@@ -616,7 +618,7 @@ func processOptionalInstall(
     }
     if pkginfo.isEmpty {
         // could not find anything that matches and is applicable
-        displayWarning("Could not process item \(manifestItemName) for optional install. No pkginfo found in catalogs: \(catalogList)")
+        display.warning("Could not process item \(manifestItemName) for optional install. No pkginfo found in catalogs: \(catalogList)")
         return
     }
 
@@ -658,7 +660,7 @@ func processOptionalInstall(
         {
             // the version we have installed is the newest for the current OS.
             // check again to see if there is a newer version for a higher OS
-            displayDebug1("Checking for versions of \(manifestItemName) that require a higher OS version")
+            display.debug1("Checking for versions of \(manifestItemName) that require a higher OS version")
             if let anotherPkgInfo = await getItemDetail(
                 manifestItemName,
                 catalogList: catalogList,
@@ -671,7 +673,7 @@ func processOptionalInstall(
                     pkginfo = anotherPkgInfo
                     let pkginfoName = pkginfo["name"] as? String ?? "<unknown>"
                     let pkginfoVersion = pkginfo["version"] as? String ?? "<unknown>"
-                    displayDebug1("Found \(pkginfoName), version \(pkginfoVersion) that requires a higher os version")
+                    display.debug1("Found \(pkginfoName), version \(pkginfoVersion) that requires a higher os version")
                     // insert a note about the OS version requirement
                     if let minimumOSVersion = pkginfo["minimum_os_version"] {
                         processedItem["note"] = "Requires macOS version \(minimumOSVersion)."
@@ -754,7 +756,7 @@ func processOptionalInstall(
         processedItem[key] = pkginfo[key]
     }
     let itemName = processedItem["name"] as? String ?? "<unknown>"
-    displayDebug1("Adding \(itemName) to the optional install list")
+    display.debug1("Adding \(itemName) to the optional install list")
     var optionalInstalls = installInfo["optional_installs"] as? [PlistDict] ?? []
     optionalInstalls.append(processedItem)
     installInfo["optional_installs"] = optionalInstalls
@@ -800,7 +802,7 @@ func processRemoval(
     }
 
     let manifestItemNameWithVersion = (manifestItem as NSString).lastPathComponent
-    displayDebug1("* Processing manifest item \(manifestItemNameWithVersion) for removal")
+    display.debug1("* Processing manifest item \(manifestItemNameWithVersion) for removal")
 
     let (manifestItemName, manifestItemVersion) = nameAndVersion(manifestItemNameWithVersion, onlySplitOnHyphens: true)
 
@@ -810,12 +812,12 @@ func processRemoval(
         nameAndVersion($0, onlySplitOnHyphens: true).0
     }
     if processedInstallsNames.contains(manifestItemName) {
-        displayWarning("Will not attempt to remove \(manifestItemName) because some version of it is in the list of managed installs, or it is required by another managed install.")
+        display.warning("Will not attempt to remove \(manifestItemName) because some version of it is in the list of managed installs, or it is required by another managed install.")
         return false
     }
     var processedUninstallsNames = installInfo["processed_uninstalls"] as? [String] ?? []
     if processedUninstallsNames.contains(manifestItemName) {
-        displayDebug1("\(manifestItemName) has already been processed for removal.")
+        display.debug1("\(manifestItemName) has already been processed for removal.")
         return true
     }
     processedUninstallsNames.append(manifestItemName)
@@ -833,7 +835,7 @@ func processRemoval(
     }
 
     if pkginfos.isEmpty {
-        displayWarning("Could not process item \(manifestItemName) for removal. No pkginfo found in catalogs: \(catalogList)")
+        display.warning("Could not process item \(manifestItemName) for removal. No pkginfo found in catalogs: \(catalogList)")
         return false
     }
 
@@ -842,17 +844,17 @@ func processRemoval(
     for pkginfo in pkginfos {
         let name = pkginfo["name"] as? String ?? "<unknown>"
         let version = pkginfo["version"] as? String ?? "<unknown>"
-        displayDebug2("Considering item \(name)-\(version) for removal info")
+        display.debug2("Considering item \(name)-\(version) for removal info")
         if await evidenceThisIsInstalled(pkginfo) {
             installEvidence = true
             foundItem = pkginfo
             break
         }
-        displayDebug2("\(name)-\(version) is not installed")
+        display.debug2("\(name)-\(version) is not installed")
     }
 
     if !installEvidence {
-        displayDetail("\(manifestItemNameWithVersion) doesn\'t appear to be installed.")
+        display.detail("\(manifestItemNameWithVersion) doesn\'t appear to be installed.")
         var processedItem = PlistDict()
         processedItem["name"] = manifestItemName
         processedItem["installed"] = false
@@ -870,19 +872,19 @@ func processRemoval(
     let uninstallable = foundItem["uninstallable"] as? Bool ?? false
     let uninstallMethod = foundItem["uninstall_method"] as? String ?? ""
     if !uninstallable {
-        displayWarning("Item \(foundItemName)-\(foundItemVersion) is not marked as uninstallable.")
+        display.warning("Item \(foundItemName)-\(foundItemVersion) is not marked as uninstallable.")
     } else if uninstallMethod.isEmpty {
-        displayWarning("No uninstall_method in \(foundItemName)-\(foundItemVersion).")
+        display.warning("No uninstall_method in \(foundItemName)-\(foundItemVersion).")
     } else if uninstallMethod.hasPrefix("Adobe") {
-        displayWarning("Adobe-specific uninstall methods are no longer supported.")
+        display.warning("Adobe-specific uninstall methods are no longer supported.")
     } else if ["remove_app", "remove_profile"].contains(uninstallMethod) {
-        displayWarning("Uninstall method \(uninstallMethod) is no longer supported.")
+        display.warning("Uninstall method \(uninstallMethod) is no longer supported.")
     } else if uninstallMethod == "removepackages" {
         packagesToRemove = await getReceiptsToRemove(foundItem)
         if !packagesToRemove.isEmpty {
             uninstallItem = foundItem
         } else {
-            displayWarning("uninstall_method for \(manifestItemNameWithVersion) is removepackages, but no packages found to remove")
+            display.warning("uninstall_method for \(manifestItemNameWithVersion) is removepackages, but no packages found to remove")
         }
     } else if ["remove_copied_items", "uninstall_script", "uninstall_package"].contains(uninstallMethod) {
         uninstallItem = foundItem
@@ -891,7 +893,7 @@ func processRemoval(
         if pathIsExecutableFile(uninstallMethod) {
             uninstallItem = foundItem
         } else {
-            displayWarning("Uninstall method \(uninstallMethod) is not a valid method.")
+            display.warning("Uninstall method \(uninstallMethod) is not a valid method.")
         }
     }
 
@@ -937,9 +939,9 @@ func processRemoval(
                 requires.contains(uninstallItemNameWVersion) ||
                 requires.contains(altUninstallItemNameWVersion)
             {
-                displayDebug1("\(name) requires \(manifestItemName), checking to see if it's installed...")
+                display.debug1("\(name) requires \(manifestItemName), checking to see if it's installed...")
                 if await evidenceThisIsInstalled(catalogItem) {
-                    displayDetail("\(name) requires \(manifestItemName). \(name) must be removed as well.")
+                    display.detail("\(name) requires \(manifestItemName). \(name) must be removed as well.")
                     let success = await processRemoval(
                         name, catalogList: catalogList, installInfo: &installInfo
                     )
@@ -953,7 +955,7 @@ func processRemoval(
         }
     }
     if !dependentItemsRemoved {
-        displayWarning("Will not attempt to remove \(uninstallItemName) because could not remove all items dependent on it.")
+        display.warning("Will not attempt to remove \(uninstallItemName) because could not remove all items dependent on it.")
         return false
     }
 
@@ -968,7 +970,7 @@ func processRemoval(
     if (uninstallItem["unattended_uninstall"] as? Bool ?? false) || (uninstallItem["forced_uninstall"] as? Bool ?? false) {
         let restartAction = uninstallItem["RestartAction"] as? String ?? "None"
         if restartAction != "None" {
-            displayWarning("Ignoring unattended_uninstall key for \(uninstallItemName) because RestartAction is \(restartAction).")
+            display.warning("Ignoring unattended_uninstall key for \(uninstallItemName) because RestartAction is \(restartAction).")
         } else {
             processedItem["unattended_uninstall"] = true
         }
@@ -1010,17 +1012,17 @@ func processRemoval(
         let pkgReferences = pkgdata["pkg_references"] as? [String: [String]] ?? [:]
         var pkgReferencesMessages = [String]()
         for pkg in packagesToRemove {
-            displayDebug1("Considering \(pkg) for removal...")
+            display.debug1("Considering \(pkg) for removal...")
             // find pkg in pkgdata["pkg_references"] and remove the reference
             // so we only remove packages if we're the only reference to it
             // pkgdata["pkg_references"] is [String:[String]]
             guard let references = pkgReferences[pkg] else {
                 // This shouldn't happen
-                displayWarning("pkg id \(pkg) missing from pkgdata")
+                display.warning("pkg id \(pkg) missing from pkgdata")
                 continue
             }
             let msg = "Package \(pkg) references are: \(references)"
-            displayDebug1(msg)
+            display.debug1(msg)
             pkgReferencesMessages.append(msg)
             if references.contains(uninstallItemName) {
                 let filteredReferences = references.filter {
@@ -1028,10 +1030,10 @@ func processRemoval(
                 }
                 if filteredReferences.isEmpty {
                     // no other references than this item
-                    displayDebug1("Adding \(pkg) to removal list.")
+                    display.debug1("Adding \(pkg) to removal list.")
                     packagesToReallyRemove.append(pkg)
                 } else {
-                    displayDebug1("Will not attempt to remove \(pkg)")
+                    display.debug1("Will not attempt to remove \(pkg)")
                 }
             }
         }
@@ -1039,9 +1041,9 @@ func processRemoval(
             processedItem["packages"] = packagesToReallyRemove
         } else {
             // no packages that belong to this item only
-            displayWarning("could not find unique packages to remove for \(uninstallItemName)")
+            display.warning("could not find unique packages to remove for \(uninstallItemName)")
             for msg in pkgReferencesMessages {
-                displayWarning(msg)
+                display.warning(msg)
             }
             return false
         }
@@ -1051,14 +1053,14 @@ func processRemoval(
         if let itemsToCopy = uninstallItem["items_to_copy"] as? [PlistDict] {
             processedItem["items_to_remove"] = itemsToCopy
         } else {
-            displayWarning("Can't uninstall \(uninstallItemName) because there is no info on installed items.")
+            display.warning("Can't uninstall \(uninstallItemName) because there is no info on installed items.")
             return false
         }
     } else if uninstallMethod == "uninstall_script" {
         if let uninstallScript = uninstallItem["uninstall_script"] as? String {
             processedItem["uninstall_script"] = uninstallScript
         } else {
-            displayWarning("Can't uninstall \(uninstallItemName) because uninstall_script is undefined or invalid.")
+            display.warning("Can't uninstall \(uninstallItemName) because uninstall_script is undefined or invalid.")
             return false
         }
     } else if uninstallMethod == "uninstall_package" {
@@ -1069,14 +1071,14 @@ func processRemoval(
                 )
                 processedItem["uninstaller_item"] = baseName(location)
             } catch FetchError.verification {
-                displayWarning("Can't uninstall \(uninstallItemName) because the integrity check for the uninstall package failed.")
+                display.warning("Can't uninstall \(uninstallItemName) because the integrity check for the uninstall package failed.")
                 return false
             } catch {
-                displayWarning("Failed to download the uninstaller for \(uninstallItemName) because \(error.localizedDescription)")
+                display.warning("Failed to download the uninstaller for \(uninstallItemName) because \(error.localizedDescription)")
                 return false
             }
         } else {
-            displayWarning("Can't uninstall \(uninstallItemName) because there is no URL for the uninstall package.")
+            display.warning("Can't uninstall \(uninstallItemName) because there is no URL for the uninstall package.")
             return false
         }
     }
@@ -1098,6 +1100,6 @@ func processRemoval(
     processedItem["installed"] = true
     processedItem["installed_version"] = uninstallItemVersion
     appendToProcessedRemovals(processedItem)
-    displayDetail("Removal of \(manifestItemNameWithVersion) added to managedsoftwareupdate tasks.")
+    display.detail("Removal of \(manifestItemNameWithVersion) added to managedsoftwareupdate tasks.")
     return true
 }

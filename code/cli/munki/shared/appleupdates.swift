@@ -18,6 +18,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Removes the AppleUpdates.plist if it exists
 func clearAppleUpdateInfo() {
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
@@ -67,7 +69,7 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
     clearRecommendedUpdates()
     let result = runCLI("/usr/sbin/softwareupdate", arguments: ["-l"])
     guard result.exitcode == 0 else {
-        displayError("softwareupdate error \(result.exitcode): \(result.error)")
+        display.error("softwareupdate error \(result.exitcode): \(result.error)")
         return updates
     }
     let lines = result.output.components(separatedBy: .newlines)
@@ -193,7 +195,7 @@ func findAndRecordAvailableAppleUpdates(shouldFilterMajorOSUpdates: Bool = false
     do {
         try writePlist(plist, toFile: appleUpdatesFilePath)
     } catch {
-        displayError("Could not write AppleUpdates.plist: \(error.localizedDescription)")
+        display.error("Could not write AppleUpdates.plist: \(error.localizedDescription)")
     }
     return appleUpdates.count
 }
@@ -230,29 +232,29 @@ func displayAppleUpdateInfo() {
         }
         appleUpdates = plistDict["AppleUpdates"] as? [PlistDict] ?? []
     } catch {
-        displayError("Error reading \(appleUpdatesFilePath): \(error.localizedDescription)")
+        display.error("Error reading \(appleUpdatesFilePath): \(error.localizedDescription)")
         return
     }
     if appleUpdates.isEmpty {
-        displayInfo("No available Apple Software Updates.")
+        display.info("No available Apple Software Updates.")
         return
     }
     Report.shared.record(appleUpdates, to: "AppleUpdates")
-    displayInfo("The following Apple Software Updates are available to install:")
+    display.info("The following Apple Software Updates are available to install:")
     for item in appleUpdates {
         guard let name = item["display_name"] as? String,
               let version = item["version_to_install"] as? String
         else {
             continue
         }
-        displayInfo("    \(name)-\(version)")
+        display.info("    \(name)-\(version)")
         if let restartAction = item["RestartAction"] as? String {
             if restartAction.contains("Restart") {
-                displayInfo("       *Restart required")
+                display.info("       *Restart required")
             } else if restartAction.contains("Logout") {
-                displayInfo("       *Logout required")
+                display.info("       *Logout required")
             }
         }
     }
-    displayInfo("(Apple updates must be manually installed with Apple's tools)")
+    display.info("(Apple updates must be manually installed with Apple's tools)")
 }

@@ -21,7 +21,7 @@
 import Foundation
 
 /// A simple logging function to use if none is given to Gurl
-func defaultLogger(_ message: String) {
+private func defaultLogger(_ message: String) {
     print(message)
 }
 
@@ -160,11 +160,11 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
     /// Returns any stored headers for destinationPath
     func getStoredHeaders() -> [String: String]? {
         if options.destinationPath.isEmpty {
-            displayDebug1("destination path is not defined")
+            options.log("destination path is not defined")
             return nil
         }
         if !pathExists(options.destinationPath) {
-            displayDebug1("\(options.destinationPath) does not exist")
+            options.log("\(options.destinationPath) does not exist")
             return nil
         }
         do {
@@ -172,11 +172,11 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             if let headers = try readPlist(fromData: data) as? [String: String] {
                 return headers
             } else {
-                displayDebug1("xattr plist decode failure")
+                options.log("xattr plist decode failure")
                 return nil
             }
         } catch {
-            displayDebug1("xattr read failure from \(options.destinationPath)")
+            options.log("xattr read failure from \(options.destinationPath)")
             return nil
         }
     }

@@ -19,6 +19,8 @@
 import AppKit
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Returns a boolean indicating if the application with the given
 /// bundleid is currently running.
 func bundleIDisRunning(_ appBundleID: String) -> Bool {
@@ -66,18 +68,18 @@ func shouldBeRemovedIfUnused(_ pkginfo: PlistDict) -> Bool {
     if removalInfo.isEmpty {
         return false
     }
-    displayDebug1("\tChecking to see if \(name) should be removed due to lack of use...")
+    display.debug1("\tChecking to see if \(name) should be removed due to lack of use...")
     let removalDays = removalInfo["removal_days"] as? Int ?? 0
     if removalDays < 1 {
-        displayWarning("Invalid removal days: \(String(describing: removalInfo["removal_days"])) for \(name)")
+        display.warning("Invalid removal days: \(String(describing: removalInfo["removal_days"])) for \(name)")
         return false
     }
-    displayDebug1("\t\tNumber of days until removal is \(removalDays)")
-    let usage = ApplicationUsageQuery(logger: MunkiLogger())
+    display.debug1("\t\tNumber of days until removal is \(removalDays)")
+    let usage = ApplicationUsageQuery(logger: MunkiLogger.standard)
     let usageDataDays = usage.daysOfData()
     if usageDataDays < removalDays {
         // we don't have usage data old enough to judge
-        displayDebug1("\t\tApplication usage data covers fewer than \(removalDays) days.")
+        display.debug1("\t\tApplication usage data covers fewer than \(removalDays) days.")
         return false
     }
 
@@ -86,30 +88,30 @@ func shouldBeRemovedIfUnused(_ pkginfo: PlistDict) -> Bool {
     if daysSinceInstallRequest >= 0,
        daysSinceInstallRequest <= removalDays
     {
-        displayDebug1("\t\t\(name) had an install request \(daysSinceInstallRequest) days ago.")
+        display.debug1("\t\t\(name) had an install request \(daysSinceInstallRequest) days ago.")
         return false
     }
 
     // get list of application bundle_ids to check
     let bundleIDs = removalInfo["bundle_ids"] as? [String] ?? bundleIDsFromInstallsList(pkginfo)
     if bundleIDs.isEmpty {
-        displayDebug1("\tNo application bundle_ids to check.")
+        display.debug1("\tNo application bundle_ids to check.")
         return false
     }
 
     // now check each bundleid to see if it's currently running or has been
     // activated in the past removal_days days
-    displayDebug1("\t\tChecking bundle ids: \(bundleIDs)")
+    display.debug1("\t\tChecking bundle ids: \(bundleIDs)")
     for bundleID in bundleIDs {
         if bundleIDisRunning(bundleID) {
-            displayDebug1("\t\tApplication \(bundleID) is currently running.")
+            display.debug1("\t\tApplication \(bundleID) is currently running.")
             return false
         }
         let daysSinceLastActivation = usage.daysSinceLastUsageEvent("activate", bundleID: bundleID)
         if daysSinceLastActivation == -1 {
-            displayDebug1("\t\t\(bundleID) has not been activated in more than \(usageDataDays) days...")
+            display.debug1("\t\t\(bundleID) has not been activated in more than \(usageDataDays) days...")
         } else {
-            displayDebug1("\t\t\(bundleID) was last activated \(daysSinceLastActivation) days ago")
+            display.debug1("\t\t\(bundleID) was last activated \(daysSinceLastActivation) days ago")
             if daysSinceLastActivation <= removalDays {
                 return false
             }
@@ -117,6 +119,6 @@ func shouldBeRemovedIfUnused(_ pkginfo: PlistDict) -> Bool {
     }
     // if we get this far we must not have found any apps used in the past
     // removal_days days, so we should set up a removal
-    displayInfo("Will add \(name) to the removal list since it has been unused for at least \(removalDays) days...")
+    display.info("Will add \(name) to the removal list since it has been unused for at least \(removalDays) days...")
     return true
 }

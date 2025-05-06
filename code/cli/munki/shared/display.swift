@@ -61,123 +61,15 @@ func displayPercentDone(current: Int, maximum: Int) {
     }
 }
 
-/// Displays major status messages, formatting as needed
-/// for verbose/non-verbose and munkistatus-style output.
-/// Not printed if verbose is 0 (-q/--quiet)
-func displayMajorStatus(_ message: String) {
-    munkiLog(message)
-    if DisplayOptions.munkistatusoutput {
-        munkiStatusMessage(message)
-        munkiStatusDetail("")
-        munkiStatusPercent(-1)
-    }
-    if DisplayOptions.verbose > 0 {
-        if message.hasSuffix(".") || message.hasSuffix("…") {
-            print(message)
-        } else {
-            print("\(message)...")
-        }
-        fflush(stdout)
-    }
-}
-
-/// Displays minor status messages, formatting as needed
-/// for verbose/non-verbose and munkistatus-style output.
-/// Not printed if verbose is 0 (-q/--quiet)
-func displayMinorStatus(_ message: String) {
-    munkiLog("    \(message)")
-    if DisplayOptions.munkistatusoutput {
-        munkiStatusDetail(message)
-    }
-    if DisplayOptions.verbose > 0 {
-        if message.hasSuffix(".") || message.hasSuffix("…") {
-            print("    \(message)")
-        } else {
-            print("    \(message)...")
-        }
-        fflush(stdout)
-    }
-}
-
-/// Displays info messages. Not displayed in MunkiStatus.
-/// Not printed if verbose is 0 (-q/--quiet)
-func displayInfo(_ message: String) {
-    munkiLog("    \(message)")
-    if DisplayOptions.verbose > 0 {
-        print("    \(message)")
-        fflush(stdout)
-    }
-}
-
-/// Displays minor info messages. Not displayed in MunkiStatus.
-/// These are usually logged only, but can be printed to stdout
-/// if verbose is set greater than 1 (-v)
-func displayDetail(_ message: String) {
-    if DisplayOptions.verbose > 1 {
-        print("    \(message)")
-        fflush(stdout)
-    }
-    if loggingLevel() > 0 {
-        munkiLog("   \(message)")
-    }
-}
-
-/// Displays debug level 1 messages. (verbose is set to 3 or more (-vv))
-func displayDebug1(_ message: String) {
-    if DisplayOptions.verbose > 2 {
-        print("    \(message)")
-        fflush(stdout)
-    }
-    if loggingLevel() > 1 {
-        munkiLog("DEBUG1: \(message)")
-    }
-}
-
-/// Displays debug level 2 messages. (verbose is set to 4 or more (-vvv))
-func displayDebug2(_ message: String) {
-    // Displays debug level 2 messages.
-    if DisplayOptions.verbose > 3 {
-        print("    \(message)")
-        fflush(stdout)
-    }
-    if loggingLevel() > 2 {
-        munkiLog("DEBUG2: \(message)")
-    }
-}
-
-/// Prints warning message to stderr and the log
-func displayWarning(_ message: String, addToReport: Bool = true) {
-    let warning = "WARNING: \(message)"
-    if DisplayOptions.verbose > 0 {
-        printStderr(warning)
-    }
-    munkiLog(warning)
-    munkiLog(warning, logFile: "warnings.log")
-
-    if addToReport {
-        Report.shared.add(string: warning, to: "Warnings")
-    }
-}
-
-/// Prints error message to stderr and the log
-func displayError(_ message: String, addToReport: Bool = true) {
-    let errorMsg = "ERROR: \(message)"
-    if DisplayOptions.verbose > 0 {
-        printStderr(errorMsg)
-    }
-    munkiLog(errorMsg)
-    munkiLog(errorMsg, logFile: "errors.log")
-
-    if addToReport {
-        Report.shared.add(string: errorMsg, to: "Errors")
-    }
-}
-
 /// a class to display messages to the user and also write to a log
 class DisplayAndLog: MunkiLogger {
+    // can't override "standard", can't use "default", so...
+    static let main = DisplayAndLog(logname: MAIN_LOG_NAME)
+
     var verbose = DisplayOptions.verbose
     var munkistatusoutput = DisplayOptions.munkistatusoutput
 
+    /// Prints error message to stderr and the log
     override func error(_ message: String) {
         let errorMsg = "ERROR: \(message)"
         if verbose > 0 {
@@ -188,9 +80,11 @@ class DisplayAndLog: MunkiLogger {
             munkiLog(errorMsg, logFile: "errors.log")
             Report.shared.add(string: errorMsg, to: "Errors")
         }
+        // let the superclass handle logging to the main log
         super.error(errorMsg)
     }
 
+    /// Prints warning message to stderr and the log
     override func warning(_ message: String) {
         let warningMsg = "WARNING: \(message)"
         if verbose > 0 {
@@ -201,6 +95,7 @@ class DisplayAndLog: MunkiLogger {
             munkiLog(warningMsg, logFile: "warnings.log")
             Report.shared.add(string: warningMsg, to: "Warnings")
         }
+        // let the superclass handle logging to the main log
         super.warning(warningMsg)
     }
 
@@ -221,6 +116,7 @@ class DisplayAndLog: MunkiLogger {
             }
             fflush(stdout)
         }
+        // let the superclass handle logging to the main log
         super.notice(message)
     }
 
@@ -239,6 +135,7 @@ class DisplayAndLog: MunkiLogger {
             }
             fflush(stdout)
         }
+        // let the superclass handle logging to the main log
         super.notice("    \(message)")
     }
 
@@ -249,6 +146,7 @@ class DisplayAndLog: MunkiLogger {
             print("    \(message)")
             fflush(stdout)
         }
+        // let the superclass handle logging to the main log
         super.info(message)
     }
 
@@ -260,6 +158,7 @@ class DisplayAndLog: MunkiLogger {
             print("    \(message)")
             fflush(stdout)
         }
+        // let the superclass handle logging to the main log
         super.detail(message)
     }
 
@@ -276,6 +175,7 @@ class DisplayAndLog: MunkiLogger {
             print("    \(message)")
             fflush(stdout)
         }
+        // let the superclass handle logging to the main log
         super.debug1(message)
     }
 
@@ -285,6 +185,7 @@ class DisplayAndLog: MunkiLogger {
             print("    \(message)")
             fflush(stdout)
         }
+        // let the superclass handle logging to the main log
         super.debug2(message)
     }
 }

@@ -20,6 +20,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /*
  #################################################################
  # our package db schema -- a subset of Apple's schema in Leopard
@@ -273,7 +275,7 @@ func importFromPkgutil() async throws {
             throw UserCancelled()
         }
         current += 1
-        displayDetail("Importing \(pkg)...")
+        display.detail("Importing \(pkg)...")
         try await getPkgDataAndAddtoDB(pkgid: pkg)
         displayPercentDone(current: current, maximum: pkgCount)
     }
@@ -286,7 +288,7 @@ func initReceiptDB(forcerebuild: Bool = false) async throws {
         return
     }
 
-    displayMinorStatus("Gathering information on installed packages")
+    display.minorStatus("Gathering information on installed packages")
 
     let pkgdb = pkgDBPath()
     let filemanager = FileManager.default
@@ -368,7 +370,7 @@ func forgetPkgFromAppleDB(_ pkgid: String) {
     let result = runCLI("/usr/sbin/pkgutil", arguments: ["--forget", pkgid])
     if result.exitcode == 0 {
         if !result.output.isEmpty {
-            displayDetail(result.output)
+            display.detail(result.output)
         }
     } else {
         // maybe a warning?
@@ -380,7 +382,7 @@ func forgetPkgFromAppleDB(_ pkgid: String) {
 func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws {
     let taskCount = pkgKeys.count
 
-    displayMinorStatus("Removing receipt info")
+    display.minorStatus("Removing receipt info")
     displayPercentDone(current: 0, maximum: taskCount)
     var taskIndex = 0
     let connection = try SQL3Connection(pkgDBPath())
@@ -398,7 +400,7 @@ func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws 
         try query.bindInt64(intPkgKey, position: 1)
         if query.step() == SQL3Status.row {
             pkgid = query.text(column: 0)
-            displayDetail("Removing package data from internal database...")
+            display.detail("Removing package data from internal database...")
             try deletePkgKeyFromDB(connection: connection, pkgKey: intPkgKey)
             if updateApplePkgDB {
                 forgetPkgFromAppleDB(pkgid)
@@ -470,7 +472,7 @@ func pathIsInsideBundle(_ path: String) -> Bool {
 func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
     var removalErrors = [String]()
     let itemCount = pathsToRemove.count
-    displayMajorStatus("Removing \(itemCount) filesystem items")
+    display.majorStatus("Removing \(itemCount) filesystem items")
     let filemanager = FileManager.default
 
     func removeItemOrRecordError(_ item: String) {
@@ -478,7 +480,7 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
             try filemanager.removeItem(atPath: item)
         } catch {
             let msg = "Couldn't remove item \(item): \(error)"
-            displayError(msg)
+            display.error(msg)
             removalErrors.append(msg)
         }
     }
@@ -489,14 +491,14 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
         itemIndex += 1
         let pathToRemove = "/" + item
         if pathIsRegularFile(pathToRemove) || pathIsSymlink(pathToRemove) {
-            displayDetail("Removing : \(pathToRemove)")
+            display.detail("Removing : \(pathToRemove)")
             removeItemOrRecordError(pathToRemove)
             continue
         }
         if !pathIsDirectory(pathToRemove) {
             // filetype we don't know how to handle
             let msg = "Couldn't remove item \(item): unsupported filesystem type"
-            displayError(msg)
+            display.error(msg)
             removalErrors.append(msg)
             continue
         }
@@ -506,7 +508,7 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
             dirContents = try filemanager.contentsOfDirectory(atPath: pathToRemove)
         } catch {
             let msg = "Couldn't get contents of directory \(item): \(error)"
-            displayError(msg)
+            display.error(msg)
             removalErrors.append(msg)
             continue
         }
@@ -531,16 +533,16 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
             // directories.
             if !forceDeleteBundles || !pathIsInsideBundle(pathToRemove) {
                 let msg = "Did not remove \(pathToRemove) because it is not empty."
-                displayError(msg)
+                display.error(msg)
                 removalErrors.append(msg)
             }
         }
     }
     if !removalErrors.isEmpty {
-        displayInfo("---------------------------------------------------")
-        displayInfo("There were problems removing some filesystem items.")
-        displayInfo("---------------------------------------------------")
-        displayInfo(removalErrors.joined(separator: "\n"))
+        display.info("---------------------------------------------------")
+        display.info("There were problems removing some filesystem items.")
+        display.info("---------------------------------------------------")
+        display.info(removalErrors.joined(separator: "\n"))
     }
 }
 
@@ -555,7 +557,7 @@ func removePackages(
     noUpdateApplePkgDB: Bool = false
 ) async -> Int {
     if pkgids.isEmpty {
-        displayError("You must specify at least one package to remove!")
+        display.error("You must specify at least one package to remove!")
         return -2
     }
     do {
@@ -563,7 +565,7 @@ func removePackages(
     } catch _ as UserCancelled {
         return -128
     } catch {
-        displayError("Could not initialize receipt database: \(error)")
+        display.error("Could not initialize receipt database: \(error)")
         return -3
     }
     var pkgKeys = [String]()
@@ -573,7 +575,7 @@ func removePackages(
             throw MunkiError("No matching pkgs found in database")
         }
     } catch {
-        displayError("Error retreiving pkg keys: \(error)")
+        display.error("Error retreiving pkg keys: \(error)")
         return -4
     }
     if stopRequested() {
@@ -581,15 +583,15 @@ func removePackages(
     }
     var pathsToRemove = [String]()
     do {
-        displayMinorStatus("Determining which filesystem items to remove")
+        display.minorStatus("Determining which filesystem items to remove")
         munkiStatusPercent(-1)
         pathsToRemove = try getPathsToRemove(pkgKeys: pkgKeys)
     } catch {
-        displayError("Error getting paths to remove: \(error)")
+        display.error("Error getting paths to remove: \(error)")
         return -4
     }
     if pathsToRemove.isEmpty {
-        displayMinorStatus("Nothing to remove.")
+        display.minorStatus("Nothing to remove.")
     } else if listFiles {
         // only print the paths to be removed; don't actually remove them
         print("The following filesystem items would be removed:")
@@ -605,11 +607,11 @@ func removePackages(
             do {
                 try removePkgReceipts(pkgKeys: pkgKeys, updateApplePkgDB: !noUpdateApplePkgDB)
             } catch {
-                displayError("Failed to remove pkg receipts: \(error)")
+                display.error("Failed to remove pkg receipts: \(error)")
             }
         }
         munkiStatusEnableStopButton()
-        displayMinorStatus("Package removal finished.")
+        display.minorStatus("Package removal finished.")
     }
     return 0
 }
