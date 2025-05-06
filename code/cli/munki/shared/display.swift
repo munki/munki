@@ -172,3 +172,119 @@ func displayError(_ message: String, addToReport: Bool = true) {
         Report.shared.add(string: errorMsg, to: "Errors")
     }
 }
+
+/// a class to display messages to the user and also write to a log
+class DisplayAndLog: MunkiLogger {
+    var verbose = DisplayOptions.verbose
+    var munkistatusoutput = DisplayOptions.munkistatusoutput
+
+    override func error(_ message: String) {
+        let errorMsg = "ERROR: \(message)"
+        if verbose > 0 {
+            printStderr(errorMsg)
+        }
+        if logname == MAIN_LOG_NAME {
+            // also log to our special errors log and add to report
+            munkiLog(errorMsg, logFile: "errors.log")
+            Report.shared.add(string: errorMsg, to: "Errors")
+        }
+        super.error(errorMsg)
+    }
+
+    override func warning(_ message: String) {
+        let warningMsg = "WARNING: \(message)"
+        if verbose > 0 {
+            printStderr(warningMsg)
+        }
+        if logname == MAIN_LOG_NAME {
+            // also log to our special warnings log and add to report
+            munkiLog(warningMsg, logFile: "warnings.log")
+            Report.shared.add(string: warningMsg, to: "Warnings")
+        }
+        super.warning(warningMsg)
+    }
+
+    /// Displays major status messages, formatting as needed
+    /// for verbose/non-verbose and munkistatus-style output.
+    /// Not printed if verbose is 0
+    func majorStatus(_ message: String) {
+        if munkistatusoutput {
+            munkiStatusMessage(message)
+            munkiStatusDetail("")
+            munkiStatusPercent(-1)
+        }
+        if verbose > 0 {
+            if message.hasSuffix(".") || message.hasSuffix("…") {
+                print(message)
+            } else {
+                print("\(message)...")
+            }
+            fflush(stdout)
+        }
+        super.notice(message)
+    }
+
+    /// Displays minor status messages, formatting as needed
+    /// for verbose/non-verbose and munkistatus-style output.
+    /// Not printed if verbose is 0
+    func minorStatus(_ message: String) {
+        if munkistatusoutput {
+            munkiStatusDetail(message)
+        }
+        if verbose > 0 {
+            if message.hasSuffix(".") || message.hasSuffix("…") {
+                print("    \(message)")
+            } else {
+                print("    \(message)...")
+            }
+            fflush(stdout)
+        }
+        super.notice("    \(message)")
+    }
+
+    /// Displays info messages. Not displayed in MunkiStatus.
+    /// Not printed if verbose is 0
+    override func info(_ message: String) {
+        if verbose > 0 {
+            print("    \(message)")
+            fflush(stdout)
+        }
+        super.info(message)
+    }
+
+    /// Displays minor info messages. Not displayed in MunkiStatus.
+    /// These are usually logged only, but can be printed to stdout
+    /// if verbose is set greater than 1 (-v)
+    override func detail(_ message: String) {
+        if verbose > 1 {
+            print("    \(message)")
+            fflush(stdout)
+        }
+        super.detail(message)
+    }
+
+    /// Displays debug level 1 messages. (verbose is set to 3 or more (-vv))
+    /// Not displayed in MunkiStatus.
+    override func debug(_ message: String) {
+        debug1(message)
+    }
+
+    /// Displays debug level 1 messages. (verbose is set to 3 or more (-vv))
+    /// Not displayed in MunkiStatus.
+    override func debug1(_ message: String) {
+        if verbose > 2 {
+            print("    \(message)")
+            fflush(stdout)
+        }
+        super.debug1(message)
+    }
+
+    /// Displays debug level 2 messages. (verbose is set to 4 or more (-vvv))
+    override func debug2(_ message: String) {
+        if verbose > 3 {
+            print("    \(message)")
+            fflush(stdout)
+        }
+        super.debug2(message)
+    }
+}

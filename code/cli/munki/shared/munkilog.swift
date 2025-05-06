@@ -100,8 +100,8 @@ func munkiLogResetWarnings() {
     rotateLog(logNamed("warnings.log"))
 }
 
-/// Rotate a log if it's too large
-func rotateLog(_ logname: String, ifLargerThan maxSize: Int) {
+/// Rotate a log if it's too large (or rotate regardless if we don't specify maxSize)
+func rotateLog(_ logname: String, ifLargerThan maxSize: Int = 0) {
     let logpath = logNamed(logname)
     if let attributes = try? FileManager.default.attributesOfItem(atPath: logpath) {
         let filesize = (attributes as NSDictionary).fileSize()
@@ -124,6 +124,8 @@ func munkiLogRotateMainLog() {
 }
 
 /// A nicer abstraction for the various Munki logging functions
+/// The "classic" UNIX logging levels each have a method, though tradtionally Munki has
+/// not used many of of these levels.
 class MunkiLogger {
     let logname: String
     var level = loggingLevel()
@@ -132,28 +134,28 @@ class MunkiLogger {
         self.logname = logname
     }
 
-    func rotate() {
-        rotateLog(logNamed(logname))
+    func rotate(ifLargerThan maxSize: Int = 0) {
+        rotateLog(logNamed(logname), ifLargerThan: maxSize)
     }
 
     func emergency(_ message: String) {
-        munkiLog(message, logFile: logname)
+        munkiLog("EMERGENCY: \(message)", logFile: logname)
     }
 
     func alert(_ message: String) {
-        munkiLog(message, logFile: logname)
+        munkiLog("ALERT: \(message)", logFile: logname)
     }
 
     func critical(_ message: String) {
-        munkiLog(message, logFile: logname)
+        munkiLog("CRITICAL: \(message)", logFile: logname)
     }
 
     func error(_ message: String) {
-        munkiLog(message, logFile: logname)
+        munkiLog("ERROR: \(message)", logFile: logname)
     }
 
     func warning(_ message: String) {
-        munkiLog(message, logFile: logname)
+        munkiLog("WARNING: \(message)", logFile: logname)
     }
 
     func notice(_ message: String) {
@@ -168,21 +170,27 @@ class MunkiLogger {
         }
     }
 
-    func debug(_ message: String) {
-        if level > 2 {
+    func detail(_ message: String) {
+        if level > 1 {
             munkiLog(message, logFile: logname)
         }
     }
 
+    func debug(_ message: String) {
+        debug1(message)
+    }
+
+    /// These aren't traditional UNIX logging levels, but Munki has traditonally used them
     func debug1(_ message: String) {
         if level > 2 {
-            munkiLog(message, logFile: logname)
+            munkiLog("DEBUG1: \(message)", logFile: logname)
         }
     }
 
+    /// These aren't traditional UNIX logging levels, but Munki has traditonally used them
     func debug2(_ message: String) {
         if level > 3 {
-            munkiLog(message, logFile: logname)
+            munkiLog("DEBUG2: \(message)", logFile: logname)
         }
     }
 }

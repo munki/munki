@@ -290,6 +290,9 @@ func doRestart(shutdown: Bool = false) {
     if consoleUser.isEmpty || consoleUser == "loginwindow" {
         // no-one is logged in or we're at the loginwindow
         usleep(5_000_000)
+        // make sure doAuthorizedOrNormalRestart displays messages to us
+        // and logs to ManagedSoftwareUpdate.log
+        Authrestart.logger = DisplayAndLog()
         if shutdown {
             doAuthorizedOrNormalRestart(shutdown: shutdown)
         } else if !performAuthRestart() {
