@@ -168,13 +168,13 @@ class MunkiLogger {
     }
 
     func info(_ message: String) {
-        if level > 1 {
+        if level > 0 {
             munkiLog(message, logFile: logname)
         }
     }
 
     func detail(_ message: String) {
-        if level > 1 {
+        if level > 0 {
             munkiLog(message, logFile: logname)
         }
     }
@@ -185,14 +185,14 @@ class MunkiLogger {
 
     /// These aren't traditional UNIX logging levels, but Munki has traditonally used them
     func debug1(_ message: String) {
-        if level > 2 {
+        if level > 1 {
             munkiLog("DEBUG1: \(message)", logFile: logname)
         }
     }
 
     /// These aren't traditional UNIX logging levels, but Munki has traditonally used them
     func debug2(_ message: String) {
-        if level > 3 {
+        if level > 2 {
             munkiLog("DEBUG2: \(message)", logFile: logname)
         }
     }
