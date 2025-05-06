@@ -18,6 +18,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Gets info from InstallInfo.plist
 func getInstallInfo() -> PlistDict? {
     // TODO: there is at least one other similar function elsewhere; de-dup
@@ -27,13 +29,13 @@ func getInstallInfo() -> PlistDict? {
             if let plist = try readPlist(fromFile: installInfoPath) as? PlistDict {
                 return plist
             } else {
-                displayError("\(installInfoPath) does not have the expected format")
+                display.error("\(installInfoPath) does not have the expected format")
             }
         } catch {
-            displayError("Could not read \(installInfoPath): \(error.localizedDescription)")
+            display.error("Could not read \(installInfoPath): \(error.localizedDescription)")
         }
     } else {
-        displayInfo("\(installInfoPath) does not exist")
+        display.info("\(installInfoPath) does not exist")
     }
     return nil
 }
@@ -50,10 +52,10 @@ func getAppleUpdates() -> PlistDict? {
             if let plist = try readPlist(fromFile: appleUpdatesFile) as? PlistDict {
                 return plist
             } else {
-                displayError("\(appleUpdatesFile) does not have the expected format")
+                display.error("\(appleUpdatesFile) does not have the expected format")
             }
         } catch {
-            displayError("Could not read \(appleUpdatesFile): \(error.localizedDescription)")
+            display.error("Could not read \(appleUpdatesFile): \(error.localizedDescription)")
         }
     }
     return nil
@@ -158,7 +160,7 @@ func getAppleUpdatesWithHistory() -> [String: Date] {
         do {
             try writePlist(appleUpdateHistory, toFile: appleUpdateHistoryPath)
         } catch {
-            displayWarning("Could not update \(appleUpdateHistoryPath): \(error.localizedDescription)")
+            display.warning("Could not update \(appleUpdateHistoryPath): \(error.localizedDescription)")
         }
     }
     return historyInfo
@@ -216,7 +218,7 @@ func savePendingUpdateTimes() {
     do {
         try writePlist(currentPendingUpdates, toFile: pendingUpdatesPath)
     } catch {
-        displayWarning("Could not write \(pendingUpdatesPath): \(error.localizedDescription)")
+        display.warning("Could not write \(pendingUpdatesPath): \(error.localizedDescription)")
     }
 }
 
@@ -227,11 +229,11 @@ func displayUpdateInfo() {
     func displayAndRecordRestartInfo(_ item: PlistDict) {
         let restartAction = item["RestartAction"] as? String ?? ""
         if ["RequireRestart", "RecommendRestart"].contains(restartAction) {
-            displayInfo("       *Restart required")
+            display.info("       *Restart required")
             Report.shared.record(true, to: "RestartRequired")
         }
         if restartAction == "RequireLogout" {
-            displayInfo("       *Logout required")
+            display.info("       *Logout required")
             Report.shared.record(true, to: "LogoutRequired")
         }
         // Displays force install deadline if present
@@ -246,7 +248,7 @@ func displayUpdateInfo() {
                 .withSpaceBetweenDateAndTime,
             ]
             let formattedDate = formatter.string(from: forceInstallAfterDate)
-            displayInfo("       *Must be installed by \(formattedDate)")
+            display.info("       *Must be installed by \(formattedDate)")
         }
     }
 
@@ -254,12 +256,12 @@ func displayUpdateInfo() {
     let managedInstalls = installInfo["managed_installs"] as? [PlistDict] ?? []
     let removals = installInfo["removals"] as? [PlistDict] ?? []
     if managedInstalls.isEmpty, removals.isEmpty {
-        displayInfo("No changes to managed software are available.")
+        display.info("No changes to managed software are available.")
         return
     }
     if !managedInstalls.isEmpty {
-        displayInfo("")
-        displayInfo("The following items will be installed or upgraded:")
+        display.info("")
+        display.info("The following items will be installed or upgraded:")
     }
     for item in managedInstalls {
         if let installerItem = item["installer_item"] as? String,
@@ -267,20 +269,20 @@ func displayUpdateInfo() {
         {
             let name = item["name"] as? String ?? "UNKNOWN"
             let version = item["version_to_install"] as? String ?? "UNKNOWN"
-            displayInfo("    + \(name)-\(version)")
+            display.info("    + \(name)-\(version)")
             if let description = item["description"] as? String {
-                displayInfo("        \(description)")
+                display.info("        \(description)")
             }
             displayAndRecordRestartInfo(item)
         }
     }
     if !removals.isEmpty {
-        displayInfo("The following items will be removed:")
+        display.info("The following items will be removed:")
     }
     for item in removals {
         if let installed = item["installed"] as? Bool, installed {
             let name = item["name"] as? String ?? "UNKNOWN"
-            displayInfo("    - \(name)")
+            display.info("    - \(name)")
             displayAndRecordRestartInfo(item)
         }
     }
@@ -334,7 +336,7 @@ func forceInstallPackageCheck() -> ForceInstallStatus {
             }
             forceInstallAfterDate = subtractTZOffsetFromDate(forceInstallAfterDate)
             let name = install["name"] as? String ?? "UNKNOWN"
-            displayDebug1("Forced install for \(name) at \(forceInstallAfterDate)")
+            display.debug1("Forced install for \(name) at \(forceInstallAfterDate)")
             let unattendedInstall = install["unattended_install"] as? Bool ?? false
             if now >= forceInstallAfterDate {
                 if result == .none {
@@ -349,7 +351,7 @@ func forceInstallPackageCheck() -> ForceInstallStatus {
                         result = .restart
                     }
                 } else if !unattendedInstall {
-                    displayDebug1("Setting unattended install for \(name)")
+                    display.debug1("Setting unattended install for \(name)")
                     var mutableInstall = install
                     mutableInstall["unattended_install"] = true
                     var mutableList = installList

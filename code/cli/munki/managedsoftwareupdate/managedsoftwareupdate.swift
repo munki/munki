@@ -21,6 +21,8 @@
 import ArgumentParser
 import Foundation
 
+private let display = DisplayAndLog.main
+
 @main
 struct ManagedSoftwareUpdate: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
@@ -138,7 +140,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                     detectNetworkHardware()
                     for _ in 0 ... 60 {
                         if networkUp() { break }
-                        displayMinorStatus("Waiting for network...")
+                        display.minorStatus("Waiting for network...")
                         usleep(1_000_000)
                     }
                     break
@@ -240,7 +242,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             reloadPrefs()
             return
         }
-        displayInfo("managedsoftwareupdate run aborted by preflight script: \(result)")
+        display.info("managedsoftwareupdate run aborted by preflight script: \(result)")
         // record the check result for use by Managed Software Center.app
         // right now, we'll return the same code as if the munki server
         // was unavailable. We need to revisit this and define additional
@@ -261,7 +263,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 recordUpdateCheckResult(updateCheckResult)
                 return updateCheckResult
             } catch {
-                displayError("Error during updatecheck: \(error.localizedDescription)")
+                display.error("Error during updatecheck: \(error.localizedDescription)")
                 Report.shared.save()
                 throw ExitCode(-1) // TODO: better exit code
             }
@@ -319,7 +321,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             do {
                 try clearBootstrapMode()
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
             }
         }
         if otherOptions.launchosinstaller {
@@ -331,7 +333,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 _ = launchStagedOSInstaller()
             } else {
                 // staged OS installer is missing
-                displayError("Requested to launch staged OS installer, but no info on a staged OS installer was found.")
+                display.error("Requested to launch staged OS installer, but no info on a staged OS installer was found.")
             }
         }
     }
@@ -351,7 +353,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 do {
                     try clearBootstrapMode()
                 } catch {
-                    displayError(error.localizedDescription)
+                    display.error(error.localizedDescription)
                 }
             }
             return
@@ -486,7 +488,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 do {
                     try clearBootstrapMode()
                 } catch {
-                    displayError(error.localizedDescription)
+                    display.error(error.localizedDescription)
                 }
             }
         }
@@ -504,6 +506,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             printStderr("You must run this as root!")
             throw ExitCode(EXIT_STATUS_ROOT_REQUIRED)
         }
+
         try handleConfigOptions()
         try exitIfAnotherManagedSoftwareUpdateIsRunning()
         try processLaunchdOptions()
@@ -513,9 +516,9 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         initializeReport()
 
         // install handlers for SIGINT and SIGTERM
-        let sigintSrc = installSignalHandler(SIGINT)
+        let sigintSrc = installSignalHandler(SIGINT, logger: MunkiLogger.standard)
         sigintSrc.activate()
-        let sigtermSrc = installSignalHandler(SIGTERM)
+        let sigtermSrc = installSignalHandler(SIGTERM, logger: MunkiLogger.standard)
         sigtermSrc.activate()
 
         munkiLog("### Starting managedsoftwareupdate run: \(runtype) ###")
@@ -525,7 +528,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             print("Copyright 2010-2025 The Munki Project")
             print("https://github.com/munki/munki\n")
         }
-        displayMajorStatus("Starting...")
+        display.majorStatus("Starting...")
         sendStartNotification()
         try await runPreflight() // can exit early
 
@@ -569,7 +572,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         reconfigureOptionsForInstall()
         await handleInstallTasks()
 
-        displayMajorStatus("Finishing...")
+        display.majorStatus("Finishing...")
         await doFinishingTasks(runtype: runtype)
         sendDockUpdateNotification()
         sendEndedNotification()

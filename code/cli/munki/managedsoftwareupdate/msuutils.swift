@@ -18,6 +18,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Clear the last date the user was notified of updates.
 func clearLastNotifiedDate() {
     setPref("LastNotifiedDate", nil)
@@ -44,7 +46,7 @@ func initMunkiDirs() -> Bool {
             do {
                 try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: false)
             } catch {
-                displayError("Could not create missing directory \(dir): \(error.localizedDescription)")
+                display.error("Could not create missing directory \(dir): \(error.localizedDescription)")
                 success = false
             }
         }
@@ -58,25 +60,25 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
     if !pathExists(scriptPath) {
         return 0
     }
-    displayMinorStatus("Performing \(taskName) tasks...")
+    display.minorStatus("Performing \(taskName) tasks...")
     do {
         let result = try await runExternalScript(
             scriptPath, arguments: [runType]
         )
         if result.exitcode != 0 {
-            displayInfo("\(scriptPath) return code: \(result.exitcode)")
+            display.info("\(scriptPath) return code: \(result.exitcode)")
         }
         if !result.output.isEmpty {
-            displayInfo("\(scriptPath) stdout: \(result.output)")
+            display.info("\(scriptPath) stdout: \(result.output)")
         }
         if !result.error.isEmpty {
-            displayInfo("\(scriptPath) stderr: \(result.error)")
+            display.info("\(scriptPath) stderr: \(result.error)")
         }
         return result.exitcode
     } catch ExternalScriptError.notFound {
         // not required, so pass
     } catch {
-        displayWarning("Unexpected error when attempting to run \(scriptPath): \(error.localizedDescription)")
+        display.warning("Unexpected error when attempting to run \(scriptPath): \(error.localizedDescription)")
     }
     return 0
 }
@@ -208,7 +210,7 @@ func notifyUserOfUpdates(force: Bool = false) {
     }
     let lastNotifiedDate = datePref("LastNotifiedDate") ?? Date.distantPast
     if !(pref("DaysBetweenNotifications") is Int) {
-        displayWarning("Preference DaysBetweenNotifications is not an integer; using a value of 1")
+        display.warning("Preference DaysBetweenNotifications is not an integer; using a value of 1")
     }
     let daysBetweenNotifications = intPref("DaysBetweenNotifications") ?? 1
     let now = Date()
@@ -253,7 +255,7 @@ func warnIfServerIsDefault() {
         server = String(server.dropLast())
     }
     if [DEFAULT_INSECURE_REPO_URL, DEFAULT_INSECURE_REPO_URL + "/manifests"].contains(server) {
-        displayWarning("Client is configured to use the default repo (\(DEFAULT_INSECURE_REPO_URL)), which is insecure. Client could be trivially compromised when off your organization's network. Consider using a non-default URL, and preferably an https:// URL.")
+        display.warning("Client is configured to use the default repo (\(DEFAULT_INSECURE_REPO_URL)), which is insecure. Client could be trivially compromised when off your organization's network. Consider using a non-default URL, and preferably an https:// URL.")
     }
 }
 
@@ -282,7 +284,7 @@ func doRestart(shutdown: Bool = false) {
         munkiStatusPercent(-1)
         munkiLog(message)
     } else {
-        displayInfo(message)
+        display.info(message)
     }
 
     // check current console user
@@ -292,7 +294,7 @@ func doRestart(shutdown: Bool = false) {
         usleep(5_000_000)
         // make sure doAuthorizedOrNormalRestart displays messages to us
         // and logs to ManagedSoftwareUpdate.log
-        Authrestart.logger = DisplayAndLog()
+        Authrestart.logger = DisplayAndLog.main
         if shutdown {
             doAuthorizedOrNormalRestart(shutdown: shutdown)
         } else if !performAuthRestart() {
@@ -305,7 +307,7 @@ func doRestart(shutdown: Bool = false) {
             // We actually should almost never get here; generally Munki knows
             // a restart is needed before even starting the updates and forces
             // a logout before applying the updates
-            displayInfo("Notifying currently logged-in user to restart.")
+            display.info("Notifying currently logged-in user to restart.")
             munkiStatusActivate()
             munkiStatusRestartAlert()
         } else {
@@ -359,7 +361,7 @@ func startLogoutHelper() {
     let result = runCLI("/bin/launchctl",
                         arguments: ["start", "com.googlecode.munki.logouthelper"])
     if result.exitcode != 0 {
-        displayError("Could not start com.googlecode.munki.logouthelper")
+        display.error("Could not start com.googlecode.munki.logouthelper")
     }
 }
 

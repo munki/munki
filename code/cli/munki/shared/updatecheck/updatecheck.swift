@@ -18,6 +18,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Download display icons for optional installs and active installs/removals
 func downloadIconsForActiveItems(_ installInfo: PlistDict) {
     var itemList = [PlistDict]()
@@ -75,15 +77,15 @@ func cleanUpDownloadCache(_ installInfo: PlistDict) {
                     // we have a partial and a full download
                     // for the same item. (This shouldn't happen.)
                     // remove the partial download.
-                    displayDetail("Removing partial download \(item) from cache")
+                    display.detail("Removing partial download \(item) from cache")
                     try? FileManager.default.removeItem(atPath: fullPath)
                 } else if !keepList.contains(simpleName) {
                     // abandoned partial download
-                    displayDetail("Removing partial download \(item) from cache")
+                    display.detail("Removing partial download \(item) from cache")
                     try? FileManager.default.removeItem(atPath: fullPath)
                 }
             } else if !keepList.contains(item) {
-                displayDetail("Removing \(item) from cache")
+                display.detail("Removing \(item) from cache")
                 try? FileManager.default.removeItem(atPath: fullPath)
             }
         }
@@ -101,28 +103,28 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
 
     // if the manifest already exists, the name is being reused
     if Manifests.shared.list().contains(localOnlyManifestName) {
-        displayError("LocalOnlyManifest \(localOnlyManifestName) has the same name as an existing manifest, skipping...")
+        display.error("LocalOnlyManifest \(localOnlyManifestName) has the same name as an existing manifest, skipping...")
         return
     }
 
     let localOnlyManifestPath = managedInstallsDir(
         subpath: "manifests/" + localOnlyManifestName)
     if !pathExists(localOnlyManifestPath) {
-        displayDebug1("LocalOnlyManifest \(localOnlyManifestName) is defined but is not present. Skipping.")
+        display.debug1("LocalOnlyManifest \(localOnlyManifestName) is defined but is not present. Skipping.")
         return
     }
     guard var localOnlyManifest = manifestData(localOnlyManifestPath) else {
-        displayError("Could not get manifest data from \(localOnlyManifestPath)")
+        display.error("Could not get manifest data from \(localOnlyManifestPath)")
         return
     }
     Manifests.shared.set(localOnlyManifestName, path: localOnlyManifestPath)
 
     // Finally ready to actually process it!
-    displayDetail("**Processing local-only manifest**")
+    display.detail("**Processing local-only manifest**")
     // remove catalogs, included_manifests, and conditional_items if present
     for key in ["catalogs", "included_manifests", "conditional_items"] {
         if localOnlyManifest[key] != nil {
-            displayWarning("Local-only manifest \(localOnlyManifestName) contains section '\(key)`. Ignoring.")
+            display.warning("Local-only manifest \(localOnlyManifestName) contains section '\(key)`. Ignoring.")
             localOnlyManifest[key] = nil
         }
     }
@@ -141,7 +143,7 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
 /// processes the SelfServeManifest if present
 func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistDict) async throws {
     guard let parentCatalogs = mainManifest["catalogs"] as? [String] else {
-        displayError("Primary manifest has no catalogs")
+        display.error("Primary manifest has no catalogs")
         return
     }
 
@@ -161,11 +163,11 @@ func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistD
         return
     }
     guard let selfServeManifest = manifestData(selfServeManifestPath) else {
-        displayError("Selfserve manifest cannot be read!")
+        display.error("Selfserve manifest cannot be read!")
         return
     }
 
-    displayDetail("**Processing self-serve choices**")
+    display.detail("**Processing self-serve choices**")
     if var installs = selfServeManifest["managed_installs"] as? [String],
        !installs.isEmpty
     {
@@ -243,7 +245,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     }
 
     munkiLog("### Beginning managed software check ###")
-    displayMajorStatus("Checking for available updates...")
+    display.majorStatus("Checking for available updates...")
     munkiStatusPercent(-1)
     munkiStatusDetail("")
 
@@ -256,19 +258,19 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         do {
             mainManifestPath = try getPrimaryManifest(alternateIdentifier: clientID)
         } catch let err as ManifestError {
-            displayError("Could not retrieve managed install primary manifest: \(err.localizedDescription)")
+            display.error("Could not retrieve managed install primary manifest: \(err.localizedDescription)")
             throw err
         }
     }
 
     guard let mainManifest = manifestData(mainManifestPath) else {
-        displayError("Could not get manifest data from main mainfest \(mainManifestPath)")
+        display.error("Could not get manifest data from main mainfest \(mainManifestPath)")
         return .finishedWithErrors
     }
     guard let mainManifestCatalogsList = mainManifest["catalogs"] as? [String],
           !mainManifestCatalogsList.isEmpty
     else {
-        displayError("Main mainfest \(mainManifestPath) does not have a list of catalogs")
+        display.error("Main mainfest \(mainManifestPath) does not have a list of catalogs")
         return .finishedWithErrors
     }
 
@@ -303,7 +305,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
     do {
         // check managed_installs
-        displayDetail("**Checking for installs**")
+        display.detail("**Checking for installs**")
         _ = try await processManifest(
             mainManifest,
             forKey: "managed_installs",
@@ -319,7 +321,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         munkiStatusDetail("")
 
         // check managed_uninstalls
-        displayDetail("**Checking for removals**")
+        display.detail("**Checking for removals**")
         _ = try await processManifest(
             mainManifest,
             forKey: "managed_uninstalls",
@@ -333,7 +335,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         // use catalogs from main manifest
         let autoremovalItems = getAutoRemovalItems(installInfo: installInfo, catalogList: mainManifestCatalogsList)
         if !autoremovalItems.isEmpty {
-            displayDetail("**Checking for implicit removals**")
+            display.detail("**Checking for implicit removals**")
             for item in autoremovalItems {
                 if stopRequested() {
                     return .noUpdatesAvailable
@@ -347,7 +349,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         }
 
         // process managed_updates
-        displayDetail("**Checking for managed updates**")
+        display.detail("**Checking for managed updates**")
         _ = try await processManifest(
             mainManifest,
             forKey: "managed_updates",
@@ -393,7 +395,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
             }
         )
         for item in inFeaturedItems.subtracting(inOptionalInstalls) {
-            displayWarning("\(item) is in the list of featured_items, but is not in the list of optional_installs. Will be ignored.")
+            display.warning("\(item) is in the list of featured_items, but is not in the list of optional_installs. Will be ignored.")
         }
 
         // verify available license seats for optional installs
@@ -444,7 +446,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         installInfo["managed_installs"] = managedInstalls
 
         if startOSInstallItems.count > 1 {
-            displayWarning("There are mulitple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
+            display.warning("There are mulitple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
         }
 
         // record detail before we throw it away...
@@ -512,12 +514,12 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
             do {
                 oldInstallInfo = try readPlist(fromFile: installInfoPath) as? PlistDict ?? PlistDict()
             } catch {
-                displayError("Could not read InstallInfo.plist. Deleting...")
+                display.error("Could not read InstallInfo.plist. Deleting...")
                 try? FileManager.default.removeItem(atPath: installInfoPath)
             }
             if (installInfo as NSDictionary).isEqual(to: oldInstallInfo as NSDictionary) {
                 installInfoChanged = false
-                displayDetail("No change in InstallInfo.")
+                display.detail("No change in InstallInfo.")
             }
         }
         if installInfoChanged {

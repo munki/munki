@@ -22,7 +22,8 @@ import Foundation
 
 /// Tries to determine if the application in appname is currently running
 func isAppRunning(_ appName: String) -> Bool {
-    displayDetail("Checking if \(appName) is running...")
+    let display = DisplayAndLog.main
+    display.detail("Checking if \(appName) is running...")
     let procList = getRunningProcesses()
     var matchingItems = [String]()
     if appName.hasPrefix("/") {
@@ -43,8 +44,8 @@ func isAppRunning(_ appName: String) -> Bool {
     }
     if !matchingItems.isEmpty {
         // it's running!
-        displayDebug1("Matching process list: \(matchingItems)")
-        displayDebug1("\(appName) is running!")
+        display.debug1("Matching process list: \(matchingItems)")
+        display.debug1("\(appName) is running!")
         return true
     }
     // if we get here, we have no evidence that appname is running
@@ -54,6 +55,7 @@ func isAppRunning(_ appName: String) -> Bool {
 /// Returns true if any application in the blocking_applications list is running
 /// or, if there is no blocking_applications list, true if any application in the installs list is running.
 func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
+    let display = DisplayAndLog.main
     var appNames = [String]()
     if let blockingApplications = pkginfo["blocking_applications"] as? [String] {
         appNames = blockingApplications
@@ -69,12 +71,12 @@ func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
             }.filter { !$0.isEmpty }
         }
     }
-    displayDebug1("Checking for \(appNames)")
+    display.debug1("Checking for \(appNames)")
     let runningApps = appNames.filter { isAppRunning($0) }
     if !runningApps.isEmpty {
         let itemName = pkginfo["name"] as? String ?? "<unknown>"
-        displayDetail("Blocking apps for \(itemName) are running:")
-        displayDetail("    \(runningApps)")
+        display.detail("Blocking apps for \(itemName) are running:")
+        display.detail("    \(runningApps)")
         return true
     }
     return false

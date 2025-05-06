@@ -7,13 +7,15 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Removes filesystem items based on info in itemlist.
 /// These items were typically installed via copy_from_dmg
 /// This current aborts and returns false on the first error;
 /// might it make sense to try to continue and remove as much as we can?
 func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
     if itemList.isEmpty {
-        displayError("Nothing to remove!")
+        display.error("Nothing to remove!")
         return false
     }
     for item in itemList {
@@ -27,7 +29,7 @@ func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
             itemName = (itemName as NSString).lastPathComponent
         }
         if itemName.isEmpty {
-            displayError("Missing item name to remove.")
+            display.error("Missing item name to remove.")
             return false
         }
         if destinationPath.isEmpty,
@@ -36,27 +38,27 @@ func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
             destinationPath = providedDestinationPath
         }
         if destinationPath.isEmpty {
-            displayError("Missing path for item to remove.")
+            display.error("Missing path for item to remove.")
             return false
         }
         let pathToRemove = (destinationPath as NSString).appendingPathComponent(itemName)
         if pathExists(pathToRemove) {
-            displayMinorStatus("Removing \(pathToRemove)")
+            display.minorStatus("Removing \(pathToRemove)")
             do {
                 try FileManager.default.removeItem(atPath: pathToRemove)
             } catch let err as NSError {
-                displayError("Removal error for \(pathToRemove): \(err.localizedDescription)")
+                display.error("Removal error for \(pathToRemove): \(err.localizedDescription)")
                 return false
             } catch {
-                displayError("Removal error for \(pathToRemove): \(error)")
+                display.error("Removal error for \(pathToRemove): \(error)")
                 return false
             }
         } else {
             // pathToRemove doesn't exist. note it, but not an error
-            displayDetail("Path \(pathToRemove) doesn't exist.")
+            display.detail("Path \(pathToRemove) doesn't exist.")
         }
     }
-    displayMinorStatus("The software was successfully removed.")
+    display.minorStatus("The software was successfully removed.")
     return true
 }
 
@@ -69,16 +71,16 @@ func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]
     }
     let name = currentItem["name"] as? String ?? ""
     let version = currentItem["version"] as? String ?? ""
-    displayDebug1("Checking for skipped prerequisites for \(name)-\(version)")
+    display.debug1("Checking for skipped prerequisites for \(name)-\(version)")
 
     // get list of prerequisites for this item
     var prerequisites = currentItem["requires"] as? [String] ?? [String]()
     prerequisites += currentItem["update_for"] as? [String] ?? [String]()
     if prerequisites.isEmpty {
-        displayDebug1("\(name)-\(version) has no prerequisites.")
+        display.debug1("\(name)-\(version) has no prerequisites.")
         return matchedPrereqs
     }
-    displayDebug1("Prerequisites: \(prerequisites.joined(separator: ", "))")
+    display.debug1("Prerequisites: \(prerequisites.joined(separator: ", "))")
 
     // build a dictionary of names and versions of skipped items
     var skippedItemDict = PlistDict()
@@ -86,7 +88,7 @@ func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]
         if let name = item["name"] as? String {
             let version = item["version_to_install"] as? String ?? "0.0"
             let normalizedVersion = trimVersionString(version)
-            displayDebug1("Adding skipped item: \(name)-\(normalizedVersion)")
+            display.debug1("Adding skipped item: \(name)-\(normalizedVersion)")
             var versions = skippedItemDict[name] as? [String] ?? [String]()
             versions.append(normalizedVersion)
             skippedItemDict[name] = versions
@@ -96,7 +98,7 @@ func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]
     // now check prereqs against the skipped items
     for prereq in prerequisites {
         let (pName, pVersion) = nameAndVersion(prereq, onlySplitOnHyphens: true)
-        displayDebug1("Comparing \(pName)-\(pVersion) against skipped items")
+        display.debug1("Comparing \(pName)-\(pVersion) against skipped items")
         if let versionsForMatchedName = skippedItemDict[pName] as? [String] {
             if !pVersion.isEmpty {
                 let trimmedVersion = trimVersionString(pVersion)
@@ -120,21 +122,21 @@ func requiresRestart(_ item: PlistDict) -> Bool {
 /// Process an Apple package for install. Returns retcode, needs_restart
 func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (Int, Bool) {
     if pkginfo["suppress_bundle_relocation"] as? Bool ?? false {
-        displayWarning("Item has 'suppress_bundle_relocation' attribute. This feature is no longer supported.")
+        display.warning("Item has 'suppress_bundle_relocation' attribute. This feature is no longer supported.")
     }
     if hasValidDiskImageExt(itemPath) {
         let dmgName = (itemPath as NSString).lastPathComponent
-        displayMinorStatus("Mounting disk image \(dmgName)")
+        display.minorStatus("Mounting disk image \(dmgName)")
         guard let mountpoint = try? mountdmg(itemPath, skipVerification: true) else {
             let dmgPath = pkginfo["installer_item"] as? String ?? dmgName
-            displayError("Could not mount disk image file \(dmgPath)")
+            display.error("Could not mount disk image file \(dmgPath)")
             return (-99, false)
         }
         defer {
             do {
                 try unmountdmg(mountpoint)
             } catch {
-                displayError(error.localizedDescription)
+                display.error(error.localizedDescription)
             }
         }
 
@@ -149,7 +151,7 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
                 let (retcode, needToRestart) = await install(pkgPath, options: pkginfo)
                 return (retcode, needToRestart || requiresRestart(pkginfo))
             } else {
-                displayError("Did not find \(pkgPath) on disk image \(dmgName)")
+                display.error("Did not find \(pkgPath) on disk image \(dmgName)")
                 return (-99, false)
             }
         } else {
@@ -181,13 +183,13 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     // if installer_type is not nopkg, ensure the payload exists
     if installerType != "nopkg" {
         if installerItem.isEmpty {
-            displayError("Item \(installerItem) has no defined installer_item. Skipping.")
+            display.error("Item \(installerItem) has no defined installer_item. Skipping.")
             return (-99, false)
         }
         if !pathExists(installerItemPath) {
             // can't install, so we should stop. Since later items might
             // depend on this one, we shouldn't continue
-            displayError("Installer item \(installerItem) was not found. Skipping.")
+            display.error("Installer item \(installerItem) was not found. Skipping.")
             return (-99, false)
         }
     }
@@ -223,9 +225,9 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     default:
         // unknown or no longer supported installer type
         if ["appdmg", "profiles"].contains(installerType) || installerType.hasPrefix("Adobe") {
-            displayError("Installer type '\(installerType)' for \(installerItem) is no longer supported.")
+            display.error("Installer type '\(installerType)' for \(installerItem) is no longer supported.")
         } else {
-            displayError("Installer type '\(installerType)' for \(installerItem) is an unknown installer type.")
+            display.error("Installer type '\(installerType)' for \(installerItem) is an unknown installer type.")
         }
         retcode = -99
     }
@@ -237,7 +239,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
             // we won't consider postinstall script failures as fatal
             // since the item has been installed via package/disk image
             // but admin should be notified
-            displayWarning("Postinstall script for \(itemName) returned \(scriptexit)")
+            display.warning("Postinstall script for \(itemName) returned \(scriptexit)")
         }
     }
     return (retcode, needToRestart)
@@ -264,19 +266,19 @@ func installWithInstallInfo(
 
         if installerType == "startosinstall" {
             skippedInstalls.append(item)
-            displayDebug1("Skipping install of \(itemName) because it's a startosinstall item. Will install later.")
+            display.debug1("Skipping install of \(itemName) because it's a startosinstall item. Will install later.")
             continue
         }
         if onlyUnattended {
             let unattendedInstall = item["unattended_install"] as? Bool ?? false
             if !unattendedInstall {
                 skippedInstalls.append(item)
-                displayDetail("Skipping install of \(itemName) because it's not unattended, and we can only do unattended installs at this time.")
+                display.detail("Skipping install of \(itemName) because it's not unattended, and we can only do unattended installs at this time.")
                 continue
             }
             if blockingApplicationsRunning(item) {
                 skippedInstalls.append(item)
-                displayDetail("Skipping unattended install of \(itemName) because blocking applications are running.")
+                display.detail("Skipping unattended install of \(itemName) because blocking applications are running.")
                 continue
             }
         }
@@ -290,12 +292,12 @@ func installWithInstallInfo(
             if onlyUnattended {
                 skipActionText = "skipped"
             }
-            displayDetail("Skipping unattended install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
+            display.detail("Skipping unattended install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
             continue
         }
 
         // Attempt actual install
-        displayMajorStatus("Installing \(displayName) (\(itemIndex) of \(installList.count))")
+        display.majorStatus("Installing \(displayName) (\(itemIndex) of \(installList.count))")
         let (retcode, restartNeededForThisItem) = await installItem(item)
         restartFlag = restartFlag || restartNeededForThisItem
 
@@ -407,13 +409,13 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
         return matchedSkippedItems
     }
     let thisItemName = thisItem["name"] as? String ?? "<unknown>"
-    displayDebug1("Checking for skipped items that require \(thisItemName)")
+    display.debug1("Checking for skipped items that require \(thisItemName)")
     for skippedItem in skippedItems {
         // get list of prerequisites for this skipped_item
         var prerequisites = skippedItem["requires"] as? [String] ?? [String]()
         prerequisites += skippedItem["update_for"] as? [String] ?? [String]()
         let skippedItemName = skippedItem["name"] as? String ?? "<unknown>"
-        displayDebug1("\(skippedItemName) has these prerequisites: \(prerequisites.joined(separator: ", "))")
+        display.debug1("\(skippedItemName) has these prerequisites: \(prerequisites.joined(separator: ", "))")
         for prereq in prerequisites {
             let (prereqName, _) = nameAndVersion(prereq, onlySplitOnHyphens: true)
             if prereqName == thisItemName {
@@ -441,7 +443,7 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     }
 
     guard let uninstallMethod = item["uninstall_method"] as? String else {
-        displayError("\(itemName) has no defined uninstall_method")
+        display.error("\(itemName) has no defined uninstall_method")
         return (-99, false)
     }
 
@@ -453,26 +455,26 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             if retcode == 0 {
                 munkiLog("Uninstall of \(displayName) was successful.")
             } else if retcode == -128 {
-                displayError("Uninstall of \(displayName) was cancelled.")
+                display.error("Uninstall of \(displayName) was cancelled.")
                 return (retcode, false)
             } else {
-                displayError("Uninstall of \(displayName) failed.")
+                display.error("Uninstall of \(displayName) failed.")
                 return (retcode, false)
             }
         } else {
             // error! no packages defined
-            displayError("Uninstall of \(displayName) failed: no packages to remove.")
+            display.error("Uninstall of \(displayName) failed: no packages to remove.")
             return (-99, false)
         }
     case "uninstall_package":
         // install a package to remove the software
         guard let uninstallerItem = item["uninstaller_item"] as? String else {
-            displayError("No uninstall item specified for \(itemName)")
+            display.error("No uninstall item specified for \(itemName)")
             return (-99, false)
         }
         let uninstallerItemPath = managedInstallsDir(subpath: "Cache/" + uninstallerItem)
         if !pathExists(uninstallerItemPath) {
-            displayError("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
+            display.error("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
             return (-99, false)
         }
         (retcode, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: uninstallerItemPath)
@@ -482,7 +484,7 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
                 return (-99, false)
             }
         } else {
-            displayError("No valid 'items_to_remove' in pkginfo for \(itemName)")
+            display.error("No valid 'items_to_remove' in pkginfo for \(itemName)")
             return (-99, false)
         }
     case "uninstall_script":
@@ -492,10 +494,10 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             // it's a script or program to uninstall
             retcode = await runScript(uninstallMethod, itemName: itemName, scriptName: "uninstall script")
         } else if ["remove_app", "remove_profile"].contains(uninstallMethod) || uninstallMethod.hasPrefix("Adobe") {
-            displayError("'\(uninstallMethod)' is no longer a supported uninstall method")
+            display.error("'\(uninstallMethod)' is no longer a supported uninstall method")
             return (-99, false)
         } else {
-            displayError("'\(uninstallMethod)' is not a valid uninstall method")
+            display.error("'\(uninstallMethod)' is not a valid uninstall method")
             return (-99, false)
         }
     }
@@ -507,7 +509,7 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             // we won't consider postuninstall script failures as fatal
             // since the item has been uninstalled
             // but admin should be notified
-            displayWarning("Postuninstall script for \(itemName) returned \(result)")
+            display.warning("Postuninstall script for \(itemName) returned \(result)")
         }
     }
     return (retcode, needToRestart)
@@ -528,12 +530,12 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
             let unattendedUninstall = item["unattended_uninstall"] as? Bool ?? false
             if !unattendedUninstall {
                 skippedRemovals.append(item)
-                displayDetail("Skipping removal of \(itemName) because it's not unattended.")
+                display.detail("Skipping removal of \(itemName) because it's not unattended.")
                 continue
             }
             if blockingApplicationsRunning(item) {
                 skippedRemovals.append(item)
-                displayDetail("Skipping unattended removal of \(itemName) because blocking applications are running.")
+                display.detail("Skipping unattended removal of \(itemName) because blocking applications are running.")
                 continue
             }
         }
@@ -542,7 +544,7 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
             // one or more skipped items require this item, so we should
             // skip this one, too
             skippedRemovals.append(item)
-            displayDetail("Skipping removal of \(itemName) because these skipped items require it: \(dependentSkippedItems.joined(separator: ", "))")
+            display.detail("Skipping removal of \(itemName) because these skipped items require it: \(dependentSkippedItems.joined(separator: ", "))")
             continue
         }
         if stopRequested() {
@@ -551,12 +553,12 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
 
         if (item["installed"] as? Bool ?? false) == false {
             // not installed, so skip it (this shouldn't happen...)
-            displayDetail("Skipping removal of \(itemName) because does not seem to be installed.")
+            display.detail("Skipping removal of \(itemName) because does not seem to be installed.")
             continue
         }
 
         // now actually attempt to uninstall the item!
-        displayMajorStatus("Removing \(displayName) (\(index) of \(removalList.count))")
+        display.majorStatus("Removing \(displayName) (\(index) of \(removalList.count))")
         let (retcode, restartForThisItem) = await uninstallItem(item)
         restartFlag = restartFlag || restartForThisItem
 
@@ -713,7 +715,7 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> PostAction {
         do {
             try writePlist(updatedInstallInfo, toFile: installInfoPath)
         } catch {
-            displayWarning("Could not write to \(installInfoPath)")
+            display.warning("Could not write to \(installInfoPath)")
         }
     } else {
         munkiLog("Missing or invalid \(installInfoPath).")

@@ -147,6 +147,7 @@
 		C043ED202C4822C70047C025 /* sqlite3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED1E2C4822C70047C025 /* sqlite3.swift */; };
 		C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
 		C043ED242C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
+		C058EEE32DCA8D8D002775E0 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C05DB20B2DAC62530081FACD /* ArgumentParser */; };
 		C05DB20D2DAC66810081FACD /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C05DB20E2DAC66E50081FACD /* readline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9F52C435183007F0B34 /* readline.swift */; };
@@ -1779,6 +1780,7 @@
 				C06C21482C90A4B90023E9D9 /* info.swift in Sources */,
 				C030A9DC2C424072007F0B34 /* pkgutils.swift in Sources */,
 				C030A9ED2C424222007F0B34 /* osutils.swift in Sources */,
+				C058EEE32DCA8D8D002775E0 /* munkilog.swift in Sources */,
 				C030A9E72C424171007F0B34 /* munkihash.swift in Sources */,
 				C008A0562D25B21A0073ADBA /* stderrout.swift in Sources */,
 				C030A9E02C424140007F0B34 /* FileRepo.swift in Sources */,

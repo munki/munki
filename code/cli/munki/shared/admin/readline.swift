@@ -15,6 +15,8 @@ func cleanupReadline() {
         rl_free_line_state()
         rl_cleanup_after_signal()
         rl_deprep_terminal()
+        // Make sure we are on a new line
+        print()
     }
 }
 

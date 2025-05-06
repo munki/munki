@@ -7,6 +7,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Writes string data to path.
 /// Returns success or failure as a boolean.
 func createExecutableFile(
@@ -42,7 +44,7 @@ class ScriptRunner: AsyncProcessRunner {
         let (lines, remainder) = linesAndRemainderOf(remainingOutput + str)
         remainingOutput = remainder
         for line in lines {
-            displayInfo(line)
+            display.info(line)
         }
     }
 }
@@ -50,9 +52,9 @@ class ScriptRunner: AsyncProcessRunner {
 /// Runs a script, Returns return code.
 func runScript(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false) async -> Int {
     if suppressError {
-        displayDetail("Running \(scriptName) for \(itemName)")
+        display.detail("Running \(scriptName) for \(itemName)")
     } else {
-        displayMinorStatus("Running \(scriptName) for \(itemName)")
+        display.minorStatus("Running \(scriptName) for \(itemName)")
     }
     if DisplayOptions.munkistatusoutput {
         // set indeterminate progress bar
@@ -64,12 +66,12 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     let result = proc.results
 
     if result.exitcode != 0, !suppressError {
-        displayError("Running \(scriptName) for \(itemName) failed.")
-        displayError(String(repeating: "-", count: 78))
+        display.error("Running \(scriptName) for \(itemName) failed.")
+        display.error(String(repeating: "-", count: 78))
         for line in result.output.components(separatedBy: .newlines) {
-            displayError("    " + line)
+            display.error("    " + line)
         }
-        displayError(String(repeating: "-", count: 78))
+        display.error(String(repeating: "-", count: 78))
     } else if !suppressError {
         munkiLog("Running \(scriptName) for \(itemName) was successful.")
     }
@@ -85,9 +87,9 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
 /// Runs a script, Returns CLIResults.
 func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false) async -> CLIResults {
     if suppressError {
-        displayDetail("Running \(scriptName) for \(itemName)")
+        display.detail("Running \(scriptName) for \(itemName)")
     } else {
-        displayMinorStatus("Running \(scriptName) for \(itemName)")
+        display.minorStatus("Running \(scriptName) for \(itemName)")
     }
     if DisplayOptions.munkistatusoutput {
         // set indeterminate progress bar
@@ -110,20 +112,20 @@ func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = f
     // get the script text
     let itemName = pkginfo["name"] as? String ?? "<unknown>"
     guard let scriptText = pkginfo[name] as? String else {
-        displayError("Missing script \(name) for \(itemName)")
+        display.error("Missing script \(name) for \(itemName)")
         return -1
     }
 
     // write the script to a temp file
     guard let tempdir = TempDir.shared.makeTempDir() else {
-        displayError("Could not create a temporary directory for \(name)")
+        display.error("Could not create a temporary directory for \(name)")
         return -1
     }
     let scriptPath = (tempdir as NSString).appendingPathComponent(name)
     if createExecutableFile(atPath: scriptPath, withStringContents: scriptText) {
         return await runScript(scriptPath, itemName: itemName, scriptName: name, suppressError: suppressError)
     } else {
-        displayError("Failed to create executable file for \(name)")
+        display.error("Failed to create executable file for \(name)")
         return -1
     }
 }

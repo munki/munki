@@ -67,7 +67,11 @@ func signalName(_ sig: Int32) -> String {
 /// Still investigating this one, but replicated the behavior in the terminal!
 ///
 /// All of this feels hacky, but it's the best I could come up with. Would love to learn of a better approach!
-func installSignalHandler(_ sig: Int32, cleanUpFunction: (() -> Void)? = nil) -> DispatchSourceSignal {
+func installSignalHandler(
+    _ sig: Int32,
+    logger: MunkiLogger? = nil,
+    cleanUpFunction: (() -> Void)? = nil
+) -> DispatchSourceSignal {
     // the intent here is to kill our child process(es) when we get a SIGINT or SIGTERM
     // (sadly we can't do it for SIGKILL) so they don't keep running if we're stopped
     // by the user (or killed by another process)
@@ -75,16 +79,19 @@ func installSignalHandler(_ sig: Int32, cleanUpFunction: (() -> Void)? = nil) ->
 
     let sigSrc = DispatchSource.makeSignalSource(signal: sig, queue: .main)
     sigSrc.setEventHandler {
-        // TODO: would be nice to log these for managedsoftware update,
-        // yet don't want the munkilog calls for munkiimport, etc
-        // munkiLog("Got signal \(signalName(sig))")
+        if let logger {
+            logger.alert("Got signal \(signalName(sig))")
+        }
+
         // kill all our child processes
         let ourPid = ProcessInfo.processInfo.processIdentifier
         for task in processesWithPPID(ourPid) {
-            // munkiLog("Sending signal \(signalName(sig)) to \(task.command), pid \(task.pid)...")
+            if let logger {
+                logger.notice("Sending signal \(signalName(sig)) to \(task.command), pid \(task.pid)...")
+            }
             let osErr = kill(task.pid, sig)
-            if osErr != noErr {
-                printStderr("Got err \(osErr) when sending \(signalName(sig)) to \(task.command), pid \(task.pid)")
+            if osErr != noErr, let logger {
+                logger.error("Got err \(osErr) when sending \(signalName(sig)) to \(task.command), pid \(task.pid)")
             }
         }
         // clean up our temp dirs

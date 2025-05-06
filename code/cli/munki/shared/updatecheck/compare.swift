@@ -7,6 +7,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 enum MunkiComparisonResult: Int {
     case older = -1
     case notPresent = 0
@@ -40,17 +42,17 @@ func compareUsingVersionScript(_ item: PlistDict) async -> MunkiComparisonResult
     let results = await runEmbeddedScriptAndReturnResults(name: "version_script", pkginfo: item, suppressError: true)
     if results.exitcode != 0 {
         // treat an error as .notPresent
-        displayDebug1("\tVersion script error \(results.exitcode): \(results.error)")
+        display.debug1("\tVersion script error \(results.exitcode): \(results.error)")
         return .notPresent
     }
     let installedVersion = results.output.trimmingCharacters(in: .whitespacesAndNewlines)
     if installedVersion.isEmpty {
-        displayDebug1("\tNo version info returned from version script.")
+        display.debug1("\tNo version info returned from version script.")
         return .notPresent
     }
-    displayDebug1("\tVersion script returned: \(installedVersion)")
+    display.debug1("\tVersion script returned: \(installedVersion)")
     let comparisonResult = compareVersions(installedVersion, itemVersion)
-    displayDebug1("\tInstalled item is \(comparisonResultDescriptions[comparisonResult.rawValue + 1])")
+    display.debug1("\tInstalled item is \(comparisonResultDescriptions[comparisonResult.rawValue + 1])")
     return comparisonResult
 }
 
@@ -64,38 +66,38 @@ func comparePlistVersion(_ item: PlistDict) throws -> MunkiComparisonResult {
         throw MunkiError("Missing plist path or version!")
     }
     let minimumUpdateVersion = item["minimum_update_version"] as? String
-    displayDebug1("\tChecking \(path) for \(versionComparisonKey) \(versionString)...")
+    display.debug1("\tChecking \(path) for \(versionComparisonKey) \(versionString)...")
     if !pathExists(path) {
-        displayDebug1("\tNo file found at \(path)")
+        display.debug1("\tNo file found at \(path)")
         return .notPresent
     }
     guard let plist = try? readPlist(fromFile: path) as? PlistDict else {
-        displayDebug1("\t\(path) can't be read as a plist!")
+        display.debug1("\t\(path) can't be read as a plist!")
         return .notPresent
     }
     let installedVersion: String
     if item.keys.contains("version_comparison_key") {
         // specific key has been supplied,
         // so use this to determine installed version
-        displayDebug1("\tUsing version_comparison_key \(versionComparisonKey)")
+        display.debug1("\tUsing version_comparison_key \(versionComparisonKey)")
         installedVersion = getVersionString(plist: plist, key: versionComparisonKey)
     } else {
         // just use default behavior
         installedVersion = getVersionString(plist: plist)
     }
     if installedVersion.isEmpty {
-        displayDebug1("\tNo version info in \(path).")
+        display.debug1("\tNo version info in \(path).")
         return .notPresent
     }
-    displayDebug1("\tInstalled item has version \(installedVersion)")
+    display.debug1("\tInstalled item has version \(installedVersion)")
     if let minimumUpdateVersion {
         if compareVersions(installedVersion, minimumUpdateVersion) == .older {
-            displayDebug1("\tInstalled version \(installedVersion) is too old to update (must be \(minimumUpdateVersion) or later)")
+            display.debug1("\tInstalled version \(installedVersion) is too old to update (must be \(minimumUpdateVersion) or later)")
             return .notPresent
         }
     }
     let comparisonResult = compareVersions(installedVersion, versionString)
-    displayDebug1("\tInstalled item is \(comparisonResultDescriptions[comparisonResult.rawValue + 1])")
+    display.debug1("\tInstalled item is \(comparisonResultDescriptions[comparisonResult.rawValue + 1])")
     return comparisonResult
 }
 
@@ -105,14 +107,14 @@ func compareBundleVersion(_ bundleItem: PlistDict) throws -> MunkiComparisonResu
     if let path = bundleItem["path"] as? NSString {
         var infoPlistPath = path.appendingPathComponent("Contents/Info.plist")
         if !pathExists(infoPlistPath) {
-            displayDebug1("\tNo Info.plist found at \(infoPlistPath)")
+            display.debug1("\tNo Info.plist found at \(infoPlistPath)")
             infoPlistPath = path.appendingPathComponent("Resources/Info.plist")
             if !pathExists(infoPlistPath) {
-                displayDebug1("\tNo Info.plist found at \(infoPlistPath)")
+                display.debug1("\tNo Info.plist found at \(infoPlistPath)")
                 return .notPresent
             }
         }
-        displayDebug1("\tFound Info.plist at \(infoPlistPath)")
+        display.debug1("\tFound Info.plist at \(infoPlistPath)")
         var plistItem = bundleItem
         plistItem["path"] = infoPlistPath
         return try comparePlistVersion(plistItem)
@@ -127,18 +129,18 @@ func compareBundleVersion(_ bundleItem: PlistDict) throws -> MunkiComparisonResu
 func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonResult {
     if let path = appItem["path"] as? String {
         if !pathExists(path) {
-            displayDebug2("Application is not present at \(path).")
+            display.debug2("Application is not present at \(path).")
             return .notPresent
         }
         let infoPlistPath = (path as NSString).appendingPathComponent("Contents/Info.plist")
         if !pathExists(infoPlistPath) {
-            displayDebug2("Application Info.plist does not exist.")
+            display.debug2("Application Info.plist does not exist.")
             return .notPresent
         }
         return try compareBundleVersion(appItem)
     }
     // no 'path' in appItem
-    displayDebug2("No path provided for application item.")
+    display.debug2("No path provided for application item.")
     let bundleName = appItem["CFBundleName"] as? String ?? ""
     let bundleID = appItem["CFBundleIdentifier"] as? String ?? ""
     let versionComparisonKey = appItem["version_comparison_key"] as? String ?? "CFBundleShortVersionString"
@@ -149,7 +151,7 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
         throw MunkiError("No path, bundle name or bundle identifier was specified!")
     }
 
-    displayDebug1("Looking for application \(bundleName) with bundleid: \(bundleID), version \(versionString)...")
+    display.debug1("Looking for application \(bundleName) with bundleid: \(bundleID), version \(versionString)...")
 
     // find installed apps that match this item by name or bundleid
     let appData = filteredAppData()
@@ -161,7 +163,7 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
 
     if appInfo.isEmpty {
         // no matching apps found
-        displayDebug1("\tFound no matching applications on the startup disk.")
+        display.debug1("\tFound no matching applications on the startup disk.")
         return .notPresent
     }
 
@@ -173,9 +175,9 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
     // iterate through matching apps
     var endResult = MunkiComparisonResult.notPresent
     for item in appInfo {
-        displayDebug2("\tFound name: \(item["name"] ?? "<none>")")
-        displayDebug2("\tFound path: \(item["path"] ?? "<none>")")
-        displayDebug2("\tFound CFBundleIdentifier: \(item["bundleid"] ?? "<none>")")
+        display.debug2("\tFound name: \(item["name"] ?? "<none>")")
+        display.debug2("\tFound path: \(item["path"] ?? "<none>")")
+        display.debug2("\tFound CFBundleIdentifier: \(item["bundleid"] ?? "<none>")")
         // create a test item to use for comparison
         var testItem = appItem
         testItem["path"] = item["path"]
@@ -190,7 +192,7 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
 
     // didn't find an app with the same or higher version
     if endResult == .older {
-        displayDebug1("An older version of this application is present.")
+        display.debug1("An older version of this application is present.")
     }
     return endResult
 }
@@ -205,18 +207,18 @@ func filesystemItemStatus(_ item: PlistDict) throws -> MunkiComparisonResult {
     guard let filepath = item["path"] as? String else {
         throw MunkiError("No path specified for filesystem item")
     }
-    displayDebug1("Checking existence of \(filepath)...")
+    display.debug1("Checking existence of \(filepath)...")
     if pathExists(filepath) {
-        displayDebug2("\tExists.")
+        display.debug2("\tExists.")
         if let expectedChecksum = item["md5checksum"] as? String {
-            displayDebug2("Comparing checksums...")
+            display.debug2("Comparing checksums...")
             let onDiskChecksum = md5hash(file: filepath)
             if onDiskChecksum == expectedChecksum {
-                displayDebug2("Checksums match.")
+                display.debug2("Checksums match.")
                 return .same
             }
             // onDiskChecksum != expectedChecksum
-            displayDebug2("Checksums differ: expected \(expectedChecksum), found \(onDiskChecksum)")
+            display.debug2("Checksums differ: expected \(expectedChecksum), found \(onDiskChecksum)")
             return .different
         }
         // md5checksum not in item, but item is present
@@ -264,13 +266,13 @@ func compareReceipt(_ item: PlistDict) async throws -> MunkiComparisonResult {
     else {
         throw MunkiError("Receipt item is missing packageid or version info!")
     }
-    displayDebug1("Looking for package \(pkgid), version \(receiptVersion)")
+    display.debug1("Looking for package \(pkgid), version \(receiptVersion)")
     let installedPkgs = await getInstalledPackages()
     if let installedVersion = installedPkgs[pkgid] {
         return compareVersions(installedVersion, receiptVersion)
     }
     // no installedVersion
-    displayDebug1("\tThis package is not currently installed.")
+    display.debug1("\tThis package is not currently installed.")
     return .notPresent
 }
 
@@ -282,25 +284,25 @@ func getInstalledPackageVersion(_ pkgid: String) -> String? {
     )
     if results.exitcode == 0 {
         guard let receipt = (try? readPlist(fromString: results.output)) as? PlistDict else {
-            displayDebug2("Unable to parse output from pkgutil")
+            display.debug2("Unable to parse output from pkgutil")
             return nil
         }
         guard let foundpkgid = receipt["pkgid"] as? String else {
-            displayDebug2("No pkgid in pkgutil output")
+            display.debug2("No pkgid in pkgutil output")
             return nil
         }
         guard let foundversion = receipt["pkg-version"] as? String else {
-            displayDebug2("No version in pkgutil output")
+            display.debug2("No version in pkgutil output")
             return nil
         }
         if foundpkgid == pkgid {
-            displayDebug1(
+            display.debug1(
                 "\tThis machine has \(pkgid), version \(foundversion)")
             return foundversion
         }
     }
     // This package does not appear to be currently installed
-    displayDebug1("\tThis machine does not have \(pkgid)")
+    display.debug1("\tThis machine does not have \(pkgid)")
     return nil
 }
 
@@ -317,9 +319,9 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
             if let plist = try readPlist(fromFile: path) as? PlistDict {
                 return plist["CFBundleShortVersionString"] as? String ?? "UNKNOWN"
             }
-            displayDebug2("plist \(path) in wrong format")
+            display.debug2("plist \(path) in wrong format")
         } catch {
-            displayDebug2("plist \(path) read error: \(error.localizedDescription)")
+            display.debug2("plist \(path) read error: \(error.localizedDescription)")
         }
         return nil
     }
@@ -337,7 +339,7 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
            let receiptVersion = receipt["version"] as? String,
            compareVersions(receiptVersion, itemVersion) == .same
         {
-            displayDebug2("Using receipt \(pkgid) to determine installed version of \(itemName)")
+            display.debug2("Using receipt \(pkgid) to determine installed version of \(itemName)")
             if let pkgVersion = getInstalledPackageVersion(pkgid) {
                 return pkgVersion
             }
@@ -361,7 +363,7 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
             }
             let path = installItem["path"] as? String ?? "<unknown>"
             if itemType == "application" {
-                displayDebug2("Using application \(path) to determine installed version of \(itemName)")
+                display.debug2("Using application \(path) to determine installed version of \(itemName)")
                 if path != "<unknown>" {
                     let infopath = (path as NSString).appendingPathComponent("Contents/Info.plist")
                     if let installedVersion = versionFromPlist(infopath) {
@@ -380,7 +382,7 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
 
                 if appInfo.isEmpty {
                     // no matching apps found
-                    displayDebug1("\tFound no matching applications on the startup disk.")
+                    display.debug1("\tFound no matching applications on the startup disk.")
                     continue
                 }
 
@@ -392,13 +394,13 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
                     return installedVersion
                 }
             } else if itemType == "bundle" {
-                displayDebug2("Using bundle \(path) to determine installed version of \(itemName)")
+                display.debug2("Using bundle \(path) to determine installed version of \(itemName)")
                 let infopath = (path as NSString).appendingPathComponent("Contents/Info.plist")
                 if let installedVersion = versionFromPlist(infopath) {
                     return installedVersion
                 }
             } else if itemType == "plist" {
-                displayDebug2("Using plist \(path) to determine installed version of \(itemName)")
+                display.debug2("Using plist \(path) to determine installed version of \(itemName)")
                 if let installedVersion = versionFromPlist(path) {
                     return installedVersion
                 }

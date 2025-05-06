@@ -7,6 +7,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// a Singleton class to track catalog data
 class Catalogs {
     static let shared = Catalogs()
@@ -42,7 +44,7 @@ func makeCatalogDB(_ catalogItems: [PlistDict]) -> PlistDict {
         guard var name = item["name"] as? String,
               var version = item["version"] as? String
         else {
-            displayWarning("Bad pkginfo: \(item)")
+            display.warning("Bad pkginfo: \(item)")
             continue
         }
         // normalize the version
@@ -168,7 +170,7 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
     var itemList = [PlistDict]()
     let itemName = nameAndVersion(name, onlySplitOnHyphens: true).0
 
-    displayDebug1("Looking for all items matching: \(name)")
+    display.debug1("Looking for all items matching: \(name)")
     for catalogName in catalogList {
         if let catalogDB = Catalogs.shared.get(catalogName),
            let items = catalogDB["items"] as? [PlistDict],
@@ -185,7 +187,7 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
             for index in indexesToAdd {
                 let item = items[index]
                 let version = item["version"] as? String ?? "<unknown>"
-                displayDebug1("Adding item \(itemName), version \(version) from catalog \(catalogName)...")
+                display.debug1("Adding item \(itemName), version \(version) from catalog \(catalogName)...")
                 itemList.append(item)
             }
         }
@@ -245,7 +247,7 @@ func getAutoRemovalItems(installInfo: PlistDict, catalogList: [String]) -> [Stri
 /// doesn't update the version of Adobe Photoshop.
 /// Returns a list of item names that are updates for manifestItem.
 func lookForUpdatesFor(_ manifestItem: String, catalogList: [String]) -> [String] {
-    displayDebug1("Looking for updates for: \(manifestItem)")
+    display.debug1("Looking for updates for: \(manifestItem)")
     // get a list of catalog items that are updates for other items
     var updateList = [String]()
     for catalogName in catalogList {
@@ -266,7 +268,7 @@ func lookForUpdatesFor(_ manifestItem: String, catalogList: [String]) -> [String
     updateList = Array(Set(updateList))
 
     if !updateList.isEmpty {
-        displayDebug1("Found \(updateList.count) update(s): \(updateList.joined(separator: ", "))")
+        display.debug1("Found \(updateList.count) update(s): \(updateList.joined(separator: ", "))")
     }
 
     return updateList
@@ -453,12 +455,12 @@ func getItemDetail(
               let version = item["version"] as? String,
               let munkiVersion = machine["munki_version"] as? String
         else {
-            displayError("Unexpected error getting item name or version or getting Munki version")
+            display.error("Unexpected error getting item name or version or getting Munki version")
             return false
         }
         if let minimumMunkiVersion = item["minimum_munki_version"] as? String {
-            displayDebug1("Considering item \(name), version \(version) with minimum Munki version required: \(minimumMunkiVersion)")
-            displayDebug1("Our Munki version is \(munkiVersion)")
+            display.debug1("Considering item \(name), version \(version) with minimum Munki version required: \(minimumMunkiVersion)")
+            display.debug1("Our Munki version is \(munkiVersion)")
             if MunkiVersion(munkiVersion) < MunkiVersion(minimumMunkiVersion) {
                 rejectedItems.append(
                     "Rejected item \(name), version \(version) with minumum Munki version required \(minimumMunkiVersion). Our Munki version is \(munkiVersion)."
@@ -478,7 +480,7 @@ func getItemDetail(
               let version = item["version"] as? String,
               let osVersion = machine["os_vers"] as? String
         else {
-            displayError("Unexpected error getting item name or version or getting OS version")
+            display.error("Unexpected error getting item name or version or getting OS version")
             return false
         }
         // Is the current OS version >= minimum_os_version for the item?
@@ -486,8 +488,8 @@ func getItemDetail(
            let minimumOSVersion = item["minimum_os_version"] as? String,
            !minimumOSVersion.isEmpty
         {
-            displayDebug1("Considering item \(name), version \(version) with minimum os version required \(minimumOSVersion)")
-            displayDebug1("Our OS version is \(osVersion)")
+            display.debug1("Considering item \(name), version \(version) with minimum os version required \(minimumOSVersion)")
+            display.debug1("Our OS version is \(osVersion)")
             if MunkiVersion(osVersion) < MunkiVersion(minimumOSVersion) {
                 rejectedItems.append(
                     "Rejected item \(name), version \(version) with minimum os version required \(minimumOSVersion). Our OS version is \(osVersion)."
@@ -499,8 +501,8 @@ func getItemDetail(
         if let maximumOSVersion = item["maximum_os_version"] as? String,
            !maximumOSVersion.isEmpty
         {
-            displayDebug1("Considering item \(name), version \(version) with maximum os version required \(maximumOSVersion)")
-            displayDebug1("Our OS version is \(osVersion)")
+            display.debug1("Considering item \(name), version \(version) with maximum os version required \(maximumOSVersion)")
+            display.debug1("Our OS version is \(osVersion)")
             if MunkiVersion(osVersion) > MunkiVersion(maximumOSVersion) {
                 rejectedItems.append(
                     "Rejected item \(name), version \(version) with maximum os version required \(maximumOSVersion). Our OS version is \(osVersion)."
@@ -519,14 +521,14 @@ func getItemDetail(
               let version = item["version"] as? String,
               let currentArch = machine["arch"] as? String
         else {
-            displayError("Unexpected error getting item name or version or getting machine architecture")
+            display.error("Unexpected error getting item name or version or getting machine architecture")
             return false
         }
         if let supportedArchitectures = item["supported_architectures"] as? [String],
            !supportedArchitectures.isEmpty
         {
-            displayDebug1("Considering item \(name), version \(version) with supported architectures: \(supportedArchitectures)")
-            displayDebug1("Our architecture is \(currentArch)")
+            display.debug1("Considering item \(name), version \(version) with supported architectures: \(supportedArchitectures)")
+            display.debug1("Our architecture is \(currentArch)")
             if supportedArchitectures.contains(currentArch) {
                 return true
             }
@@ -573,9 +575,9 @@ func getItemDetail(
         version = "latest"
     }
     if skipMinimumOSCheck {
-        displayDebug1("Looking for detail for: \(name), version \(version), ignoring minimum_os_version...")
+        display.debug1("Looking for detail for: \(name), version \(version), ignoring minimum_os_version...")
     } else {
-        displayDebug1("Looking for detail for: \(name), version \(version)...")
+        display.debug1("Looking for detail for: \(name), version \(version)...")
     }
     // unicode normalize the name
     name = (name as NSString).precomposedStringWithCanonicalMapping
@@ -599,7 +601,7 @@ func getItemDetail(
                 indexList = indexes
             }
             if !indexList.isEmpty {
-                displayDebug1("Considering \(indexList.count) items with name \(name) from catalog \(catalogName)")
+                display.debug1("Considering \(indexList.count) items with name \(name) from catalog \(catalogName)")
             }
             for index in indexList {
                 // iterate through list of items with matching name, highest
@@ -612,7 +614,7 @@ func getItemDetail(
                        cpuArchOK(item),
                        await installableConditionOK(item)
                     {
-                        displayDebug1("Found \(item["name"] as? String ?? "<unknown>"), version \(item["version"] as? String ?? "<unknown>") in catalog \(catalogName)")
+                        display.debug1("Found \(item["name"] as? String ?? "<unknown>"), version \(item["version"] as? String ?? "<unknown>") in catalog \(catalogName)")
                         return item
                     }
                 }
@@ -620,12 +622,12 @@ func getItemDetail(
         }
     }
     // if we got this far, we didn't find it
-    displayDebug1("No applicable item found for name '\(name)'")
+    display.debug1("No applicable item found for name '\(name)'")
     for reason in rejectedItems {
         if suppressWarnings {
-            displayDebug1(reason)
+            display.debug1(reason)
         } else {
-            displayWarning(reason)
+            display.warning(reason)
         }
     }
     return nil
@@ -638,7 +640,7 @@ func getCatalogs(_ catalogList: [String]) {
             continue
         }
         guard let catalogPath = downloadCatalog(catalogName) else {
-            displayError("Could not download catalog \(catalogName)")
+            display.error("Could not download catalog \(catalogName)")
             continue
         }
         do {
@@ -651,7 +653,7 @@ func getCatalogs(_ catalogList: [String]) {
                 throw PlistError.readError(description: "plist is in wrong format")
             }
         } catch {
-            displayError("Retreived catalog is invalid: \(error.localizedDescription)")
+            display.error("Retreived catalog is invalid: \(error.localizedDescription)")
         }
     }
 }

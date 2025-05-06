@@ -66,9 +66,8 @@ class Report {
         do {
             try writePlist(report, toFile: reportFile())
         } catch {
-            displayError(
-                "Failed to write ManagedInstallReport.plist: \(error)",
-                addToReport: false
+            DisplayAndLog.main.error(
+                "Failed to write ManagedInstallReport.plist: \(error)"
             )
         }
     }
@@ -86,6 +85,7 @@ class Report {
 
     /// Archive current report file
     func archiveReport() {
+        let display = DisplayAndLog.main
         let reportFile = managedInstallsDir(subpath: "ManagedInstallReport.plist")
         if !pathExists(reportFile) {
             // nothing to do
@@ -100,14 +100,14 @@ class Report {
             do {
                 try FileManager.default.createDirectory(atPath: archiveDir, withIntermediateDirectories: false)
             } catch {
-                displayWarning("Could not create report archive directory: \(error.localizedDescription)")
+                display.warning("Could not create report archive directory: \(error.localizedDescription)")
             }
         }
         let fullArchivePath = (archiveDir as NSString).appendingPathComponent(archiveName)
         do {
             try FileManager.default.moveItem(atPath: reportFile, toPath: fullArchivePath)
         } catch {
-            displayWarning("Could not archive report: \(error.localizedDescription)")
+            display.warning("Could not archive report: \(error.localizedDescription)")
         }
         // now keep number of archived reports to 100 or fewer
         let directoryURL = URL(fileURLWithPath: archiveDir)
@@ -129,12 +129,12 @@ class Report {
                     do {
                         try FileManager.default.removeItem(at: item)
                     } catch {
-                        displayWarning("Error removing \(item.path): \(error.localizedDescription)")
+                        display.warning("Error removing \(item.path): \(error.localizedDescription)")
                     }
                 }
             }
         } catch {
-            displayWarning("Error accessing archived report directory: \(error.localizedDescription)")
+            display.warning("Error accessing archived report directory: \(error.localizedDescription)")
         }
     }
 }

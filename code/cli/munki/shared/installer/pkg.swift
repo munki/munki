@@ -20,9 +20,11 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Stub function
 func removeBundleRelocationInfo() {
-    displayWarning("'suppress_bundle_relocation' is no longer supported. Ignoring.")
+    display.warning("'suppress_bundle_relocation' is no longer supported. Ignoring.")
 }
 
 /// Query a package for its RestartAction. Returns true if a restart is needed, false otherwise
@@ -45,7 +47,7 @@ func pkgNeedsRestart(_ pkgpath: String, options: PlistDict) -> Bool {
     }
     let result = runCLI(tool, arguments: arguments)
     if result.exitcode != 0 {
-        displayWarning("/usr/bin/installer error when getting restart info for \((pkgpath as NSString).lastPathComponent): \(result.error)")
+        display.warning("/usr/bin/installer error when getting restart info for \((pkgpath as NSString).lastPathComponent): \(result.error)")
         return false
     }
     let (pliststr, _) = parseFirstPlist(fromString: result.output)
@@ -55,7 +57,7 @@ func pkgNeedsRestart(_ pkgpath: String, options: PlistDict) -> Bool {
     {
         return ["RequireRestart", "RecommendRestart"].contains(restartAction)
     }
-    displayWarning("/usr/bin/installer returned unexpected value when getting restart info for \((pkgpath as NSString).lastPathComponent): \(result.output)")
+    display.warning("/usr/bin/installer returned unexpected value when getting restart info for \((pkgpath as NSString).lastPathComponent): \(result.output)")
     return false
 }
 
@@ -76,7 +78,7 @@ func getInstallerEnvironment(_ customEnv: [String: String]?) -> [String: String]
                 env[key] = value
             }
         }
-        displayDebug1("Using custom installer environment variables: \(env)")
+        display.debug1("Using custom installer environment variables: \(env)")
     }
     return env
 }
@@ -93,21 +95,21 @@ func displayInstallerOutput(_ text: String) {
     if msg.hasPrefix("PHASE:") {
         msg.removeFirst("PHASE:".count)
         if !msg.isEmpty {
-            displayMinorStatus(msg)
+            display.minorStatus(msg)
         }
     } else if msg.hasPrefix("STATUS:") {
         msg.removeFirst("STATUS:".count)
         if !msg.isEmpty {
-            displayMinorStatus(msg)
+            display.minorStatus(msg)
         }
     } else if msg.hasPrefix("%") {
         msg.removeFirst()
         if let percent = Double(msg) {
             munkiStatusPercent(Int(percent))
-            displayMinorStatus("\(msg) percent complete")
+            display.minorStatus("\(msg) percent complete")
         }
     } else if msg.hasPrefix(" Error") || msg.hasPrefix(" Cannot install") {
-        displayError(msg)
+        display.error(msg)
         munkiStatusDetail(msg)
     } else {
         munkiLog(msg)
@@ -160,15 +162,15 @@ func runInstaller(arguments: [String], environment: [String: String], pkgName: S
     await proc.run()
     let results = proc.results
     if results.exitcode != 0 {
-        displayMinorStatus("Install of \(pkgName) failed with return code \(results.exitcode)")
-        displayError(String(repeating: "-", count: 78))
+        display.minorStatus("Install of \(pkgName) failed with return code \(results.exitcode)")
+        display.error(String(repeating: "-", count: 78))
         for line in results.output.components(separatedBy: "\n") {
-            displayError(line)
+            display.error(line)
         }
         for line in results.error.components(separatedBy: "\n") {
-            displayError(line)
+            display.error(line)
         }
-        displayError(String(repeating: "-", count: 78))
+        display.error(String(repeating: "-", count: 78))
     }
     return results.exitcode
 }
@@ -192,7 +194,7 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
 
     munkiLog("Installing \(displayName) from \(packageName)")
     if pkgNeedsRestart(resolvedPkgPath, options: options) {
-        displayMinorStatus("\(displayName) requires a restart after installation.")
+        display.minorStatus("\(displayName) requires a restart after installation.")
         restartNeeded = true
     }
 
@@ -206,7 +208,7 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
             arguments += ["-applyChoiceChangesXML", choicesXMLPath]
         } catch {
             // could not write choices.xml, should not proceed
-            displayError("Could not write choices.xml for \(packageName)")
+            display.error("Could not write choices.xml for \(packageName)")
             return (-1, false)
         }
     }
@@ -241,9 +243,9 @@ func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) asy
         for item in items {
             let itempath = (directoryPath as NSString).appendingPathComponent(item)
             if hasValidDiskImageExt(item) {
-                displayInfo("Mounting disk image \(item)")
+                display.info("Mounting disk image \(item)")
                 guard let mountpoint = try? mountdmg(itempath, useShadow: true, skipVerification: true) else {
-                    displayError("No filesystems mounted from \(item)")
+                    display.error("No filesystems mounted from \(item)")
                     return (-1, false)
                 }
                 // makre sure we unmount this when done
@@ -251,7 +253,7 @@ func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) asy
                     do {
                         try unmountdmg(mountpoint)
                     } catch {
-                        displayError(error.localizedDescription)
+                        display.error(error.localizedDescription)
                     }
                 }
                 // call us recursively to install a pkg at the root of this diskimage
@@ -263,6 +265,6 @@ func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) asy
         }
     }
     // if we get here, no valid items to install were found
-    displayWarning("No items to install were found in \(directoryPath)")
+    display.warning("No items to install were found in \(directoryPath)")
     return (-1, false)
 }

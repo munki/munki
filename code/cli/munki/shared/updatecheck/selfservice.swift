@@ -18,6 +18,8 @@
 
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Returns path to "system" SelfServeManifest/
 func selfServiceManifestPath() -> String {
     return managedInstallsDir(subpath: "manifests/SelfServeManifest")
@@ -31,7 +33,7 @@ func updateSelfServeManifest() {
         // not allowed as it could link to things not normally
         // readable by unprivileged users
         try? FileManager.default.removeItem(atPath: userManifest)
-        displayWarning("Found symlink at \(userManifest). Ignoring and removing.")
+        display.warning("Found symlink at \(userManifest). Ignoring and removing.")
     }
     if !pathExists(userManifest) {
         // nothing to do!
@@ -44,16 +46,16 @@ func updateSelfServeManifest() {
             try writePlist(plist, toFile: systemManifest)
             try? FileManager.default.removeItem(atPath: userManifest)
         } else {
-            displayError("Could not read \(userManifest): data was nil")
+            display.error("Could not read \(userManifest): data was nil")
             try? FileManager.default.removeItem(atPath: userManifest)
         }
     } catch let PlistError.readError(description) {
-        displayError("Could not read \(userManifest): \(description)")
+        display.error("Could not read \(userManifest): \(description)")
         try? FileManager.default.removeItem(atPath: userManifest)
     } catch let PlistError.writeError(description) {
-        displayError("Could not write \(systemManifest): \(description)")
+        display.error("Could not write \(systemManifest): \(description)")
     } catch {
-        displayError("Unexpected error reading or writing SelfServeManifest: \(error.localizedDescription)")
+        display.error("Unexpected error reading or writing SelfServeManifest: \(error.localizedDescription)")
     }
 }
 
@@ -66,7 +68,7 @@ func processDefaultInstalls(_ defaultItems: [String]) {
         do {
             manifest = try readPlist(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
         } catch {
-            displayError("Could not read \(selfServeManifest): \(error.localizedDescription)")
+            display.error("Could not read \(selfServeManifest): \(error.localizedDescription)")
             return
         }
     }
@@ -98,7 +100,7 @@ func processDefaultInstalls(_ defaultItems: [String]) {
         do {
             try writePlist(manifest, toFile: selfServeManifest)
         } catch {
-            displayError("Could not write \(selfServeManifest): \(error.localizedDescription)")
+            display.error("Could not write \(selfServeManifest): \(error.localizedDescription)")
         }
     }
 }
@@ -115,7 +117,7 @@ func cleanUpSelfServeManagedUninstalls(_ installInfoRemovals: [PlistDict]) {
     do {
         plist = try readPlist(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
     } catch {
-        displayError("Could not read \(selfServeManifest): \(error.localizedDescription)")
+        display.error("Could not read \(selfServeManifest): \(error.localizedDescription)")
         return
     }
     let removedItemNames: [String]
@@ -137,7 +139,7 @@ func cleanUpSelfServeManagedUninstalls(_ installInfoRemovals: [PlistDict]) {
         do {
             try writePlist(plist, toFile: selfServeManifest)
         } catch {
-            displayError("Could not write \(selfServeManifest): \(error.localizedDescription)")
+            display.error("Could not write \(selfServeManifest): \(error.localizedDescription)")
         }
     }
 }

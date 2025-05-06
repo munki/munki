@@ -25,6 +25,7 @@ import Security
 private let DEFAULT_KEYCHAIN_NAME = "munki.keychain"
 private let DEFAULT_KEYCHAIN_PASSWORD = "munki"
 private let KEYCHAIN_DIRECTORY = managedInstallsDir(subpath: "Keychains") as NSString
+private let display = DisplayAndLog.main
 
 /// Read in a base64 pem file, return data of embedded certificate
 func pemCertData(_ certPath: String) throws -> Data {
@@ -186,17 +187,17 @@ func getKeychainPath() -> String {
 /// Debugging output for keychain
 func debugKeychainOutput() {
     do {
-        displayDebug2("***Keychain search list for common domain***")
-        try displayDebug2(security("list-keychains", "-d", "common"))
-        displayDebug2("***Default keychain info***")
-        try displayDebug2(security("default-keychain", "-d", "common"))
+        display.debug2("***Keychain search list for common domain***")
+        try display.debug2(security("list-keychains", "-d", "common"))
+        display.debug2("***Default keychain info***")
+        try display.debug2(security("default-keychain", "-d", "common"))
         let keychainfile = getKeychainPath()
         if pathExists(keychainfile) {
-            displayDebug2("***Info for \(keychainfile)***")
-            try displayDebug2(security("show-keychain-info", keychainfile))
+            display.debug2("***Info for \(keychainfile)***")
+            try display.debug2(security("show-keychain-info", keychainfile))
         }
     } catch {
-        displayError("Error: \(error.localizedDescription)")
+        display.error("Error: \(error.localizedDescription)")
     }
 }
 
@@ -221,7 +222,7 @@ func addToKeychainList(_ keychainPath: String, environment: [String: String] = [
     }
     if !searchKeychains.contains(keychainPath) {
         // Keychain is not in the search paths, let's add it
-        displayDebug2("Adding client keychain to search path...")
+        display.debug2("Adding client keychain to search path...")
         searchKeychains.append(keychainPath)
         do {
             let output = try security(
@@ -229,11 +230,11 @@ func addToKeychainList(_ keychainPath: String, environment: [String: String] = [
                 environment: environment
             )
             if !output.isEmpty {
-                displayDebug2(output)
+                display.debug2(output)
             }
             addedKeychain = true
         } catch {
-            displayError("Could not add keychain \(keychainPath) to keychain list: \(error.localizedDescription)")
+            display.error("Could not add keychain \(keychainPath) to keychain list: \(error.localizedDescription)")
         }
     }
     if loggingLevel() > 2 {
@@ -261,7 +262,7 @@ func removeFromKeychainList(_ keychainPath: String, environment: [String: String
     }
     if searchKeychains.contains(keychainPath) {
         // Keychain is in the search path
-        displayDebug2("Removing \(keychainPath) from search path...")
+        display.debug2("Removing \(keychainPath) from search path...")
         let filteredKeychains = searchKeychains.filter { $0 != keychainPath }
         do {
             let output = try security(
@@ -269,10 +270,10 @@ func removeFromKeychainList(_ keychainPath: String, environment: [String: String
                 environment: environment
             )
             if !output.isEmpty {
-                displayDebug2(output)
+                display.debug2(output)
             }
         } catch {
-            displayError("Could not remove keychain \(keychainPath) from keychain list: \(error.localizedDescription)")
+            display.error("Could not remove keychain \(keychainPath) from keychain list: \(error.localizedDescription)")
         }
     }
     if loggingLevel() > 2 {
@@ -289,16 +290,16 @@ func unlockAndSetNonLocking(_ keychainPath: String, environment: [String: String
             environment: environment
         )
         if !output.isEmpty {
-            displayDebug2(output)
+            display.debug2(output)
         }
     } catch {
         // some problem unlocking the keychain
-        displayError("Could not unlock \(keychainPath): \(error.localizedDescription)")
+        display.error("Could not unlock \(keychainPath): \(error.localizedDescription)")
         // just delete the keychain
         do {
             try FileManager.default.removeItem(atPath: keychainPath)
         } catch {
-            displayError("Could not remove \(keychainPath): \(error.localizedDescription)")
+            display.error("Could not remove \(keychainPath): \(error.localizedDescription)")
         }
         return
     }
@@ -308,10 +309,10 @@ func unlockAndSetNonLocking(_ keychainPath: String, environment: [String: String
             environment: environment
         )
         if !output.isEmpty {
-            displayDebug2(output)
+            display.debug2(output)
         }
     } catch {
-        displayError("Could not set keychain settings for  \(keychainPath): \(error.localizedDescription)")
+        display.error("Could not set keychain settings for  \(keychainPath): \(error.localizedDescription)")
     }
 }
 
@@ -334,18 +335,18 @@ func makeClientKeychain(_ certInfo: [String: Any] = [:]) -> Bool {
     let client_key_path = certInfo["client_key_path"] as? String ?? ""
     if client_cert_path.isEmpty {
         // no client cert, so nothing to do
-        displayDebug1("No client cert info provided, so no client keychain will be created.")
+        display.debug1("No client cert info provided, so no client keychain will be created.")
         return false
     } else {
-        displayDebug1("Client cert path: \(client_cert_path)")
-        displayDebug1("Client key path: \(client_key_path)")
+        display.debug1("Client cert path: \(client_cert_path)")
+        display.debug1("Client key path: \(client_key_path)")
     }
 
     // to do some of the following options correctly, we need to be root
     // and have root's home.
     // check to see if we're root
     if NSUserName().lowercased() != "root" {
-        displayError("Can't make our client keychain unless we are root!")
+        display.error("Can't make our client keychain unless we are root!")
         return false
     }
     // make sure HOME has root's home
@@ -364,17 +365,17 @@ func makeClientKeychain(_ certInfo: [String: Any] = [:]) -> Bool {
         try? FileManager.default.createDirectory(atPath: dirName(keychainPath), withIntermediateDirectories: true, attributes: attrs)
     }
     // create a new keychain
-    displayDebug1("Creating client keychain...")
+    display.debug1("Creating client keychain...")
     do {
         let output = try security(
             "create-keychain", "-p", keychainPassword, keychainPath,
             environment: env
         )
         if !output.isEmpty {
-            displayDebug2(output)
+            display.debug2(output)
         }
     } catch {
-        displayError("Could not create keychain \(keychainPath): \(error)")
+        display.error("Could not create keychain \(keychainPath): \(error)")
     }
 
     // Ensure the keychain is in the search path and unlocked
@@ -397,27 +398,27 @@ func makeClientKeychain(_ certInfo: [String: Any] = [:]) -> Bool {
                 try combinedData.write(to: URL(fileURLWithPath: combined_pem))
                 client_cert_file = combined_pem
             } catch {
-                displayError("Could not combine client cert and key for import!")
+                display.error("Could not combine client cert and key for import!")
             }
         } else {
-            displayError("Could not read client cert or key file")
+            display.error("Could not read client cert or key file")
         }
     } else {
         client_cert_file = client_cert_path
     }
     if !client_cert_file.isEmpty {
         // client_cert_file is combined_pem or client_cert_file
-        displayDebug2("Importing client cert and key...")
+        display.debug2("Importing client cert and key...")
         do {
             let output = try security(
                 "import", client_cert_file, "-A", "-k", keychainPath,
                 environment: env
             )
             if !output.isEmpty {
-                displayDebug2(output)
+                display.debug2(output)
             }
         } catch {
-            displayError("Could not import \(client_cert_file): \(error.localizedDescription)")
+            display.error("Could not import \(client_cert_file): \(error.localizedDescription)")
         }
     }
     if !combined_pem.isEmpty {
@@ -429,7 +430,7 @@ func makeClientKeychain(_ certInfo: [String: Any] = [:]) -> Bool {
     // if addedKeychain {
     //    removeFromKeychainList(keychainPath, environment: env)
     // }
-    displayInfo("Completed creation of client keychain at \(keychainPath)")
+    display.info("Completed creation of client keychain at \(keychainPath)")
     return addedKeychain
 }
 
@@ -447,7 +448,7 @@ class MunkiKeychain {
             do {
                 try FileManager.default.removeItem(atPath: keychainPath)
             } catch {
-                displayError("Could not remove pre-existing \(keychainPath): \(error.localizedDescription)")
+                display.error("Could not remove pre-existing \(keychainPath): \(error.localizedDescription)")
             }
         }
         if pathExists(keychainPath) {

@@ -81,6 +81,7 @@ func storeCachedChecksum(toPath path: String, hash: String? = nil) -> String? {
 ///     (true/false, sha256-hash)
 ///     true if the package integrity could be validated. Otherwise, false.
 func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, alwaysHash: Bool = false) -> (Bool, String) {
+    let display = DisplayAndLog.main
     let mode = pref("PackageVerificationMode") as? String ?? "hash"
     let itemName = (path as NSString).lastPathComponent
     var calculatedHash = ""
@@ -89,11 +90,11 @@ func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, always
     }
     switch mode.lowercased() {
     case "none":
-        displayWarning("Package integrity checking is disabled.")
+        display.warning("Package integrity checking is disabled.")
         return (true, calculatedHash)
     case "hash", "hash_strict":
         if !expectedHash.isEmpty {
-            displayMinorStatus("Verifying package integrity...")
+            display.minorStatus("Verifying package integrity...")
             if calculatedHash.isEmpty {
                 calculatedHash = sha256hash(file: path)
             }
@@ -101,21 +102,21 @@ func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, always
                 return (true, calculatedHash)
             }
             // expectedHash != calculatedHash
-            displayError("Hash value integrity check for \(itemName) failed.")
+            display.error("Hash value integrity check for \(itemName) failed.")
             return (false, calculatedHash)
         } else {
             // no expected hash
             if mode.lowercased() == "hash_strict" {
-                displayError("Expected hash value for \(itemName) is missing in catalog.")
+                display.error("Expected hash value for \(itemName) is missing in catalog.")
                 return (false, calculatedHash)
             }
             // mode is "hash"
-            displayWarning(
+            display.warning(
                 "Expected hash value missing for \(itemName) -- package integrity verification skipped.")
             return (true, calculatedHash)
         }
     default:
-        displayError("The PackageVerificationMode in the ManagedInstalls preferences has an illegal value: \(mode)")
+        display.error("The PackageVerificationMode in the ManagedInstalls preferences has an illegal value: \(mode)")
     }
     return (false, calculatedHash)
 }
@@ -191,12 +192,13 @@ func getURL(
         canResume: resume,
         downloadOnlyIfChanged: onlyIfNewer,
         cacheData: cacheData,
-        log: displayDebug2
+        log: DisplayAndLog.main.debug2
     )
 
     // TODO: middleware support
     options = runMiddleware(options: options, pkginfo: pkginfo)
 
+    let display = DisplayAndLog.main
     let session = Gurl(options: options)
     var displayMessage = message
     var storedPercentComplete = -1
@@ -209,7 +211,7 @@ func getURL(
         if !displayMessage.isEmpty, session.status != 0, session.status != 304 {
             // log always, display if verbose is 1 or more
             // also display in MunkiStatus detail field
-            displayMinorStatus(displayMessage)
+            display.minorStatus(displayMessage)
             // now clear message so we don't display it again
             displayMessage = ""
         }
@@ -222,7 +224,7 @@ func getURL(
         } else if session.bytesReceived != storedBytesReceived {
             // if we don't have percent done info, log bytes received
             storedBytesReceived = session.bytesReceived
-            displayDetail("Bytes received: \(storedBytesReceived)")
+            display.detail("Bytes received: \(storedBytesReceived)")
         }
         if done {
             break
@@ -236,26 +238,26 @@ func getURL(
         if let urlError = error as? URLError {
             errorCode = urlError.code.rawValue
             errorDescription = urlError.localizedDescription
-            displayDetail("Download error \(errorCode): \(errorDescription)")
+            display.detail("Download error \(errorCode): \(errorDescription)")
         } else {
             errorDescription = error.localizedDescription
-            displayDetail("Download error: \(errorDescription)")
+            display.detail("Download error: \(errorDescription)")
         }
         if session.SSLerror != 0 {
             errorCode = session.SSLerror
             errorDescription = sslErrorForCode(errorCode)
-            displayDetail("SSL error \(errorCode) detail: \(errorDescription)")
+            display.detail("SSL error \(errorCode) detail: \(errorDescription)")
             debugKeychainOutput()
         }
-        displayDetail("Headers: \(session.headers ?? [:])")
+        display.detail("Headers: \(session.headers ?? [:])")
         if pathExists(tempDownloadPath) {
             try? FileManager.default.removeItem(atPath: tempDownloadPath)
         }
         throw FetchError.connection(errorCode: errorCode, description: errorDescription)
     }
 
-    displayDebug1("Status: \(session.status)")
-    displayDebug1("Headers: \(session.headers ?? [:])")
+    display.debug1("Status: \(session.status)")
+    display.debug1("Headers: \(session.headers ?? [:])")
     // TODO: (maybe) track and display redirection info
 
     var returnedHeaders = session.headers ?? [:]
@@ -276,7 +278,7 @@ func getURL(
     }
     if session.status == 304 {
         // unchanged on server
-        displayDebug1("Item is unchanged on the server.")
+        display.debug1("Item is unchanged on the server.")
         return returnedHeaders
     }
     // if we get here there was an HTTP error of some sort
@@ -352,7 +354,7 @@ func getHTTPfileIfChangedAtomically(
 
     if (headers["http_result_code"] ?? "") == "304" {
         // not modified, return existing file
-        displayDebug1("\(destinationPath) already exists and is up-to-date.")
+        DisplayAndLog.main.debug1("\(destinationPath) already exists and is up-to-date.")
         // file already exists and is unchanged, so we return false
         return false
     }
@@ -494,7 +496,7 @@ func getResourceIfChangedAtomically(
         // the preference decides
         pref("FollowHTTPRedirects") as? String ?? "none"
     }
-    displayDebug1("FollowHTTPRedirects is: \(resolvedFollowRedirects)")
+    DisplayAndLog.main.debug1("FollowHTTPRedirects is: \(resolvedFollowRedirects)")
 
     if ["http", "https"].contains(resolvedURL.scheme) {
         changed = try getHTTPfileIfChangedAtomically(
@@ -561,7 +563,7 @@ func fetchMunkiResourceByURL(
     verify: Bool = false,
     pkginfo: PlistDict? = nil
 ) throws -> Bool {
-    displayDebug2("Fetching URL: \(url)")
+    DisplayAndLog.main.debug2("Fetching URL: \(url)")
     let customHeaders = pref(ADDITIONAL_HTTP_HEADERS_KEY) as? [String]
     return try getResourceIfChangedAtomically(
         url,
@@ -618,7 +620,7 @@ func fetchMunkiResource(
 /// May throw a FetchError
 func getDataFromURL(_ url: String) throws -> Data? {
     guard let tmpDir = TempDir.shared.makeTempDir() else {
-        displayError("Could not create temporary directory")
+        DisplayAndLog.main.error("Could not create temporary directory")
         return nil
     }
     defer { try? FileManager.default.removeItem(atPath: tmpDir) }
