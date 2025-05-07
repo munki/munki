@@ -319,6 +319,24 @@ func readFileOrString(_ fileNameOrString: String) -> String {
     return (try? String(contentsOfFile: fileNameOrString, encoding: .utf8)) ?? fileNameOrString
 }
 
+/// If path appears to be inside the repo's pkgs directory, return a path relative to the pkgs dir
+/// Otherwise, return the basename
+func repoPkgPath(_ path: String) -> String {
+    let absPath = getAbsolutePath(path)
+    if let repourl = adminPref("repo_url") as? String,
+       let url = URL(string: repourl),
+       url.scheme == "file"
+    {
+        let repoPkgsPath = (url.path as NSString).appendingPathComponent("pkgs")
+        if absPath.hasPrefix(repoPkgsPath) {
+            // return portion of absPath after /pkgs/
+            let pkgsPath = absPath.components(separatedBy: "/").drop(while: { $0 != "pkgs" })
+            return pkgsPath.dropFirst().joined(separator: "/")
+        }
+    }
+    return (path as NSString).lastPathComponent
+}
+
 /// Return a pkginfo dictionary for installeritem
 func makepkginfo(_ filepath: String?,
                  options: PkginfoOptions) throws -> PlistDict
@@ -365,13 +383,7 @@ func makepkginfo(_ filepath: String?,
         } else {
             throw MunkiError("\(installeritem) is not a supported installer item!")
         }
-
-        // try to generate the correct item location if item was imported from
-        // inside the munki repo
-        // TODO: remove start of path if it refers to the Munki repo pkgs dir
-
-        // for now, just the filename
-        pkginfo["installer_item_location"] = (installeritem as NSString).lastPathComponent
+        pkginfo["installer_item_location"] = repoPkgPath(installeritem)
 
         if let uninstalleritem = options.pkg.uninstalleritem {
             pkginfo["uninstallable"] = true
@@ -383,9 +395,8 @@ func makepkginfo(_ filepath: String?,
             if !FileManager.default.fileExists(atPath: uninstalleritem) {
                 throw MunkiError("No uninstaller item at \(uninstalleritem)")
             }
-            // TODO: remove start of path if it refers to the Munki repo pkgs dir
-            // for now, just the filename
-            pkginfo["uninstaller_item_location"] = (uninstalleritem as NSString).lastPathComponent
+            pkginfo["uninstaller_item_location"] = repoPkgPath(uninstalleritem)
+
             pkginfo["uninstaller_item_hash"] = sha256hash(file: uninstalleritem)
             if let attributes = try? FileManager.default.attributesOfItem(atPath: uninstalleritem) {
                 let filesize = (attributes as NSDictionary).fileSize()
