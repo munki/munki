@@ -20,67 +20,6 @@
 
 import Foundation
 
-// A class to return a shared temp directory, and to clean it up when we exit
-class TempDir {
-    static let shared = TempDir()
-
-    private var url: URL?
-    var path: String? {
-        return url?.path
-    }
-
-    init() {
-        let filemanager = FileManager.default
-        let dirName = "munki-\(UUID().uuidString)"
-        let tmpURL = filemanager.temporaryDirectory.appendingPathComponent(
-            dirName, isDirectory: true
-        )
-        do {
-            try filemanager.createDirectory(at: tmpURL, withIntermediateDirectories: true)
-            url = tmpURL
-        } catch {
-            url = nil
-        }
-    }
-
-    func makeTempDir() -> String? {
-        if let url {
-            let tmpURL = url.appendingPathComponent(UUID().uuidString)
-            do {
-                try FileManager.default.createDirectory(at: tmpURL, withIntermediateDirectories: true)
-                return tmpURL.path
-            } catch {
-                return nil
-            }
-        }
-        return nil
-    }
-
-    func cleanUp() {
-        if let url {
-            do {
-                try FileManager.default.removeItem(at: url)
-                self.url = nil
-            } catch {
-                // nothing
-            }
-        }
-    }
-
-    deinit {
-        cleanUp()
-    }
-}
-
-/// Returns a path to use for a temporary file
-func tempFile() -> String? {
-    guard let tempDir = TempDir.shared.path else {
-        return nil
-    }
-    let basename = UUID().uuidString
-    return (tempDir as NSString).appendingPathComponent(basename)
-}
-
 /// Returns true if path exists/
 func pathExists(_ path: String) -> Bool {
     return FileManager.default.fileExists(atPath: path)
