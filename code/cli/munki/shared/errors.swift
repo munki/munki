@@ -21,8 +21,8 @@
 import Foundation
 
 /// General error class for Munki errors
-class MunkiError: Error, CustomStringConvertible {
-    public internal(set) var message: String
+class MunkiError: Error, CustomStringConvertible, @unchecked Sendable {
+    private let message: String
 
     // Creates a new error with the given message.
     public init(_ message: String) {
