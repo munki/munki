@@ -96,7 +96,7 @@ func deleteManifest(repo: Repo, name: String) async -> Bool {
 
 /// Create a new empty manifest
 extension ManifestUtil {
-    struct NewManifest: ParsableCommand {
+    struct NewManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Creates a new empty manifest")
 
@@ -115,7 +115,7 @@ extension ManifestUtil {
 
 /// Copy a manifest
 extension ManifestUtil {
-    struct CopyManifest: ParsableCommand {
+    struct CopyManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Copies a manifest")
 
@@ -144,7 +144,7 @@ extension ManifestUtil {
 
 /// Rename a manifest
 extension ManifestUtil {
-    struct RenameManifest: ParsableCommand {
+    struct RenameManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Renames a manifest")
 
@@ -174,7 +174,7 @@ extension ManifestUtil {
 
 /// Delete a manifest
 extension ManifestUtil {
-    struct DeleteManifest: ParsableCommand {
+    struct DeleteManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Deletes a manifest")
 

@@ -88,7 +88,7 @@ func expandIncludedManifests(repo: Repo, manifest: PlistDict) async -> PlistDict
 
 /// Prints contents of a given manifest
 extension ManifestUtil {
-    struct DisplayManifest: ParsableCommand {
+    struct DisplayManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Displays a manifest.")
 
@@ -126,7 +126,7 @@ extension ManifestUtil {
 
 /// Prints contents of a given manifest, expanding included maniifests
 extension ManifestUtil {
-    struct ExpandIncludedManifests: ParsableCommand {
+    struct ExpandIncludedManifests: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Displays a manifest, expanding included manifests.")
 
