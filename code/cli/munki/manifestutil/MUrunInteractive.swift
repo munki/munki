@@ -31,7 +31,7 @@ func setupTabCompleter() {
 }
 
 extension ManifestUtil {
-    struct RunInteractive: ParsableCommand {
+    struct RunInteractive: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Runs this utility in interactive mode.")
 

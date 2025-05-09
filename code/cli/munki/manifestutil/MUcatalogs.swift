@@ -34,7 +34,7 @@ func getCatalogNames(repo: Repo) async -> [String]? {
 
 /// Prints the names of the available catalogs
 extension ManifestUtil {
-    struct ListCatalogs: ParsableCommand {
+    struct ListCatalogs: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists available catalogs in Munki repo.")
 

@@ -42,7 +42,7 @@ func connectToRepo() throws -> Repo {
 }
 
 @main
-struct ManifestUtil: ParsableCommand {
+struct ManifestUtil: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "manifestutil",
         abstract: "A utility for working with Munki manifests.",
@@ -75,7 +75,7 @@ struct ManifestUtil: ParsableCommand {
 }
 
 extension ManifestUtil {
-    struct Exit: ParsableCommand {
+    struct Exit: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Exits this utility when in interactive mode.")
 
@@ -86,7 +86,7 @@ extension ManifestUtil {
 }
 
 extension ManifestUtil {
-    struct Configure: ParsableCommand {
+    struct Configure: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Show and edit configuration for this tool.")
 
@@ -101,7 +101,7 @@ extension ManifestUtil {
 }
 
 extension ManifestUtil {
-    struct Version: ParsableCommand {
+    struct Version: AsyncParsableCommand {
         static var configuration = CommandConfiguration(abstract: "Print version information.")
 
         func run() throws {
