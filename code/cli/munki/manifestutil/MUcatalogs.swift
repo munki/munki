@@ -22,9 +22,9 @@ import ArgumentParser
 import Foundation
 
 /// Returns a list of available catalogs
-func getCatalogNames(repo: Repo) -> [String]? {
+func getCatalogNames(repo: Repo) async -> [String]? {
     do {
-        let catalogNames = try repo.list("catalogs")
+        let catalogNames = try await repo.list("catalogs")
         return catalogNames.sorted()
     } catch {
         printStderr("Could not retrieve catalogs: \(error.localizedDescription)")
@@ -38,9 +38,9 @@ extension ManifestUtil {
         static var configuration = CommandConfiguration(
             abstract: "Lists available catalogs in Munki repo.")
 
-        func run() throws {
+        func run() async throws {
             if let repo = try? connectToRepo(),
-               let catalogNames = getCatalogNames(repo: repo)
+               let catalogNames = await getCatalogNames(repo: repo)
             {
                 print(catalogNames.joined(separator: "\n"))
             }
@@ -49,15 +49,15 @@ extension ManifestUtil {
 }
 
 /// Returns a list of unique installer item (pkg) names from the given list of catalogs
-func getInstallerItemNames(repo: Repo, catalogs: [String]) -> [String] {
+func getInstallerItemNames(repo: Repo, catalogs: [String]) async -> [String] {
     var itemList = [String]()
-    guard let catalogNames = getCatalogNames(repo: repo) else {
+    guard let catalogNames = await getCatalogNames(repo: repo) else {
         return itemList
     }
     for catalogName in catalogNames {
         if catalogs.contains(catalogName) {
             do {
-                let data = try repo.get("catalogs/\(catalogName)")
+                let data = try await repo.get("catalogs/\(catalogName)")
                 if let catalog = (try? readPlist(fromData: data)) as? [PlistDict] {
                     let itemNames = catalog.filter {
                         ($0["update_for"] as? String ?? "").isEmpty &&
@@ -95,9 +95,9 @@ extension ManifestUtil {
             }
         }
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo(),
-                  let availableCatalogs = getCatalogNames(repo: repo)
+                  let availableCatalogs = await getCatalogNames(repo: repo)
             else {
                 return
             }
@@ -108,7 +108,7 @@ extension ManifestUtil {
                     throw ExitCode(-1)
                 }
             }
-            let installerItemNames = getInstallerItemNames(repo: repo, catalogs: catalogNames)
+            let installerItemNames = await getInstallerItemNames(repo: repo, catalogs: catalogNames)
             print(installerItemNames.joined(separator: "\n"))
         }
     }

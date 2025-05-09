@@ -22,11 +22,11 @@ import ArgumentParser
 import Foundation
 
 /// find text in manifests, optionally limiting the search to a single section
-func findTextInManifests(repo: Repo, findText: String, section: String = "") {
+func findTextInManifests(repo: Repo, findText: String, section: String = "") async {
     var count = 0
-    let manifestNames = getManifestNames(repo: repo) ?? []
+    let manifestNames = await getManifestNames(repo: repo) ?? []
     for name in manifestNames {
-        guard let manifest = getManifest(repo: repo, name: name) else {
+        guard let manifest = await getManifest(repo: repo, name: name) else {
             continue
         }
         // if section is not specified, check all sections
@@ -63,7 +63,7 @@ func findTextInManifests(repo: Repo, findText: String, section: String = "") {
 
 /// Finds text in manifests
 extension ManifestUtil {
-    struct Find: ParsableCommand {
+    struct Find: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Finds text in manifests")
 
@@ -75,9 +75,9 @@ extension ManifestUtil {
                                      valueName: "find-text"))
         var findText: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            findTextInManifests(repo: repo, findText: findText, section: section)
+            await findTextInManifests(repo: repo, findText: findText, section: section)
         }
     }
 }

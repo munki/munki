@@ -22,8 +22,8 @@ import ArgumentParser
 import Foundation
 
 /// Adds an item to a section of a manifest
-func addManifestItem(repo: Repo, manifestName: String, section: String, item: String, addToTop: Bool = false) -> Bool {
-    guard var manifest = getManifest(repo: repo, name: manifestName) else {
+func addManifestItem(repo: Repo, manifestName: String, section: String, item: String, addToTop: Bool = false) async -> Bool {
+    guard var manifest = await getManifest(repo: repo, name: manifestName) else {
         return false
     }
     var sectionItems = manifest[section] as? [String] ?? []
@@ -37,7 +37,7 @@ func addManifestItem(repo: Repo, manifestName: String, section: String, item: St
         sectionItems.append(item)
     }
     manifest[section] = sectionItems
-    if saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
+    if await saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
         print("Added '\(item)' to \(section) of manifest \(manifestName).")
         return true
     }
@@ -45,15 +45,15 @@ func addManifestItem(repo: Repo, manifestName: String, section: String, item: St
 }
 
 /// Remove item from section of manifest
-func removeManifestItem(repo: Repo, manifestName: String, section: String, item: String) -> Bool {
-    guard var manifest = getManifest(repo: repo, name: manifestName) else {
+func removeManifestItem(repo: Repo, manifestName: String, section: String, item: String) async -> Bool {
+    guard var manifest = await getManifest(repo: repo, name: manifestName) else {
         return false
     }
     var sectionItems = manifest[section] as? [String] ?? []
     if let index = sectionItems.firstIndex(of: item) {
         sectionItems.remove(at: index)
         manifest[section] = sectionItems
-        if saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
+        if await saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
             print("Removed '\(item)' from \(section) of manifest \(manifestName).")
             return true
         }
@@ -63,17 +63,17 @@ func removeManifestItem(repo: Repo, manifestName: String, section: String, item:
 }
 
 /// Adds a catalog to a manifest.
-func addCatalog(repo: Repo, manifestName: String, catalogName: String) -> Bool {
-    let availableCatalogs = getCatalogNames(repo: repo) ?? []
+func addCatalog(repo: Repo, manifestName: String, catalogName: String) async -> Bool {
+    let availableCatalogs = await getCatalogNames(repo: repo) ?? []
     if !availableCatalogs.contains(catalogName) {
         printStderr("Unknown catalog name: '\(catalogName)'")
         return false
     }
-    return addManifestItem(repo: repo, manifestName: manifestName, section: "catalogs", item: catalogName, addToTop: true)
+    return await addManifestItem(repo: repo, manifestName: manifestName, section: "catalogs", item: catalogName, addToTop: true)
 }
 
 /// Adds a pkg (item) to a manifest
-func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String = "managed_installs") -> Bool {
+func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String = "managed_installs") async -> Bool {
     let validPkgSections = [
         "managed_installs",
         "managed_uninstalls",
@@ -95,7 +95,7 @@ func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String =
         printStderr("Section name: '\(section)' is not supported for adding packages")
         return false
     }
-    guard let manifest = getManifest(repo: repo, name: manifestName) else {
+    guard let manifest = await getManifest(repo: repo, name: manifestName) else {
         return false
     }
     if mutuallyExclusiveSections.contains(section) {
@@ -116,17 +116,17 @@ func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String =
     if let manifestCatalogs = manifest["catalogs"] as? [String],
        !manifestCatalogs.isEmpty
     {
-        let availablePkgNames = getInstallerItemNames(repo: repo, catalogs: manifestCatalogs)
+        let availablePkgNames = await getInstallerItemNames(repo: repo, catalogs: manifestCatalogs)
         if !availablePkgNames.contains(pkgName) {
             printStderr("WARNING: Item '\(pkgName)' is not available in any catalog of manifest \(manifestName)")
         }
     }
-    return addManifestItem(repo: repo, manifestName: manifestName, section: section, item: pkgName)
+    return await addManifestItem(repo: repo, manifestName: manifestName, section: section, item: pkgName)
 }
 
 /// Moves an item from managed\_installs to managed\_uninstalls
-func moveInstallToUninstall(repo: Repo, manifestName: String, item: String) -> Bool {
-    guard var manifest = getManifest(repo: repo, name: manifestName) else {
+func moveInstallToUninstall(repo: Repo, manifestName: String, item: String) async -> Bool {
+    guard var manifest = await getManifest(repo: repo, name: manifestName) else {
         return false
     }
     var managedInstalls = manifest["managed_installs"] as? [String] ?? []
@@ -146,7 +146,7 @@ func moveInstallToUninstall(repo: Repo, manifestName: String, item: String) -> B
     }
     manifest["managed_installs"] = managedInstalls
     manifest["managed_uninstalls"] = managedUninstalls
-    if saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
+    if await saveManifest(repo: repo, manifest: manifest, name: manifestName, overwrite: true) {
         print("Removed '\(item)' from managed_installs of manifest \(manifestName)")
         print(managedUninstallsMessage)
         return true
@@ -155,17 +155,17 @@ func moveInstallToUninstall(repo: Repo, manifestName: String, item: String) -> B
 }
 
 /// Adds an included manifest to a manifest.
-func addIncludedManifest(repo: Repo, manifestName: String, includedManifestName: String) -> Bool {
+func addIncludedManifest(repo: Repo, manifestName: String, includedManifestName: String) async -> Bool {
     if manifestName == includedManifestName {
         printStderr("You cannot add a manifest to itself as an included_manifest!")
         return false
     }
-    let availableManifests = getManifestNames(repo: repo) ?? []
+    let availableManifests = await getManifestNames(repo: repo) ?? []
     if !availableManifests.contains(includedManifestName) {
         printStderr("Unknown manifest name: '\(includedManifestName)'")
         return false
     }
-    return addManifestItem(
+    return await addManifestItem(
         repo: repo,
         manifestName: manifestName,
         section: "included_manifests",
@@ -175,7 +175,7 @@ func addIncludedManifest(repo: Repo, manifestName: String, includedManifestName:
 
 /// Add a (pkg) item to a manifest
 extension ManifestUtil {
-    struct AddPkg: ParsableCommand {
+    struct AddPkg: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Adds a package to a manifest")
 
@@ -193,16 +193,16 @@ extension ManifestUtil {
         ))
         var pkgName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = addPkg(repo: repo, manifestName: manifest, pkgName: pkgName, section: section)
+            _ = await addPkg(repo: repo, manifestName: manifest, pkgName: pkgName, section: section)
         }
     }
 }
 
 /// Remove a pkg from a manifest
 extension ManifestUtil {
-    struct RemovePkg: ParsableCommand {
+    struct RemovePkg: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Removes a package from a manifest")
 
@@ -220,16 +220,16 @@ extension ManifestUtil {
         ))
         var pkgName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = removeManifestItem(repo: repo, manifestName: manifest, section: section, item: pkgName)
+            _ = await removeManifestItem(repo: repo, manifestName: manifest, section: section, item: pkgName)
         }
     }
 }
 
 /// Move a pkg from managed\_installs to managed\_uninstalls in a manifest
 extension ManifestUtil {
-    struct MoveInstallToUninstall: ParsableCommand {
+    struct MoveInstallToUninstall: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Moves a pkgitem from managed_installs to managed_uninstalls in a manifest")
 
@@ -243,16 +243,16 @@ extension ManifestUtil {
         ))
         var pkgName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = moveInstallToUninstall(repo: repo, manifestName: manifest, item: pkgName)
+            _ = await moveInstallToUninstall(repo: repo, manifestName: manifest, item: pkgName)
         }
     }
 }
 
 /// Add a catalog to a manifest
 extension ManifestUtil {
-    struct AddCatalog: ParsableCommand {
+    struct AddCatalog: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Adds a catalog to a manifest")
 
@@ -266,16 +266,16 @@ extension ManifestUtil {
         ))
         var catalogName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = addCatalog(repo: repo, manifestName: manifest, catalogName: catalogName)
+            _ = await addCatalog(repo: repo, manifestName: manifest, catalogName: catalogName)
         }
     }
 }
 
 /// Remove a catalog from a manifest
 extension ManifestUtil {
-    struct RemoveCatalog: ParsableCommand {
+    struct RemoveCatalog: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Removes a catalog from a manifest")
 
@@ -289,16 +289,16 @@ extension ManifestUtil {
         ))
         var catalogName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = removeManifestItem(repo: repo, manifestName: manifest, section: "catalogs", item: catalogName)
+            _ = await removeManifestItem(repo: repo, manifestName: manifest, section: "catalogs", item: catalogName)
         }
     }
 }
 
 /// Add an inlcuded_manifest to a manifest
 extension ManifestUtil {
-    struct AddIncludedManifest: ParsableCommand {
+    struct AddIncludedManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Adds an included manifest to a manifest")
 
@@ -312,16 +312,16 @@ extension ManifestUtil {
         ))
         var includedManifestName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = addIncludedManifest(repo: repo, manifestName: manifest, includedManifestName: includedManifestName)
+            _ = await addIncludedManifest(repo: repo, manifestName: manifest, includedManifestName: includedManifestName)
         }
     }
 }
 
 /// Remove an included\_manifest from a manifest
 extension ManifestUtil {
-    struct RemoveIncludedManifest: ParsableCommand {
+    struct RemoveIncludedManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Removes an included manifest from a manifest")
 
@@ -335,9 +335,9 @@ extension ManifestUtil {
         ))
         var includedManifestName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = removeManifestItem(repo: repo, manifestName: manifest, section: "included_manifests", item: includedManifestName)
+            _ = await removeManifestItem(repo: repo, manifestName: manifest, section: "included_manifests", item: includedManifestName)
         }
     }
 }

@@ -196,7 +196,7 @@ struct MunkiImport: AsyncParsableCommand {
 
         if !munkiImportOptions.nointeractive {
             // try to find existing pkginfo items that match this one
-            if let matchingPkgInfo = findMatchingPkginfo(repo, pkginfo) {
+            if let matchingPkgInfo = await findMatchingPkginfo(repo, pkginfo) {
                 var exactMatch = false
                 if let matchingItemHash = matchingPkgInfo["installer_item_hash"] as? String,
                    let ourItemHash = pkginfo["installer_item_hash"] as? String,
@@ -348,19 +348,19 @@ struct MunkiImport: AsyncParsableCommand {
                     munkiImportOptions.subdirectory = String(installerItemDirPath[startIndex...])
                 }
             }
-            munkiImportOptions.subdirectory = promptForSubdirectory(repo, munkiImportOptions.subdirectory)
+            munkiImportOptions.subdirectory = await promptForSubdirectory(repo, munkiImportOptions.subdirectory)
         }
         // if we have an icon, upload it
         if let iconPath = munkiImportOptions.iconPath,
            let name = pkginfo["name"] as? String
         {
             do {
-                let _ = try convertAndInstallIcon(repo, name: name, iconPath: iconPath)
+                let _ = try await convertAndInstallIcon(repo, name: name, iconPath: iconPath)
             } catch let error as MunkiError {
                 printStderr("Error importing \(iconPath): \(error.description)")
             }
         } else if !munkiImportOptions.extractIcon,
-                  !iconIsInRepo(repo, pkginfo: pkginfo)
+                  await !iconIsInRepo(repo, pkginfo: pkginfo)
         {
             print("No existing product icon found.")
             print("Attempt to create a product icon? [y/N] ", terminator: "")
@@ -373,7 +373,7 @@ struct MunkiImport: AsyncParsableCommand {
         if munkiImportOptions.extractIcon {
             print("Attempting to extract and upload icon...")
             do {
-                let importedPaths = try extractAndCopyIcon(repo, installerItem: installerItem, pkginfo: pkginfo)
+                let importedPaths = try await extractAndCopyIcon(repo, installerItem: installerItem, pkginfo: pkginfo)
                 if !importedPaths.isEmpty {
                     print("Imported " + importedPaths.joined(separator: ", "))
                 } else {
@@ -392,7 +392,7 @@ struct MunkiImport: AsyncParsableCommand {
             let installerItemName = (installerItem as NSString).lastPathComponent
             print("Copying \(installerItemName) to repo...")
             let version = pkginfo["version"] as? String ?? "UNKNOWN"
-            uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: installerItem, version: version, subdirectory: subdir)
+            uploadedPkgPath = try await copyInstallerItemToRepo(repo, itempath: installerItem, version: version, subdirectory: subdir)
             print("Copied \(installerItemName) to \(uploadedPkgPath).")
         } catch let error as MunkiError {
             printStderr("Error importing \(installerItem): \(error.description)")
@@ -409,7 +409,7 @@ struct MunkiImport: AsyncParsableCommand {
                 let uninstallerItemName = (uninstallerItem as NSString).lastPathComponent
                 print("Copying \(uninstallerItemName) to repo...")
                 let version = pkginfo["version"] as? String ?? "UNKNOWN"
-                uploadedPkgPath = try copyInstallerItemToRepo(repo, itempath: uninstallerItem, version: version, subdirectory: subdir)
+                uploadedPkgPath = try await copyInstallerItemToRepo(repo, itempath: uninstallerItem, version: version, subdirectory: subdir)
                 print("Copied \(uninstallerItemName) to \(uploadedPkgPath).")
             } catch let error as MunkiError {
                 printStderr("Error importing \(uninstallerItem): \(error.description)")
@@ -428,7 +428,7 @@ struct MunkiImport: AsyncParsableCommand {
         // Now upload pkginfo
         var pkginfoPath = ""
         do {
-            pkginfoPath = try copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
+            pkginfoPath = try await copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
             print("Saved pkginfo to \(pkginfoPath).")
         }
         // Maybe rebuild the catalogs?
@@ -438,8 +438,8 @@ struct MunkiImport: AsyncParsableCommand {
                answer.lowercased().hasPrefix("y")
             {
                 let makecatalogOptions = MakeCatalogOptions()
-                var catalogsmaker = try CatalogsMaker(repo: repo, options: makecatalogOptions)
-                catalogsmaker.makecatalogs()
+                var catalogsmaker = try await CatalogsMaker(repo: repo, options: makecatalogOptions)
+                await catalogsmaker.makecatalogs()
                 if !catalogsmaker.errors.isEmpty {
                     for error in catalogsmaker.errors {
                         printStderr(error)

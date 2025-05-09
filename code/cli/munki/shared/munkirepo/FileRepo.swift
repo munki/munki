@@ -178,7 +178,7 @@ class FileRepo: Repo {
     /// Returns a list of identifiers for each item of kind.
     /// Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
     /// For a file-backed repo this would be a list of pathnames.
-    func list(_ kind: String) throws -> [String] {
+    func list(_ kind: String) async throws -> [String] {
         // TODO: the order Foundation enumerates files is different than the order
         // you get from Python's os.walk. This affets the behavior of MWA2.
         // MWA2 probably should not be relying on catalogs being built in a specific ordering.
@@ -212,7 +212,7 @@ class FileRepo: Repo {
     /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
     /// Avoid using this method with the 'pkgs' kind as it might return a
     /// really large blob of data.
-    func get(_ identifier: String) throws -> Data {
+    func get(_ identifier: String) async throws -> Data {
         let repoFilePath = fullPath(identifier)
         if let data = FileManager.default.contents(atPath: repoFilePath) {
             return data
@@ -226,7 +226,7 @@ class FileRepo: Repo {
     /// of 'pkgsinfo/apps/Firefox-52.0.plist' would copy the contents of
     /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist to a local file given by
     /// local_file_path.
-    func get(_ identifier: String, toFile local_file_path: String) throws {
+    func get(_ identifier: String, toFile local_file_path: String) async throws {
         // TODO: make this atomic
         let filemanager = FileManager.default
         if filemanager.fileExists(atPath: local_file_path) {
@@ -239,7 +239,7 @@ class FileRepo: Repo {
     /// For a file-backed repo, a resource_identifier of
     /// 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content being
     /// saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
-    func put(_ identifier: String, content: Data) throws {
+    func put(_ identifier: String, content: Data) async throws {
         let filemanager = FileManager.default
         let dirPath = parentDir(identifier)
         if !filemanager.fileExists(atPath: dirPath) {
@@ -258,7 +258,7 @@ class FileRepo: Repo {
     /// resource_identifier. For a file-backed repo, a resource_identifier
     /// of 'pkgsinfo/apps/Firefox-52.0.plist' would result in the content
     /// being saved to <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
-    func put(_ identifier: String, fromFile localFilePath: String) throws {
+    func put(_ identifier: String, fromFile localFilePath: String) async throws {
         let filemanager = FileManager.default
         let dirPath = parentDir(identifier)
         if !filemanager.fileExists(atPath: dirPath) {
@@ -280,7 +280,7 @@ class FileRepo: Repo {
     /// For a file-backed repo, a resource_identifier of
     /// 'pkgsinfo/apps/Firefox-52.0.plist' would result in the deletion of
     /// <repo_root>/pkgsinfo/apps/Firefox-52.0.plist.
-    func delete(_ identifier: String) throws {
+    func delete(_ identifier: String) async throws {
         try FileManager.default.removeItem(atPath: fullPath(identifier))
     }
 

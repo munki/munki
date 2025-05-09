@@ -36,7 +36,7 @@ func getSingleArch(_ pkginfo: PlistDict) -> String {
 /// If itempath is a path within the repo/pkgs directory, copies nothing.
 /// Renames the item if an item already exists with that name.
 /// Returns the identifier for the item in the repo.
-func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, subdirectory: String = "") throws -> String {
+func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, subdirectory: String = "") async throws -> String {
     let destPath = ("pkgs" as NSString).appendingPathComponent(subdirectory)
     var itemName = (itempath as NSString).lastPathComponent
     var destIdentifier = (destPath as NSString).appendingPathComponent(itemName)
@@ -62,7 +62,7 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
         destIdentifier = (destPath as NSString).appendingPathComponent(itemName)
     }
     do {
-        let pkgsList = try listItemsOfKind(repo, "pkgs")
+        let pkgsList = try await listItemsOfKind(repo, "pkgs")
         var index = 0
         while pkgsList.contains(destIdentifier) {
             // try appending numbers until we have a unique name
@@ -76,7 +76,7 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
         throw MunkiError("Unexpected error: \(error)")
     }
     do {
-        try repo.put(destIdentifier, fromFile: itempath)
+        try await repo.put(destIdentifier, fromFile: itempath)
         return destIdentifier
     } catch let error as MunkiError {
         throw MunkiError("Unable to copy \(itempath) to pkgs/\(destIdentifier): \(error.description)")
@@ -87,7 +87,7 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
 
 /// Saves pkginfo to <munki_repo>/pkgsinfo/subdirectory
 /// Can throw PlistError.writeError, RepoError, or RepoCopyError
-func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = "") throws -> String {
+func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = "") async throws -> String {
     let pkginfoData = try plistToData(pkginfo)
     let destinationPath = ("pkgsinfo" as NSString).appendingPathComponent(subdirectory)
     var pkginfoExt = adminPref("pkginfo_extension") as? String ?? ""
@@ -107,7 +107,7 @@ func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = 
     var pkginfoName = "\(name)-\(version)\(arch)\(pkginfoExt)"
     var pkginfoIdentifier = (destinationPath as NSString).appendingPathComponent(pkginfoName)
     do {
-        let pkgsinfoList = try listItemsOfKind(repo, "pkgsinfo")
+        let pkgsinfoList = try await listItemsOfKind(repo, "pkgsinfo")
         var index = 0
         while pkgsinfoList.contains(pkginfoIdentifier) {
             // try appending numbers until we have a unique name
@@ -121,7 +121,7 @@ func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = 
         throw MunkiError("Unexpected error: \(error)")
     }
     do {
-        try repo.put(pkginfoIdentifier, content: pkginfoData)
+        try await repo.put(pkginfoIdentifier, content: pkginfoData)
         return pkginfoIdentifier
     }
 }
@@ -143,11 +143,11 @@ struct CatalogDatabase {
 }
 
 /// Builds a dictionary we use like a database to look up info
-func makeCatalogDB(_ repo: Repo) throws -> CatalogDatabase {
+func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
     let allCatalog: Data
     let catalogItems: [PlistDict]
     do {
-        allCatalog = try repo.get("catalogs/all")
+        allCatalog = try await repo.get("catalogs/all")
     } catch let error as MunkiError {
         throw CatalogError.readError(
             description: "Could not read 'all' catalog: \(error.description)")
@@ -262,15 +262,15 @@ func makeCatalogDB(_ repo: Repo) throws -> CatalogDatabase {
 
 /// Looks through repo catalogs looking for matching pkginfo
 /// Returns a pkginfo dictionary, or nil
-func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) -> PlistDict? {
+func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict? {
     var catalogDB: CatalogDatabase
 
     do {
-        catalogDB = try makeCatalogDB(repo)
+        catalogDB = try await makeCatalogDB(repo)
     } catch let CatalogError.readError(description) {
         // couldn't get the all catalog and build a db; maybe we don't have one
         // yet because this is a new repo
-        if (try? repo.list("pkgs")) != nil {
+        if await (try? repo.list("pkgs")) != nil {
             // definitely have pkgsinfo item
             printStderr("Could not read existing catalogs: \(description)")
         }
@@ -357,10 +357,10 @@ func getIconIdentifier(_ pkginfo: PlistDict) -> String {
 }
 
 /// Returns true if there is an icon for this item in the repo
-func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) -> Bool {
+func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) async -> Bool {
     let iconIdentifer = getIconIdentifier(pkginfo)
     do {
-        let iconList = try listItemsOfKind(repo, "icons")
+        let iconList = try await listItemsOfKind(repo, "icons")
         return iconList.contains(iconIdentifer)
     } catch let error as MunkiError {
         printStderr("Unable to get list of icons: \(error.description)")
@@ -373,7 +373,7 @@ func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) -> Bool {
 
 /// Convert icon file to png and save to repo icon path.
 /// Returns resource path to icon in repo
-func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws -> String {
+func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) async throws -> String {
     guard let tmpDir = TempDir.shared.makeTempDir() else {
         throw MunkiError("Could not create a temp directory")
     }
@@ -385,7 +385,7 @@ func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws 
     let localPNGpath = (tmpDir as NSString).appendingPathComponent(pngName)
     if convertIconToPNG(iconPath: iconPath, destinationPath: localPNGpath) {
         do {
-            try repo.put(iconIdentifier, fromFile: localPNGpath)
+            try await repo.put(iconIdentifier, fromFile: localPNGpath)
             return iconIdentifier
         } catch let error as MunkiError {
             throw MunkiError("Could not create icon \(pngName) in repo: \(error.description)")
@@ -398,7 +398,7 @@ func convertAndInstallIcon(_ repo: Repo, name: String, iconPath: String) throws 
 
 /// Generates a product icon from a startosinstall item
 /// and uploads to the repo. Returns repo identifier for icon
-func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemname: String) throws -> String {
+func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemname: String) async throws -> String {
     do {
         let mountpoint = try mountdmg(installerDMG)
         defer {
@@ -411,7 +411,7 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemn
         if let appPath = findInstallMacOSApp(mountpoint),
            let iconPath = findIconForApp(appPath)
         {
-            let repoIconIdentifier = try convertAndInstallIcon(
+            let repoIconIdentifier = try await convertAndInstallIcon(
                 repo, name: itemname, iconPath: iconPath
             )
             return repoIconIdentifier
@@ -426,7 +426,7 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemn
 
 /// Generates a product icon from a copy_from_dmg item
 /// and uploads to the repo. Returns repo path to icon
-func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) throws -> String {
+func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) async throws -> String {
     guard let itemname = pkginfo["name"] as? String else {
         throw MunkiError("pkginfo is missing 'name'")
     }
@@ -448,7 +448,7 @@ func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) t
             if !apps.isEmpty {
                 let appPath = (mountpoint as NSString).appendingPathComponent(apps[0])
                 if let iconPath = findIconForApp(appPath) {
-                    let repoIconIdentifier = try convertAndInstallIcon(
+                    let repoIconIdentifier = try await convertAndInstallIcon(
                         repo, name: itemname, iconPath: iconPath
                     )
                     return repoIconIdentifier
@@ -467,7 +467,7 @@ func generatePNGFromDMGitem(_ repo: Repo, dmgPath: String, pkginfo: PlistDict) t
 /// Generates a product icon (or candidate icons) from an installer pkg
 /// and uploads to the repo. Returns repo path(s) to icon(s)
 /// itemPath can be a path to a disk image or to a package
-func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, importMultiple: Bool = true) throws -> [String] {
+func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, importMultiple: Bool = true) async throws -> [String] {
     guard let itemname = pkginfo["name"] as? String else {
         // this should essentially never happen
         throw MunkiError("Pkginfo is missing 'name': \(pkginfo)")
@@ -511,7 +511,7 @@ func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, imp
         }
     }
     if iconPaths.count == 1 {
-        let importedPath = try convertAndInstallIcon(
+        let importedPath = try await convertAndInstallIcon(
             repo, name: itemname, iconPath: iconPaths[0]
         )
         if !importedPath.isEmpty {
@@ -522,7 +522,7 @@ func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, imp
         for icon in iconPaths {
             index += 1
             let iconname = itemname + "_\(index)"
-            let importedPath = try convertAndInstallIcon(
+            let importedPath = try await convertAndInstallIcon(
                 repo, name: iconname, iconPath: icon
             )
             if !importedPath.isEmpty {
@@ -534,16 +534,16 @@ func generatePNGsFromPkg(_ repo: Repo, itemPath: String, pkginfo: PlistDict, imp
 }
 
 /// Saves a product icon to the repo. Returns repo path.
-func copyIconToRepo(_ repo: Repo, iconPath: String) throws -> String {
+func copyIconToRepo(_ repo: Repo, iconPath: String) async throws -> String {
     let destPath = "icons"
     let iconName = (iconPath as NSString).lastPathComponent
     let repoIdentifier = (destPath as NSString).appendingPathComponent(iconName)
     do {
-        let iconList = try listItemsOfKind(repo, "icon")
+        let iconList = try await listItemsOfKind(repo, "icon")
         if iconList.contains(repoIdentifier) {
             // need to first remove existing icon
             do {
-                try repo.delete(repoIdentifier)
+                try await repo.delete(repoIdentifier)
             } catch let error as MunkiError {
                 throw MunkiError("Could not delete existing icon in repo: \(error.description)")
             } catch {
@@ -557,7 +557,7 @@ func copyIconToRepo(_ repo: Repo, iconPath: String) throws -> String {
     }
     print("Copying \(iconName) to \(repoIdentifier)...")
     do {
-        try repo.put(repoIdentifier, fromFile: iconPath)
+        try await repo.put(repoIdentifier, fromFile: iconPath)
         return repoIdentifier
     } catch let error as MunkiError {
         throw MunkiError("Could not copy icon to repo: \(error.description)")
@@ -568,22 +568,22 @@ func copyIconToRepo(_ repo: Repo, iconPath: String) throws -> String {
 
 /// Extracts an icon (or icons) from an installer item, converts to png, and
 /// copies to repo. Returns repo path to imported icon(s)
-func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict, importMultiple: Bool = true) throws -> [String] {
+func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict, importMultiple: Bool = true) async throws -> [String] {
     let installerType = pkginfo["installer_type"] as? String ?? ""
     switch installerType {
     case "copy_from_dmg", "stage_os_installer":
-        let importedPath = try generatePNGFromDMGitem(repo, dmgPath: installerItem, pkginfo: pkginfo)
+        let importedPath = try await generatePNGFromDMGitem(repo, dmgPath: installerItem, pkginfo: pkginfo)
         if !importedPath.isEmpty {
             return [importedPath]
         }
     case "startosinstall":
         let itemname = pkginfo["name"] as? String ?? "UNKNOWN"
-        let importedPath = try generatePNGFromStartOSInstallItem(repo, installerDMG: installerItem, itemname: itemname)
+        let importedPath = try await generatePNGFromStartOSInstallItem(repo, installerDMG: installerItem, itemname: itemname)
         if !importedPath.isEmpty {
             return [importedPath]
         }
     case "":
-        let importedPaths = try generatePNGsFromPkg(repo, itemPath: installerItem, pkginfo: pkginfo, importMultiple: importMultiple)
+        let importedPaths = try await generatePNGsFromPkg(repo, itemPath: installerItem, pkginfo: pkginfo, importMultiple: importMultiple)
         return importedPaths
     default:
         throw MunkiError("Can't generate icons for installer_type \(installerType)")
@@ -635,9 +635,9 @@ func makeDmg(_ dirPath: String) -> String {
 }
 
 /// Prompts the user for a subdirectory for the pkg and pkginfo
-func promptForSubdirectory(_ repo: Repo, _ subdirectory: String?) -> String {
+func promptForSubdirectory(_ repo: Repo, _ subdirectory: String?) async -> String {
     var existingSubdirs: Set<String> = []
-    let pkgsinfoList = (try? repo.list("pkgsinfo")) ?? [String]()
+    let pkgsinfoList = await (try? repo.list("pkgsinfo")) ?? [String]()
     for item in pkgsinfoList {
         existingSubdirs.insert((item as NSString).deletingLastPathComponent)
     }

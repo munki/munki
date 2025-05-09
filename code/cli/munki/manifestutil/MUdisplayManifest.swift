@@ -21,9 +21,9 @@
 import ArgumentParser
 import Foundation
 
-func getManifest(repo: Repo, name: String) -> PlistDict? {
+func getManifest(repo: Repo, name: String) async -> PlistDict? {
     do {
-        let data = try repo.get("manifests/\(name)")
+        let data = try await repo.get("manifests/\(name)")
         return try readPlist(fromData: data) as? PlistDict
     } catch {
         printStderr("Could not retrieve manifest: \(error.localizedDescription)")
@@ -70,14 +70,14 @@ func printPlist(_ plist: PlistDict) {
 /// Input: a "normal" manifest
 /// Output: a manifest with the included\_manifest names replaced with dictionaries containing
 ///       the actual content of the included manifestd
-func expandIncludedManifests(repo: Repo, manifest: PlistDict) -> PlistDict {
+func expandIncludedManifests(repo: Repo, manifest: PlistDict) async -> PlistDict {
     // No infinite loop checking! Be wary!
     var expandedManifest = manifest
     if let includedManifests = manifest["included_manifests"] as? [String] {
         var expandedIncludedManifests = [PlistDict]()
         for name in includedManifests {
-            if var includedManifest = getManifest(repo: repo, name: name) {
-                includedManifest = expandIncludedManifests(repo: repo, manifest: includedManifest)
+            if var includedManifest = await getManifest(repo: repo, name: name) {
+                includedManifest = await expandIncludedManifests(repo: repo, manifest: includedManifest)
                 expandedIncludedManifests.append([name: includedManifest])
             }
         }
@@ -106,11 +106,11 @@ extension ManifestUtil {
         ))
         var manifestName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            if var manifest = getManifest(repo: repo, name: manifestName) {
+            if var manifest = await getManifest(repo: repo, name: manifestName) {
                 if expand {
-                    manifest = expandIncludedManifests(repo: repo, manifest: manifest)
+                    manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
                 }
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
@@ -140,10 +140,10 @@ extension ManifestUtil {
         ))
         var manifestName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            if var manifest = getManifest(repo: repo, name: manifestName) {
-                manifest = expandIncludedManifests(repo: repo, manifest: manifest)
+            if var manifest = await getManifest(repo: repo, name: manifestName) {
+                manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
                 } else {

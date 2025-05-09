@@ -132,18 +132,18 @@ class GitFileRepo: FileRepo {
 
     // MARK: override FileRepo API methods
 
-    override func put(_ identifier: String, content: Data) throws {
-        try super.put(identifier, content: content)
+    override func put(_ identifier: String, content: Data) async throws {
+        try await super.put(identifier, content: content)
         gitAdd(identifier)
     }
 
-    override func put(_ identifier: String, fromFile local_path: String) throws {
-        try super.put(identifier, fromFile: local_path)
+    override func put(_ identifier: String, fromFile local_path: String) async throws {
+        try await super.put(identifier, fromFile: local_path)
         gitAdd(identifier)
     }
 
-    override func delete(_ identifier: String) throws {
-        try super.delete(identifier)
+    override func delete(_ identifier: String) async throws {
+        try await super.delete(identifier)
         gitDelete(identifier)
     }
 }

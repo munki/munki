@@ -110,21 +110,21 @@ class RepoCleaner {
 
     /// Examine all manifests and populate our sets of manifestItems and
     /// manifestItemsWithVersions
-    func analyzeManifests() {
+    func analyzeManifests() async {
         print("Analyzing manifest files...")
         // look through all manifests for "Foo-1.0" style items
         // we need to note these so the specific referenced version is not
         // deleted
         var manifestsList = [String]()
         do {
-            manifestsList = try repo.list("manifests")
+            manifestsList = try await repo.list("manifests")
         } catch {
             errors.append("Repo error getting list of manifests: \(error.localizedDescription)")
         }
         for manifestName in manifestsList {
             var manifest = PlistDict()
             do {
-                let data = try repo.get("manifests/\(manifestName)")
+                let data = try await repo.get("manifests/\(manifestName)")
                 manifest = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
             } catch {
                 errors.append("Unexpected error for \(manifestName): \(error.localizedDescription)")
@@ -155,11 +155,11 @@ class RepoCleaner {
     }
 
     /// Examines all pkginfo files and populates pkginfoDB, requiredItems and pkginfoCount
-    func analyzePkgsinfo() {
+    func analyzePkgsinfo() async {
         print("Analyzing pkginfo files...")
         var pkgsinfoList = [String]()
         do {
-            pkgsinfoList = try repo.list("pkgsinfo")
+            pkgsinfoList = try await repo.list("pkgsinfo")
         } catch {
             errors.append("Repo error getting list of pkgsinfo: \(error.localizedDescription)")
         }
@@ -168,7 +168,7 @@ class RepoCleaner {
             var pkginfo = PlistDict()
             var pkginfoSize = 0
             do {
-                let data = try repo.get(pkginfoIdentifier)
+                let data = try await repo.get(pkginfoIdentifier)
                 pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
                 pkginfoSize = data.count
             } catch {
@@ -294,11 +294,11 @@ class RepoCleaner {
     }
 
     /// Finds installer items that are not referred to by any pkginfo file
-    func findOrphanedPkgs() {
+    func findOrphanedPkgs() async {
         print("Analyzing installer items...")
         var pkgsList = [String]()
         do {
-            pkgsList = try repo.list("pkgs")
+            pkgsList = try await repo.list("pkgs")
         } catch {
             errors.append("Repo error getting list of pkgs: \(error.localizedDescription)")
         }
@@ -446,13 +446,13 @@ class RepoCleaner {
     }
 
     /// Deletes items from the repo
-    func deleteItems() {
+    func deleteItems() async {
         // remove old pkginfo and referenced pkgs
         for item in itemsToDelete {
             if let resourceIdentifier = item["resource_identifier"] as? String {
                 print("Removing \(resourceIdentifier)")
                 do {
-                    try repo.delete(resourceIdentifier)
+                    try await repo.delete(resourceIdentifier)
                 } catch {
                     printStderr("Error deleting \(resourceIdentifier): \(error.localizedDescription)")
                 }
@@ -465,7 +465,7 @@ class RepoCleaner {
                     let pkgToRemove = "pkgs/" + pkgPath
                     print("Removing \(pkgToRemove)")
                     do {
-                        try repo.delete(pkgToRemove)
+                        try await repo.delete(pkgToRemove)
                     } catch {
                         printStderr("Error deleting \(pkgToRemove): \(error.localizedDescription)")
                     }
@@ -477,7 +477,7 @@ class RepoCleaner {
             let pkgToRemove = "pkgs/" + pkg
             print("Removing \(pkgToRemove)")
             do {
-                try repo.delete(pkgToRemove)
+                try await repo.delete(pkgToRemove)
             } catch {
                 printStderr("Error deleting \(pkgToRemove): \(error.localizedDescription)")
             }
@@ -485,15 +485,15 @@ class RepoCleaner {
     }
 
     /// Rebuilds our catalogs
-    func makeCatalogs() {
+    func makeCatalogs() async {
         let options = MakeCatalogOptions(
             skipPkgCheck: false,
             force: false,
             verbose: false
         )
         do {
-            var catalogsmaker = try CatalogsMaker(repo: repo, options: options)
-            catalogsmaker.makecatalogs()
+            var catalogsmaker = try await CatalogsMaker(repo: repo, options: options)
+            await catalogsmaker.makecatalogs()
             if !catalogsmaker.errors.isEmpty {
                 print("\nThe following issues occurred while building catalogs:\n")
                 for error in catalogsmaker.errors {
@@ -506,10 +506,10 @@ class RepoCleaner {
     }
 
     ///  Clean our repo!
-    func clean() {
-        analyzeManifests()
-        analyzePkgsinfo()
-        findOrphanedPkgs()
+    func clean() async {
+        await analyzeManifests()
+        await analyzePkgsinfo()
+        await findOrphanedPkgs()
         findCleanupItems()
         if !itemsToDelete.isEmpty || !orphanedPkgs.isEmpty {
             print()
@@ -520,14 +520,14 @@ class RepoCleaner {
                     print("Are you sure? This action cannot be undone. [y/N] ", terminator: "")
                     let answer = readLine() ?? ""
                     if answer.lowercased().hasPrefix("y") {
-                        deleteItems()
-                        makeCatalogs()
+                        await deleteItems()
+                        await makeCatalogs()
                     }
                 }
             } else {
                 print("Auto mode selected, deleting pkginfo and pkg items marked as [to be DELETED]")
-                deleteItems()
-                makeCatalogs()
+                await deleteItems()
+                await makeCatalogs()
             }
         }
     }
@@ -598,7 +598,7 @@ struct RepoClean: ParsableCommand {
         }
     }
 
-    mutating func run() throws {
+    mutating func run() async throws {
         if version {
             print(getVersion())
             return
@@ -614,7 +614,7 @@ struct RepoClean: ParsableCommand {
                 plugin: plugin
             )
             let cleaner = RepoCleaner(repo: repo, options: options)
-            cleaner.clean()
+            await cleaner.clean()
         } catch let error as MunkiError {
             printStderr("Repo error: \(error.description)")
             throw ExitCode(-1)

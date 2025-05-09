@@ -11,8 +11,8 @@ import Foundation
 /// Returns a list of items of kind. Relative pathnames are prepended
 /// with kind. (example: ["icons/Bar.png", "icons/Foo.png"])
 /// Could throw RepoError
-func listItemsOfKind(_ repo: Repo, _ kind: String) throws -> [String] {
-    let itemlist = try repo.list(kind)
+func listItemsOfKind(_ repo: Repo, _ kind: String) async throws -> [String] {
+    let itemlist = try await repo.list(kind)
     return itemlist.map(
         { (kind as NSString).appendingPathComponent($0) }
     )
