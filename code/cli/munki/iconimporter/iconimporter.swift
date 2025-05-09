@@ -22,10 +22,10 @@ import Foundation
 // MARK: icon generation and copying
 
 /// Copies png file in path to repo as icons/iconname.png
-func copyIconToRepo(_ repo: Repo, iconname: String, path: String) {
+func copyIconToRepo(_ repo: Repo, iconname: String, path: String) async {
     let iconRef = "icons/\(iconname).png"
     do {
-        try repo.put(iconRef, fromFile: path)
+        try await repo.put(iconRef, fromFile: path)
         print("\tWrote: \(iconRef)")
     } catch {
         printStderr("\tError uploading \(iconRef): \(error.localizedDescription)")
@@ -33,7 +33,7 @@ func copyIconToRepo(_ repo: Repo, iconname: String, path: String) {
 }
 
 /// Returns filesystem path to installer item, downloading if needed
-func getInstallerItemPath(repo: Repo, pkginfo: PlistDict) -> String? {
+func getInstallerItemPath(repo: Repo, pkginfo: PlistDict) async -> String? {
     let itemName = pkginfo["name"] as? String ?? "UNKNOWN"
     guard let installerItem = pkginfo["installer_item_location"] as? String else {
         printStderr("Could not get installer item location for \(itemName).")
@@ -51,7 +51,7 @@ func getInstallerItemPath(repo: Repo, pkginfo: PlistDict) -> String? {
             return nil
         }
         do {
-            try repo.get(installerItemRef, toFile: tempFile)
+            try await repo.get(installerItemRef, toFile: tempFile)
             return tempFile
         } catch {
             printStderr("Could not download \(installerItem) from repo: \(error.localizedDescription)")
@@ -61,9 +61,9 @@ func getInstallerItemPath(repo: Repo, pkginfo: PlistDict) -> String? {
 }
 
 /// Generate a PNG from a disk image containing an Install macOS app
-func generatePNGFromStartOSInstallItem(_ repo: Repo, item: PlistDict) {
+func generatePNGFromStartOSInstallItem(_ repo: Repo, item: PlistDict) async {
     let itemName = item["name"] as? String ?? "UNKNOWN"
-    guard let dmgPath = getInstallerItemPath(repo: repo, pkginfo: item) else {
+    guard let dmgPath = await getInstallerItemPath(repo: repo, pkginfo: item) else {
         printStderr("Skipping.")
         return
     }
@@ -89,7 +89,7 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, item: PlistDict) {
     if let iconTemp = tempFile(),
        convertIconToPNG(iconPath: iconPath, destinationPath: iconTemp)
     {
-        copyIconToRepo(repo, iconname: itemName, path: iconTemp)
+        await copyIconToRepo(repo, iconname: itemName, path: iconTemp)
     } else {
         printStderr("\tError converting \(iconPath) to png.")
     }
@@ -98,9 +98,9 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, item: PlistDict) {
 /// Generate a PNG from a disk image containing an application
 // TODO: handle case where there are multiple apps in items_to_copy
 // (Python version just picks the first one, so that would be an enhancement)
-func generatePNGFromDMGItem(_ repo: Repo, item: PlistDict) {
+func generatePNGFromDMGItem(_ repo: Repo, item: PlistDict) async {
     let itemName = item["name"] as? String ?? "UNKNOWN"
-    guard let dmgPath = getInstallerItemPath(repo: repo, pkginfo: item) else {
+    guard let dmgPath = await getInstallerItemPath(repo: repo, pkginfo: item) else {
         printStderr("Skipping.")
         return
     }
@@ -129,7 +129,7 @@ func generatePNGFromDMGItem(_ repo: Repo, item: PlistDict) {
         if let iconTemp = tempFile(),
            convertIconToPNG(iconPath: iconPath, destinationPath: iconTemp)
         {
-            copyIconToRepo(repo, iconname: itemName, path: iconTemp)
+            await copyIconToRepo(repo, iconname: itemName, path: iconTemp)
         } else {
             print("\tError converting \(iconPath) to png.")
         }
@@ -139,9 +139,9 @@ func generatePNGFromDMGItem(_ repo: Repo, item: PlistDict) {
 }
 
 /// Generate PNGS from applications inside a pkg
-func generatePNGsFromPkg(_ repo: Repo, item: PlistDict) {
+func generatePNGsFromPkg(_ repo: Repo, item: PlistDict) async {
     let itemName = item["name"] as? String ?? "UNKNOWN"
-    guard let installerItemPath = getInstallerItemPath(repo: repo, pkginfo: item) else {
+    guard let installerItemPath = await getInstallerItemPath(repo: repo, pkginfo: item) else {
         printStderr("Skipping.")
         return
     }
@@ -188,7 +188,7 @@ func generatePNGsFromPkg(_ repo: Repo, item: PlistDict) {
         if let iconTemp = tempFile(),
            convertIconToPNG(iconPath: iconPaths[0], destinationPath: iconTemp)
         {
-            copyIconToRepo(repo, iconname: itemName, path: iconTemp)
+            await copyIconToRepo(repo, iconname: itemName, path: iconTemp)
         } else {
             printStderr("\tError converting \(iconPaths[0]) to png.")
         }
@@ -198,7 +198,7 @@ func generatePNGsFromPkg(_ repo: Repo, item: PlistDict) {
             if let iconTemp = tempFile(),
                convertIconToPNG(iconPath: iconPath, destinationPath: iconTemp)
             {
-                copyIconToRepo(repo, iconname: iconName, path: iconTemp)
+                await copyIconToRepo(repo, iconname: iconName, path: iconTemp)
             } else {
                 printStderr("\tError converting \(iconPath) to png.")
             }
@@ -210,10 +210,10 @@ func generatePNGsFromPkg(_ repo: Repo, item: PlistDict) {
 
 /// Builds a list of items to check; only the latest version of an item is retained.
 /// If itemlist is given, include items only on that list.
-func findItemsToCheck(_ repo: Repo, items: [String] = []) -> [PlistDict] {
+func findItemsToCheck(_ repo: Repo, items: [String] = []) async -> [PlistDict] {
     var catalogItems = [PlistDict]()
     do {
-        let allCatalogData = try repo.get("catalogs/all")
+        let allCatalogData = try await repo.get("catalogs/all")
         catalogItems = try (readPlist(fromData: allCatalogData)) as? [PlistDict] ?? []
     } catch {
         printStderr("Error getting catalog data from repo: \(error.localizedDescription)")
@@ -239,9 +239,9 @@ func findItemsToCheck(_ repo: Repo, items: [String] = []) -> [PlistDict] {
 }
 
 /// Generate PNGs from either pkgs or disk images containing applications
-func generatePNGsFromMunkiItems(_ repo: Repo, force: Bool = false, items: [String] = []) {
-    let iconsList = (try? repo.list("icons")) ?? []
-    let itemList = findItemsToCheck(repo, items: items)
+func generatePNGsFromMunkiItems(_ repo: Repo, force: Bool = false, items: [String] = []) async {
+    let iconsList = await (try? repo.list("icons")) ?? []
+    let itemList = await findItemsToCheck(repo, items: items)
     for item in itemList {
         let itemName = item["name"] as? String ?? "UNKNOWN"
         var iconName = item["icon_name"] as? String ?? itemName
@@ -256,11 +256,11 @@ func generatePNGsFromMunkiItems(_ repo: Repo, force: Bool = false, items: [Strin
         }
         let installerType = item["installer_type"] as? String ?? ""
         if installerType == "copy_from_dmg" {
-            generatePNGFromDMGItem(repo, item: item)
+            await generatePNGFromDMGItem(repo, item: item)
         } else if installerType == "startosinstall" {
-            generatePNGFromStartOSInstallItem(repo, item: item)
+            await generatePNGFromStartOSInstallItem(repo, item: item)
         } else if installerType == "" {
-            generatePNGsFromPkg(repo, item: item)
+            await generatePNGsFromPkg(repo, item: item)
         } else {
             print("\tCan't process installer type: \(installerType)")
         }
@@ -323,10 +323,10 @@ struct IconImporter: ParsableCommand {
         }
     }
 
-    mutating func run() throws {
+    mutating func run() async throws {
         do {
             let repo = try repoConnect(url: repoURL, plugin: plugin)
-            generatePNGsFromMunkiItems(repo, force: force, items: item)
+            await generatePNGsFromMunkiItems(repo, force: force, items: item)
         } catch {
             printStderr("Could not connect to the munki repo: \(error.localizedDescription)")
             throw ExitCode(-1)

@@ -80,7 +80,7 @@ struct MakeCatalogs: ParsableCommand {
         }
     }
 
-    mutating func run() throws {
+    mutating func run() async throws {
         if version {
             print(getVersion())
             return
@@ -96,8 +96,8 @@ struct MakeCatalogs: ParsableCommand {
             let repo = try repoConnect(url: actual_repo_url, plugin: plugin)
             // TODO: implement repo defining its own makecatalogs method
             // let errors = try repo.makecatalogs(options: options)
-            var catalogsmaker = try CatalogsMaker(repo: repo, options: options)
-            catalogsmaker.makecatalogs()
+            var catalogsmaker = try await CatalogsMaker(repo: repo, options: options)
+            await catalogsmaker.makecatalogs()
             for warning in catalogsmaker.warnings {
                 printStderr(warning)
             }

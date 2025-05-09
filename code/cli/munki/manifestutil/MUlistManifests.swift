@@ -21,9 +21,9 @@
 import ArgumentParser
 import Foundation
 
-func getManifestNames(repo: Repo) -> [String]? {
+func getManifestNames(repo: Repo) async -> [String]? {
     do {
-        let manifestNames = try repo.list("manifests")
+        let manifestNames = try await repo.list("manifests")
         return manifestNames.sorted()
     } catch {
         printStderr("Could not retrieve manifests: \(error.localizedDescription)")
@@ -32,7 +32,7 @@ func getManifestNames(repo: Repo) -> [String]? {
 }
 
 extension ManifestUtil {
-    struct ListManifests: ParsableCommand {
+    struct ListManifests: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists available manifest in Munki repo.")
 
@@ -42,9 +42,9 @@ extension ManifestUtil {
         ))
         var globString: String = ""
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo(),
-                  let manifestNames = getManifestNames(repo: repo)
+                  let manifestNames = await getManifestNames(repo: repo)
             else {
                 return
             }

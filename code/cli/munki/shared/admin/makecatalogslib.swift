@@ -42,7 +42,7 @@ struct CatalogsMaker {
     var warnings: [String]
 
     init(repo: Repo,
-         options: MakeCatalogOptions = MakeCatalogOptions()) throws
+         options: MakeCatalogOptions = MakeCatalogOptions()) async throws
     {
         self.repo = repo
         self.options = options
@@ -51,14 +51,14 @@ struct CatalogsMaker {
         warnings = [String]()
         pkgsinfoList = [String]()
         pkgsList = [String]()
-        try getPkgsinfoList()
-        try getPkgsList()
+        try await getPkgsinfoList()
+        try await getPkgsList()
     }
 
     /// Returns a list of pkginfo identifiers
-    mutating func getPkgsinfoList() throws {
+    mutating func getPkgsinfoList() async throws {
         do {
-            pkgsinfoList = try listItemsOfKind(repo, "pkgsinfo")
+            pkgsinfoList = try await listItemsOfKind(repo, "pkgsinfo")
         } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
                 description: "Error getting list of pkgsinfo items")
@@ -66,9 +66,9 @@ struct CatalogsMaker {
     }
 
     /// Returns a list of pkg identifiers
-    mutating func getPkgsList() throws {
+    mutating func getPkgsList() async throws {
         do {
-            pkgsList = try listItemsOfKind(repo, "pkgs")
+            pkgsList = try await listItemsOfKind(repo, "pkgs")
         } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
                 description: "Error getting list of pkgs items")
@@ -76,12 +76,12 @@ struct CatalogsMaker {
     }
 
     /// Builds a dictionary containing hashes for all our repo icons
-    mutating func hashIcons() -> [String: String] {
+    mutating func hashIcons() async -> [String: String] {
         if options.verbose {
             print("Getting list of icons...")
         }
         var iconHashes = [String: String]()
-        if var iconList = try? repo.list("icons") {
+        if var iconList = try? await repo.list("icons") {
             // remove plist of hashes from the list
             if let index = iconList.firstIndex(of: "_icon_hashes.plist") {
                 iconList.remove(at: index)
@@ -91,7 +91,7 @@ struct CatalogsMaker {
                     print("Hashing \(icon)...")
                 }
                 do {
-                    let icondata = try repo.get("icons/" + icon)
+                    let icondata = try await repo.get("icons/" + icon)
                     iconHashes[icon] = sha256hash(data: icondata)
                 } catch let error as MunkiError {
                     errors.append("Error reading icons/\(icon): \(error.description)")
@@ -182,14 +182,14 @@ struct CatalogsMaker {
     }
 
     /// Processes pkginfo files and updates catalogs and errors instance variables
-    mutating func processPkgsinfo() {
+    mutating func processPkgsinfo() async {
         catalogs["all"] = [PlistDict]()
         // Walk through the pkginfo files
         for pkginfoIdentifier in pkgsinfoList {
             // Try to read the pkginfo file
             var pkginfo = PlistDict()
             do {
-                let data = try repo.get(pkginfoIdentifier)
+                let data = try await repo.get(pkginfoIdentifier)
                 pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
             } catch {
                 errors.append("Unexpected error reading \(pkginfoIdentifier): \(error)")
@@ -254,14 +254,14 @@ struct CatalogsMaker {
     }
 
     /// Clear out old catalogs
-    mutating func cleanupCatalogs() {
+    mutating func cleanupCatalogs() async {
         do {
-            let catalogList = try repo.list("catalogs")
+            let catalogList = try await repo.list("catalogs")
             for catalogName in catalogList {
                 if !(catalogs.keys.contains(catalogName)) {
                     let catalogIdentifier = "catalogs/" + catalogName
                     do {
-                        try repo.delete(catalogIdentifier)
+                        try await repo.delete(catalogIdentifier)
                     } catch {
                         errors.append("Could not delete catalog \(catalogName): \(error)")
                     }
@@ -275,12 +275,12 @@ struct CatalogsMaker {
     /// Assembles all pkginfo files into catalogs.
     /// User calling this needs to be able to write to the repo/catalogs directory.
     /// Returns a list of any errors it encountered
-    mutating func makecatalogs() {
+    mutating func makecatalogs() async {
         // process pkgsinfo items
-        processPkgsinfo()
+        await processPkgsinfo()
 
         // clean up old catalogs no longer needed
-        cleanupCatalogs()
+        await cleanupCatalogs()
 
         // write the new catalogs
         for key in catalogs.keys {
@@ -289,7 +289,7 @@ struct CatalogsMaker {
                 do {
                     if let value = catalogs[key] {
                         let data = try plistToData(value)
-                        try repo.put(catalogIdentifier, content: data)
+                        try await repo.put(catalogIdentifier, content: data)
                         if options.verbose {
                             print("Created \(catalogIdentifier)...")
                         }
@@ -305,13 +305,13 @@ struct CatalogsMaker {
         }
 
         // make icon hashes
-        let iconHashes = hashIcons()
+        let iconHashes = await hashIcons()
         // create icon_hashes resource
         if !iconHashes.isEmpty {
             let iconHashesIdentifier = "icons/_icon_hashes.plist"
             do {
                 let iconHashesData = try plistToData(iconHashes)
-                try repo.put(iconHashesIdentifier, content: iconHashesData)
+                try await repo.put(iconHashesIdentifier, content: iconHashesData)
                 if options.verbose {
                     print("Created \(iconHashesIdentifier)...")
                 }

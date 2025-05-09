@@ -25,10 +25,10 @@ import Foundation
 func saveManifest(repo: Repo,
                   manifest: PlistDict,
                   name: String,
-                  overwrite: Bool = false) -> Bool
+                  overwrite: Bool = false) async -> Bool
 {
     if !overwrite {
-        let existingManifestNames = getManifestNames(repo: repo) ?? []
+        let existingManifestNames = await getManifestNames(repo: repo) ?? []
         if existingManifestNames.contains(name) {
             printStderr("Manifest '\(name)' already exists")
             return false
@@ -36,7 +36,7 @@ func saveManifest(repo: Repo,
     }
     do {
         let data = try plistToData(manifest)
-        try repo.put("manifests/\(name)", content: data)
+        try await repo.put("manifests/\(name)", content: data)
         return true
     } catch {
         printStderr("Saving \(name) failed: \(error.localizedDescription)")
@@ -46,19 +46,19 @@ func saveManifest(repo: Repo,
 
 /// Copies or renames a manifest.
 /// (To rename we make a copy under the new name, then delete the original)
-func copyOrRenameManifest(repo: Repo, sourceName: String, destinationName: String, overwrite: Bool = false, deleteSource: Bool = false) -> Bool {
+func copyOrRenameManifest(repo: Repo, sourceName: String, destinationName: String, overwrite: Bool = false, deleteSource: Bool = false) async -> Bool {
     if !overwrite {
-        let existingManifestNames = getManifestNames(repo: repo) ?? []
+        let existingManifestNames = await getManifestNames(repo: repo) ?? []
         if existingManifestNames.contains(destinationName) {
             printStderr("Manifest '\(destinationName)' already exists")
             return false
         }
     }
     do {
-        let data = try repo.get("manifests/\(sourceName)")
-        try repo.put("manifests/\(destinationName)", content: data)
+        let data = try await repo.get("manifests/\(sourceName)")
+        try await repo.put("manifests/\(destinationName)", content: data)
         if deleteSource {
-            try repo.delete("manifests/\(sourceName)")
+            try await repo.delete("manifests/\(sourceName)")
         }
         return true
     } catch {
@@ -68,25 +68,25 @@ func copyOrRenameManifest(repo: Repo, sourceName: String, destinationName: Strin
 }
 
 /// Creates a new, empty manifest
-func newManifest(repo: Repo, name: String) -> Bool {
+func newManifest(repo: Repo, name: String) async -> Bool {
     let manifest = [
         "catalogs": [String](),
         "included_manifests": [String](),
         "managed_installs": [String](),
         "managed_uninstalls": [String](),
     ]
-    return saveManifest(repo: repo, manifest: manifest, name: name)
+    return await saveManifest(repo: repo, manifest: manifest, name: name)
 }
 
 /// Deletes a manifest
-func deleteManifest(repo: Repo, name: String) -> Bool {
-    let existingManifestNames = getManifestNames(repo: repo) ?? []
+func deleteManifest(repo: Repo, name: String) async -> Bool {
+    let existingManifestNames = await getManifestNames(repo: repo) ?? []
     if !existingManifestNames.contains(name) {
         printStderr("No such manifest: \(name)")
         return false
     }
     do {
-        try repo.delete("manifests/\(name)")
+        try await repo.delete("manifests/\(name)")
         return true
     } catch {
         printStderr("Deleting \(name) failed: \(error.localizedDescription)")
@@ -106,9 +106,9 @@ extension ManifestUtil {
         ))
         var manifestName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = newManifest(repo: repo, name: manifestName)
+            _ = await newManifest(repo: repo, name: manifestName)
         }
     }
 }
@@ -131,9 +131,9 @@ extension ManifestUtil {
         ))
         var destinationName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = copyOrRenameManifest(
+            _ = await copyOrRenameManifest(
                 repo: repo,
                 sourceName: sourceName,
                 destinationName: destinationName
@@ -160,9 +160,9 @@ extension ManifestUtil {
         ))
         var destinationName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = copyOrRenameManifest(
+            _ = await copyOrRenameManifest(
                 repo: repo,
                 sourceName: sourceName,
                 destinationName: destinationName,
@@ -184,9 +184,9 @@ extension ManifestUtil {
         ))
         var manifestName: String
 
-        func run() throws {
+        func run() async throws {
             guard let repo = try? connectToRepo() else { return }
-            _ = deleteManifest(repo: repo, name: manifestName)
+            _ = await deleteManifest(repo: repo, name: manifestName)
         }
     }
 }

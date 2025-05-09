@@ -337,6 +337,30 @@ func repoPkgPath(_ path: String) -> String {
     return (path as NSString).lastPathComponent
 }
 
+/// Extract a minimum_os_version from pkginfo installs
+func getMinimumOSVersionFromInstallsApps(_ pkginfo: PlistDict) -> String? {
+    if let installer_type = pkginfo["installer_type"] as? String,
+       installer_type == "stage_os_installer"
+    {
+        // don't use the app for this
+        return nil
+    }
+    guard let installs = pkginfo["installs"] as? [PlistDict] else {
+        // no valid installs array
+        return nil
+    }
+    var minimumOSVersions = [MunkiVersion]()
+    for install in installs {
+        if let version = install["minosversion"] as? String {
+            minimumOSVersions.append(MunkiVersion(version))
+        }
+    }
+    if let pkgInfoMinimumOSVersion = pkginfo["minimum_os_version"] as? String {
+        minimumOSVersions.append(MunkiVersion(pkgInfoMinimumOSVersion))
+    }
+    return minimumOSVersions.max()?.value
+}
+
 /// Return a pkginfo dictionary for installeritem
 func makepkginfo(_ filepath: String?,
                  options: PkginfoOptions) throws -> PlistDict
@@ -463,6 +487,12 @@ func makepkginfo(_ filepath: String?,
     if !installs.isEmpty {
         pkginfo["installs"] = installs
     }
+
+    // use apps in installs list to figure out a minimum os version
+    if let minimumOSVersion = getMinimumOSVersionFromInstallsApps(pkginfo) {
+        pkginfo["minimum_os_version"] = minimumOSVersion
+    }
+
     // add pkginfo scripts if specified
     // TODO: verify scripts start with a shebang line?
     if let installcheckScript = options.script.installcheckScript {
