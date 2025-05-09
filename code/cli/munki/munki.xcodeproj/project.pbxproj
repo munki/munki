@@ -148,6 +148,25 @@
 		C043ED232C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
 		C043ED242C483EEE0047C025 /* rmpkgs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C043ED222C483EEE0047C025 /* rmpkgs.swift */; };
 		C058EEE32DCA8D8D002775E0 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
+		C058EF1E2DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF1F2DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF202DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF212DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF222DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF232DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF242DCD041A002775E0 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C058EF292DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF2A2DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF2B2DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF2C2DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF2D2DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF2E2DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF2F2DCD11F2002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF302DCD18D3002775E0 /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C058EF702DCE9B67002775E0 /* pkginfolib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E12C3489FA00B86310 /* pkginfolib.swift */; };
+		C058EF712DCE9C1B002775E0 /* pkginfoOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */; };
+		C058EF722DCE9C3E002775E0 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
+		C058EF742DCE9CAE002775E0 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C058EF732DCE9CAE002775E0 /* ArgumentParser */; };
 		C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C05DB20B2DAC62530081FACD /* ArgumentParser */; };
 		C05DB20D2DAC66810081FACD /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C05DB20E2DAC66E50081FACD /* readline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9F52C435183007F0B34 /* readline.swift */; };
@@ -665,6 +684,8 @@
 		C030A9F52C435183007F0B34 /* readline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readline.swift; sourceTree = "<group>"; };
 		C043ED1E2C4822C70047C025 /* sqlite3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sqlite3.swift; sourceTree = "<group>"; };
 		C043ED222C483EEE0047C025 /* rmpkgs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rmpkgs.swift; sourceTree = "<group>"; };
+		C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoProtocol.swift; sourceTree = "<group>"; };
+		C058EF282DCD11E1002775E0 /* tempfileutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tempfileutils.swift; sourceTree = "<group>"; };
 		C05DB2022DAC53150081FACD /* manifestutil */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manifestutil; sourceTree = BUILT_PRODUCTS_DIR; };
 		C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "manifestutil-Bridging-Header.h"; sourceTree = "<group>"; };
 		C0684DD12DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = precache_agent; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -815,6 +836,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C058EF742DCE9CAE002775E0 /* ArgumentParser in Frameworks */,
 				C0684EA02DC7E5CD0091E774 /* X509 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -927,6 +949,7 @@
 				C01364482C2F8EFE008DB215 /* GitFileRepo.swift */,
 				C013644C2C30F5D8008DB215 /* RepoFactory.swift */,
 				C0D00FA72C45814F0021DA9C /* repoutils.swift */,
+				C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */,
 			);
 			path = munkirepo;
 			sourceTree = "<group>";
@@ -1113,6 +1136,7 @@
 		C07AED682C66D1AE00DE6119 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				C058EF282DCD11E1002775E0 /* tempfileutils.swift */,
 				C008A0552D25B20E0073ADBA /* stderrout.swift */,
 				C07A6FD92C2CF19600090743 /* cliutils.swift */,
 				C01364532C321FE7008DB215 /* dmgutils.swift */,
@@ -1400,6 +1424,7 @@
 			name = munkiCLItesting;
 			packageProductDependencies = (
 				C0684E9F2DC7E5CD0091E774 /* X509 */,
+				C058EF732DCE9CAE002775E0 /* ArgumentParser */,
 			);
 			productName = munkiCLItesting;
 			productReference = C0684E5C2DC736EE0091E774 /* munkiCLItesting.xctest */;
@@ -1747,6 +1772,7 @@
 				C030A9A22C3B4F63007F0B34 /* pkginfolib.swift in Sources */,
 				C030A9A72C3B4FED007F0B34 /* cliutils.swift in Sources */,
 				C030A9AF2C3B50B5007F0B34 /* constants.swift in Sources */,
+				C058EF2C2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C030A9A12C3B4F5B007F0B34 /* pkginfoOptions.swift in Sources */,
 				C0D00FB92C45BCB90021DA9C /* errors.swift in Sources */,
 				C030A9A62C3B4FDF007F0B34 /* munkihash.swift in Sources */,
@@ -1774,6 +1800,7 @@
 				C030A9D02C41F798007F0B34 /* munkiimport.swift in Sources */,
 				C030A9D92C424057007F0B34 /* prefs.swift in Sources */,
 				C0684DCC2DB3F0A00091E774 /* UNIXProcessInfo.swift in Sources */,
+				C058EF222DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C030A9E32C424158007F0B34 /* plistutils.swift in Sources */,
 				C030A9DF2C42408C007F0B34 /* admincommon.swift in Sources */,
 				C030A9DB2C424065007F0B34 /* cliutils.swift in Sources */,
@@ -1794,6 +1821,7 @@
 				C030A9F72C435183007F0B34 /* readline.swift in Sources */,
 				C0D00FAE2C45841D0021DA9C /* makecatalogslib.swift in Sources */,
 				C01CE24C2CA7ADD400542FA1 /* configure.swift in Sources */,
+				C058EF2A2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1812,6 +1840,7 @@
 				C05DB2192DAC835D0081FACD /* stderrout.swift in Sources */,
 				C05DB2182DAC83410081FACD /* errors.swift in Sources */,
 				C05DB2142DAC831E0081FACD /* GitFileRepo.swift in Sources */,
+				C058EF1F2DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C05DB21C2DAC977C0081FACD /* cliutils.swift in Sources */,
 				C05DB2152DAC831E0081FACD /* repoutils.swift in Sources */,
 				C05DB2162DAC831E0081FACD /* FileRepo.swift in Sources */,
@@ -1856,6 +1885,7 @@
 				C0684DDA2DBFDC3C0091E774 /* munkilog.swift in Sources */,
 				C0684DED2DBFDF5C0091E774 /* keychain.swift in Sources */,
 				C0684DDE2DBFDD190091E774 /* constants.swift in Sources */,
+				C058EF302DCD18D3002775E0 /* tempfileutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1891,6 +1921,7 @@
 			files = (
 				C0684E9B2DC7E5700091E774 /* manifests.swift in Sources */,
 				C0684E6C2DC73C150091E774 /* plistutils.swift in Sources */,
+				C058EF242DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0684E792DC7BF2F0091E774 /* prefs.swift in Sources */,
 				C0684E8E2DC7E2D10091E774 /* dateutils.swift in Sources */,
 				C0684E822DC7C51C0091E774 /* analyze.swift in Sources */,
@@ -1912,8 +1943,10 @@
 				C0684E902DC7E30F0091E774 /* keychain.swift in Sources */,
 				C0684E862DC7E2470091E774 /* sslerrors.swift in Sources */,
 				C0684E872DC7E2470091E774 /* fetch.swift in Sources */,
+				C058EF712DCE9C1B002775E0 /* pkginfoOptions.swift in Sources */,
 				C0684E912DC7E3220091E774 /* osinstallerinfo.swift in Sources */,
 				C0684E882DC7E2470091E774 /* urls.swift in Sources */,
+				C058EF702DCE9B67002775E0 /* pkginfolib.swift in Sources */,
 				C0684E9E2DC7E59B0091E774 /* stoprequested.swift in Sources */,
 				C0684E892DC7E2470091E774 /* gurl.swift in Sources */,
 				C0684E8A2DC7E2470091E774 /* clientcerts.swift in Sources */,
@@ -1929,6 +1962,7 @@
 				C0684E7E2DC7C3850091E774 /* osutils.swift in Sources */,
 				C0684E7B2DC7BF720091E774 /* munkihash.swift in Sources */,
 				C0684E7A2DC7BF590091E774 /* scriptutils.swift in Sources */,
+				C058EF2B2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C0684E722DC7BE690091E774 /* compare.swift in Sources */,
 				C0684E632DC737430091E774 /* versionutils.swift in Sources */,
 				C0684E972DC7E43E0091E774 /* Predicates.m in Sources */,
@@ -1938,6 +1972,7 @@
 				C0684E6D2DC73C270091E774 /* constants.swift in Sources */,
 				C0684E732DC7BE870091E774 /* display.swift in Sources */,
 				C0684E752DC7BE9F0091E774 /* munkistatus.swift in Sources */,
+				C058EF722DCE9C3E002775E0 /* admincommon.swift in Sources */,
 				C0684E7F2DC7C3AE0091E774 /* info.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2015,6 +2050,7 @@
 				C01792D92C6EC09C008CBC22 /* urls.swift in Sources */,
 				C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C07074DF2C33B9A000B86310 /* reports.swift in Sources */,
+				C058EF2D2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2066,6 +2102,7 @@
 				C07A6FBE2C2B5AF000090743 /* prefs.swift in Sources */,
 				C0D66AD42D2DBBED009EF807 /* dateutils.swift in Sources */,
 				C06C21462C8F8C390023E9D9 /* appleupdates.swift in Sources */,
+				C058EF292DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C07A6FBA2C2B5ADE00090743 /* main.swift in Sources */,
 				C01792DA2C6EC09C008CBC22 /* urls.swift in Sources */,
 				C030A9B72C3DF6D0007F0B34 /* fileutils.swift in Sources */,
@@ -2083,6 +2120,7 @@
 				C0D9C2B12C62D4120019A067 /* powermanager.swift in Sources */,
 				C0D9C2982C6012C80019A067 /* dmg.swift in Sources */,
 				C030A9C22C41B556007F0B34 /* pkginfolib.swift in Sources */,
+				C058EF232DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C06C21412C8E1FF50023E9D9 /* ODutils.swift in Sources */,
 				C0684E4C2DC586660091E774 /* osinstallerinfo.swift in Sources */,
 				C07074E92C34932400B86310 /* pkgutils.swift in Sources */,
@@ -2125,6 +2163,7 @@
 				C07A6FCC2C2B5C3D00090743 /* constants.swift in Sources */,
 				C013644B2C2F8EFE008DB215 /* GitFileRepo.swift in Sources */,
 				C07A6FD82C2B7F2100090743 /* FileRepo.swift in Sources */,
+				C058EF1E2DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0D00FAB2C4581800021DA9C /* repoutils.swift in Sources */,
 				C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */,
 				C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */,
@@ -2151,7 +2190,9 @@
 				C0848D3B2C94F7190008B463 /* osutils.swift in Sources */,
 				C0848D1A2C94D1840008B463 /* iconimporter.swift in Sources */,
 				C008A05A2D25B21A0073ADBA /* stderrout.swift in Sources */,
+				C058EF2F2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C0848D262C94D7F00008B463 /* errors.swift in Sources */,
+				C058EF202DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0848D222C94D7660008B463 /* RepoFactory.swift in Sources */,
 				C0848D292C94D8230008B463 /* cliutils.swift in Sources */,
 				C0848D202C94D7600008B463 /* FileRepo.swift in Sources */,
@@ -2172,6 +2213,7 @@
 				C0BF62DF2CEC07AA0030885D /* cliutils.swift in Sources */,
 				C0BF62DB2CEC076A0030885D /* GitFileRepo.swift in Sources */,
 				C0BF62E22CEC086C0030885D /* fileutils.swift in Sources */,
+				C058EF2E2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C03EC5BF2CFA372F00D2F1CA /* repoclean.swift in Sources */,
 				C0BF62DE2CEC077F0030885D /* errors.swift in Sources */,
 				C087AC2E2CFFC81B00DC3D59 /* makecatalogslib.swift in Sources */,
@@ -2179,6 +2221,7 @@
 				C008A0602D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0BF62E92CEC11CB0030885D /* prefs.swift in Sources */,
 				C0BF62D52CEC05450030885D /* version.swift in Sources */,
+				C058EF212DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0BF62DA2CEC07660030885D /* FileRepo.swift in Sources */,
 				C0BF62E32CEC11310030885D /* admincommon.swift in Sources */,
 			);
@@ -2623,6 +2666,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -2679,6 +2723,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -3183,6 +3228,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		C008A0612D2861220073ADBA /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+		C058EF732DCE9CAE002775E0 /* ArgumentParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
