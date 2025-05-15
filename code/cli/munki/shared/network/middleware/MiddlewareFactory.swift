@@ -55,7 +55,7 @@ private func loadMiddlewarePlugin(at path: String) throws -> MiddlewarePluginBui
 /// Try to load a middleware plugin from our MiddlewarePlugins directory
 func loadMiddlewarePlugin() throws -> MunkiMiddleware? {
     let pluginExt = ".plugin"
-    let pluginsDir = (Bundle.main.bundlePath as NSString).appendingPathComponent("MiddlewarePlugins")
+    let pluginsDir = (Bundle.main.bundlePath as NSString).appendingPathComponent("middleware")
     let filenames = (try? FileManager.default.contentsOfDirectory(atPath: pluginsDir)) ?? []
     for filename in filenames {
         if filename.hasSuffix(pluginExt) {
