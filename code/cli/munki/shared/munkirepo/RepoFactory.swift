@@ -23,7 +23,7 @@ import Foundation
 /// Loads a Repo plugin from a dylib
 /// implementation lifted from
 /// https://theswiftdev.com/building-and-loading-dynamic-libraries-at-runtime-in-swift/
-func loadRepoPlugin(at path: String) throws -> RepoPluginBuilder {
+private func loadRepoPlugin(at path: String) throws -> RepoPluginBuilder {
     typealias InitFunction = @convention(c) () -> UnsafeMutableRawPointer
 
     let openRes = dlopen(path, RTLD_NOW | RTLD_LOCAL)

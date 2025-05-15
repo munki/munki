@@ -20,8 +20,13 @@
 
 import Foundation
 
+public struct MunkiMiddlewareRequest {
+    var url: String
+    var headers: [String: String]
+}
+
 public protocol MunkiMiddleware {
-    func processRequest(_ request: URLRequest) -> URLRequest
+    func processRequest(_ request: MunkiMiddlewareRequest) -> MunkiMiddlewareRequest
 }
 
 open class MiddlewarePluginBuilder {
