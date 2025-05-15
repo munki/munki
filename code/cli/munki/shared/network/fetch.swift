@@ -141,9 +141,22 @@ func headerDictFromList(_ strList: [String]?) -> [String: String] {
     return headerDict
 }
 
-func runMiddleware(options: GurlOptions, pkginfo _: PlistDict?) -> GurlOptions {
-    // placeholder function
-    return options
+/// Attempts to process our request via a middleware plugin, if one is found
+func runMiddleware(_ request: MunkiMiddlewareRequest) -> MunkiMiddlewareRequest {
+    let display = DisplayAndLog.main
+    do {
+        if let middleware = try loadMiddlewarePlugin() {
+            display.debug2("Running middleware plugin")
+            display.debug2("Input: \(request)")
+            let modifiedRequest = middleware.processRequest(request)
+            display.debug2("Output: \(modifiedRequest)")
+            return modifiedRequest
+        }
+    } catch {
+        display.error("Could not load middleware plugin: \(error.localizedDescription)")
+    }
+    // no plugin found, or error loading plugin -- just return unmodified request
+    return request
 }
 
 /// Gets an HTTP or HTTPS URL and stores it in
@@ -171,6 +184,15 @@ func getURL(
     if pathExists(tempDownloadPath), !resume {
         try? FileManager.default.removeItem(atPath: tempDownloadPath)
     }
+    
+    let headers = headerDictFromList(customHeaders)
+    
+    // Run middleware
+    var request = MunkiMiddlewareRequest(
+        url: url,
+        headers: headers
+    )
+    request = runMiddleware(request)
 
     var cacheData: [String: String]?
     if onlyIfNewer, pathExists(destinationPath) {
@@ -184,9 +206,9 @@ func getURL(
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
 
     var options = GurlOptions(
-        url: url,
+        url: request.url,
         destinationPath: tempDownloadPath,
-        additionalHeaders: headerDictFromList(customHeaders),
+        additionalHeaders: request.headers,
         followRedirects: followRedirects,
         ignoreSystemProxy: ignoreSystemProxy,
         canResume: resume,
@@ -194,9 +216,6 @@ func getURL(
         cacheData: cacheData,
         log: DisplayAndLog.main.debug2
     )
-
-    // TODO: middleware support
-    options = runMiddleware(options: options, pkginfo: pkginfo)
 
     let display = DisplayAndLog.main
     let session = Gurl(options: options)

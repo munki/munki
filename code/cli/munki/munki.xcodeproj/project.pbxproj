@@ -167,6 +167,14 @@
 		C058EF712DCE9C1B002775E0 /* pkginfoOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */; };
 		C058EF722DCE9C3E002775E0 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
 		C058EF742DCE9CAE002775E0 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C058EF732DCE9CAE002775E0 /* ArgumentParser */; };
+		C058EF7C2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */; };
+		C058EF7D2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */; };
+		C058EF7E2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */; };
+		C058EF7F2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */; };
+		C058EF9A2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */; };
+		C058EF9B2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */; };
+		C058EF9C2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */; };
+		C058EF9D2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */; };
 		C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C05DB20B2DAC62530081FACD /* ArgumentParser */; };
 		C05DB20D2DAC66810081FACD /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FAF2C458EAA0021DA9C /* version.swift */; };
 		C05DB20E2DAC66E50081FACD /* readline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9F52C435183007F0B34 /* readline.swift */; };
@@ -684,8 +692,15 @@
 		C030A9F52C435183007F0B34 /* readline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readline.swift; sourceTree = "<group>"; };
 		C043ED1E2C4822C70047C025 /* sqlite3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sqlite3.swift; sourceTree = "<group>"; };
 		C043ED222C483EEE0047C025 /* rmpkgs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = rmpkgs.swift; sourceTree = "<group>"; };
+		C05764AB2DD57C4800FEF66A /* managedsoftwareupdate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = managedsoftwareupdate.entitlements; sourceTree = "<group>"; };
+		C05764AE2DD57CF500FEF66A /* repoclean.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = repoclean.entitlements; sourceTree = "<group>"; };
+		C05764AF2DD57CF800FEF66A /* iconimporter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iconimporter.entitlements; sourceTree = "<group>"; };
+		C05764B02DD57CFF00FEF66A /* munkiimport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = munkiimport.entitlements; sourceTree = "<group>"; };
+		C05764B12DD57D0800FEF66A /* makecatalogs.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = makecatalogs.entitlements; sourceTree = "<group>"; };
 		C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoProtocol.swift; sourceTree = "<group>"; };
 		C058EF282DCD11E1002775E0 /* tempfileutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tempfileutils.swift; sourceTree = "<group>"; };
+		C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiddlewareProtocol.swift; sourceTree = "<group>"; };
+		C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiddlewareFactory.swift; sourceTree = "<group>"; };
 		C05DB2022DAC53150081FACD /* manifestutil */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manifestutil; sourceTree = BUILT_PRODUCTS_DIR; };
 		C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "manifestutil-Bridging-Header.h"; sourceTree = "<group>"; };
 		C0684DD12DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = precache_agent; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -982,6 +997,7 @@
 		C030A9CE2C41F798007F0B34 /* munkiimport */ = {
 			isa = PBXGroup;
 			children = (
+				C05764B02DD57CFF00FEF66A /* munkiimport.entitlements */,
 				C030A9CF2C41F798007F0B34 /* munkiimport.swift */,
 			);
 			path = munkiimport;
@@ -996,6 +1012,15 @@
 				C0D9C29C2C6151350019A067 /* installer.swift */,
 			);
 			path = installer;
+			sourceTree = "<group>";
+		};
+		C058EF7A2DCF9F6E002775E0 /* middleware */ = {
+			isa = PBXGroup;
+			children = (
+				C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */,
+				C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */,
+			);
+			path = middleware;
 			sourceTree = "<group>";
 		};
 		C0684E462DC586250091E774 /* osinstaller */ = {
@@ -1062,6 +1087,7 @@
 		C07A6FA72C2A82B400090743 /* managedsoftwareupdate */ = {
 			isa = PBXGroup;
 			children = (
+				C05764AB2DD57C4800FEF66A /* managedsoftwareupdate.entitlements */,
 				C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */,
 				C0011CB42C7EC5B60004ED70 /* msuutils.swift */,
 				C0011CB72C7F86480004ED70 /* distributednotifications.swift */,
@@ -1082,6 +1108,7 @@
 		C07A6FC52C2B5C0700090743 /* makecatalogs */ = {
 			isa = PBXGroup;
 			children = (
+				C05764B12DD57D0800FEF66A /* makecatalogs.entitlements */,
 				C07A6FC62C2B5C0700090743 /* makecatalogs.swift */,
 			);
 			path = makecatalogs;
@@ -1174,6 +1201,7 @@
 		C07AED6D2C67DF4F00DE6119 /* network */ = {
 			isa = PBXGroup;
 			children = (
+				C058EF7A2DCF9F6E002775E0 /* middleware */,
 				C07AED6E2C67DF6B00DE6119 /* gurl.swift */,
 				C07AED712C67F77000DE6119 /* sslerrors.swift */,
 				C01792D22C6BC81B008CBC22 /* fetch.swift */,
@@ -1186,6 +1214,7 @@
 		C0848D182C94D1840008B463 /* iconimporter */ = {
 			isa = PBXGroup;
 			children = (
+				C05764AF2DD57CF800FEF66A /* iconimporter.entitlements */,
 				C0848D192C94D1840008B463 /* iconimporter.swift */,
 			);
 			path = iconimporter;
@@ -1194,6 +1223,7 @@
 		C0BF62CE2CEC00E90030885D /* repoclean */ = {
 			isa = PBXGroup;
 			children = (
+				C05764AE2DD57CF500FEF66A /* repoclean.entitlements */,
 				C0BF62CF2CEC00E90030885D /* repoclean.swift */,
 			);
 			path = repoclean;
@@ -1868,6 +1898,7 @@
 				C0684DE02DBFDD530091E774 /* munkistatus.swift in Sources */,
 				C0684DEC2DBFDF470091E774 /* cliutils.swift in Sources */,
 				C0684DDD2DBFDD0C0091E774 /* stderrout.swift in Sources */,
+				C058EF9A2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */,
 				C0684DF52DBFE2580091E774 /* dmgutils.swift in Sources */,
 				C0684DE22DBFDD930091E774 /* fetch.swift in Sources */,
 				C0684DEA2DBFDF0D0091E774 /* munkihash.swift in Sources */,
@@ -1886,6 +1917,7 @@
 				C0684DED2DBFDF5C0091E774 /* keychain.swift in Sources */,
 				C0684DDE2DBFDD190091E774 /* constants.swift in Sources */,
 				C058EF302DCD18D3002775E0 /* tempfileutils.swift in Sources */,
+				C058EF7E2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1921,6 +1953,7 @@
 			files = (
 				C0684E9B2DC7E5700091E774 /* manifests.swift in Sources */,
 				C0684E6C2DC73C150091E774 /* plistutils.swift in Sources */,
+				C058EF7F2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
 				C058EF242DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0684E792DC7BF2F0091E774 /* prefs.swift in Sources */,
 				C0684E8E2DC7E2D10091E774 /* dateutils.swift in Sources */,
@@ -1950,6 +1983,7 @@
 				C0684E9E2DC7E59B0091E774 /* stoprequested.swift in Sources */,
 				C0684E892DC7E2470091E774 /* gurl.swift in Sources */,
 				C0684E8A2DC7E2470091E774 /* clientcerts.swift in Sources */,
+				C058EF9D2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */,
 				C0684EA92DC83B9A0091E774 /* appleupdates.swift in Sources */,
 				C0684E852DC7C6220091E774 /* download.swift in Sources */,
 				C0684E942DC7E3BC0091E774 /* dmgutils.swift in Sources */,
@@ -1997,6 +2031,8 @@
 				C07A6FDA2C2CF19600090743 /* cliutils.swift in Sources */,
 				C0D9C2A02C6175A10019A067 /* processes.swift in Sources */,
 				C01364432C2DD1BA008DB215 /* plistutils.swift in Sources */,
+				C058EF9C2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */,
+				C058EF7C2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
 				C00519A92D2A5C180060DDB6 /* authrestartclient.swift in Sources */,
 				C01792D32C6BC81B008CBC22 /* fetch.swift in Sources */,
 				C0684E3D2DC19C7A0091E774 /* BlockingApplications.swift in Sources */,
@@ -2065,6 +2101,7 @@
 				C01792EC2C75089F008CBC22 /* licensing.swift in Sources */,
 				C0D00FB72C45BCB90021DA9C /* errors.swift in Sources */,
 				C07A9D9E2C86CB3A00D5D4B2 /* msuoptions.swift in Sources */,
+				C058EF7D2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
 				C0B7FA022D288C2700CC14F0 /* authrestart.swift in Sources */,
 				C030A9C82C41F32E007F0B34 /* munkiimportOptions.swift in Sources */,
 				C030A9C02C409738007F0B34 /* iconutils.swift in Sources */,
@@ -2118,6 +2155,7 @@
 				C030A9C12C419565007F0B34 /* osinstaller.swift in Sources */,
 				C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */,
 				C0D9C2B12C62D4120019A067 /* powermanager.swift in Sources */,
+				C058EF9B2DCFA4B2002775E0 /* MiddlewareFactory.swift in Sources */,
 				C0D9C2982C6012C80019A067 /* dmg.swift in Sources */,
 				C030A9C22C41B556007F0B34 /* pkginfolib.swift in Sources */,
 				C058EF232DCD041A002775E0 /* RepoProtocol.swift in Sources */,
@@ -2416,6 +2454,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = munkiimport/munkiimport.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -2437,6 +2476,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = munkiimport/munkiimport.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -2456,6 +2496,7 @@
 		C05DB2062DAC53150081FACD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = manifestutil/manifestutil.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2472,6 +2513,7 @@
 		C05DB2072DAC53150081FACD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = manifestutil/manifestutil.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2488,6 +2530,7 @@
 		C0684DD62DBFDBD20091E774 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = precache_agent/precache_agent.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2503,6 +2546,7 @@
 		C0684DD72DBFDBD20091E774 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = precache_agent/precache_agent.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2731,6 +2775,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = managedsoftwareupdate/managedsoftwareupdate.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2750,6 +2795,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = managedsoftwareupdate/managedsoftwareupdate.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2804,6 +2850,7 @@
 		C07A6FC92C2B5C0700090743 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = makecatalogs/makecatalogs.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -2823,6 +2870,7 @@
 		C07A6FCA2C2B5C0700090743 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = makecatalogs/makecatalogs.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CREATE_INFOPLIST_SECTION_IN_BINARY = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -2842,6 +2890,7 @@
 		C0848D1B2C94D1840008B463 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = iconimporter/iconimporter.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2858,6 +2907,7 @@
 		C0848D1C2C94D1840008B463 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = iconimporter/iconimporter.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2874,6 +2924,7 @@
 		C0BF62D12CEC00E90030885D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = repoclean/repoclean.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
@@ -2890,6 +2941,7 @@
 		C0BF62D22CEC00E90030885D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = repoclean/repoclean.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
