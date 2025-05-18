@@ -29,6 +29,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if atLoginWindow() {
             blurBackground()
         }
+        // If bootstrapping, and on AC or battery over 50% (Intel) 30% (Apple Silicon) assert NoDisplaySleep
+        if isBootstrapping() && atLoginWindow() {
+            createNoDisplaySleepAssertion()
+        }
         // Prevent automatic relaunching at login on Lion+
         if NSApp.responds(to: #selector(NSApplication.disableRelaunchOnLogin)) {
             NSApp.disableRelaunchOnLogin()
@@ -36,7 +40,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
+        // Release display sleep assertion if it exists
+        releaseDisplaySleepAssertion()
     }
     
     func blurBackground() {
