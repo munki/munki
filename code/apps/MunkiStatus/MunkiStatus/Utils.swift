@@ -37,6 +37,27 @@ func atLoginWindow() -> Bool {
     return (consoleuser! == "loginwindow")
 }
 
+func isBootstrapping() -> Bool {
+    let fm = FileManager.default
+    let path = "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
+    if fm.fileExists(atPath: path) {
+        print("Bootstrap run in progress")
+        return true
+    }
+    return false
+}
+
+func isAppleSilicon() -> Bool {
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let machine = withUnsafePointer(to: &systemInfo.machine) {
+        $0.withMemoryRebound(to: CChar.self, capacity: 1) {
+            String(cString: $0)
+        }
+    }
+    return machine.starts(with: "arm64")
+}
+
 func exec(_ command: String, args: [String]?) -> String {
     // runs a UNIX command and returns stdout as a string
     let proc = Process()
