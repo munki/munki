@@ -46,42 +46,27 @@ struct appleupdatesTests {
     }
 
     @Test func parsingSULinesGetsExpectedLabel() async throws {
-        if updates.count > 0 {
-            #expect(updates[0]["Label"] == "Safari17.6MontereyAuto-17.6")
-        } else {
-            #expect(Bool(false))
-        }
+        try #require(updates.count > 0, "Did not parse any updates")
+        #expect(updates[0]["Label"] == "Safari17.6MontereyAuto-17.6")
     }
 
     @Test func parsingSULinesGetsExpectedTitle() async throws {
-        if updates.count > 0 {
-            #expect(updates[0]["Title"] == "Safari")
-        } else {
-            #expect(Bool(false))
-        }
+        try #require(updates.count > 0, "Did not parse any updates")
+        #expect(updates[0]["Title"] == "Safari")
     }
 
     @Test func parsingSULinesGetsExpectedVersion() async throws {
-        if updates.count > 1 {
-            #expect(updates[1]["Version"] == "12.7.6")
-        } else {
-            #expect(Bool(false))
-        }
+        try #require(updates.count > 1, "Did not parse at least two updates")
+        #expect(updates[1]["Version"] == "12.7.6")
     }
 
     @Test func parsingSULinesGetsExpectedSize() async throws {
-        if updates.count > 1 {
-            #expect(updates[1]["Size"] == "1765616K")
-        } else {
-            #expect(Bool(false))
-        }
+        try #require(updates.count > 1, "Did not parse at least two updates")
+        #expect(updates[1]["Size"] == "1765616K")
     }
 
     @Test func parsingSULinesGetsExpectedAction() async throws {
-        if updates.count > 2 {
-            #expect(updates[2]["Action"] == "restart")
-        } else {
-            #expect(Bool(false))
-        }
+        try #require(updates.count > 2, "Did not parse at least three updates")
+        #expect(updates[2]["Action"] == "restart")
     }
 }
