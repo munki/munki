@@ -182,7 +182,7 @@ VERSIONFILE="$MUNKIROOT/code/cli/munki/shared/version.swift"
 # Check to see if file exists
 if [ -f "${VERSIONFILE}" ]; then
     # Get the munki version
-    MUNKIVERS=$(grep CLI_TOOLS_VERSION "${VERSIONFILE}" | awk -F'"' '$0=$2')
+    MUNKIVERS=$(grep "let CLI_TOOLS_VERSION =" "${VERSIONFILE}" | awk -F'"' '$0=$2')
     if [ "$?" != "0" ]; then
         echo "${VERSIONFILE} can not be read" 1>&2
         exit 1
@@ -343,6 +343,9 @@ else
 fi
 echo
 
+# modify version.swift to contain build number
+sed -i.bak "s/<BUILD_GOES_HERE>/${SVNREV}/g" "${VERSIONFILE}"
+
 # Build munki cli tools
 echo "Building munki cli tools..."
 "${MUNKIROOT}/code/tools/build_swift_munki.sh" > /dev/null
@@ -351,6 +354,9 @@ if [ "$MUNKICLI_RESULT" -ne 0 ]; then
     echo "Error building Munki cli tools: $MUNKICLI_RESULT"
     exit 2
 fi
+
+# reset build number in version.swift
+mv "${VERSIONFILE}.bak" "${VERSIONFILE}"
 
 # Build Managed Software Center.
 echo "Building Managed Software Center.xcodeproj..."
