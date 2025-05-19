@@ -178,37 +178,34 @@ struct DistFileTests {
 
     /// Ensure we get expected value for product version
     @Test func getProductVersionFromDistIsExpected() async throws {
-        if let distPath {
-            #expect(getProductVersionFromDist(distPath) == "7.0.0.5096")
-        } else {
-            #expect(Bool(false))
-        }
+        let unwrappedDistPath = try #require(
+            distPath, "Failed to create temporary distribution file"
+        )
+        #expect(getProductVersionFromDist(unwrappedDistPath) == "7.0.0.5096")
     }
 
     /// Ensure we get expected value for minimum OS version
     @Test func getMinOSVersFromDistIsExpected() async throws {
-        if let distPath {
-            #expect(getMinOSVersFromDist(distPath) == "10.15")
-        } else {
-            #expect(Bool(false))
-        }
+        let unwrappedDistPath = try #require(
+            distPath, "Failed to create temporary distribution file"
+        )
+        #expect(getMinOSVersFromDist(unwrappedDistPath) == "10.15")
     }
 
     /// Ensure we get the expected receipts from the sample distribution
     @Test func receiptsFromDistFileExpectedCount() async throws {
-        if let distPath {
-            let receipts = receiptsFromDistFile(distPath)
-            let pkgids = receipts.compactMap { $0["packageid"] as? String }
-            #expect(receipts.count == 6)
-            #expect(pkgids.contains("com.googlecode.munki.core"))
-            #expect(pkgids.contains("com.googlecode.munki.admin"))
-            #expect(pkgids.contains("com.googlecode.munki.app"))
-            #expect(pkgids.contains("com.googlecode.munki.launchd"))
-            #expect(pkgids.contains("com.googlecode.munki.app_usage"))
-            #expect(pkgids.contains("com.googlecode.munki.pythonlibs"))
-        } else {
-            #expect(Bool(false))
-        }
+        let unwrappedDistPath = try #require(
+            distPath, "Failed to create temporary distribution file"
+        )
+        let receipts = receiptsFromDistFile(unwrappedDistPath)
+        let pkgids = receipts.compactMap { $0["packageid"] as? String }
+        #expect(receipts.count == 6)
+        #expect(pkgids.contains("com.googlecode.munki.core"))
+        #expect(pkgids.contains("com.googlecode.munki.admin"))
+        #expect(pkgids.contains("com.googlecode.munki.app"))
+        #expect(pkgids.contains("com.googlecode.munki.launchd"))
+        #expect(pkgids.contains("com.googlecode.munki.app_usage"))
+        #expect(pkgids.contains("com.googlecode.munki.pythonlibs"))
     }
 }
 
@@ -236,30 +233,27 @@ struct PackageInfoFileTests {
     }
 
     @Test func receiptFromPackageInfoFileGetsExpectedPackageID() throws {
-        if let pkginfoPath {
-            let receipt = receiptFromPackageInfoFile(pkginfoPath)
-            #expect((receipt["packageid"] as? String ?? "") == "com.googlecode.munki.core")
-        } else {
-            #expect(Bool(false))
-        }
+        let unwrappedPkginfoPath = try #require(
+            pkginfoPath, "Failed to create temporary pkgInfo file"
+        )
+        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        #expect((receipt["packageid"] as? String ?? "") == "com.googlecode.munki.core")
     }
 
     @Test func receiptFromPackageInfoFileGetsExpectedVersion() throws {
-        if let pkginfoPath {
-            let receipt = receiptFromPackageInfoFile(pkginfoPath)
-            #expect((receipt["version"] as? String ?? "") == "7.0.0.5096")
-        } else {
-            #expect(Bool(false))
-        }
+        let unwrappedPkginfoPath = try #require(
+            pkginfoPath, "Failed to create temporary pkgInfo file"
+        )
+        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        #expect((receipt["version"] as? String ?? "") == "7.0.0.5096")
     }
 
     @Test func receiptFromPackageInfoFileGetsExpectedSize() throws {
-        if let pkginfoPath {
-            let receipt = receiptFromPackageInfoFile(pkginfoPath)
-            #expect((receipt["installed_size"] as? Int ?? 0) == 39393)
-        } else {
-            #expect(Bool(false))
-        }
+        let unwrappedPkginfoPath = try #require(
+            pkginfoPath, "Failed to create temporary pkgInfo file"
+        )
+        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        #expect((receipt["installed_size"] as? Int ?? 0) == 39393)
     }
 }
 

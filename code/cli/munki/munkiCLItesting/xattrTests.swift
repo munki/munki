@@ -20,27 +20,28 @@ import Testing
 
 struct xattrTests {
     /// remove, list, add, and get xattrs
-    @Test func runXattrTests() {
-        if let filepath = tempFile(),
-           FileManager.default.createFile(atPath: filepath, contents: nil)
-        {
-            var xattrs = (try? listXattrs(atPath: filepath)) ?? []
-            for xattr in xattrs {
-                try? removeXattr(xattr, atPath: filepath)
-            }
-            xattrs = (try? listXattrs(atPath: filepath)) ?? []
-            // #expect(xattrs.isEmpty)
+    @Test func runXattrTests() throws {
+        let filepath = tempFile()
+        let unwrappedFilepath = try #require(filepath, "Can't create temporary filepath")
+        try #require(FileManager.default.createFile(
+            atPath: unwrappedFilepath, contents: nil
+        ),
+        "Could not create a temporary file")
 
-            let xattrName = "com.googlecode.munki.test"
-            let xattrValue = "Hello, World!".data(using: .utf8)!
-            try? setXattr(named: xattrName, data: xattrValue, atPath: filepath)
-            xattrs = (try? listXattrs(atPath: filepath)) ?? []
-            #expect(xattrs.contains(xattrName))
-
-            let retrievedXattrValue = (try? getXattr(named: xattrName, atPath: filepath)) ?? Data()
-            #expect(retrievedXattrValue == xattrValue)
-        } else {
-            #expect(Bool(false))
+        var xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
+        for xattr in xattrs {
+            try? removeXattr(xattr, atPath: unwrappedFilepath)
         }
+        xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
+        // #expect(xattrs.isEmpty)
+
+        let xattrName = "com.googlecode.munki.test"
+        let xattrValue = "Hello, World!".data(using: .utf8)!
+        try? setXattr(named: xattrName, data: xattrValue, atPath: unwrappedFilepath)
+        xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
+        #expect(xattrs.contains(xattrName))
+
+        let retrievedXattrValue = (try? getXattr(named: xattrName, atPath: unwrappedFilepath)) ?? Data()
+        #expect(retrievedXattrValue == xattrValue)
     }
 }
