@@ -66,4 +66,3 @@ func loadMiddlewarePlugin() throws -> MunkiMiddleware? {
     }
     return nil
 }
-
