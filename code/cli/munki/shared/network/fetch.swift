@@ -184,13 +184,14 @@ func getURL(
     if pathExists(tempDownloadPath), !resume {
         try? FileManager.default.removeItem(atPath: tempDownloadPath)
     }
-    
+
     let headers = headerDictFromList(customHeaders)
-    
+
     // Run middleware
     var request = MunkiMiddlewareRequest(
         url: url,
-        headers: headers
+        headers: headers,
+        pkginfo: pkginfo
     )
     request = runMiddleware(request)
 
@@ -205,7 +206,7 @@ func getURL(
 
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
 
-    var options = GurlOptions(
+    let options = GurlOptions(
         url: request.url,
         destinationPath: tempDownloadPath,
         additionalHeaders: request.headers,
