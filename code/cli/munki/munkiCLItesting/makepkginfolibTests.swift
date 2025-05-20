@@ -48,4 +48,21 @@ struct pkginfolibTests {
         ]
         #expect(getMinimumOSVersionFromInstallsApps(pkginfo) == "11.0")
     }
+
+    @Test func getHighestMinimumOSVersionFromEmptyInstallsIsNil() {
+        let pkginfo: PlistDict = [:]
+        #expect(getMinimumOSVersionFromInstallsApps(pkginfo) == nil)
+    }
+
+    @Test func getHighestMinimumOSVersionFromStageOsInstallerIsNil() {
+        let pkginfo: PlistDict = [
+            "installer_type": "stage_os_installer",
+            "installs": [
+                ["minosversion": "11.0"],
+                ["minosversion": "10.15.0"],
+            ],
+            "minimum_os_version": "10.7",
+        ]
+        #expect(getMinimumOSVersionFromInstallsApps(pkginfo) == nil)
+    }
 }
