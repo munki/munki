@@ -23,7 +23,7 @@ import Foundation
 public struct MunkiMiddlewareRequest {
     var url: String
     var headers: [String: String]
-    var pkginfo: PlistDict?
+    let pkginfo: PlistDict?
 }
 
 public protocol MunkiMiddleware {
