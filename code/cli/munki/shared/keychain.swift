@@ -124,19 +124,25 @@ func getMunkiClientCertInfo() -> [String: Any] {
     return certInfo
 }
 
+/// Attempt to extract the CN from cert data
+func getCommonNameFromCertData(_ certData: Data) -> String? {
+    if let cert = SecCertificateCreateWithData(
+        kCFAllocatorDefault, certData as CFData
+    ) {
+        var commonName: CFString?
+        if SecCertificateCopyCommonName(cert, &commonName) == errSecSuccess {
+            return commonName as String?
+        }
+    }
+    return nil
+}
+
 /// Returns the common name for the client cert, if any
 func getClientCertCommonName() -> String? {
     let certInfo = getMunkiClientCertInfo()
     if let certPath = certInfo["client_cert_path"] as? String {
         if let certData = try? pemCertData(certPath) {
-            if let cert = SecCertificateCreateWithData(
-                kCFAllocatorDefault, certData as CFData
-            ) {
-                var commonName: CFString?
-                if SecCertificateCopyCommonName(cert, &commonName) == errSecSuccess {
-                    return commonName as String?
-                }
-            }
+            return getCommonNameFromCertData(certData)
         }
     }
     return nil
