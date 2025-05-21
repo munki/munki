@@ -161,8 +161,7 @@ func downloadInstallerItem(
             message: downloadMessage,
             resume: true,
             expectedHash: expectedHash,
-            verify: true,
-            pkginfo: item
+            verify: true
         )
     } else {
         // use alternatePkgURL
@@ -172,8 +171,7 @@ func downloadInstallerItem(
             message: downloadMessage,
             resume: true,
             expectedHash: expectedHash,
-            verify: true,
-            pkginfo: item
+            verify: true
         )
     }
 }
