@@ -141,20 +141,35 @@ func headerDictFromList(_ strList: [String]?) -> [String: String] {
     return headerDict
 }
 
+/// Singleton to avoid loading the middleware dylib for each request
+class MiddlewarePluginLoader {
+    static let shared = MiddlewarePluginLoader()
+
+    var middleware: MunkiMiddleware?
+
+    private init() {
+        do {
+            if let middleware = try loadMiddlewarePlugin() {
+                self.middleware = middleware
+            }
+        } catch {
+            DisplayAndLog.main.error("Could not load middleware plugin: \(error.localizedDescription)")
+        }
+    }
+}
+
 /// Attempts to process our request via a middleware plugin, if one is found
 func runMiddleware(_ request: MunkiMiddlewareRequest) -> MunkiMiddlewareRequest {
     let display = DisplayAndLog.main
-    do {
-        if let middleware = try loadMiddlewarePlugin() {
-            display.debug2("Running middleware plugin")
-            display.debug2("Input: \(request)")
-            let modifiedRequest = middleware.processRequest(request)
-            display.debug2("Output: \(modifiedRequest)")
-            return modifiedRequest
-        }
-    } catch {
-        display.error("Could not load middleware plugin: \(error.localizedDescription)")
+
+    if let middleware = MiddlewarePluginLoader.shared.middleware {
+        display.debug2("Running middleware plugin")
+        display.debug2("Input: \(request)")
+        let modifiedRequest = middleware.processRequest(request)
+        display.debug2("Output: \(modifiedRequest)")
+        return modifiedRequest
     }
+
     // no plugin found, or error loading plugin -- just return unmodified request
     return request
 }
