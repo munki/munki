@@ -178,7 +178,6 @@ func getURL(
     onlyIfNewer: Bool = false,
     resume: Bool = false,
     followRedirects: String = "none",
-    pkginfo: PlistDict? = nil
 ) throws -> [String: String] {
     let tempDownloadPath = destinationPath + ".download"
     if pathExists(tempDownloadPath), !resume {
@@ -190,8 +189,7 @@ func getURL(
     // Run middleware
     var request = MunkiMiddlewareRequest(
         url: url,
-        headers: headers,
-        pkginfo: pkginfo
+        headers: headers
     )
     request = runMiddleware(request)
 
@@ -322,7 +320,6 @@ func getHTTPfileIfChangedAtomically(
     message: String = "",
     resume: Bool = false,
     followRedirects: String = "none",
-    pkginfo: PlistDict? = nil
 ) throws -> Bool {
     var eTag = ""
     var getOnlyIfNewer = false
@@ -350,8 +347,7 @@ func getHTTPfileIfChangedAtomically(
             message: message,
             onlyIfNewer: getOnlyIfNewer,
             resume: resume,
-            followRedirects: followRedirects,
-            pkginfo: pkginfo
+            followRedirects: followRedirects
         )
     } catch let err as FetchError {
         switch err {
@@ -480,7 +476,6 @@ func getResourceIfChangedAtomically(
     resume: Bool = false,
     verify: Bool = false,
     followRedirects: String? = nil,
-    pkginfo: PlistDict? = nil
 ) throws -> Bool {
     guard let resolvedURL = URL(string: url) else {
         throw FetchError.connection(errorCode: -1, description: "Invalid URL: \(url)")
@@ -525,8 +520,7 @@ func getResourceIfChangedAtomically(
             customHeaders: customHeaders,
             message: message,
             resume: resume,
-            followRedirects: resolvedFollowRedirects,
-            pkginfo: pkginfo
+            followRedirects: resolvedFollowRedirects
         )
     } else if resolvedURL.scheme == "file" {
         if let sourcePath = resolvedURL.path.removingPercentEncoding {
@@ -580,8 +574,7 @@ func fetchMunkiResourceByURL(
     message: String = "",
     resume: Bool = false,
     expectedHash: String? = nil,
-    verify: Bool = false,
-    pkginfo: PlistDict? = nil
+    verify: Bool = false
 ) throws -> Bool {
     DisplayAndLog.main.debug2("Fetching URL: \(url)")
     let customHeaders = pref(ADDITIONAL_HTTP_HEADERS_KEY) as? [String]
@@ -592,8 +585,7 @@ func fetchMunkiResourceByURL(
         expectedHash: expectedHash,
         message: message,
         resume: resume,
-        verify: verify,
-        pkginfo: pkginfo
+        verify: verify
     )
 }
 
@@ -613,8 +605,7 @@ func fetchMunkiResource(
     message: String = "",
     resume: Bool = false,
     expectedHash: String? = nil,
-    verify: Bool = false,
-    pkginfo: PlistDict? = nil
+    verify: Bool = false
 ) throws -> Bool {
     guard let url = munkiRepoURL(kind.rawValue, resource: name) else {
         throw FetchError.connection(
@@ -628,8 +619,7 @@ func fetchMunkiResource(
         message: message,
         resume: resume,
         expectedHash: expectedHash,
-        verify: verify,
-        pkginfo: pkginfo
+        verify: verify
     )
 }
 
