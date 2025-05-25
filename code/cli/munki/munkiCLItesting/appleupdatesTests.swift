@@ -24,6 +24,29 @@ struct appleupdatesTests {
     """
     var updates: [[String: String]]
 
+    let recommendedUpdates: [PlistDict] = [
+        [
+            "Display Name": "Safari",
+            "Display Version": "17.6",
+            "Identifier": "Safari17.6MontereyAuto",
+            "Product Key": "062-47822",
+        ],
+        [
+            "Display Name": "macOS Sonoma 14.6.1",
+            "Display Version": "14.6.1",
+            "Identifier": "MSU_UPDATE_23G93_patch_14.6.1",
+            "MobileSoftwareUpdate": 1,
+            "Product Key": "MSU_UPDATE_23G93_patch_14.6.1",
+        ],
+        [
+            "Display Name": "macOS Monterey 12.7.6",
+            "Display Version": "12.7.6",
+            "Identifier": "MSU_UPDATE_21H1320_patch_12.7.6",
+            "MobileSoftwareUpdate": 1,
+            "Product Key": "MSU_UPDATE_21H1320_patch_12.7.6",
+        ],
+    ]
+
     init() {
         updates = []
         let lines = suOutput.components(separatedBy: .newlines)
@@ -68,5 +91,24 @@ struct appleupdatesTests {
     @Test func parsingSULinesGetsExpectedAction() async throws {
         try #require(updates.count > 2, "Did not parse at least three updates")
         #expect(updates[2]["Action"] == "restart")
+    }
+
+    @Test func productKeyIsExpected() async throws {
+        try #require(updates.count > 0, "Did not parse any updates")
+        let name = try #require(updates[0]["Title"], "Update did not have Title")
+        let version = try #require(updates[0]["Version"], "Update did not have Title")
+        let item: PlistDict = [
+            "name": name,
+            "version_to_install": version,
+        ]
+        #expect(getProductKey(for: item, recommendedUpdates: recommendedUpdates) == "062-47822")
+    }
+
+    @Test func productKeyIsNil() async throws {
+        let item: PlistDict = [
+            "name": "Foo",
+            "version_to_install": "1.0",
+        ]
+        #expect(getProductKey(for: item, recommendedUpdates: recommendedUpdates) == nil)
     }
 }

@@ -63,6 +63,34 @@ func clearRecommendedUpdates() {
     )
 }
 
+/// Returns "RecommendedUpdates" from /Library/Preferences/com.apple.SoftwareUpdate.plist
+func getRecommendedUpdates() -> [PlistDict]? {
+    return CFPreferencesCopyValue(
+        "RecommendedUpdates" as CFString,
+        "com.apple.SoftwareUpdate" as CFString,
+        kCFPreferencesAnyUser,
+        kCFPreferencesCurrentHost
+    ) as? [PlistDict]
+}
+
+/// Attempts to get a Product Key for an update
+func getProductKey(for item: PlistDict, recommendedUpdates: [PlistDict]) -> String? {
+    if let name = item["name"] as? String,
+       let version = item["version_to_install"] as? String
+    {
+        for update in recommendedUpdates {
+            if let displayName = update["Display Name"] as? String,
+               let displayVersion = update["Display Version"] as? String,
+               displayName == name,
+               displayVersion == version
+            {
+                return update["Product Key"] as? String
+            }
+        }
+    }
+    return nil
+}
+
 /// Runs softwareupdate tool and returns a list of dictionaries parsed from the output
 func getAvailableSoftwareUpdates() -> [[String: String]] {
     var updates = [[String: String]]()
@@ -90,13 +118,13 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
 
 /// FIlters out any majorOS upgrades from a list of Apple updates
 func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
-    // There's a few strategies we could use here:
+    // There's a couple of strategies we could use here:
     //
     //  1) Match update names that start with "macOS" and end with a version
     //     number matching the uupdate version, then compare the first part
     //     of that version against the currently installed OS. IOW,
     //     if we are currently running 13.6.9, an update to 14.6.1 or 15.0
-    //     would be a major update. This could break if Apple chnages its
+    //     would be a major update. This could break if Apple changes its
     //     naming convention, or issues other non-OS updates with names that
     //     start with "macOS".
     //
@@ -106,11 +134,11 @@ func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     //     Major updates have identifiers and product keys like
     //       "MSU_UPDATE_23G93_patch_14.6.1_major"
     //     IOW, all OS updates start with "MSU_UPDATE_" but the majors end with
-    //     "_major". This couod break if Apple changes the naming conventions
+    //     "_major". This could break if Apple changes the naming conventions
     //     for their update identifiers/product keys
     //
-    //  Since we are not currently collecting the info from
-    //  com.apple.SoftwareUpdate's RecommendedUpdates, right now we'll go with
+    //  Since when this was written we were not collecting the info from
+    //  com.apple.SoftwareUpdate's RecommendedUpdates, we went with
     //  strategy #1.
 
     let currentOSVersion = getOSVersion() // just gets major.minor
@@ -146,6 +174,7 @@ func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
 
 /// Returns a list of dictionaries describing available Apple updates.
 func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict] {
+    let recommendedUpdates = getRecommendedUpdates() ?? []
     var appleUpdates = [PlistDict]()
     let rawUpdates = getAvailableSoftwareUpdates()
     for item in rawUpdates {
@@ -155,6 +184,8 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
         {
             var info = PlistDict()
             info["Label"] = label
+            // MSC.app filters on productKey so we need to set it
+            info["productKey"] = label
             info["name"] = name
             info["display_name"] = name
             info["description"] = ""
@@ -169,6 +200,7 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
             {
                 info["RestartAction"] = "RequireRestart"
             }
+            info["productKey"] = getProductKey(for: info, recommendedUpdates: recommendedUpdates)
             appleUpdates.append(info)
         }
     }
