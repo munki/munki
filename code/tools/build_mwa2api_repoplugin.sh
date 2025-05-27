@@ -24,10 +24,14 @@ if [ ! -e "${PLUGIN_PROJ}" ] ; then
     check_exit_code 1 "${PLUGIN_PROJ} doesn't exist"
 fi
 
+# add this number to Git revision index to get "build" number
+# consistent with old SVN repo
+MAGICNUMBER=482
 # generate a revision number for from the list of Git revisions
 GITREV=$(git log -n1 --format="%H" -- "${PLUGIN_PROJ_PARENT}")
 GITREVINDEX=$(git rev-list --count "$GITREV")
-VERSION="${VERSION}.${GITREVINDEX}"
+SVNREV=$((GITREVINDEX + MAGICNUMBER))
+VERSION="${VERSION}.${SVNREV}"
 
 # make sure we have a build directory to use
 BUILD_DIR="${CODEDIR}/build"
