@@ -22,7 +22,7 @@ import ArgumentParser
 import Foundation
 
 @main
-struct MakeCatalogs: ParsableCommand {
+struct MakeCatalogs: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "makecatalogs",
         abstract: "Builds Munki catalogs from pkginfo files.",
