@@ -79,7 +79,7 @@ func getInstallerItemNames(repo: Repo, catalogs: [String]) async -> [String] {
 
 /// Lists items in the given catalogs
 extension ManifestUtil {
-    struct ListCatalogItems: ParsableCommand {
+    struct ListCatalogItems: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists items in the given catalogs.")
 

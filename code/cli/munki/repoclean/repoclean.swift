@@ -534,7 +534,7 @@ class RepoCleaner {
 }
 
 @main
-struct RepoClean: ParsableCommand {
+struct RepoClean: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "repoclean",
         abstract: "Cleans up older packages and pkginfos from a repo"
