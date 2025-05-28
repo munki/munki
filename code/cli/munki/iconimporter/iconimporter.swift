@@ -272,7 +272,7 @@ func generatePNGsFromMunkiItems(_ repo: Repo, force: Bool = false, items: [Strin
 // MARK: options and main run command
 
 @main
-struct IconImporter: ParsableCommand {
+struct IconImporter: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "iconimporter",
         abstract: "Imports icons into a Munki repo"
