@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -94,6 +94,7 @@
 				};
 			};
 			buildConfigurationList = C058EF352DCD488D002775E0 /* Build configuration list for PBXProject "MWA2APIRepo" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -102,7 +103,6 @@
 			);
 			mainGroup = C058EF312DCD488D002775E0;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = C058EF3B2DCD488D002775E0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
