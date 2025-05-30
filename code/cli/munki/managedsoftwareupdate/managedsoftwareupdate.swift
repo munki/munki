@@ -105,7 +105,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             // munkistatusoutput is false for checking, but true for installing
             runtype = "auto"
             otherOptions.munkistatusoutput = false
-            otherOptions.quiet = false
+            //otherOptions.quiet = true  // behavior change here; we're going to print output unless --quiet is explicitly given
             commonOptions.checkOnly = false
             commonOptions.installOnly = false
         }
