@@ -33,11 +33,11 @@ struct MSUCommonOptions: ParsableArguments {
     var installOnly = false
 
     @Flag(name: .customLong("applesuspkgsonly"),
-          help: "Only check/install Apple SUS packages, skip Munki packages.")
+          help: "Only check for Apple software updates, skip Munki packages.")
     var appleSUSPkgsOnly = false
 
     @Flag(name: .customLong("munkipkgsonly"),
-          help: "Only check/install Munki packages, skip Apple SUS.")
+          help: "Only check/install Munki packages, skip Apple software updates.")
     var munkiPkgsOnly = false
 }
 
