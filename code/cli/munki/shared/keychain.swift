@@ -32,12 +32,17 @@ func pemCertData(_ certPath: String) throws -> Data {
     guard let certString = try? String(contentsOfFile: certPath, encoding: .utf8) else {
         throw MunkiError("File not decodeable as UTF-8")
     }
-    guard let startIndex = certString.range(of: "-----BEGIN CERTIFICATE-----")?.upperBound,
-          let endIndex = certString.range(of: "-----END CERTIFICATE-----")?.lowerBound
+    let startTag = "-----BEGIN CERTIFICATE-----"
+    let endTag = "-----END CERTIFICATE-----"
+    guard let startIndex = certString.range(of: startTag)?.upperBound,
+          let endIndex = certString.range(of: endTag)?.lowerBound
     else {
         throw MunkiError("File does not appear to be .pem file")
     }
-    let certDataString = String(certString[startIndex ..< endIndex]).split(separator: "\n").joined()
+    let certDataString = String(certString[startIndex ..< endIndex])
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .components(separatedBy: .newlines)
+        .joined()
     guard let certData = Data(base64Encoded: String(certDataString)) else {
         throw MunkiError("Could not decode cert string as base64")
     }
