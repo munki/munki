@@ -41,6 +41,17 @@ func connectToRepo() throws -> Repo {
     return repo
 }
 
+/// A singleton class for our repo connection
+class RepoConnection {
+    static var shared = RepoConnection()
+    
+    var repo: Repo?
+    
+    private init() {
+        repo = try? connectToRepo()
+    }
+}
+
 @main
 struct ManifestUtil: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
@@ -64,23 +75,25 @@ struct ManifestUtil: AsyncParsableCommand {
             CopyManifest.self,
             RenameManifest.self,
             DeleteManifest.self,
-            // RefreshCache.self,
-            // Exit.self,
             Configure.self,
             Version.self,
-            // RunInteractive.self,
+            RunInteractive.self,
+            // RefreshCache.self,
+            Exit.self,
         ],
-        // defaultSubcommand: RunInteractive.self
+        defaultSubcommand: RunInteractive.self
     )
 }
 
 extension ManifestUtil {
     struct Exit: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Exits this utility when in interactive mode.")
+            abstract: "Exits this utility when in interactive mode.",
+            shouldDisplay: false
+        )
 
         func run() throws {
-            throw ExitCode(0)
+            Exit.exit()
         }
     }
 }

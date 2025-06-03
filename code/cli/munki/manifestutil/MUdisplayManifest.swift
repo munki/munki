@@ -107,7 +107,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             if var manifest = await getManifest(repo: repo, name: manifestName) {
                 if expand {
                     manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
@@ -141,7 +141,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             if var manifest = await getManifest(repo: repo, name: manifestName) {
                 manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
                 if xml {
