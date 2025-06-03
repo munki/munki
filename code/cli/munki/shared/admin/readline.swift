@@ -45,5 +45,3 @@ func getInput(prompt: String? = nil, defaultText: String? = nil) -> String? {
     defer { free(cString) }
     return String(cString: cString)
 }
-
-
