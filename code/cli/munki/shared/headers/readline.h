@@ -16,7 +16,7 @@
 ///
 /// The original ("official") header defines the `rl_completion_entry_function` as returning an Int32,
 /// but it actually returns a pointer to a string. C code seems to be able to use the inaccurate definition,
-/// but Swift, being far more careful abotut tyoe, complains.
+/// but Swift, being far more careful about type, complains.
 ///
 /// These typedefs are important:
 ///     `typedef int      Function(const char *, int);`
