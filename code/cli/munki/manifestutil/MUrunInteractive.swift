@@ -48,7 +48,7 @@ class TabCompleter {
         "delete-manifest": ["manifests"],
         // "refresh-cache": [],
         "exit": [],
-        "help": [],
+        "help": ["commands"],
         "configure": [],
         "version": [],
     ]
@@ -151,6 +151,9 @@ class TabCompleter {
                     return wordList.filter { $0.hasPrefix(text) }
                 case "manifests":
                     let wordList = manifests + options.dropFirst() + ["--help"]
+                    return wordList.filter { $0.hasPrefix(text) }
+                case "commands":
+                    let wordList = Array(commands.keys) + options.dropFirst() + ["--help"]
                     return wordList.filter { $0.hasPrefix(text) }
                 default:
                     let wordList = options + ["--help"]
