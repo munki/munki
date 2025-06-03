@@ -30,32 +30,32 @@ struct commandInfo {
 
 class TabCompleter {
     static var shared = TabCompleter()
-    
+
     let commands = [
-        "add-pkg":                   ["pkgs", "--manifest", "--section"],
-        "add-catalog":               ["catalogs", "--manifest"],
-        "add-included-manifest":     ["manifests", "--manifest"],
-        "remove-pkg":                ["pkgs", "--manifest", "--section"],
+        "add-pkg": ["pkgs", "--manifest", "--section"],
+        "add-catalog": ["catalogs", "--manifest"],
+        "add-included-manifest": ["manifests", "--manifest"],
+        "remove-pkg": ["pkgs", "--manifest", "--section"],
         "move-install-to-uninstall": ["pkgs", "--manifest"],
-        "remove-catalog":            ["catalogs", "--manifest"],
-        "remove-included-manifest":  ["manifests", "--manifest"],
-        "list-manifests":            [],
-        "list-catalogs":             [],
-        "list-catalog-items":        ["catalogs"],
-        "display-manifest":          ["manifests", "--expand", "--xml"],
+        "remove-catalog": ["catalogs", "--manifest"],
+        "remove-included-manifest": ["manifests", "--manifest"],
+        "list-manifests": [],
+        "list-catalogs": [],
+        "list-catalog-items": ["catalogs"],
+        "display-manifest": ["manifests", "--expand", "--xml"],
         "expand-included-manifests": ["manifests", "--xml"],
-        "find":                      [],
-        "new-manifest":              [],
-        "copy-manifest":             ["manifests"],
-        "rename-manifest":           ["manifests"],
-        "delete-manifest":           ["manifests"],
-        //"refresh-cache":           [],
-        "exit":                      [],
-        "help":                      [],
-        "configure":                 [],
-        "version":                   [],
+        "find": ["--section"],
+        "new-manifest": [],
+        "copy-manifest": ["manifests"],
+        "rename-manifest": ["manifests"],
+        "delete-manifest": ["manifests"],
+        // "refresh-cache":           [],
+        "exit": [],
+        "help": [],
+        "configure": [],
+        "version": [],
     ]
-    
+
     let sections = [
         "managed_installs",
         "managed_uninstalls",
@@ -64,19 +64,18 @@ class TabCompleter {
         "featured_items",
         "default_installs",
     ]
-    
+
     let specialOptions = [
         "--manifest": "manifests",
         "--section": "sections",
     ]
-    
+
     var manifests = [String]()
     var pkgs = [String]()
     var catalogs = [String]()
-    
-    private init() {
-    }
-    
+
+    private init() {}
+
     func cache(manifestsOnly: Bool = false) async {
         debugLog("Caching completion data. manifestsOnly: \(manifestsOnly)")
         if let repo = RepoConnection.shared.repo {
@@ -85,18 +84,18 @@ class TabCompleter {
                 catalogs = await getCatalogNames(repo: repo) ?? []
                 pkgs = await getInstallerItemNames(
                     repo: repo,
-                    catalogs: self.catalogs
+                    catalogs: catalogs
                 )
             }
         }
     }
-    
+
     func completions(for text: String, partialLine: String) -> [String] {
         let tokens = tokenize(partialLine)
         debugLog("Tokens: \(tokens)")
         if tokens.isEmpty || tokens[0] == text {
             debugLog("We're completing the command")
-            return commands.keys.filter{
+            return commands.keys.filter {
                 $0.hasPrefix(text)
             }.sorted()
         }
@@ -120,9 +119,12 @@ class TabCompleter {
             debugLog("We're completing options")
             let previousToken = tokens[editToken - 1]
             debugLog("previousToken: \(previousToken)")
-            
-            if let options = commands[subcommand], !options.isEmpty {
-                if previousToken.hasPrefix("-") {
+
+            if let options = commands[subcommand] {
+                if options.isEmpty {
+                    return ["--help"]
+                }
+                if previousToken.hasPrefix("--") {
                     if let specialOption = specialOptions[previousToken] {
                         switch specialOption {
                         case "manifests":
@@ -135,18 +137,20 @@ class TabCompleter {
                     }
                     return []
                 }
-                let option = options[0]
-                switch option {
+                let firstOption = options[0]
+                switch firstOption {
                 case "pkgs":
                     let wordList = pkgs + options.dropFirst() + ["--help"]
-                    return wordList.filter{ $0.hasPrefix(text) }
+                    return wordList.filter { $0.hasPrefix(text) }
                 case "catalogs":
                     let wordList = catalogs + options.dropFirst() + ["--help"]
-                    return wordList.filter{ $0.hasPrefix(text) }
+                    return wordList.filter { $0.hasPrefix(text) }
                 case "manifests":
                     let wordList = manifests + options.dropFirst() + ["--help"]
-                    return wordList.filter{ $0.hasPrefix(text) }
-                default: return []
+                    return wordList.filter { $0.hasPrefix(text) }
+                default:
+                    let wordList = options + ["--help"]
+                    return wordList.filter { $0.hasPrefix(text) }
                 }
             }
         }
@@ -154,14 +158,15 @@ class TabCompleter {
     }
 }
 
+private let DEBUG_LOGGING = false
 func debugLog(_ message: String) {
+    if !DEBUG_LOGGING { return }
     // log to Apple unified logging
     if #available(macOS 11.0, *) {
         let subsystem = "com.googlecode.munki.manifestutil.tabCompleter"
         let logger = Logger(subsystem: subsystem, category: "")
         logger.log("\(message, privacy: .public)")
     }
-
 }
 
 /// Turns out that `rl_line_buffer` is not always zero-terminated, so
@@ -210,7 +215,6 @@ extension ManifestUtil {
         )
 
         func run() async throws {
-            
             // install handlers for SIGINT and SIGTERM
             let sigintSrc = installSignalHandler(SIGINT, cleanUpFunction: cleanupReadline)
             sigintSrc.activate()
@@ -221,30 +225,30 @@ extension ManifestUtil {
             // now act as top-level commands. So we manually parse
             // the first arg to get the subcommand
             let subcommands: [String: ParsableCommand.Type] = [
-                "add-pkg":                   AddPkg.self,
-                "add-catalog":               AddCatalog.self,
-                "add-included-manifest":     AddIncludedManifest.self,
-                "remove-pkg":                RemovePkg.self,
+                "add-pkg": AddPkg.self,
+                "add-catalog": AddCatalog.self,
+                "add-included-manifest": AddIncludedManifest.self,
+                "remove-pkg": RemovePkg.self,
                 "move-install-to-uninstall": MoveInstallToUninstall.self,
-                "remove-catalog":            RemoveCatalog.self,
-                "remove-included-manifest":  RemoveIncludedManifest.self,
-                "list-manifests":            ListManifests.self,
-                "list-catalogs":             ListCatalogs.self,
-                "list-catalog-items":        ListCatalogItems.self,
-                "display-manifest":          DisplayManifest.self,
+                "remove-catalog": RemoveCatalog.self,
+                "remove-included-manifest": RemoveIncludedManifest.self,
+                "list-manifests": ListManifests.self,
+                "list-catalogs": ListCatalogs.self,
+                "list-catalog-items": ListCatalogItems.self,
+                "display-manifest": DisplayManifest.self,
                 "expand-included-manifests": ExpandIncludedManifests.self,
-                "find":                      Find.self,
-                "new-manifest":              NewManifest.self,
-                "copy-manifest":             CopyManifest.self,
-                "rename-manifest":           RenameManifest.self,
-                "delete-manifest":           DeleteManifest.self,
-                //"refresh-cache":           RefreshCache.self,
-                "exit":                      Exit.self,
-                "help":                      ManifestUtil.self,
-                "configure":                 Configure.self,
-                "version":                   Version.self,
+                "find": Find.self,
+                "new-manifest": NewManifest.self,
+                "copy-manifest": CopyManifest.self,
+                "rename-manifest": RenameManifest.self,
+                "delete-manifest": DeleteManifest.self,
+                // "refresh-cache":           RefreshCache.self,
+                "exit": Exit.self,
+                "help": ManifestUtil.self,
+                "configure": Configure.self,
+                "version": Version.self,
             ]
-            
+
             let recacheManifestCmds = [
                 "new-manifest",
                 "copy-manifest",
@@ -255,29 +259,29 @@ extension ManifestUtil {
             rl_initialize()
             rl_readline_name = strdup("com.googlecode.munki.manifestutil")
             setupTabCompleter()
-            
+
             print("Entering interactive mode... (type \"help\" for commands, \"exit\" to quit)")
-            //guard RepoConnection.shared.repo != nil else { return }
+            // guard RepoConnection.shared.repo != nil else { return }
             await TabCompleter.shared.cache()
 
             // loop forever until the user signals they want to quit
             while true {
                 let commandLine = getInput(prompt: "> ") ?? ""
-                
+
                 var args = tokenize(commandLine)
                 if args.isEmpty { continue }
                 add_history(commandLine)
-                
+
                 guard let subcommand = subcommands[args[0]] else {
                     print("No such command: \(args[0])")
                     continue
                 }
-                
+
                 let commandString = args[0]
                 if args[0] != "help" {
                     args.removeFirst()
                 }
-                
+
                 do {
                     var command = try subcommand.parseAsRoot(args)
                     if var asyncCommand = command as? AsyncParsableCommand {
