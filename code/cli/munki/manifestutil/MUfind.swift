@@ -76,7 +76,7 @@ extension ManifestUtil {
         var findText: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             await findTextInManifests(repo: repo, findText: findText, section: section)
         }
     }

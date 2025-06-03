@@ -57,6 +57,8 @@ func copyOrRenameManifest(repo: Repo, sourceName: String, destinationName: Strin
     do {
         let data = try await repo.get("manifests/\(sourceName)")
         try await repo.put("manifests/\(destinationName)", content: data)
+        // TODO: on a case-insenstive file system this can end up deleting the file
+        // (If you rename "test" to "TEST", then delete "test" you actually delete "TEST")
         if deleteSource {
             try await repo.delete("manifests/\(sourceName)")
         }
@@ -107,7 +109,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await newManifest(repo: repo, name: manifestName)
         }
     }
@@ -132,7 +134,7 @@ extension ManifestUtil {
         var destinationName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await copyOrRenameManifest(
                 repo: repo,
                 sourceName: sourceName,
@@ -161,7 +163,7 @@ extension ManifestUtil {
         var destinationName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await copyOrRenameManifest(
                 repo: repo,
                 sourceName: sourceName,
@@ -185,7 +187,7 @@ extension ManifestUtil {
         var manifestName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await deleteManifest(repo: repo, name: manifestName)
         }
     }

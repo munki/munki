@@ -377,6 +377,10 @@
 		C0848D3B2C94F7190008B463 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C087AC2E2CFFC81B00DC3D59 /* makecatalogslib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643B2C2DC529008DB215 /* makecatalogslib.swift */; };
 		C087AC2F2CFFCCB600DC3D59 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
+		C09616C62DEE6DBF00281B6B /* SignalHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */; };
+		C09616C72DEE6DE200281B6B /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
+		C09616C82DEE6DF400281B6B /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
+		C09616C92DEE6E1300281B6B /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
@@ -741,6 +745,7 @@
 		C07AED712C67F77000DE6119 /* sslerrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sslerrors.swift; sourceTree = "<group>"; };
 		C0848D172C94D1840008B463 /* iconimporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = iconimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0848D192C94D1840008B463 /* iconimporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconimporter.swift; sourceTree = "<group>"; };
+		C09616BD2DED335500281B6B /* readline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = readline.h; sourceTree = "<group>"; };
 		C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = unusedsoftware.swift; sourceTree = "<group>"; };
 		C0B7FA002D288C2700CC14F0 /* authrestart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = authrestart.swift; sourceTree = "<group>"; };
 		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -773,9 +778,26 @@
 		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C09616492DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				tokenize.swift,
+			);
+			target = C07A6FB62C2B5ADE00090743 /* munkitester */;
+		};
+		C096164D2DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				tokenize.swift,
+			);
+			target = C0684E5B2DC736EE0091E774 /* munkiCLItesting */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C00519A22D2A5B850060DDB6 /* authrestartd */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = authrestartd; sourceTree = "<group>"; };
-		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
+		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C09616492DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, C096164D2DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
 		C0684DD22DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = precache_agent; sourceTree = "<group>"; };
 		C0684E022DBFF33E0091E774 /* supervisor */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = supervisor; sourceTree = "<group>"; };
 		C0684E2E2DC040450091E774 /* installhelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = installhelper; sourceTree = "<group>"; };
@@ -938,6 +960,7 @@
 				C030A9EF2C43505B007F0B34 /* munkiimport-Bridging-Header.h */,
 				C030A9EE2C43505B007F0B34 /* munkitester-Bridging-Header.h */,
 				C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */,
+				C09616BD2DED335500281B6B /* readline.h */,
 			);
 			path = headers;
 			sourceTree = "<group>";
@@ -1863,6 +1886,7 @@
 				C05DB21F2DAC980D0081FACD /* prefs.swift in Sources */,
 				C05DB20E2DAC66E50081FACD /* readline.swift in Sources */,
 				C05DB2102DAC66F80081FACD /* configure.swift in Sources */,
+				C09616C72DEE6DE200281B6B /* munkilog.swift in Sources */,
 				C05DB20F2DAC66F00081FACD /* admincommon.swift in Sources */,
 				C05DB2222DAC98970081FACD /* fileutils.swift in Sources */,
 				C05DB2112DAC671C0081FACD /* constants.swift in Sources */,
@@ -1870,11 +1894,14 @@
 				C05DB2192DAC835D0081FACD /* stderrout.swift in Sources */,
 				C05DB2182DAC83410081FACD /* errors.swift in Sources */,
 				C05DB2142DAC831E0081FACD /* GitFileRepo.swift in Sources */,
+				C09616C62DEE6DBF00281B6B /* SignalHandler.swift in Sources */,
+				C09616C92DEE6E1300281B6B /* tempfileutils.swift in Sources */,
 				C058EF1F2DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C05DB21C2DAC977C0081FACD /* cliutils.swift in Sources */,
 				C05DB2152DAC831E0081FACD /* repoutils.swift in Sources */,
 				C05DB2162DAC831E0081FACD /* FileRepo.swift in Sources */,
 				C05DB2172DAC831E0081FACD /* RepoFactory.swift in Sources */,
+				C09616C82DEE6DF400281B6B /* UNIXProcessInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

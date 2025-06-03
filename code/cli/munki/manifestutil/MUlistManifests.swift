@@ -43,8 +43,8 @@ extension ManifestUtil {
         var globString: String = ""
 
         func run() async throws {
-            guard let repo = try? connectToRepo(),
-                  let manifestNames = await getManifestNames(repo: repo)
+            guard let repo = RepoConnection.shared.repo else { return }
+            guard let manifestNames = await getManifestNames(repo: repo)
             else {
                 return
             }

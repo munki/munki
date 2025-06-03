@@ -194,7 +194,7 @@ extension ManifestUtil {
         var pkgName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await addPkg(repo: repo, manifestName: manifest, pkgName: pkgName, section: section)
         }
     }
@@ -221,7 +221,7 @@ extension ManifestUtil {
         var pkgName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await removeManifestItem(repo: repo, manifestName: manifest, section: section, item: pkgName)
         }
     }
@@ -244,7 +244,7 @@ extension ManifestUtil {
         var pkgName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await moveInstallToUninstall(repo: repo, manifestName: manifest, item: pkgName)
         }
     }
@@ -267,7 +267,7 @@ extension ManifestUtil {
         var catalogName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await addCatalog(repo: repo, manifestName: manifest, catalogName: catalogName)
         }
     }
@@ -290,7 +290,7 @@ extension ManifestUtil {
         var catalogName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await removeManifestItem(repo: repo, manifestName: manifest, section: "catalogs", item: catalogName)
         }
     }
@@ -313,7 +313,7 @@ extension ManifestUtil {
         var includedManifestName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await addIncludedManifest(repo: repo, manifestName: manifest, includedManifestName: includedManifestName)
         }
     }
@@ -336,7 +336,7 @@ extension ManifestUtil {
         var includedManifestName: String
 
         func run() async throws {
-            guard let repo = try? connectToRepo() else { return }
+            guard let repo = RepoConnection.shared.repo else { return }
             _ = await removeManifestItem(repo: repo, manifestName: manifest, section: "included_manifests", item: includedManifestName)
         }
     }

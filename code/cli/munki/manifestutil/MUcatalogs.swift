@@ -82,26 +82,26 @@ extension ManifestUtil {
     struct ListCatalogItems: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Lists items in the given catalogs.")
-
+        
         @Argument(help: ArgumentHelp(
             "Catalog name",
             valueName: "catalog-name"
         ))
         var catalogNames: [String] = []
-
+        
         func validate() throws {
             if catalogNames.isEmpty {
                 throw ValidationError("At least one catalog name must be provided.")
             }
         }
-
+        
         func run() async throws {
-            guard let repo = try? connectToRepo(),
-                  let availableCatalogs = await getCatalogNames(repo: repo)
-            else {
+            guard let repo = RepoConnection.shared.repo else { return }
+            guard let availableCatalogs = await getCatalogNames(repo: repo) else
+            {
                 return
             }
-
+            
             for catalogName in catalogNames {
                 if !availableCatalogs.contains(catalogName) {
                     printStderr("Catalog '\(catalogName)' does not exist.")
