@@ -44,9 +44,9 @@ func connectToRepo() throws -> Repo {
 /// A singleton class for our repo connection
 class RepoConnection {
     static var shared = RepoConnection()
-    
+
     var repo: Repo?
-    
+
     private init() {
         repo = try? connectToRepo()
     }
