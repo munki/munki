@@ -22,15 +22,12 @@ import ArgumentParser
 import Foundation
 import OSLog
 
-struct commandInfo {
-    var shortOptions: [String]
-    var longOptions: [String]
-    var arguments: [String]
-}
-
+/// A Singleton class to hold all the logic around tab completion for manifestutil's interactive mode
 class TabCompleter {
+    /// track our singleton instance
     static var shared = TabCompleter()
 
+    /// our subcommands and the options/arguments they support
     let commands = [
         "add-pkg": ["pkgs", "--manifest", "--section"],
         "add-catalog": ["catalogs", "--manifest"],
@@ -49,13 +46,14 @@ class TabCompleter {
         "copy-manifest": ["manifests"],
         "rename-manifest": ["manifests"],
         "delete-manifest": ["manifests"],
-        // "refresh-cache":           [],
+        // "refresh-cache": [],
         "exit": [],
         "help": [],
         "configure": [],
         "version": [],
     ]
 
+    /// manifest sections that can contain installer items (pkgs)
     let sections = [
         "managed_installs",
         "managed_uninstalls",
@@ -65,17 +63,21 @@ class TabCompleter {
         "default_installs",
     ]
 
+    /// options that require lists we can provide
     let specialOptions = [
         "--manifest": "manifests",
         "--section": "sections",
     ]
 
+    /// variables to cache our lists of repo items
     var manifests = [String]()
     var pkgs = [String]()
     var catalogs = [String]()
 
+    /// this is a singleton, so only one instance, please
     private init() {}
 
+    /// retreive our lists of repo items and store them
     func cache(manifestsOnly: Bool = false) async {
         debugLog("Caching completion data. manifestsOnly: \(manifestsOnly)")
         if let repo = RepoConnection.shared.repo {
@@ -90,7 +92,9 @@ class TabCompleter {
         }
     }
 
+    /// Return a list of potential completions for 'text'. Use the partialLine to guess context.
     func completions(for text: String, partialLine: String) -> [String] {
+        // split our partialLine into command and options/args
         let tokens = tokenize(partialLine)
         debugLog("Tokens: \(tokens)")
         if tokens.isEmpty || tokens[0] == text {
@@ -158,6 +162,11 @@ class TabCompleter {
     }
 }
 
+/// Since you can't usefully use libedit/readline in Xcode directly, the debugger isn't super useful.
+/// So here's a way to send debugging info into Apple unified logging. Set `DEBUG_LOGGING` to true
+/// and build the tool.
+/// View the logs like so:
+/// sudo log stream --predicate 'subsystem == "com.googlecode.munki.manifestutil.tabCompleter"'
 private let DEBUG_LOGGING = false
 func debugLog(_ message: String) {
     if !DEBUG_LOGGING { return }
@@ -180,6 +189,8 @@ func get_rl_line_buffer() -> String {
     return String(cString: buffer)
 }
 
+/// Function with C calling convention that we can pass to readline
+/// Readline calls this function when attempting a tab completion
 @_cdecl("tabCompleter")
 func tabCompleter(_ text: UnsafePointer<CChar>?, _ state: Int32) -> UnsafeMutablePointer<CChar>? {
     guard let text else { return nil }
@@ -202,11 +213,14 @@ func tabCompleter(_ text: UnsafePointer<CChar>?, _ state: Int32) -> UnsafeMutabl
     return nil
 }
 
+/// Sets up readline to use our tab completion function
 func setupTabCompleter() {
     rl_completion_entry_function = tabCompleter
+    // bind the tab key/character to to tab completion
     rl_parse_and_bind("bind ^I rl_complete")
 }
 
+/// Subcommand for running manifestutil interactively
 extension ManifestUtil {
     struct RunInteractive: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
