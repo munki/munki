@@ -222,3 +222,48 @@ func verifyExecutableOwnershipAndPermissions() -> Bool {
     }
     return true
 }
+
+/// Why not use FileManager.DirectoryEnumerator?
+///
+/// A recursive list of files built via FileManager.DirectoryEnumerator is in avery different order than one built
+/// with Python's os.walk(), making it difficult to prove that (for example), the output of `makecatalogs` is
+/// the same from the Swift version as it is from the Python version.
+/// Also, Munki expects to follow directory symlinks, which FileManager.DirectoryEnumerator does not.
+///
+/// This code is much slower (5x-20x) than the equivlent Python code based on os.walk(). We'll need
+/// to work on that, too.
+///
+/// List of paths returned is relative to `top`.
+func recursiveFileList(_ top: String, followLinks: Bool = true, skipDotFiles: Bool = true) -> [String] {
+    let fm = FileManager.default
+    var dirs = [String]()
+    var paths = [String]()
+    for item in (try? fm.contentsOfDirectory(atPath: top)) ?? [] {
+        if skipDotFiles, item.hasPrefix(".") {
+            // skip any item that starts with a .
+            continue
+        }
+        let path = (top as NSString).appendingPathComponent(item)
+        if pathIsDirectory(path) {
+            dirs.append(item)
+            continue
+        }
+        if pathIsSymlink(path), followLinks {
+            if let destination = try? fm.destinationOfSymbolicLink(atPath: path),
+               pathIsDirectory(destination)
+            {
+                dirs.append(item)
+                continue
+            }
+        }
+        paths.append(item)
+    }
+    for dir in dirs {
+        let fulldir = (top as NSString).appendingPathComponent(dir)
+        paths = paths + recursiveFileList(fulldir, followLinks: followLinks).map {
+            (dir as NSString).appendingPathComponent($0)
+        }
+    }
+    return paths
+}
+

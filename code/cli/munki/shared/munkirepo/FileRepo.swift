@@ -179,31 +179,8 @@ class FileRepo: Repo {
     /// Kind might be 'catalogs', 'manifests', 'pkgsinfo', 'pkgs', or 'icons'.
     /// For a file-backed repo this would be a list of pathnames.
     func list(_ kind: String) async throws -> [String] {
-        // TODO: the order Foundation enumerates files is different than the order
-        // you get from Python's os.walk. This affets the behavior of MWA2.
-        // MWA2 probably should not be relying on catalogs being built in a specific ordering.
-        var fileList = [String]()
         let searchPath = (root as NSString).appendingPathComponent(kind)
-        let filemanager = FileManager.default
-        guard let dirEnum = filemanager.enumerator(atPath: searchPath) else {
-            return [String]()
-        }
-        while let file = dirEnum.nextObject() as? String {
-            let fullpath = (searchPath as NSString).appendingPathComponent(file)
-            let basename = (file as NSString).lastPathComponent
-            if !pathIsDirectory(fullpath) {
-                if !basename.hasPrefix(".") {
-                    fileList.append(file)
-                }
-            } else {
-                // path is directory
-                if basename.hasPrefix(".") {
-                    // skip this directory
-                    dirEnum.skipDescendants()
-                }
-            }
-        }
-        return fileList
+        return recursiveFileList(searchPath)
     }
 
     /// Returns the content of item with given resource_identifier.
