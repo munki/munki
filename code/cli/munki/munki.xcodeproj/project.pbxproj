@@ -488,6 +488,7 @@
 		C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994212C5C1109006FDF44 /* ArgumentParser */; };
 		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
+		C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -891,6 +892,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */,
 				C0B715BE2DA6F43E00F255FB /* X509 in Frameworks */,
 				C0E9941A2C5C10E1006FDF44 /* ArgumentParser in Frameworks */,
 			);
