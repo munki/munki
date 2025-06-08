@@ -180,7 +180,7 @@ class FileRepo: Repo {
     /// For a file-backed repo this would be a list of pathnames.
     func list(_ kind: String) async throws -> [String] {
         let searchPath = (root as NSString).appendingPathComponent(kind)
-        return recursiveFileList(searchPath)
+        return listFilesRecursively(searchPath)
     }
 
     /// Returns the content of item with given resource_identifier.

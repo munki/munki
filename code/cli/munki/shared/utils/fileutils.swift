@@ -224,46 +224,57 @@ func verifyExecutableOwnershipAndPermissions() -> Bool {
 }
 
 /// Why not use FileManager.DirectoryEnumerator?
+/// IOW, why not use FileManager.default.enumerator(atPath path: String)?
 ///
-/// A recursive list of files built via FileManager.DirectoryEnumerator is in avery different order than one built
+/// A recursive list of files built via FileManager.DirectoryEnumerator is in a very different order than one built
 /// with Python's os.walk(), making it difficult to prove that (for example), the output of `makecatalogs` is
 /// the same from the Swift version as it is from the Python version.
+///
 /// Also, Munki expects to follow directory symlinks, which FileManager.DirectoryEnumerator does not.
 ///
-/// This code is much slower (5x-20x) than the equivlent Python code based on os.walk(). We'll need
-/// to work on that, too.
+/// Building a recursive list of file using FileManager.DirectoryEnumerator is much slower (5x-20x) than
+/// the equivlent Python code based on os.walk(). This code is much closer, speed-wise.
 ///
-/// List of paths returned is relative to `top`.
-func recursiveFileList(_ top: String, followLinks: Bool = true, skipDotFiles: Bool = true) -> [String] {
-    let fm = FileManager.default
+/// Returns a list of filepaths, relative to `top`.
+func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles: Bool = true) -> [String] {
     var dirs = [String]()
     var paths = [String]()
-    for item in (try? fm.contentsOfDirectory(atPath: top)) ?? [] {
-        if skipDotFiles, item.hasPrefix(".") {
-            // skip any item that starts with a .
+    guard let dirp = opendir(top) else { return [] }
+    while let dir_entry = readdir(dirp) {
+        let entryName = withUnsafeBytes(of: dir_entry.pointee.d_name) { (rawPtr) -> String in
+            let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
+            return String(cString: ptr)
+        }
+        guard entryName != "." else { continue }
+        guard entryName != ".." else { continue }
+        if skipDotFiles, entryName.hasPrefix(".") {
             continue
         }
-        let path = (top as NSString).appendingPathComponent(item)
-        if pathIsDirectory(path) {
-            dirs.append(item)
+        let itemPath = (top as NSString).appendingPathComponent(entryName)
+        let sb: UnsafeMutablePointer<stat> = UnsafeMutablePointer<stat>.allocate(capacity: 1)
+        if followLinks {
+            // if a symlink, return data for what it points to
+            stat(itemPath, sb)
+        } else {
+            // return data for the link itself
+            lstat(itemPath, sb)
+        }
+        let isDir = sb.pointee.st_mode & S_IFDIR == S_IFDIR
+        sb.deallocate()
+        if isDir {
+            dirs.append(entryName)
             continue
         }
-        if pathIsSymlink(path), followLinks {
-            if let destination = try? fm.destinationOfSymbolicLink(atPath: path),
-               pathIsDirectory(destination)
-            {
-                dirs.append(item)
-                continue
-            }
-        }
-        paths.append(item)
+        paths.append(entryName)
     }
+    closedir(dirp)
+    // now process any subdirectories
     for dir in dirs {
         let fulldir = (top as NSString).appendingPathComponent(dir)
-        paths = paths + recursiveFileList(fulldir, followLinks: followLinks).map {
-            (dir as NSString).appendingPathComponent($0)
-        }
+        paths = paths + listFilesRecursively(
+            fulldir, followLinks: followLinks, skipDotFiles: skipDotFiles).map {
+                (dir as NSString).appendingPathComponent($0)
+            }
     }
     return paths
 }
-
