@@ -236,12 +236,13 @@ func verifyExecutableOwnershipAndPermissions() -> Bool {
 /// the equivlent Python code based on os.walk(). This code is much closer, speed-wise.
 ///
 /// Returns a list of filepaths, relative to `top`.
+/// Inspired by code here: https://forums.fast.ai/t/fast-file-enumeration-in-swift/44709/1
 func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles: Bool = true) -> [String] {
     var dirs = [String]()
     var paths = [String]()
     guard let dirp = opendir(top) else { return [] }
     while let dir_entry = readdir(dirp) {
-        let entryName = withUnsafeBytes(of: dir_entry.pointee.d_name) { (rawPtr) -> String in
+        let entryName = withUnsafeBytes(of: dir_entry.pointee.d_name) { rawPtr -> String in
             let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
             return String(cString: ptr)
         }
@@ -251,7 +252,7 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
             continue
         }
         let itemPath = (top as NSString).appendingPathComponent(entryName)
-        let sb: UnsafeMutablePointer<stat> = UnsafeMutablePointer<stat>.allocate(capacity: 1)
+        let sb = UnsafeMutablePointer<stat>.allocate(capacity: 1)
         if followLinks {
             // if a symlink, return data for what it points to
             stat(itemPath, sb)
@@ -272,9 +273,10 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
     for dir in dirs {
         let fulldir = (top as NSString).appendingPathComponent(dir)
         paths = paths + listFilesRecursively(
-            fulldir, followLinks: followLinks, skipDotFiles: skipDotFiles).map {
-                (dir as NSString).appendingPathComponent($0)
-            }
+            fulldir, followLinks: followLinks, skipDotFiles: skipDotFiles
+        ).map {
+            (dir as NSString).appendingPathComponent($0)
+        }
     }
     return paths
 }
