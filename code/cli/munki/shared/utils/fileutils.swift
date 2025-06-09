@@ -233,7 +233,8 @@ func verifyExecutableOwnershipAndPermissions() -> Bool {
 /// Also, Munki expects to follow directory symlinks, which FileManager.DirectoryEnumerator does not.
 ///
 /// Finally, building a recursive list of files using FileManager.DirectoryEnumerator is much slower (5x-20x) than
-/// the equivalent Python code based on os.walk(). This implementation is essentially the same, speed-wise.
+/// the equivalent Python code based on os.walk(). This implementation is still slower than the Python implementation,
+/// but is much closer, speed-wise.
 ///
 /// Returns a list of filepaths, relative to `top`.
 /// Inspired by code here: https://forums.fast.ai/t/fast-file-enumeration-in-swift/44709/1
