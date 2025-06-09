@@ -242,10 +242,11 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
     var paths = [String]()
     guard let dirp = opendir(top) else { return [] }
     while let dir_entry = readdir(dirp) {
-        let entryName = withUnsafeBytes(of: dir_entry.pointee.d_name) { rawPtr -> String in
+        let entryName = withUnsafeBytes(of: dir_entry.pointee.d_name) { rawPtr -> String? in
             let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
-            return String(cString: ptr)
+            return String(cString: ptr, encoding: .utf8)
         }
+        guard let entryName else { continue }
         guard entryName != "." else { continue }
         guard entryName != ".." else { continue }
         if skipDotFiles, entryName.hasPrefix(".") {
