@@ -223,17 +223,17 @@ func verifyExecutableOwnershipAndPermissions() -> Bool {
     return true
 }
 
-/// Why not use FileManager.DirectoryEnumerator?
-/// IOW, why not use FileManager.default.enumerator(atPath path: String)?
+/// Why not use Foundation's FileManager.DirectoryEnumerator?
+/// Why drop to POSIX calls like opendir, readdir, closedir, lstat, and stat?
 ///
 /// A recursive list of files built via FileManager.DirectoryEnumerator is in a very different order than one built
-/// with Python's os.walk(), making it difficult to prove that (for example), the output of `makecatalogs` is
+/// with Python's os.walk(), making it difficult to prove that (for example), the result of `makecatalogs` is
 /// the same from the Swift version as it is from the Python version.
 ///
 /// Also, Munki expects to follow directory symlinks, which FileManager.DirectoryEnumerator does not.
 ///
-/// Building a recursive list of file using FileManager.DirectoryEnumerator is much slower (5x-20x) than
-/// the equivlent Python code based on os.walk(). This code is much closer, speed-wise.
+/// Finally, building a recursive list of files using FileManager.DirectoryEnumerator is much slower (5x-20x) than
+/// the equivalent Python code based on os.walk(). This implementation is essentially the same, speed-wise.
 ///
 /// Returns a list of filepaths, relative to `top`.
 /// Inspired by code here: https://forums.fast.ai/t/fast-file-enumeration-in-swift/44709/1
