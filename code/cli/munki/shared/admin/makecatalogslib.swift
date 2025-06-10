@@ -58,7 +58,7 @@ struct CatalogsMaker {
     /// Returns a list of pkginfo identifiers
     mutating func getPkgsinfoList() async throws {
         do {
-            pkgsinfoList = try await listItemsOfKind(repo, "pkgsinfo")
+            pkgsinfoList = try await repo.list("pkgsinfo")
         } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
                 description: "Error getting list of pkgsinfo items")
@@ -68,7 +68,7 @@ struct CatalogsMaker {
     /// Returns a list of pkg identifiers
     mutating func getPkgsList() async throws {
         do {
-            pkgsList = try await listItemsOfKind(repo, "pkgs")
+            pkgsList = try await repo.list("pkgs")
         } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
                 description: "Error getting list of pkgs items")
@@ -137,12 +137,11 @@ struct CatalogsMaker {
                 "WARNING: empty or invalid installer_item_location in \(identifier)")
             return false
         }
-        let installeritempath = "pkgs/" + installeritemlocation
 
         // Check if the installer item actually exists
-        if !(pkgsList.contains(installeritempath)) {
+        if !(pkgsList.contains(installeritemlocation)) {
             // didn't find it in the pkgsList; let's look case-insensitive
-            if let match = caseInsensitivePkgsListContains(installeritempath) {
+            if let match = caseInsensitivePkgsListContains(installeritemlocation) {
                 warnings.append(
                     "WARNING: \(identifier) refers to installer item: \(installeritemlocation). The pathname of the item in the repo has different case: \(match). This may cause issues depending on the case-sensitivity of the underlying filesystem."
                 )
@@ -161,11 +160,10 @@ struct CatalogsMaker {
                     "WARNING: empty or invalid uninstaller_item_location in \(identifier)")
                 return false
             }
-            let uninstalleritempath = "pkgs/" + uninstalleritemlocation
             // Check if the uninstaller item actually exists
-            if !(pkgsList.contains(uninstalleritempath)) {
+            if !(pkgsList.contains(uninstalleritemlocation)) {
                 // didn't find it in the pkgsList; let's look case-insensitive
-                if let match = caseInsensitivePkgsListContains(uninstalleritempath) {
+                if let match = caseInsensitivePkgsListContains(uninstalleritemlocation) {
                     warnings.append(
                         "WARNING: \(identifier) refers to uninstaller item: \(uninstalleritemlocation). The pathname of the item in the repo has different case: \(match). This may cause issues depending on the case-sensitivity of the underlying filesystem."
                     )
@@ -185,9 +183,10 @@ struct CatalogsMaker {
     mutating func processPkgsinfo() async {
         catalogs["all"] = [PlistDict]()
         // Walk through the pkginfo files
-        for pkginfoIdentifier in pkgsinfoList {
+        for pkginfoName in pkgsinfoList {
             // Try to read the pkginfo file
             var pkginfo = PlistDict()
+            let pkginfoIdentifier = "pkgsinfo/" + pkginfoName
             do {
                 let data = try await repo.get(pkginfoIdentifier)
                 pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
