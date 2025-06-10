@@ -468,7 +468,6 @@ def getFlatPackageInfo(pkgpath):
                             stderr=subprocess.PIPE)
     (toc, err) = proc.communicate()
     toc = toc.decode('UTF-8').strip().split('\n')
-    print(toc)
     if proc.returncode == 0:
         # Walk through the TOC entries
         for toc_entry in toc:
