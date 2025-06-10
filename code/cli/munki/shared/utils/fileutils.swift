@@ -247,26 +247,31 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
             let ptr = rawPtr.baseAddress!.assumingMemoryBound(to: CChar.self)
             return String(cString: ptr, encoding: .utf8)
         }
+        // avoids a stat call for most directory entries
+        let entryType = dir_entry.pointee.d_type
         guard let entryName else { continue }
         guard entryName != "." else { continue }
         guard entryName != ".." else { continue }
         if skipDotFiles, entryName.hasPrefix(".") {
             continue
         }
-        let itemPath = (top as NSString).appendingPathComponent(entryName)
-        let sb = UnsafeMutablePointer<stat>.allocate(capacity: 1)
-        if followLinks {
-            // if a symlink, return data for what it points to
-            stat(itemPath, sb)
-        } else {
-            // return data for the link itself
-            lstat(itemPath, sb)
-        }
-        let isDir = sb.pointee.st_mode & S_IFDIR == S_IFDIR
-        sb.deallocate()
-        if isDir {
+        if entryType == DT_DIR {
+            // it's a directory
             dirs.append(entryName)
             continue
+        }
+        if entryType == DT_LNK, followLinks {
+            // need to find out what the type is of the item that is the
+            // symlink's target
+            let itemPath = (top as NSString).appendingPathComponent(entryName)
+            let sb = UnsafeMutablePointer<stat>.allocate(capacity: 1)
+            stat(itemPath, sb)
+            let isDir = sb.pointee.st_mode & S_IFDIR == S_IFDIR
+            sb.deallocate()
+            if isDir {
+                dirs.append(entryName)
+                continue
+            }
         }
         paths.append(entryName)
     }
