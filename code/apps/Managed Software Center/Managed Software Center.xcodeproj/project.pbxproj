@@ -99,7 +99,6 @@
 		C0546BD720FDAD82003FE5A6 /* power.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = power.swift; sourceTree = "<group>"; };
 		C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCPasswordAlertController.swift; sourceTree = "<group>"; };
 		C05F878D210556C9000DB8D8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
-		C05F878E21055746000DB8D8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Base; path = Base.lproj/Info.plist; sourceTree = "<group>"; };
 		C05F879621055BFE000DB8D8 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F879721055DAA000DB8D8 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A221055E7F000DB8D8 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -216,7 +215,6 @@
 				C04F827E20BB319B00F9C57D /* AppDelegate.swift */,
 				C04F828020BB319B00F9C57D /* Assets.xcassets */,
 				C04F828220BB319B00F9C57D /* MainMenu.xib */,
-				C05F878F21055746000DB8D8 /* Info.plist */,
 				56C33E762173DC8E00D727DC /* MSCTableRowView.swift */,
 				C04F829E20BB713B00F9C57D /* munki.swift */,
 				C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */,
@@ -486,14 +484,6 @@
 			name = MainMenu.xib;
 			sourceTree = "<group>";
 		};
-		C05F878F21055746000DB8D8 /* Info.plist */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C05F878E21055746000DB8D8 /* Base */,
-			);
-			name = Info.plist;
-			sourceTree = "<group>";
-		};
 		C05F87952105587A000DB8D8 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -716,7 +706,6 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 6.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -741,7 +730,6 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 6.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

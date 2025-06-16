@@ -16,19 +16,26 @@ class BlurWindow: NSWindow {
 
 class BlurWindowController: NSWindowController {
     
-    var screen = NSScreen.main
+    var screen: CGDirectDisplayID? = nil
+    
+    func updateWindowRect() {
+        if let screen {
+            let bounds = CGDisplayBounds(screen)
+            if let window = self.window {
+                window.setFrame(bounds, display: true)
+                window.setFrameOrigin(bounds.origin)
+            }
+        }
+    }
 
     override func loadWindow() {
         window = BlurWindow(contentRect: CGRect(x: 0, y: 0, width: 100, height: 100), styleMask: [], backing: .buffered, defer: true)
         self.window?.contentViewController = BlurViewController()
-        if let screen {
-            self.window?.setFrame((screen.frame), display: true)
-            self.window?.setFrameOrigin(screen.frame.origin)
-        }
         self.window?.collectionBehavior = [.canJoinAllSpaces]
         if atLoginWindow() {
             self.window?.canBecomeVisibleWithoutLogin = true
         }
+        updateWindowRect()
     }
 }
 
@@ -73,24 +80,89 @@ class BlurViewController: NSViewController {
 
 class BackgroundBlurrer {
     
-    var blurredScreen = [BlurWindowController]()
+    var blurWindows = [BlurWindowController]()
     
-    init() {
-        let screens = NSScreen.screens
-        for (index, screen) in screens.enumerated() {
-            blurredScreen.append(BlurWindowController())
-            blurredScreen[index].screen = screen
-            blurredScreen[index].close()
-            blurredScreen[index].loadWindow()
-            blurredScreen[index].showWindow(self)
+    func getCGDisplayIds() -> [CGDirectDisplayID] {
+        var displayCount: UInt32 = 0
+        let err = CGGetActiveDisplayList(0, nil, &displayCount)
+        if err == .success {
+            var displayIDs: [CGDirectDisplayID] = Array(repeating: 0, count: Int(displayCount))
+            let err = CGGetActiveDisplayList(displayCount, &displayIDs, nil)
+            if err == .success {
+                return displayIDs
+            }
         }
+        return []
     }
     
-    deinit {
-        for screen in blurredScreen {
-            screen.close()
+    init() {
+        for screen in getCGDisplayIds() {
+            let blurWindow = BlurWindowController()
+            blurWindow.screen = screen
+            blurWindow.close()
+            blurWindow.loadWindow()
+            blurWindow.showWindow(self)
+            blurWindows.append(blurWindow)
         }
-        blurredScreen = [BlurWindowController]()
+        // React to display connected / disconnected / resized events
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.updateBlur),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
+    }
+    
+    @objc func updateBlur() {
+        let currentScreens = getCGDisplayIds()
+        var existingScreens: Set<CGDirectDisplayID> = []
+        for blurWindow in blurWindows {
+            if let screen = blurWindow.screen {
+                if !currentScreens.contains(screen) {
+                    // a screen was detached/deactivated
+                    blurWindow.close()
+                    blurWindow.screen = nil
+                } else {
+                    existingScreens.insert(screen)
+                    let screenRect = CGDisplayBounds(screen)
+                    let windowRect = blurWindow.window?.frame ?? .zero
+                    if screenRect != windowRect {
+                        // screen changed location or size
+                        // we tried just resizing the window to match, but that
+                        // did not work consistently at the loginwindow
+                        // so just close the current window and open a new one
+                        DispatchQueue.main.async {
+                            blurWindow.close()
+                            blurWindow.loadWindow()
+                            blurWindow.showWindow(self)
+                        }
+                    }
+                }
+            }
+        }
+        // remove any controllers that don't have screens
+        blurWindows.removeAll { $0.screen == nil }
+        // now look for new screens
+        for screen in currentScreens {
+            if !existingScreens.contains(screen) {
+                // a screen was attached
+                let blurWindow = BlurWindowController()
+                blurWindow.screen = screen
+                DispatchQueue.main.async {
+                    blurWindow.close()
+                    blurWindow.loadWindow()
+                    blurWindow.showWindow(self)
+                }
+                blurWindows.append(blurWindow)
+            }
+        }
+    }
+
+    deinit {
+        for blurWindow in blurWindows {
+            blurWindow.close()
+        }
+        blurWindows = [BlurWindowController]()
     }
 
     
