@@ -181,10 +181,10 @@ long const DefaultUseNotificationCenterDays = 3;
                              options:(NSDictionary *)options
                                sound:(NSString *)sound;
 {
-   /* if (@available(macOS 10.14, *)) {
+    if (@available(macOS 10.14, *)) {
         // use newer UNUserNotifications
         UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-        // center.delegate = self;
+        center.delegate = self;
         // First remove earlier notifications from us
         [center removeAllPendingNotificationRequests];
         // request authorization
@@ -216,7 +216,7 @@ long const DefaultUseNotificationCenterDays = 3;
         }];
         sleep(1);
         [NSApp terminate: self];
-    } else { */
+    } else {
         // pre-macOS 10.14, use NSUserNotifications
         // First remove earlier notifications from us
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
@@ -242,7 +242,7 @@ long const DefaultUseNotificationCenterDays = 3;
         NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
         center.delegate = self;
         [center scheduleNotification:userNotification];
-   // }
+    }
 }
 
 - (void)userActivatedNotification:(NSUserNotification *)userNotification;
@@ -284,6 +284,49 @@ long const DefaultUseNotificationCenterDays = 3;
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center
         didDeliverNotification:(NSUserNotification *)userNotification;
 {
+    [NSApp terminate: self];
+}
+
+// MARK: UNUserNotificationCenterDelegate methods
+
+- (void) userNotificationCenter:(UNUserNotificationCenter *) center
+        willPresentNotification:(UNNotification *) notification
+          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options)) completionHandler;
+{
+    completionHandler(UNNotificationPresentationOptionAlert);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler
+{
+    UNNotificationContent * notificationContent = response.notification.request.content;
+    [self userActivatedUNUserNotification:notificationContent];
+    
+}
+
+- (void)userActivatedUNUserNotification:(UNNotificationContent *)notificationContent;
+{
+    
+    NSString *action = notificationContent.userInfo[@"action"];
+    NSString *value = notificationContent.userInfo[@"value"];
+    
+    NSLog(@"User activated notification:");
+    NSLog(@"    title: %@", notificationContent.title);
+    NSLog(@" subtitle: %@", notificationContent.subtitle);
+    NSLog(@"     body: %@", notificationContent.body);
+    NSLog(@"   action: %@", action);
+    NSLog(@"    value: %@", value);
+    
+    if ([action isEqualToString:@"open_url"]){
+        // this option currently unused
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:value]];
+    } else {
+        // tell MSC app to notify user of updates
+        // work around a bug with multiple spaces by opening the
+        // app first, sleeping, then telling the app to notify
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiAppURL]];
+        sleep(1);
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
+    }
     [NSApp terminate: self];
 }
 
