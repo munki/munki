@@ -23,6 +23,7 @@
 // did not. This implementation does not support the following options:
 // --error-exec, --error-exec-exit-codes, or --debug
 
+import Darwin
 import ArgumentParser
 import Foundation
 
@@ -94,7 +95,7 @@ class SupervisorProcessRunner {
         }
 
         log("Sending SIGKILL to \(commandName) (pid \(pid))")
-        _signal.kill(pid, SIGKILL)
+        Darwin.kill(pid, SIGKILL)
         usleep(KILL_WAIT_TIME_USEC)
         if task.isRunning {
             log("ERROR: \(commandName) (pid \(pid)) won't die")
