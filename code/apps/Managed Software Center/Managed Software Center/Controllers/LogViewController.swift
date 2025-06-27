@@ -104,22 +104,11 @@ class LogViewController: NSViewController {
         pboard.writeObjects([textToCopy as NSString])
     }
     
-    @IBAction func showLogWindow(_ sender: Any) {
+    func initializeView() {
         let logWindow = view.window!
-        if logWindow.isVisible {
-            logWindow.makeKeyAndOrderFront(self)
-            return
-        }
-        var windowRect = NSScreen.main!.frame
-        windowRect.origin.x = 100.0
-        windowRect.origin.y = 200.0
-        windowRect.size.width -= 200.0
-        windowRect.size.height -= 300.0
         let logFileURL = NSURL.fileURL(withPath: logFilePref())
         pathControl.url = logFileURL
         logWindow.title = logFileURL.lastPathComponent
-        logWindow.setFrame(windowRect, display: false)
-        logWindow.makeKeyAndOrderFront(self)
         watchLogFile(logFileURL)
         logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }

@@ -7,16 +7,47 @@
 //
 
 import Cocoa
+import UserNotifications
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
 
     @IBOutlet weak var mainWindowController: MainWindowController!
     @IBOutlet weak var statusController: MSCStatusController!
     @IBOutlet weak var passwordAlertController: MSCPasswordAlertController!
     
+    var logWindowController: LogWindowController?
+    
     var launchedViaURL = false
     var backdropOnlyMode = false
+    
+    @IBAction func showLogWindow(_ sender: Any) {
+        if logWindowController == nil {
+            logWindowController = LogWindowController(windowNibName: "LogWindow")
+        }
+        logWindowController!.showWindow(self)
+    }
+    
+    @objc func openURL(_ event: NSAppleEventDescriptor, with replyEvent: NSAppleEventDescriptor) {
+        let keyword = AEKeyword(keyDirectObject)
+        let urlDescriptor = event.paramDescriptor(forKeyword: keyword)
+        if let urlString = urlDescriptor?.stringValue {
+            msc_log("MSC", "Called by external URL: \(urlString)")
+            launchedViaURL = true
+            if let url = URL(string: urlString) {
+                mainWindowController.handleMunkiURL(url)
+            } else {
+                msc_debug_log("\(urlString) is not a valid URL")
+                return
+            }
+        }
+    }
+    
+    // MARK: NSApplicationDelegate methods
+    
+    func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
+        return true
+    }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // NSApplication delegate method called at launch
@@ -34,11 +65,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         setup_logging()
         
         if let userInfo = aNotification.userInfo {
-            if let ourNotification = userInfo["NSApplicationLaunchUserNotificationKey"] as? NSUserNotification {
-                // we get this notification at launch because it's too early to have declared ourself
-                // a NSUserNotificationCenterDelegate
+            if userInfo["NSApplicationLaunchUserNotificationKey"] != nil {
+                // we get this notification at launch because it's too early to have
+                // declared ourself a NSUserNotificationCenterDelegate
                 NSLog("%@", "Launched via Notification interaction")
-                userNotificationCenter(NSUserNotificationCenter.default, didActivate: ourNotification)
+                //userNotificationCenter(NSUserNotificationCenter.default, didActivate: ourNotification)
                 launchedViaURL = true
             }
         }
@@ -46,9 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if NSApp.responds(to: #selector(NSApplication.disableRelaunchOnLogin)) {
             NSApp.disableRelaunchOnLogin()
         }
-        // set ourself as a delegate for NSUserNotificationCenter notifications
-        NSUserNotificationCenter.default.delegate = self
-        
+         
         // have the statuscontroller register for its own notifications
         statusController.registerForNotifications()
         
@@ -92,23 +121,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                                 andSelector: #selector(self.openURL(_:with:)),
                                 forEventClass: AEEventClass(kInternetEventClass),
                                 andEventID: AEEventID(kAEGetURL))
+
+        // set ourself as a delegate for UNUserNotificationCenter notifications
+        UNUserNotificationCenter.current().delegate = self
     }
-    
-    @objc func openURL(_ event: NSAppleEventDescriptor, with replyEvent: NSAppleEventDescriptor) {
-        let keyword = AEKeyword(keyDirectObject)
-        let urlDescriptor = event.paramDescriptor(forKeyword: keyword)
-        if let urlString = urlDescriptor?.stringValue {
-            msc_log("MSC", "Called by external URL: \(urlString)")
-            launchedViaURL = true
-            if let url = URL(string: urlString) {
-                mainWindowController.handleMunkiURL(url)
-            } else {
-                msc_debug_log("\(urlString) is not a valid URL")
-                return
-            }
-        }
-    }
-    
+        
     func applicationDidResignActive(_ notification: Notification) {
         if self.mainWindowController.forceFrontmost == true {
             NSApp.activate(ignoringOtherApps: true)
@@ -131,6 +148,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         return self.mainWindowController.appShouldTerminate()
     }
     
+    /*
+    // MARK: NSUserNotificationCenterDelegate methods
+     
     func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
         // User clicked on a Notification Center alert
         guard let user_info = notification.userInfo else {
@@ -154,6 +174,40 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func userNotificationCenter(_ center: NSUserNotificationCenter, didDeliver notification: NSUserNotification) {
         // we don't currently handle this
+    }
+    */
+
+    // MARK: UNUserNotificationCenterDelegate methods
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+             willPresent notification: UNNotification,
+             withCompletionHandler completionHandler:
+                @escaping (UNNotificationPresentationOptions) -> Void) {
+        msc_log("MSC", "\(#function) called")
+        // This should only be called when we're in the foreground, therefore
+        // we should not present the notification
+        completionHandler([])
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                didReceive response: UNNotificationResponse,
+                withCompletionHandler completionHandler:
+                   @escaping () -> Void) {
+        msc_log("MSC", "\(#function) called")
+        let userInfo = response.notification.request.content.userInfo
+        if userInfo["action"] as? String ?? "" == "open_url" {
+            let urlString = userInfo["value"] as? String ?? "munki://updates"
+            msc_log("MSC", "Got user notification to open \(urlString)")
+            if let url = URL(string: urlString) {
+                mainWindowController.handleMunkiURL(url)
+            }
+            // we don't need any other notifications hanging around
+            center.removeAllDeliveredNotifications()
+        } else {
+            msc_log("MSC", "Got user notification with unrecognized userInfo")
+        }
+        // Always call the completion handler when done.
+        completionHandler()
     }
     
 }

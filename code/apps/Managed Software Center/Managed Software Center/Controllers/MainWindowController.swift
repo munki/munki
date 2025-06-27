@@ -12,6 +12,7 @@ import WebKit
 
 class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate, WKScriptMessageHandler {
     
+    var mainWindowConfigurationComplete = false
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
     var _obnoxiousNotificationMode = false
@@ -36,14 +37,14 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     // Cocoa UI binding properties
     
-    @IBOutlet weak var navigateBackButton: NSButton!
-    @IBOutlet weak var progressSpinner: NSProgressIndicator!
+    @IBOutlet weak var sidebarViewController: SidebarViewController!
+    @IBOutlet weak var mainContentViewController: MainContentViewController!
+    
+    @IBOutlet weak var toolbar: NSToolbar!
     
     @IBOutlet weak var searchField: NSSearchField!
     
-    @IBOutlet weak var sidebar: NSOutlineView!
-    
-    @IBOutlet weak var fullSidebar: NSVisualEffectView!
+    @IBOutlet weak var sidebarList: NSOutlineView!
     
     @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
     @IBOutlet weak var findMenuItem: NSMenuItem!
@@ -53,21 +54,45 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @IBOutlet weak var updatesMenuItem: NSMenuItem!
     @IBOutlet weak var reloadPageMenuItem: NSMenuItem!
     
-    @IBOutlet weak var webViewContainer: NSView!
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
     
     var blurredBackground: BackgroundBlurrer?
-
     
-    override func windowDidLoad() {
-        super.windowDidLoad()
+    var pageLoadProgress: NSProgressIndicator?
+    var navigateBackButton: NSToolbarItem?
+    
+    // Dangerous convenience alias so you can access the NSSplitViewController and manipulate it later on
+    private var splitViewController: MainSplitViewController! {
+        get { return contentViewController as? MainSplitViewController }
+        set { contentViewController = newValue }
+    }
+
+    func setupSplitView() {
+        let originalFrame = window?.frame ?? .zero
+        let splitViewController = MainSplitViewController()
+
+        let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
+        if !optionalInstallsExist() {
+            sidebarItem.isCollapsed = true
+        }
+        splitViewController.addSplitViewItem(sidebarItem)
+        // TODO: get rid of the 8.0 constant; there must be a way to calculate the size without relying on observed "padding"
+        splitViewController.sidebarWidth = sidebarItem.viewController.view.frame.size.width + 8.0
+        
+        let mainContentItem = NSSplitViewItem(viewController: mainContentViewController)
+        splitViewController.addSplitViewItem(mainContentItem)
+        self.splitViewController = splitViewController
+        // TODO: remove this hack. (Adding sidebar causes the window to expand, this resets it)
+        if let window, originalFrame != .zero {
+            window.setFrame(originalFrame, display: true)
+        }
     }
 
     @objc private func onItemClicked() {
-        if 0 ... sidebar_items.count ~= sidebar.clickedRow {
+        if 0 ... sidebar_items.count ~= sidebarList.clickedRow {
                 clearSearchField()
-                switch sidebar.clickedRow {
+                switch sidebarList.clickedRow {
                     case 0:
                         loadAllSoftwarePage(self)
                     case 1:
@@ -122,7 +147,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return sidebar.selectedRow == 3
+        return sidebarList.selectedRow == 3
     }
 
     func blurBackground() {
@@ -228,17 +253,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         categoriesMenuItem.isHidden = true
         myItemsMenuItem.isHidden = true
         updatesMenuItem.isHidden = true
-        fullSidebar.isHidden = true
-        webViewContainer.frame.origin.x = -1
-        webViewContainer.frame.size.width = self.window!.frame.width
-        navigateBackButton.frame.origin.x = 90
-        navigateBackButton.showsBorderOnlyWhileMouseInside = true
-        // adjusts window controls on newer OSs
-        if #available(macOS 10.13, *) {
-            let customToolbar = NSToolbar()
-            customToolbar.showsBaselineSeparator = false
-            self.window?.titleVisibility = .hidden
-            self.window?.toolbar = customToolbar
+        // ensure sidebar is collapsed
+        guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+        if !firstSplitView.animator().isCollapsed {
+            firstSplitView.animator().isCollapsed = true
         }
         loadUpdatesPage(self)
     }
@@ -249,17 +267,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         categoriesMenuItem.isHidden = false
         myItemsMenuItem.isHidden = false
         updatesMenuItem.isHidden = false
-        fullSidebar.isHidden = false
-        webViewContainer.frame.origin.x = 220
-        navigateBackButton.frame.origin.x = 12
-        navigateBackButton.showsBorderOnlyWhileMouseInside = true
-        webViewContainer.frame.size.width = self.window!.frame.width - fullSidebar.frame.width
-        // adjusts window controls on newer OSs
-        if #available(macOS 10.13, *) {
-            let customToolbar = NSToolbar()
-            customToolbar.showsBaselineSeparator = false
-            self.window?.titleVisibility = .hidden
-            self.window?.toolbar = customToolbar
+        // ensure sidebar is visible
+        guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+        if firstSplitView.animator().isCollapsed {
+            firstSplitView.animator().isCollapsed = false
         }
     }
     
@@ -291,24 +302,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
         cached_self_service = SelfService()
     }
-
-    func toolBarItemIsHighlighted(_ item: NSToolbarItem) -> Bool {
-        if let button = item.view as? NSButton {
-            return (button.state == .on)
-        }
-        return false
-    }
-
-    func setHighlightFor(item: NSToolbarItem, doHighlight: Bool) {
-        if let button = item.view as? NSButton {
-            button.state = (doHighlight ? .on : .off)
-        }
-    }
     
-    func highlightToolbarButtons(_ nameToHighlight: String) {
+    func highlightSidebarItem(_ nameToHighlight: String) {
         for (index, item) in sidebar_items.enumerated() {
             if nameToHighlight == item["title"] {
-                sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+                sidebarList.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             }
         }
     }
@@ -482,7 +480,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func windowDidBecomeMain(_ notification: Notification) {
         // Our window was activated, make sure controls enabled as needed
-        sidebar.action = #selector(onItemClicked)
+        sidebarList.action = #selector(onItemClicked)
     }
     
     func windowDidResignMain(_ notification: Notification) {
@@ -554,8 +552,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             let webConfiguration = WKWebViewConfiguration()
             addJSmessageHandlers()
             webConfiguration.userContentController = wkContentController
-            webConfiguration.preferences.javaScriptEnabled = true
-            webConfiguration.preferences.javaEnabled = false
+            
+            // this and its replacement WKWebpagePreferences.allowsContentJavaScript
+            // default to true. webConfiguration.preferences.javaScriptEnabled is deprecated,
+            // So the easiest thing to do is just not call it or its replacement
+            //webConfiguration.preferences.javaScriptEnabled = true
+            // webConfiguration.preferences.javaEnabled is deprecated as of macOS 10.15,
+            // and Java is no longer supported, so again, just don't set it
+            //webConfiguration.preferences.javaEnabled = false
+            
             if UserDefaults.standard.bool(forKey: "developerExtrasEnabled") {
                 webConfiguration.preferences.setValue(true, forKey: "developerExtrasEnabled")
             }
@@ -576,13 +581,21 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     override func awakeFromNib() {
         // Stuff we need to initialize when we start
         super.awakeFromNib()
-        insertWebView()
-        webView.navigationDelegate = self
-        setNoPageCache()
-        alert_controller = MSCAlertController()
-        alert_controller.window = self.window
-        htmlDir = html_dir()
-        registerForNotifications()
+        if !mainWindowConfigurationComplete {
+            // this is a bit of a hack since awakeFromNib gets called several times
+            // but we only want this part of the config to run once
+            mainWindowConfigurationComplete = true
+            print("Before setupSplitView window frame: \(String(describing: window?.frame))")
+            setupSplitView()
+            print("After setupSplitView window frame: \(String(describing: window?.frame))")
+            insertWebView()
+            webView.navigationDelegate = self
+            setNoPageCache()
+            alert_controller = MSCAlertController()
+            alert_controller.window = self.window
+            htmlDir = html_dir()
+            registerForNotifications()
+        }
     }
     
     func registerForNotifications() {
@@ -859,7 +872,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         var cellView:MSCTableCellView?
 
-        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+        if let view = self.sidebarList.rowView(atRow: 3, makeIfNecessary: false) {
             cellView = view.view(atColumn: 0) as? MSCTableCellView
         }
 
@@ -876,7 +889,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
         //
         var cellView:MSCTableCellView?
-        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
+        if let view = self.sidebarList.rowView(atRow: 3, makeIfNecessary: false) {
             cellView = view.view(atColumn: 0) as? MSCTableCellView
         }
         if shouldDisplay {
@@ -1109,7 +1122,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                  didStartProvisionalNavigation navigation: WKNavigation!) {
         // Animate progress spinner while we load a page and highlight the
         // proper toolbar button
-        progressSpinner.startAnimation(self)
+        pageLoadProgress?.startAnimation(self)
         if let main_url = webView.url {
             let pagename = main_url.lastPathComponent
             msc_debug_log("Requested pagename is \(pagename)")
@@ -1117,38 +1130,42 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                 pagename.hasPrefix("detail-") ||
                 pagename.hasPrefix("filter-") ||
                 pagename.hasPrefix("developer-")) {
-                highlightToolbarButtons("Software")
+                highlightSidebarItem("Software")
             } else if pagename == "categories.html" || pagename.hasPrefix("category-") {
-                highlightToolbarButtons("Categories")
+                highlightSidebarItem("Categories")
             } else if pagename == "myitems.html" {
-                highlightToolbarButtons("My Items")
+                highlightSidebarItem("My Items")
             } else if pagename == "updates.html" || pagename.hasPrefix("updatedetail-") {
-                highlightToolbarButtons("Updates")
+                highlightSidebarItem("Updates")
             } else {
                 // no idea what type of item it is
-                highlightToolbarButtons("")
+                highlightSidebarItem("")
             }
         }
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         // react to end of displaying a new page
-        progressSpinner.stopAnimation(self)
+        pageLoadProgress?.stopAnimation(self)
         clearCache()
         let allowNavigateBack = webView.canGoBack
         let page_url = webView.url
         let filename = page_url?.lastPathComponent ?? ""
         let onMainPage = (
             ["category-all.html", "categories.html", "myitems.html", "updates.html"].contains(filename))
-        navigateBackButton.isHidden = !allowNavigateBack || onMainPage
         navigateBackMenuItem.isEnabled = (allowNavigateBack && !onMainPage)
+        if !navigateBackMenuItem.isEnabled {
+            hideNavigationToolbarItem()
+        } else {
+            showNavigationToolbarItem()
+        }
     }
     
     func webView(_ webView: WKWebView,
                  didFail navigation: WKNavigation!,
                  withError error: Error) {
         // Stop progress spinner and log error
-        progressSpinner.stopAnimation(self)
+        pageLoadProgress?.stopAnimation(self)
         msc_debug_log("Committed load error: \(error)")
     }
     
@@ -1156,7 +1173,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
         // Stop progress spinner and log
-        progressSpinner.stopAnimation(self)
+        pageLoadProgress?.stopAnimation(self)
         msc_debug_log("Provisional load error: \(error)")
         do {
             let files = try FileManager.default.contentsOfDirectory(atPath: htmlDir)
