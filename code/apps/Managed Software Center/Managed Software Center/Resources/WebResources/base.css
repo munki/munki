@@ -453,6 +453,7 @@ div.titled-box li.link a {
 }
 
 div.lockup-container .title, div.titled-container .title {
+    margin-top: 28px;
     height: 46px;
     border-bottom: 1px solid var(--line-color);
 }
@@ -1005,7 +1006,7 @@ p:not(.data-text-truncate-opened)[data-text-truncate-lines='20'] {
 }
 
 div.showcase-empty-placeholder {
-    height: 35px;
+    height: 19px;
     margin: 0;
     padding: 0;
 }
