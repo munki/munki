@@ -196,7 +196,6 @@ html, body {
 html {
     height: 100%;
     background-image: none;
-    border-left: 1px solid var(--border-color);
 }
 
 #wrapper {
