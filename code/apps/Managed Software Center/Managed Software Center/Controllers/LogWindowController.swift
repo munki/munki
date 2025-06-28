@@ -24,6 +24,4 @@ class LogWindowController: NSWindowController {
         logViewController.initializeView()
     }
     
-    
-
 }
