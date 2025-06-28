@@ -286,6 +286,8 @@
 				849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */,
 				849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */,
 				8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */,
+				849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */,
+				849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */,
 				C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */,
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
 				C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */,
@@ -294,8 +296,6 @@
 				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
 				8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */,
 				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
-				849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */,
-				849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
