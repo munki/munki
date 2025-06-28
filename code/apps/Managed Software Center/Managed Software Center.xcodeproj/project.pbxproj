@@ -15,6 +15,10 @@
 		8428C7EA2E0CB59200D83D41 /* MainWindowController+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */; };
 		8428C7EE2E0DA9AF00D83D41 /* LogWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8428C7ED2E0DA9AF00D83D41 /* LogWindow.xib */; };
 		8428C7F02E0DABC700D83D41 /* LogWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */; };
+		849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */; };
+		849BF6382E104F74004A020D /* MainWindowController+NSOutlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */; };
+		849BF63A2E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */; };
+		849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */; };
 		849D46162E0907420054599E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 849D46152E0907420054599E /* AppIcon.icon */; };
 		C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
@@ -85,6 +89,10 @@
 		8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+Toolbar.swift"; sourceTree = "<group>"; };
 		8428C7ED2E0DA9AF00D83D41 /* LogWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LogWindow.xib; sourceTree = "<group>"; };
 		8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWindowController.swift; sourceTree = "<group>"; };
+		849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+NSWindowDelegate.swift"; sourceTree = "<group>"; };
+		849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+NSOutlineView.swift"; sourceTree = "<group>"; };
+		849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKNavigationDelegate.swift"; sourceTree = "<group>"; };
+		849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKScriptMessageHandler.swift"; sourceTree = "<group>"; };
 		849D46152E0907420054599E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackgroundController.swift; sourceTree = "<group>"; };
 		C01603CE20CF8B6100DEF9E4 /* iconutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconutils.swift; sourceTree = "<group>"; };
@@ -275,6 +283,8 @@
 			children = (
 				C04F828C20BB32EA00F9C57D /* LogViewController.swift */,
 				C04CA61D20E6ADA100711461 /* MainWindowController.swift */,
+				849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */,
+				849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */,
 				8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */,
 				C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */,
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
@@ -284,6 +294,8 @@
 				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
 				8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */,
 				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
+				849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */,
+				849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -460,6 +472,7 @@
 				8428C7E62E0CB44200D83D41 /* MainContentViewController.swift in Sources */,
 				C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */,
 				C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */,
+				849BF6382E104F74004A020D /* MainWindowController+NSOutlineView.swift in Sources */,
 				C0E2599E210AD8CE00C3A3D9 /* Socket.swift in Sources */,
 				C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */,
 				8428C7E42E0CB41F00D83D41 /* SidebarViewControiller.swift in Sources */,
@@ -474,12 +487,15 @@
 				C04F827F20BB319B00F9C57D /* AppDelegate.swift in Sources */,
 				C0D30BEB20CA445A005E876E /* MunkiItems.swift in Sources */,
 				C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */,
+				849BF63A2E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift in Sources */,
 				56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */,
 				C03107C520C8F220007FE337 /* msclog.swift in Sources */,
 				C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */,
 				C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */,
 				C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */,
+				849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */,
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
+				849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */,
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,

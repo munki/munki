@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24093.7"/>
+        <capability name="NSView safe area layout guides" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -32,17 +33,17 @@
             </connections>
         </customObject>
         <customView id="431-dA-DPq" userLabel="Sidebar View">
-            <rect key="frame" x="0.0" y="0.0" width="220" height="300"/>
+            <rect key="frame" x="0.0" y="0.0" width="220" height="288"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <scrollView borderType="none" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="WBA-O8-AVZ">
-                    <rect key="frame" x="0.0" y="0.0" width="220" height="204"/>
+                    <rect key="frame" x="0.0" y="0.0" width="220" height="192"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="fUg-6X-3lt">
-                        <rect key="frame" x="0.0" y="0.0" width="220" height="204"/>
+                        <rect key="frame" x="0.0" y="0.0" width="220" height="192"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="40" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="sSx-QF-C2W" id="pGV-ZA-L14">
-                                <rect key="frame" x="0.0" y="0.0" width="220" height="204"/>
+                                <rect key="frame" x="0.0" y="0.0" width="220" height="192"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -130,7 +131,7 @@
                     </scroller>
                 </scrollView>
                 <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0L3-LH-chu">
-                    <rect key="frame" x="9" y="224" width="202" height="30"/>
+                    <rect key="frame" x="9" y="212" width="202" height="30"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="30" id="gCd-dg-I2z"/>
                     </constraints>
@@ -153,7 +154,7 @@
                 <constraint firstAttribute="trailing" secondItem="0L3-LH-chu" secondAttribute="trailing" constant="9" id="eQO-po-oda"/>
                 <constraint firstItem="WBA-O8-AVZ" firstAttribute="leading" secondItem="431-dA-DPq" secondAttribute="leading" id="i1m-9B-AHq"/>
             </constraints>
-            <point key="canvasLocation" x="183" y="759"/>
+            <point key="canvasLocation" x="183" y="764"/>
         </customView>
         <customView id="qMd-4V-cdo" userLabel="Main Content View">
             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
@@ -164,6 +165,8 @@
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 </customView>
             </subviews>
+            <viewLayoutGuide key="safeArea" id="ev1-BD-wCP"/>
+            <viewLayoutGuide key="layoutMargins" id="GM1-hL-jN6"/>
             <point key="canvasLocation" x="-177" y="720"/>
         </customView>
         <customObject id="wV2-o2-JY3" customClass="MSCPasswordAlertController" customModule="Managed_Software_Center" customModuleProvider="target">
