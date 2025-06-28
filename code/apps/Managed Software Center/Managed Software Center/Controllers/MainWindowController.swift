@@ -534,6 +534,7 @@ class MainWindowController: NSWindowController {
                 webView.topAnchor.constraint(equalTo: superview.topAnchor),
                 webView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
             ])
+            webView.navigationDelegate = self
         }
     }
     
@@ -548,7 +549,6 @@ class MainWindowController: NSWindowController {
             setupSplitView()
             print("After setupSplitView window frame: \(String(describing: window?.frame))")
             insertWebView()
-            webView.navigationDelegate = self
             setNoPageCache()
             alert_controller = MSCAlertController()
             alert_controller.window = self.window
