@@ -1031,6 +1031,7 @@ div.showcase * {
 
 div.showcase, div.showcase>div.stage, div.showcase>div.stage * {
     /*-webkit-border-bottom-right-radius: 16px*/
+}
 
 div.stage>img {
     position: absolute;
