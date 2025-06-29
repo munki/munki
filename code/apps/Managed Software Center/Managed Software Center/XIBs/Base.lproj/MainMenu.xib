@@ -32,18 +32,32 @@
                 <outlet property="statusController" destination="xwS-6W-mbC" id="ICU-bl-X0z"/>
             </connections>
         </customObject>
-        <customView id="431-dA-DPq" userLabel="Sidebar View">
-            <rect key="frame" x="0.0" y="0.0" width="220" height="288"/>
+        <customView misplaced="YES" id="431-dA-DPq" userLabel="Sidebar View">
+            <rect key="frame" x="0.0" y="0.0" width="220" height="283"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
+                <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0L3-LH-chu">
+                    <rect key="frame" x="9" y="206" width="202" height="30"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="30" id="gCd-dg-I2z"/>
+                    </constraints>
+                    <searchFieldCell key="cell" controlSize="large" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="A2O-eQ-CyE">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </searchFieldCell>
+                    <connections>
+                        <action selector="searchFilterChanged:" target="XGW-R4-ybE" id="hvg-NA-2hN"/>
+                    </connections>
+                </searchField>
                 <scrollView borderType="none" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="WBA-O8-AVZ">
-                    <rect key="frame" x="0.0" y="0.0" width="220" height="192"/>
+                    <rect key="frame" x="0.0" y="0.0" width="220" height="186"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="fUg-6X-3lt">
-                        <rect key="frame" x="0.0" y="0.0" width="220" height="192"/>
+                        <rect key="frame" x="0.0" y="0.0" width="220" height="186"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="40" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="sSx-QF-C2W" id="pGV-ZA-L14">
-                                <rect key="frame" x="0.0" y="0.0" width="220" height="192"/>
+                                <rect key="frame" x="0.0" y="0.0" width="220" height="186"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -130,31 +144,18 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0L3-LH-chu">
-                    <rect key="frame" x="9" y="212" width="202" height="30"/>
-                    <constraints>
-                        <constraint firstAttribute="height" constant="30" id="gCd-dg-I2z"/>
-                    </constraints>
-                    <searchFieldCell key="cell" controlSize="large" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="A2O-eQ-CyE">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </searchFieldCell>
-                    <connections>
-                        <action selector="searchFilterChanged:" target="XGW-R4-ybE" id="hvg-NA-2hN"/>
-                    </connections>
-                </searchField>
             </subviews>
             <constraints>
-                <constraint firstItem="0L3-LH-chu" firstAttribute="leading" secondItem="431-dA-DPq" secondAttribute="leading" constant="9" id="0c6-hJ-Kf0"/>
-                <constraint firstAttribute="bottom" secondItem="WBA-O8-AVZ" secondAttribute="bottom" id="0q1-V4-N1T"/>
                 <constraint firstItem="WBA-O8-AVZ" firstAttribute="top" secondItem="0L3-LH-chu" secondAttribute="bottom" constant="20" id="2HB-hV-e6M"/>
-                <constraint firstItem="0L3-LH-chu" firstAttribute="top" secondItem="431-dA-DPq" secondAttribute="top" constant="46" id="3jJ-dT-aaK"/>
-                <constraint firstAttribute="trailing" secondItem="WBA-O8-AVZ" secondAttribute="trailing" id="ZD8-TR-3Cy"/>
-                <constraint firstAttribute="trailing" secondItem="0L3-LH-chu" secondAttribute="trailing" constant="9" id="eQO-po-oda"/>
-                <constraint firstItem="WBA-O8-AVZ" firstAttribute="leading" secondItem="431-dA-DPq" secondAttribute="leading" id="i1m-9B-AHq"/>
+                <constraint firstItem="0L3-LH-chu" firstAttribute="centerX" secondItem="WBA-O8-AVZ" secondAttribute="centerX" id="8ez-6v-z6L"/>
+                <constraint firstAttribute="trailing" secondItem="WBA-O8-AVZ" secondAttribute="trailing" id="9fN-u4-oZh"/>
+                <constraint firstItem="WBA-O8-AVZ" firstAttribute="leading" secondItem="431-dA-DPq" secondAttribute="leading" id="CPC-cM-lvA"/>
+                <constraint firstItem="0L3-LH-chu" firstAttribute="leading" secondItem="431-dA-DPq" secondAttribute="leading" constant="9" id="QBN-BR-J7z"/>
+                <constraint firstAttribute="bottom" secondItem="WBA-O8-AVZ" secondAttribute="bottom" id="iMy-hA-HZP"/>
+                <constraint firstItem="0L3-LH-chu" firstAttribute="centerX" secondItem="431-dA-DPq" secondAttribute="centerX" id="m4M-Hu-4rr"/>
+                <constraint firstItem="0L3-LH-chu" firstAttribute="top" secondItem="431-dA-DPq" secondAttribute="top" constant="47" id="m66-c8-7H3"/>
             </constraints>
-            <point key="canvasLocation" x="183" y="764"/>
+            <point key="canvasLocation" x="-1710" y="-1786"/>
         </customView>
         <customView id="qMd-4V-cdo" userLabel="Main Content View">
             <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
@@ -167,7 +168,7 @@
             </subviews>
             <viewLayoutGuide key="safeArea" id="ev1-BD-wCP"/>
             <viewLayoutGuide key="layoutMargins" id="GM1-hL-jN6"/>
-            <point key="canvasLocation" x="-177" y="720"/>
+            <point key="canvasLocation" x="-2016" y="-1829"/>
         </customView>
         <customObject id="wV2-o2-JY3" customClass="MSCPasswordAlertController" customModule="Managed_Software_Center" customModuleProvider="target">
             <connections>
@@ -381,7 +382,7 @@
                     </menu>
                 </menuItem>
             </items>
-            <point key="canvasLocation" x="-22" y="-200"/>
+            <point key="canvasLocation" x="-1892" y="-2666"/>
         </menu>
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="main" animationBehavior="default" tabbingMode="disallowed" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="EeR-uP-dFY" userLabel="Main Window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
@@ -415,7 +416,7 @@
             <connections>
                 <outlet property="delegate" destination="XGW-R4-ybE" id="4N2-bF-JRb"/>
             </connections>
-            <point key="canvasLocation" x="141" y="123"/>
+            <point key="canvasLocation" x="-1606" y="-2262"/>
         </window>
         <customView id="qxW-KU-9S3" userLabel="Custom Password View">
             <rect key="frame" x="0.0" y="0.0" width="317" height="22"/>
