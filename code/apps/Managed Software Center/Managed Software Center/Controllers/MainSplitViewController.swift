@@ -10,8 +10,6 @@ import Cocoa
 
 class MainSplitViewController: NSSplitViewController {
     
-    var sidebarWidth: CGFloat = 0.0
-    
     //MARK: NSSplitViewDelegate methods
     
     // prevent sidebar from being arbitrarily resized

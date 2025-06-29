@@ -73,8 +73,6 @@ class MainWindowController: NSWindowController {
             sidebarItem.isCollapsed = true
         }
         splitViewController.addSplitViewItem(sidebarItem)
-        // TODO: get rid of the 8.0 constant; there must be a way to calculate the size without relying on observed "padding"
-        splitViewController.sidebarWidth = sidebarItem.viewController.view.frame.size.width + 8.0
         
         let mainContentItem = NSSplitViewItem(viewController: mainContentViewController)
         if #available(macOS 26.0, *) {
