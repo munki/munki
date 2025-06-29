@@ -21,10 +21,7 @@ class MainSplitViewController: NSSplitViewController {
         ofSubviewAt dividerIndex: Int
     ) -> CGFloat
     {
-        if sidebarWidth != 0 {
-            return sidebarWidth
-        }
-        return proposedPosition
+        return NSSplitViewItem.unspecifiedDimension
     }
     
     // prevent resize cursor from displaying since our sidebar is not resizable
