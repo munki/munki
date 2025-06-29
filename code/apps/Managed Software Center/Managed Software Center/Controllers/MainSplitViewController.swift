@@ -26,4 +26,9 @@ class MainSplitViewController: NSSplitViewController {
         }
         return proposedPosition
     }
+    
+    // prevent resize cursor from displaying since our sidebar is not resizable
+    override func splitView(_ splitView: NSSplitView, effectiveRect proposedEffectiveRect: NSRect, forDrawnRect drawnRect: NSRect, ofDividerAt dividerIndex: Int) -> NSRect {
+        return .zero
+    }
 }
