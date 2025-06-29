@@ -1012,16 +1012,17 @@ div.showcase-empty-placeholder {
 
 div.showcase {
     height: 200px;
-    margin: 0 0 10px 0;
     opacity: 1;
     overflow: hidden;
     -webkit-transition: opacity .25s;
-    -webkit-border-bottom-right-radius: 8px;
     position: relative;
-    left: 0;
-    margin-right: 0;
     -webkit-transform: translate3d(0, 0, 0);
-    z-index: 5
+    z-index: 5;
+    margin-left: -40px;
+    padding-left: 40px;
+    margin-right: -40px;
+    padding-right: 40px;
+    margin-bottom: 10px;
 }
 
 div.showcase * {
@@ -1029,9 +1030,7 @@ div.showcase * {
 }
 
 div.showcase, div.showcase>div.stage, div.showcase>div.stage * {
-    -webkit-border-bottom-left-radius: 8px;
-    -webkit-border-bottom-right-radius: 8px
-}
+    /*-webkit-border-bottom-right-radius: 16px*/
 
 div.stage>img {
     position: absolute;
