@@ -525,13 +525,24 @@ class MainWindowController: NSWindowController {
                 superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             }
             webView = replacementWebView
-            let safeGuide = superview.safeAreaLayoutGuide
-            NSLayoutConstraint.activate([
-                webView.leadingAnchor.constraint(equalTo: safeGuide.leadingAnchor),
-                webView.trailingAnchor.constraint(equalTo: safeGuide.trailingAnchor),
-                webView.topAnchor.constraint(equalTo: superview.topAnchor),
-                webView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
-            ])
+            if #available(macOS 11.0, *) {
+                let safeGuide = superview.safeAreaLayoutGuide
+                NSLayoutConstraint.activate([
+                    webView.leadingAnchor.constraint(equalTo: safeGuide.leadingAnchor),
+                    webView.trailingAnchor.constraint(equalTo: safeGuide.trailingAnchor),
+                    webView.topAnchor.constraint(equalTo: superview.topAnchor),
+                    webView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
+                ])
+            } else {
+                // Fallback on earlier versions
+                NSLayoutConstraint.activate([
+                    webView.leadingAnchor.constraint(equalTo: superview.leadingAnchor),
+                    webView.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
+                    webView.topAnchor.constraint(equalTo: superview.topAnchor),
+                    webView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
+                ])
+            }
+            
             webView.navigationDelegate = self
         }
     }

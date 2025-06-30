@@ -18,13 +18,21 @@ extension MainWindowController: NSToolbarDelegate {
     // MARK: NSToolbarDelegate functions
     
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return  [
-            .flexibleSpace,
-            .progressIndicatorItem,
-            .sidebarTrackingSeparator,
-            .navigationGoBackItem,
-            .flexibleSpace,
-        ]
+        if #available(macOS 11.0, *) {
+            return [
+                .flexibleSpace,
+                .progressIndicatorItem,
+                .sidebarTrackingSeparator,
+                .navigationGoBackItem,
+                .flexibleSpace,
+            ]
+        } else {
+            // Fallback on earlier versions
+            return [
+                .progressIndicatorItem,
+                .navigationGoBackItem
+            ]
+        }
     }
     
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -143,7 +151,11 @@ extension MainWindowController: NSToolbarDelegate {
                 }
             }
             if !itemFound {
-                toolbar.insertItem(withItemIdentifier: .navigationGoBackItem, at: 3)
+                if #available(macOS 11.0, *) {
+                    toolbar.insertItem(withItemIdentifier: .navigationGoBackItem, at: 3)
+                } else {
+                    toolbar.insertItem(withItemIdentifier: .navigationGoBackItem, at: 1)
+                }
             }
         }
     }
