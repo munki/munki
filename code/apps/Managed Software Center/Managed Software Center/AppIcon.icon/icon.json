@@ -1,69 +1,46 @@
 {
   "fill" : {
-    "linear-gradient" : [
-      "srgb:0.57415,0.57416,0.57415,1.00000",
-      "srgb:0.00000,0.00000,0.00000,1.00000"
-    ]
+    "automatic-gradient" : "srgb:0.00000,0.00000,0.00000,1.00000"
   },
   "groups" : [
     {
-      "blur-material" : null,
-      "hidden-specializations" : [
-        {
-          "idiom" : "macOS",
-          "value" : false
-        }
-      ],
       "layers" : [
         {
-          "blend-mode" : "normal",
-          "fill" : "none",
-          "glass" : true,
-          "hidden" : false,
-          "image-name" : "MSC-basket.png",
-          "name" : "Basket",
-          "opacity-specializations" : [
-            {
-              "value" : 1
-            },
-            {
-              "appearance" : "tinted",
-              "value" : 0.95
-            }
-          ]
+          "fill" : {
+            "solid" : "extended-gray:1.00000,1.00000"
+          },
+          "image-name" : "MSC-icon-layers_0000_Basket.png",
+          "name" : "MSC-icon-layers_0000_Basket"
         },
         {
-          "glass" : true,
-          "hidden" : false,
-          "image-name" : "MSC-pencils.png",
-          "name" : "Pencils",
-          "opacity" : 1
+          "fill" : {
+            "solid" : "extended-gray:0.75000,1.00000"
+          },
+          "image-name" : "MSC-icon-layers_0002_Paintbrush.png",
+          "name" : "MSC-icon-layers_0002_Paintbrush"
         },
         {
-          "glass" : true,
-          "hidden-specializations" : [
-            {
-              "value" : false
-            },
-            {
-              "idiom" : "macOS",
-              "value" : false
-            }
-          ],
-          "image-name" : "MSC-ruler.png",
-          "name" : "Ruler",
-          "opacity" : 1
+          "fill" : {
+            "solid" : "extended-gray:0.75000,1.00000"
+          },
+          "image-name" : "MSC-icon-layers_0001_Pencil.png",
+          "name" : "MSC-icon-layers_0001_Pencil"
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:0.57415,0.57416,0.57415,1.00000"
+          },
+          "image-name" : "MSC-icon-layers_0003_Ruler.png",
+          "name" : "MSC-icon-layers_0003_Ruler"
         }
       ],
-      "lighting" : "individual",
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
       },
-      "specular" : false,
       "translucency" : {
         "enabled" : true,
-        "value" : 0.3
+        "value" : 0.5
       }
     }
   ],
