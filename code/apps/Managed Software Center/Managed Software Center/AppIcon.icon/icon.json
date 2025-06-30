@@ -6,30 +6,41 @@
     {
       "layers" : [
         {
+          "blend-mode" : "normal",
           "fill" : {
-            "solid" : "extended-gray:1.00000,1.00000"
+            "solid" : "srgb:0.92143,0.92145,0.92144,1.00000"
           },
+          "glass" : false,
+          "hidden-specializations" : [
+            {
+              "idiom" : "macOS",
+              "value" : false
+            }
+          ],
           "image-name" : "MSC-icon-layers_0000_Basket.png",
           "name" : "MSC-icon-layers_0000_Basket"
         },
         {
           "fill" : {
-            "solid" : "extended-gray:0.75000,1.00000"
+            "solid" : "srgb:0.83742,0.83744,0.83743,1.00000"
           },
+          "glass" : false,
           "image-name" : "MSC-icon-layers_0002_Paintbrush.png",
           "name" : "MSC-icon-layers_0002_Paintbrush"
         },
         {
           "fill" : {
-            "solid" : "extended-gray:0.75000,1.00000"
+            "solid" : "srgb:0.83742,0.83744,0.83743,1.00000"
           },
+          "glass" : false,
           "image-name" : "MSC-icon-layers_0001_Pencil.png",
           "name" : "MSC-icon-layers_0001_Pencil"
         },
         {
           "fill" : {
-            "solid" : "srgb:0.57415,0.57416,0.57415,1.00000"
+            "solid" : "srgb:0.66422,0.66424,0.66423,1.00000"
           },
+          "glass" : false,
           "image-name" : "MSC-icon-layers_0003_Ruler.png",
           "name" : "MSC-icon-layers_0003_Ruler"
         }
