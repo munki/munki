@@ -37,7 +37,7 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0L3-LH-chu">
-                    <rect key="frame" x="9" y="197" width="208" height="30"/>
+                    <rect key="frame" x="9" y="195" width="208" height="30"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="30" id="gCd-dg-I2z"/>
                     </constraints>
@@ -51,13 +51,13 @@
                     </connections>
                 </searchField>
                 <scrollView borderType="none" horizontalLineScroll="42" horizontalPageScroll="10" verticalLineScroll="42" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="WBA-O8-AVZ">
-                    <rect key="frame" x="0.0" y="0.0" width="226" height="175"/>
+                    <rect key="frame" x="0.0" y="0.0" width="226" height="173"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="fUg-6X-3lt">
-                        <rect key="frame" x="0.0" y="0.0" width="226" height="175"/>
+                        <rect key="frame" x="0.0" y="0.0" width="226" height="173"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="40" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="sSx-QF-C2W" id="pGV-ZA-L14">
-                                <rect key="frame" x="0.0" y="0.0" width="226" height="175"/>
+                                <rect key="frame" x="0.0" y="0.0" width="226" height="173"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -80,7 +80,7 @@
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <textField focusRingType="none" horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="545-FJ-GjT">
-                                                        <rect key="frame" x="44" y="10" width="156" height="21"/>
+                                                        <rect key="frame" x="40" y="10" width="160" height="21"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="152" id="N4o-iY-kMD"/>
                                                             <constraint firstAttribute="height" constant="21" id="RAb-Kg-SRd"/>
@@ -91,16 +91,16 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
-                                                    <imageView wantsLayer="YES" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fiC-hB-HCN">
-                                                        <rect key="frame" x="8" y="0.0" width="30" height="41"/>
+                                                    <imageView wantsLayer="YES" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fiC-hB-HCN">
+                                                        <rect key="frame" x="8" y="8" width="26" height="26"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="30" id="53k-IM-naJ"/>
-                                                            <constraint firstAttribute="width" constant="30" id="GtV-Fx-6M6"/>
+                                                            <constraint firstAttribute="height" constant="26" id="53k-IM-naJ"/>
+                                                            <constraint firstAttribute="width" constant="26" id="GtV-Fx-6M6"/>
                                                         </constraints>
                                                         <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSActionTemplate" id="LeG-M3-5ap"/>
                                                     </imageView>
                                                     <progressIndicator maxValue="100" displayedWhenStopped="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="KDY-7K-4X8">
-                                                        <rect key="frame" x="178" y="11" width="15" height="18"/>
+                                                        <rect key="frame" x="178" y="12" width="15" height="16"/>
                                                     </progressIndicator>
                                                     <button hidden="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LLF-TK-FyK">
                                                         <rect key="frame" x="178" y="11" width="15" height="18"/>
@@ -121,7 +121,6 @@
                                                     <constraint firstAttribute="trailing" secondItem="LLF-TK-FyK" secondAttribute="trailing" constant="10" id="Gas-Au-36c"/>
                                                     <constraint firstItem="LLF-TK-FyK" firstAttribute="centerX" secondItem="KDY-7K-4X8" secondAttribute="centerX" id="Llj-la-aSt"/>
                                                     <constraint firstItem="545-FJ-GjT" firstAttribute="centerY" secondItem="8LW-1K-dzo" secondAttribute="centerY" id="Oi2-aC-nOz"/>
-                                                    <constraint firstItem="LLF-TK-FyK" firstAttribute="bottom" secondItem="KDY-7K-4X8" secondAttribute="bottom" id="TWh-A8-Ohu"/>
                                                     <constraint firstItem="545-FJ-GjT" firstAttribute="leading" secondItem="fiC-hB-HCN" secondAttribute="trailing" constant="8" id="W0E-WA-RsG"/>
                                                     <constraint firstItem="545-FJ-GjT" firstAttribute="centerY" secondItem="fiC-hB-HCN" secondAttribute="centerY" id="ZWs-oe-cKU"/>
                                                     <constraint firstItem="fiC-hB-HCN" firstAttribute="leading" secondItem="8LW-1K-dzo" secondAttribute="leading" constant="8" id="gLa-OC-FVA"/>
