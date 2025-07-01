@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "SidebarCategories26x26.png",
+      "filename" : "CategoriesTemplate_26x26.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "SidebarCategories26x26@2x.png",
+      "filename" : "CategoriesTemplate_26x26@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
