@@ -75,9 +75,15 @@ class MainWindowController: NSWindowController {
         splitViewController.addSplitViewItem(sidebarItem)
         
         let mainContentItem = NSSplitViewItem(viewController: mainContentViewController)
+        // TODO: remove this when Xcode 26 ships and we require it to build
+        // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
+        // and there's no other straightforward way to do conditional compliation based on SDK
+        // availability
+        #if canImport(PermissionKit)
         if #available(macOS 26.0, *) {
             mainContentItem.automaticallyAdjustsSafeAreaInsets = true
         }
+        #endif
         splitViewController.addSplitViewItem(mainContentItem)
         self.splitViewController = splitViewController
         // TODO: remove this hack. (Adding sidebar causes the window to expand, this resets it)
@@ -505,6 +511,11 @@ class MainWindowController: NSWindowController {
                 replacementWebView.setValue(false, forKey: "drawsBackground")
             }
             replacementWebView.translatesAutoresizingMaskIntoConstraints = false
+            // TODO: remove this when Xcode 26 ships and we require it to build
+            // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
+            // and there's no other straightforward way to do conditional compliation based on SDK
+            // availability
+            #if canImport(PermissionKit)
             if #available(macOS 26.0, *) {
                 // replace the placeholder in the window view with
                 // a background extension view containing the webview
@@ -524,6 +535,10 @@ class MainWindowController: NSWindowController {
                 // replace the placeholder in the window view with the real webview
                 superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             }
+            #else
+            // replace the placeholder in the window view with the real webview
+            superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
+            #endif
             webView = replacementWebView
             if #available(macOS 11.0, *) {
                 let safeGuide = superview.safeAreaLayoutGuide
