@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2010-2024 Greg Neagle.
+# Copyright 2010-2025 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -124,6 +124,15 @@ def extractAppBitsFromPkgArchive(archive_path, target_dir):
                '*.app/Contents/Info.plist',
                '*.app/Contents/Resources/*.icns']
         result = subprocess.call(cmd)
+        if result != 0 and os.path.exists("/usr/bin/aa"):
+            # pax failed. Maybe Apple Archive format?
+            cmd = ["/usr/bin/aa", "extract",
+                   "-i", archive_path,
+                   "-include-regex", "\\.app/Contents/Info.plist",
+                   "-include-regex", "\\.app/Contents/Resources/.*\\.icns",
+                   "-d", "."
+            ]
+            result = subprocess.call(cmd)
         os.chdir(original_dir)
     return result
 

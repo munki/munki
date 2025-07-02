@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2024 The Munki Project. All rights reserved.
+//  Copyright © 2018-2025 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -125,28 +125,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         return sidebar.selectedRow == 3
     }
 
-    func newTranslucentWindow(screen: NSScreen) -> NSWindow {
-        // makes a translucent masking window we use to prevent interaction with
-        // other apps
-        var windowRect = screen.frame
-        windowRect.origin = NSMakePoint(0.0, 0.0)
-        let thisWindow = NSWindow(
-            contentRect: windowRect,
-            styleMask: .borderless,
-            backing: .buffered,
-            defer: false,
-            screen: screen
-        )
-        thisWindow.level = .normal
-        thisWindow.backgroundColor = NSColor.black.withAlphaComponent(0.50)
-        thisWindow.isOpaque = false
-        thisWindow.ignoresMouseEvents = false
-        thisWindow.alphaValue = 0.0
-        thisWindow.orderFrontRegardless()
-        thisWindow.animator().alphaValue = 1.0
-        return thisWindow
-    }
-
     func blurBackground() {
         blurredBackground = BackgroundBlurrer()
         if let window = self.window {
@@ -184,6 +162,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         // make sure we're frontmost
         NSApp.activate(ignoringOtherApps: true)
+
+      // If the window is not on the active space, force a space switch.
+      // Return early, before locking down the presentation options. This will let the run loop spin, allowing
+      // the space switch to occur. When the window becomes key, `makeUsObnoxious` will be called again.
+      // On the second invocation, the window will be on the active space and this block will be skipped.
+      if let window = self.window {
+          if (!window.isOnActiveSpace) {
+              NSApp.activate(ignoringOtherApps: true)
+              window.orderFrontRegardless()
+              return
+          }
+      }
         
         // make it very difficult to switch away from this app
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
@@ -511,6 +501,13 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func windowDidResignMain(_ notification: Notification) {
         // Our window was deactivated, make sure controls enabled as needed
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        // If we just became key, enforce obnoxious mode if required.
+        if _obnoxiousNotificationMode {
+            makeUsObnoxious()
+        }
     }
     
     // End NSWindowDelegate methods

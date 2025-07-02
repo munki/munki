@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright 2017-2024 Greg Neagle.
+# Copyright 2017-2025 Greg Neagle.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ class AuthRestartClient(object):
         '''Send a request to authrestartd'''
         self.socket.send(writePlistToString(request))
         # use select so we don't hang indefinitely if authrestartd dies
-        ready = select.select([self.socket.fileno()], [], [], 2)
+        ready = select.select([self.socket.fileno()], [], [], 10)
         if ready[0]:
             reply = self.socket.recv(8192).decode("UTF-8")
         else:
