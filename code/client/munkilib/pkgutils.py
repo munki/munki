@@ -469,10 +469,10 @@ def getFlatPackageInfo(pkgpath):
     (toc, err) = proc.communicate()
     toc = toc.decode('UTF-8').strip().split('\n')
     if proc.returncode == 0:
-        # Walk trough the TOC entries
+        # Walk through the TOC entries
         for toc_entry in toc:
             # If the TOC entry is a top-level PackageInfo, extract it
-            if toc_entry.startswith('PackageInfo') and not receiptarray:
+            if toc_entry == 'PackageInfo' and not receiptarray:
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
                 result = subprocess.call(cmd_extract)
                 if result == 0:
@@ -497,7 +497,7 @@ def getFlatPackageInfo(pkgpath):
                         toc_entry, err)
         if not receiptarray:
             for toc_entry in [item for item in toc
-                              if item.startswith('Distribution')]:
+                              if item == 'Distribution']:
                 # Extract the Distribution file
                 cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
                 result = subprocess.call(cmd_extract)
@@ -518,7 +518,7 @@ def getFlatPackageInfo(pkgpath):
 
         productversion = None
         for toc_entry in [item for item in toc
-                          if item.startswith('Distribution')]:
+                          if item == 'Distribution']:
             # Extract the Distribution file
             cmd_extract = ['/usr/bin/xar', '-xf', abspkgpath, toc_entry]
             result = subprocess.call(cmd_extract)

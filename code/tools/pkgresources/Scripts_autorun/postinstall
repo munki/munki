@@ -1,9 +1,9 @@
-#!/usr/local/munki/munki-python
+#!/bin/sh
 
-import sys
-sys.path.append("/usr/local/munki")
-from munkilib import launchd
+# use launchctl to submit a job to run managedsoftwareupdate
+# so that the script returns before the job finishes and ending
+# the installer taks does not end the managedsoftwareupdate run
+# (It's quite possible that `/usr/local/munki/managedsoftwareupdate --auto &`
+# would work as well!)
 
-job = launchd.Job(
-    ["/usr/local/munki/managedsoftwareupdate", "--auto"], cleanup_at_exit=False)
-job.start()
+/bin/launchctl submit -l com.googlecode.munki.autorun -- /usr/local/munki/managedsoftwareupdate --auto

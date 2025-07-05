@@ -147,25 +147,25 @@ div.installations th:last-child {
     100% {opacity: 0}
 }
 
-div.purchases .installation td {
+div.my-items .installation td {
     height: 41px
 }
-/*div.purchases .installation:last-child td:first-child {
+/*div.my-items .installation:last-child td:first-child {
     -webkit-border-bottom-left-radius: 5px
 }
-div.purchases .installation:last-child td:last-child {
+div.my-items .installation:last-child td:last-child {
     -webkit-border-bottom-right-radius: 5px
 }*/
-div.purchases .installation td:first-child {
+div.my-items .installation td:first-child {
     width: 225px
 }
-div.purchases .installation td.hide {
+div.my-items .installation td.hide {
     width: 1px
 }
-div.purchases .installation td:last-child {
+div.my-items .installation td:last-child {
     width: 200px
 }
-div.purchases .installation ul.info {
+div.my-items .installation ul.info {
     -webkit-box-orient: vertical;
     -webkit-box-pack: center;
     display: -webkit-box;
@@ -174,38 +174,38 @@ div.purchases .installation ul.info {
     white-space: nowrap
 }
 
-div.purchases .installation button.hide {
+div.my-items .installation button.hide {
     width:19px;height:19px;background:transparent url(delete-button-sprite.png) no-repeat;
     -webkit-background-size:19px 38px;
     border:0;
     opacity:0;
     pointer-events:none
 }
-div.purchases .installation button.hide:hover {
+div.my-items .installation button.hide:hover {
     background-position:bottom
 }
-div.purchases .installation:hover button.hide {
+div.my-items .installation:hover button.hide {
     opacity:1;
     -webkit-transition:opacity .1s ease-out;
     pointer-events:auto
 }
 
-div.purchases .installation td.status span {
+div.my-items .installation td.status span {
     visibility: hidden;
     line-height: 41px;
 }
 
-div.purchases .installation td.status span.downloading:after,
-div.purchases .installation td.status span.preparing-removal:after,
-div.purchases .installation td.status span.installing:after,
-div.purchases .installation td.status span.removing:after {
+div.my-items .installation td.status span.downloading:after,
+div.my-items .installation td.status span.preparing-removal:after,
+div.my-items .installation td.status span.installing:after,
+div.my-items .installation td.status span.removing:after {
     margin-top: 11px;
 }
 
-div.purchases .installation td.status span.will-be-removed,
-div.purchases .installation td.status span.will-be-installed,
-div.purchases .installation td.status span.downloading,
-div.purchases .installation td.status span.preparing-removal
+div.my-items .installation td.status span.will-be-removed,
+div.my-items .installation td.status span.will-be-installed,
+div.my-items .installation td.status span.downloading,
+div.my-items .installation td.status span.preparing-removal
 {
     visibility: visible;
 }

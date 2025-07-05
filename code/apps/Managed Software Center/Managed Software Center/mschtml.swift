@@ -25,7 +25,7 @@ func interfaceTheme() -> String {
         if appearanceDescription.contains("dark") {
             return "dark"
         }
-    } else if #available(OSX 10.10, *) {
+    } else {
         let os_vers = OperatingSystemVersion(majorVersion: 10, minorVersion: 14, patchVersion: 0)
         if ProcessInfo().isOperatingSystemAtLeast(os_vers) || UserDefaults.standard.bool(forKey: "AllowDarkModeOnUnsupportedOSes") {
             if let appleInterfaceStyle = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") {

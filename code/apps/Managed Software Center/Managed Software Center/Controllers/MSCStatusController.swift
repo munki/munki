@@ -115,11 +115,11 @@ class MSCStatusController: NSObject {
         statusWindowController.munkiStatusSessionEnded(withStatus: result, errorMessage: "")
     }
     
-    @objc func updateStatus(_ notification: NSUserNotification) {
+    @objc func updateStatus(_ notification: NSNotification) {
         // Got update status notification from managedsoftwareupdate
         msc_debug_log("Got munkistatus update notification")
         got_status_update = true
-        guard let info = notification.userInfo else {
+        guard let info = notification.userInfo as? [String: Any] else {
             msc_debug_log("No userInfo in notification")
             return
         }
