@@ -121,7 +121,11 @@ class MainWindowController: NSWindowController {
         case .function(let handler, _):
             handler(self)
         case .url(let urlString):
-            load_page(urlString)
+            if urlString.hasPrefix("munki://"), let url = URL(string: urlString) {
+                handleMunkiURL(url)
+            } else {
+                load_page(urlString)
+            }
         }
     }
     
@@ -325,7 +329,7 @@ class MainWindowController: NSWindowController {
                           let page = item["page"] else {
                         continue
                     }
-                    if page.starts(with: "http") || page.hasSuffix(".html") {
+                    if page.starts(with: "munki://") || page.starts(with: "http") || page.hasSuffix(".html") {
                         newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .url(page)))
                     } else {
                         switch page {
