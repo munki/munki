@@ -29,24 +29,50 @@ extension MainWindowController: NSOutlineViewDataSource {
     }
     
     func outlineView(_ outlineView: NSOutlineView, didAdd rowView: NSTableRowView, forRow row: Int) {
-        rowView.selectionHighlightStyle = .regular
+        rowView.selectionHighlightStyle = .sourceList
+    }
+    
+    func outlineViewSelectionDidChange(_ notification: Notification) {
+        sidebarList.enumerateAvailableRowViews { rowView, row in
+            if let cellView = rowView.view(atColumn: 0) as? MSCTableCellView {
+                let isSelected = row == sidebarList.selectedRow
+                cellView.title.textColor = isSelected ? .controlAccentColor : .labelColor
+                cellView.imgView.contentTintColor = isSelected ? .controlAccentColor : .secondaryLabelColor
+            }
+        }
     }
 }
 
 extension MainWindowController: NSOutlineViewDelegate {
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        var view: MSCTableCellView?
-        let itemDict = item as? [String: String]
-        if let title = itemDict?["title"], let icon = itemDict?["icon"] {
-            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? MSCTableCellView
-            if let textField = view?.title {
-                textField.stringValue = title.localized(withComment: "\(title) label")
-            }
-            if let imageView = view?.imgView {
-                imageView.image = NSImage(named: NSImage.Name(icon))?.tint(color: .secondaryLabelColor)
-            }
+        guard let sidebarItem = item as? SidebarItem else { return nil }
+
+        guard let view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? MSCTableCellView else {
+            return nil
         }
+
+        let isSelected = (sidebarList.row(forItem: item) == sidebarList.selectedRow)
+
+        view.title.stringValue = sidebarItem.title.localized(withComment: "\(sidebarItem.title) label")
+        view.title.textColor = isSelected ? .controlAccentColor : .labelColor
+
+        if let image = NSImage(named: NSImage.Name(sidebarItem.icon)) {
+            image.isTemplate = true
+            view.imgView.image = image
+            view.imgView.contentTintColor = isSelected ? .controlAccentColor : .secondaryLabelColor
+        } else if #available(macOS 11.0, *) {
+            if let systemImage = NSImage(systemSymbolName: sidebarItem.icon, accessibilityDescription: nil) {
+                systemImage.isTemplate = true
+                view.imgView.image = systemImage
+                view.imgView.contentTintColor = isSelected ? .controlAccentColor : .secondaryLabelColor
+            } else {
+                view.imgView.image = nil
+            }
+        } else {
+            view.imgView.image = nil
+        }
+
         return view
     }
 }
@@ -64,7 +90,7 @@ extension NSImage {
         imageRect.fill(using: .sourceAtop)
         
         image.unlockFocus()
-        image.isTemplate = false
+        image.isTemplate = true
         
         return image
     }

@@ -22,11 +22,31 @@ class MainWindowController: NSWindowController {
     var htmlDir = ""
     var wkContentController = WKUserContentController()
     
-    let sidebar_items = [
-        ["title": "Software", "icon": "AllItemsTemplate"],
-        ["title": "Categories", "icon": "CategoriesTemplate"],
-        ["title": "My Items", "icon": "MyStuffTemplate"],
-        ["title": "Updates", "icon": "UpdatesTemplate"]
+    enum SidebarPage {
+        case url(String)
+        case function((_ sender: Any) -> Void, id: String)
+
+        var id: String {
+            switch self {
+            case .url(let url):
+                return url
+            case .function(_, let id):
+                return id
+            }
+        }
+    }
+
+    struct SidebarItem {
+        let title: String
+        let icon: String
+        let page: SidebarPage
+    }
+
+    lazy var sidebar_items: [SidebarItem] = [
+        SidebarItem(title: "Software", icon: "AllItemsTemplate", page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")),
+        SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: .function(loadCategoriesPage, id: "loadCategoriesPage")),
+        SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: .function(loadMyItemsPage, id: "loadMyItemsPage")),
+        SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: .function(loadUpdatesPage, id: "loadUpdatesPage"))
     ]
     
     // status properties
@@ -93,20 +113,15 @@ class MainWindowController: NSWindowController {
     }
 
     @objc func onItemClicked() {
-        if 0 ... sidebar_items.count ~= sidebarList.clickedRow {
-            clearSearchField()
-            switch sidebarList.clickedRow {
-                case 0:
-                    loadAllSoftwarePage(self)
-                case 1:
-                    loadCategoriesPage(self)
-                case 2:
-                    loadMyItemsPage(self)
-                case 3:
-                    loadUpdatesPage(self)
-                default:
-                    loadUpdatesPage(self)
-            }
+        let row = sidebarList.clickedRow
+        guard row >= 0 && row < sidebar_items.count else { return }
+        clearSearchField()
+        let item = sidebar_items[row]
+        switch item.page {
+        case .function(let handler, _):
+            handler(self)
+        case .url(let urlString):
+            load_page(urlString)
         }
     }
     
@@ -150,9 +165,11 @@ class MainWindowController: NSWindowController {
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return sidebarList.selectedRow == 3
+        let row = sidebarList.selectedRow
+        guard row >= 0, row < sidebar_items.count else { return false }
+        return sidebar_items[row].page.id == "loadUpdatesPage"
     }
-
+    
     func blurBackground() {
         blurredBackground = BackgroundBlurrer()
         if let window = self.window {
@@ -190,18 +207,18 @@ class MainWindowController: NSWindowController {
         
         // make sure we're frontmost
         NSApp.activate(ignoringOtherApps: true)
-
-      // If the window is not on the active space, force a space switch.
-      // Return early, before locking down the presentation options. This will let the run loop spin, allowing
-      // the space switch to occur. When the window becomes key, `makeUsObnoxious` will be called again.
-      // On the second invocation, the window will be on the active space and this block will be skipped.
-      if let window = self.window {
-          if (!window.isOnActiveSpace) {
-              NSApp.activate(ignoringOtherApps: true)
-              window.orderFrontRegardless()
-              return
-          }
-      }
+        
+        // If the window is not on the active space, force a space switch.
+        // Return early, before locking down the presentation options. This will let the run loop spin, allowing
+        // the space switch to occur. When the window becomes key, `makeUsObnoxious` will be called again.
+        // On the second invocation, the window will be on the active space and this block will be skipped.
+        if let window = self.window {
+            if (!window.isOnActiveSpace) {
+                NSApp.activate(ignoringOtherApps: true)
+                window.orderFrontRegardless()
+                return
+            }
+        }
         
         // make it very difficult to switch away from this app
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
@@ -297,6 +314,41 @@ class MainWindowController: NSWindowController {
     
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
+        
+        // enable custom sidebar items if 11.0 or later // SF Symbols only supported on 11.0 or later
+        if #available(macOS 11.0, *) {
+            if let configItems = pref("CustomSidebarItems") as? [[String: String]] {
+                var newSidebarItems: [SidebarItem] = []
+                for item in configItems {
+                    guard let title = item["title"],
+                          let icon = item["icon"],
+                          let page = item["page"] else {
+                        continue
+                    }
+                    if page.starts(with: "http") || page.hasSuffix(".html") {
+                        newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .url(page)))
+                    } else {
+                        switch page {
+                        case "loadAllSoftwarePage":
+                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")))
+                        case "loadCategoriesPage":
+                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadCategoriesPage, id: "loadCategoriesPage")))
+                        case "loadMyItemsPage":
+                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadMyItemsPage, id: "loadMyItemsPage")))
+                        case "loadUpdatesPage":
+                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadUpdatesPage, id: "loadUpdatesPage")))
+                        default:
+                            continue
+                        }
+                    }
+                }
+                if !newSidebarItems.isEmpty {
+                    sidebar_items = newSidebarItems
+                }
+                self.sidebarList.reloadData()
+            }
+        }
+        
         if optionalInstallsExist() {
             loadAllSoftwarePage(self)
         } else {
@@ -308,7 +360,7 @@ class MainWindowController: NSWindowController {
     
     func highlightSidebarItem(_ nameToHighlight: String) {
         for (index, item) in sidebar_items.enumerated() {
-            if nameToHighlight == item["title"] {
+            if nameToHighlight == item.title {
                 sidebarList.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
             }
         }
@@ -860,16 +912,25 @@ class MainWindowController: NSWindowController {
     }
     
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
-        //
-        var cellView:MSCTableCellView?
-        if let view = self.sidebarList.rowView(atRow: 3, makeIfNecessary: false) {
-            cellView = view.view(atColumn: 0) as? MSCTableCellView
+        // check if update sidebar item avalible
+        guard let index = sidebar_items.firstIndex(where: {
+            if case .function(_, let id) = $0.page {
+                return id == "loadUpdatesPage"
+            }
+            return false
+        }) else {
+            return
+        }
+        
+        guard let rowView = sidebarList.rowView(atRow: index, makeIfNecessary: false),
+              let cellView = rowView.view(atColumn: 0) as? MSCTableCellView else {
+            return
         }
         if shouldDisplay {
-            cellView?.badge.isHidden = true
-            cellView?.spinner.startAnimation(self)
+            cellView.badge.isHidden = true
+            cellView.spinner.startAnimation(self)
         } else {
-            cellView?.spinner.stopAnimation(self)
+            cellView.spinner.stopAnimation(self)
         }
     }
     
@@ -900,9 +961,9 @@ class MainWindowController: NSWindowController {
         var our_filter = ""
         var developer = ""
         if key == "category" {
-             if value != "all" {
+            if value != "all" {
                 category = value
-             }
+            }
         } else if key == "filter" {
             our_filter = value
         } else if key == "developer" {
@@ -924,10 +985,17 @@ class MainWindowController: NSWindowController {
         msc_debug_log("load_page request for \(url_fragment)")
         
         let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
-        let request = URLRequest(url: URL(fileURLWithPath: html_file),
+        var request = URLRequest(url: URL(fileURLWithPath: html_file),
                                  cachePolicy: .reloadIgnoringLocalCacheData,
                                  timeoutInterval: TimeInterval(10.0))
+        if url_fragment.starts(with: "http") {
+            request = URLRequest(url: URL(string: url_fragment)!,
+                                 cachePolicy: .reloadIgnoringLocalCacheData,
+                                 timeoutInterval: TimeInterval(10.0))
+        }
+        
         webView.load(request)
+        
         if url_fragment == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
@@ -1006,7 +1074,7 @@ class MainWindowController: NSWindowController {
             load_page(filename)
         }
     }
-
+    
     func setNoPageCache() {
         /* We disable the back/forward page cache because
          we generate each page dynamically; we want things
@@ -1014,10 +1082,10 @@ class MainWindowController: NSWindowController {
          immediately in all page views */
         // TO-DO: figure this out for WKWebView
         /*let identifier = "com.googlecode.munki.ManagedSoftwareCenter"
-        if let prefs = WebPreferences(identifier: identifier) {
-            prefs.usesPageCache = false
-            webView.preferencesIdentifier = identifier
-        }*/
+         if let prefs = WebPreferences(identifier: identifier) {
+         prefs.usesPageCache = false
+         webView.preferencesIdentifier = identifier
+         }*/
     }
     
     func clearCache() {
@@ -1276,8 +1344,8 @@ class MainWindowController: NSWindowController {
         // Handle WebView back button
         webView.goBack(self)
         /*let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
-        navigateBackButton.isHidden = !filename.hasPrefix("detail-")*/
+         let filename = page_url?.lastPathComponent ?? ""
+         navigateBackButton.isHidden = !filename.hasPrefix("detail-")*/
     }
     
     @IBAction func loadAllSoftwarePage(_ sender: Any) {
@@ -1304,6 +1372,22 @@ class MainWindowController: NSWindowController {
         load_page("updates.html")
     }
     
+    func loadCustomPage(selected_item: Int) {
+        // Called by Navigate menu item'''
+        clearSearchField()
+        var page = "updates.html"
+        if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
+            // get the page for the selected item
+            let item = selected_item - 4
+            if selected_item >= 0 {
+                if let link = CustomSidebarItems[item]["link"] {
+                    page = link
+                }
+            }
+        }
+        load_page(page)
+    }
+    
     @IBAction func searchFilterChanged(_ sender: Any) {
         // User changed the search field
         let filterString = searchField.stringValue.lowercased()
@@ -1322,5 +1406,5 @@ class MainWindowController: NSWindowController {
         URLCache.shared.removeAllCachedResponses()
         webView.reload(sender)
     }
-
+    
 }
