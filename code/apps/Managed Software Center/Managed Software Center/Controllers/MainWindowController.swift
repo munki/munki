@@ -42,12 +42,7 @@ class MainWindowController: NSWindowController {
         let page: SidebarPage
     }
 
-    lazy var sidebar_items: [SidebarItem] = [
-        SidebarItem(title: "Software", icon: "AllItemsTemplate", page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")),
-        SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: .function(loadCategoriesPage, id: "loadCategoriesPage")),
-        SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: .function(loadMyItemsPage, id: "loadMyItemsPage")),
-        SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: .function(loadUpdatesPage, id: "loadUpdatesPage"))
-    ]
+    lazy var sidebar_items: [SidebarItem] = getSidebarItems()
     
     // status properties
     var _status_title = ""
@@ -110,6 +105,49 @@ class MainWindowController: NSWindowController {
         if let window, originalFrame != .zero {
             window.setFrame(originalFrame, display: true)
         }
+    }
+    
+    func getSidebarItems() -> [SidebarItem] {
+        // enable custom sidebar items if 11.0 or later
+        // because SF Symbols only supported on 11.0 or later
+        var sidebarItems: [SidebarItem] = []
+        if #available(macOS 11.0, *) {
+            if let configItems = pref("CustomSidebarItems") as? [[String: String]] {
+                for item in configItems {
+                    guard let title = item["title"],
+                          let icon = item["icon"],
+                          let page = item["page"] else {
+                        continue
+                    }
+                    if page.starts(with: "munki://") || page.starts(with: "http") || page.hasSuffix(".html") {
+                        sidebarItems.append(SidebarItem(title: title, icon: icon, page: .url(page)))
+                    } else {
+                        switch page {
+                        case "loadAllSoftwarePage":
+                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")))
+                        case "loadCategoriesPage":
+                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadCategoriesPage, id: "loadCategoriesPage")))
+                        case "loadMyItemsPage":
+                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadMyItemsPage, id: "loadMyItemsPage")))
+                        case "loadUpdatesPage":
+                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadUpdatesPage, id: "loadUpdatesPage")))
+                        default:
+                            continue
+                        }
+                    }
+                }
+            }
+        }
+        // set to default if needed
+        if sidebarItems.isEmpty {
+            sidebarItems = [
+                SidebarItem(title: "Software", icon: "AllItemsTemplate", page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")),
+                SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: .function(loadCategoriesPage, id: "loadCategoriesPage")),
+                SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: .function(loadMyItemsPage, id: "loadMyItemsPage")),
+                SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: .function(loadUpdatesPage, id: "loadUpdatesPage"))
+            ]
+        }
+        return sidebarItems
     }
 
     @objc func onItemClicked() {
@@ -315,44 +353,8 @@ class MainWindowController: NSWindowController {
         }
     }
     
-    
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
-        
-        // enable custom sidebar items if 11.0 or later // SF Symbols only supported on 11.0 or later
-        if #available(macOS 11.0, *) {
-            if let configItems = pref("CustomSidebarItems") as? [[String: String]] {
-                var newSidebarItems: [SidebarItem] = []
-                for item in configItems {
-                    guard let title = item["title"],
-                          let icon = item["icon"],
-                          let page = item["page"] else {
-                        continue
-                    }
-                    if page.starts(with: "munki://") || page.starts(with: "http") || page.hasSuffix(".html") {
-                        newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .url(page)))
-                    } else {
-                        switch page {
-                        case "loadAllSoftwarePage":
-                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")))
-                        case "loadCategoriesPage":
-                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadCategoriesPage, id: "loadCategoriesPage")))
-                        case "loadMyItemsPage":
-                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadMyItemsPage, id: "loadMyItemsPage")))
-                        case "loadUpdatesPage":
-                            newSidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadUpdatesPage, id: "loadUpdatesPage")))
-                        default:
-                            continue
-                        }
-                    }
-                }
-                if !newSidebarItems.isEmpty {
-                    sidebar_items = newSidebarItems
-                }
-                self.sidebarList.reloadData()
-            }
-        }
-        
         if optionalInstallsExist() {
             loadAllSoftwarePage(self)
         } else {
@@ -917,9 +919,20 @@ class MainWindowController: NSWindowController {
     
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
         // check if update sidebar item avalible
+        /*
         guard let index = sidebar_items.firstIndex(where: {
             if case .function(_, let id) = $0.page {
                 return id == "loadUpdatesPage"
+            }
+            return false
+        }) else {
+            return
+        }
+        */
+        
+        guard let index = sidebar_items.firstIndex(where: {
+            if case .url(let urlString) = $0.page {
+                return urlString == "munki://updates"
             }
             return false
         }) else {
