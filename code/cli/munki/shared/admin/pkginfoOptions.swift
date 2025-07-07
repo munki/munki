@@ -131,7 +131,8 @@ struct ScriptOptions: ParsableArguments {
 
 /// "Drag-n-drop" Disk Image Options
 struct DragNDropOptions: ParsableArguments {
-    @Option(name: [.short, .long, .customShort("a"), .customLong("app")],
+    @Option(name: [.short, .customLong("itemname"),
+                   .customShort("a"), .customLong("appname")],
             help: "Name or relative path of the item to be installed. Useful if there is more than one item at the root of the dmg or the item is located in a subdirectory. Absolute paths can be provided as well but they must point to an item located within the dmg.")
     var item: String? = nil
 
