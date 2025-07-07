@@ -9,6 +9,18 @@
 import Cocoa
 import WebKit
 
+struct SidebarItem {
+    let title: String
+    let icon: String
+    let page: String
+}
+
+enum SidebarPage: String {
+    case software = "munki://category-all"
+    case categories = "munki://categories"
+    case myItems = "munki://myitems"
+    case updates = "munki://updates"
+}
 
 class MainWindowController: NSWindowController {
     
@@ -21,26 +33,6 @@ class MainWindowController: NSWindowController {
     var alert_controller = MSCAlertController()
     var htmlDir = ""
     var wkContentController = WKUserContentController()
-    
-    enum SidebarPage {
-        case url(String)
-        case function((_ sender: Any) -> Void, id: String)
-
-        var id: String {
-            switch self {
-            case .url(let url):
-                return url
-            case .function(_, let id):
-                return id
-            }
-        }
-    }
-
-    struct SidebarItem {
-        let title: String
-        let icon: String
-        let page: SidebarPage
-    }
 
     lazy var sidebar_items: [SidebarItem] = getSidebarItems()
     
@@ -119,32 +111,17 @@ class MainWindowController: NSWindowController {
                           let page = item["page"] else {
                         continue
                     }
-                    if page.starts(with: "munki://") || page.starts(with: "http") || page.hasSuffix(".html") {
-                        sidebarItems.append(SidebarItem(title: title, icon: icon, page: .url(page)))
-                    } else {
-                        switch page {
-                        case "loadAllSoftwarePage":
-                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")))
-                        case "loadCategoriesPage":
-                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadCategoriesPage, id: "loadCategoriesPage")))
-                        case "loadMyItemsPage":
-                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadMyItemsPage, id: "loadMyItemsPage")))
-                        case "loadUpdatesPage":
-                            sidebarItems.append(SidebarItem(title: title, icon: icon, page: .function(loadUpdatesPage, id: "loadUpdatesPage")))
-                        default:
-                            continue
-                        }
-                    }
+                    sidebarItems.append(SidebarItem(title: title, icon: icon, page: page))
                 }
             }
         }
         // set to default if needed
         if sidebarItems.isEmpty {
             sidebarItems = [
-                SidebarItem(title: "Software", icon: "AllItemsTemplate", page: .function(loadAllSoftwarePage, id: "loadAllSoftwarePage")),
-                SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: .function(loadCategoriesPage, id: "loadCategoriesPage")),
-                SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: .function(loadMyItemsPage, id: "loadMyItemsPage")),
-                SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: .function(loadUpdatesPage, id: "loadUpdatesPage"))
+                SidebarItem(title: "Software", icon: "AllItemsTemplate", page: SidebarPage.software.rawValue),
+                SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: SidebarPage.categories.rawValue),
+                SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: SidebarPage.myItems.rawValue),
+                SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: SidebarPage.updates.rawValue)
             ]
         }
         return sidebarItems
@@ -155,15 +132,14 @@ class MainWindowController: NSWindowController {
         guard row >= 0 && row < sidebar_items.count else { return }
         clearSearchField()
         let item = sidebar_items[row]
-        switch item.page {
-        case .function(let handler, _):
-            handler(self)
-        case .url(let urlString):
-            if urlString.hasPrefix("munki://"), let url = URL(string: urlString) {
+        if item.page.hasPrefix("munki://") {
+            if let url = URL(string: item.page) {
                 handleMunkiURL(url)
             } else {
-                load_page(urlString)
+                msc_debug_log("Could not parse URL \(item.page)")
             }
+        } else {
+            load_page(item.page)
         }
     }
     
@@ -209,7 +185,7 @@ class MainWindowController: NSWindowController {
         // return true if current tab selected is Updates
         let row = sidebarList.selectedRow
         guard row >= 0, row < sidebar_items.count else { return false }
-        return sidebar_items[row].page.id == "loadUpdatesPage"
+        return sidebar_items[row].page == SidebarPage.updates.rawValue
     }
     
     func blurBackground() {
@@ -919,22 +895,8 @@ class MainWindowController: NSWindowController {
     
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
         // check if update sidebar item avalible
-        /*
         guard let index = sidebar_items.firstIndex(where: {
-            if case .function(_, let id) = $0.page {
-                return id == "loadUpdatesPage"
-            }
-            return false
-        }) else {
-            return
-        }
-        */
-        
-        guard let index = sidebar_items.firstIndex(where: {
-            if case .url(let urlString) = $0.page {
-                return urlString == "munki://updates"
-            }
-            return false
+            $0.page == SidebarPage.updates.rawValue
         }) else {
             return
         }
