@@ -148,7 +148,7 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             // or the actual pkg is not at the root of the DMG
             let fullPkgPath = (mountpoint as NSString).appendingPathComponent(pkgPath)
             if pathExists(fullPkgPath) {
-                let (retcode, needToRestart) = await install(pkgPath, options: pkginfo)
+                let (retcode, needToRestart) = await install(fullPkgPath, options: pkginfo)
                 return (retcode, needToRestart || requiresRestart(pkginfo))
             } else {
                 display.error("Did not find \(pkgPath) on disk image \(dmgName)")
