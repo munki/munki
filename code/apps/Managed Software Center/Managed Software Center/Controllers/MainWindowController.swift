@@ -108,7 +108,11 @@ class MainWindowController: NSWindowController {
             for item in sidebarItems {
                 let key = index < 10 ? String(index) : ""
                 navigateMenu.items.append(
-                    NSMenuItem(title: item.title, action: #selector(navigationMenuItemClicked), keyEquivalent: key)
+                    NSMenuItem(
+                        title: item.title.localized(withComment: "\(item.title) label"),
+                        action: #selector(navigationMenuItemClicked),
+                        keyEquivalent: key
+                    )
                 )
                 index += 1
             }
