@@ -147,35 +147,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // Called if user selects 'Quit' from menu
         return self.mainWindowController.appShouldTerminate()
     }
-    
-    /*
-    // MARK: NSUserNotificationCenterDelegate methods
-     
-    func userNotificationCenter(_ center: NSUserNotificationCenter, didActivate notification: NSUserNotification) {
-        // User clicked on a Notification Center alert
-        guard let user_info = notification.userInfo else {
-            return
-        }
-        if user_info["action"] as? String ?? "" == "open_url" {
-            let urlString = user_info["value"] as? String ?? "munki://updates"
-            msc_log("MSC", "Got user notification to open \(urlString)")
-            if let url = URL(string: urlString) {
-                mainWindowController.handleMunkiURL(url)
-            }
-            center.removeDeliveredNotification(notification)
-        } else {
-            msc_log("MSC", "Got user notification with unrecognized userInfo")
-        }
-    }
-    
-    func userNotificationCenter(_ center: NSUserNotificationCenter, shouldPresent notification: NSUserNotification) -> Bool {
-        return true
-    }
-    
-    func userNotificationCenter(_ center: NSUserNotificationCenter, didDeliver notification: NSUserNotification) {
-        // we don't currently handle this
-    }
-    */
 
     // MARK: UNUserNotificationCenterDelegate methods
     
