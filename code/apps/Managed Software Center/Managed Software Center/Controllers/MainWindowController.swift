@@ -15,7 +15,7 @@ struct SidebarItem {
     let page: String
 }
 
-enum SidebarPage: String {
+enum MunkiURL: String {
     case software = "munki://category-all"
     case categories = "munki://categories"
     case myItems = "munki://myitems"
@@ -138,10 +138,10 @@ class MainWindowController: NSWindowController {
         // set to default if needed
         if sidebarItems.isEmpty {
             sidebarItems = [
-                SidebarItem(title: "Software", icon: "AllItemsTemplate", page: SidebarPage.software.rawValue),
-                SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: SidebarPage.categories.rawValue),
-                SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: SidebarPage.myItems.rawValue),
-                SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: SidebarPage.updates.rawValue)
+                SidebarItem(title: "Software", icon: "AllItemsTemplate", page: MunkiURL.software.rawValue),
+                SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: MunkiURL.categories.rawValue),
+                SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: MunkiURL.myItems.rawValue),
+                SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: MunkiURL.updates.rawValue)
             ]
         }
         // update Navigate menu to reflect the sidebar contents
@@ -165,6 +165,7 @@ class MainWindowController: NSWindowController {
         let itemTitle = sender.title
         for item in sidebar_items {
             if item.title == itemTitle {
+                clearSearchField()
                 highlightSidebarItem(itemTitle)
                 loadSidebarItemPage(item.page)
                 break
@@ -222,7 +223,7 @@ class MainWindowController: NSWindowController {
         // return true if current tab selected is Updates
         let row = sidebarList.selectedRow
         guard row >= 0, row < sidebar_items.count else { return false }
-        return sidebar_items[row].page == SidebarPage.updates.rawValue
+        return sidebar_items[row].page == MunkiURL.updates.rawValue
     }
     
     func blurBackground() {
@@ -937,7 +938,7 @@ class MainWindowController: NSWindowController {
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
         // check if update sidebar item avalible
         guard let index = sidebar_items.firstIndex(where: {
-            $0.page == SidebarPage.updates.rawValue
+            $0.page == MunkiURL.updates.rawValue
         }) else {
             return
         }
