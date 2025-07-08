@@ -231,7 +231,7 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
 
 // The Python version of Munki would actually install _all_ the pkgs from a given
 // directory (which was usually the root of a mounted disk image). This was rarely
-// was was actaully wanted. This version just installs the first installable item in
+// what was actually wanted. This version just installs the first installable item in
 // the directory.
 // Returns a tuple containing the exit code of the installer process and a boolean
 // indicating if a restart is needed
@@ -248,7 +248,7 @@ func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) asy
                     display.error("No filesystems mounted from \(item)")
                     return (-1, false)
                 }
-                // makre sure we unmount this when done
+                // make sure we unmount this when done
                 defer {
                     do {
                         try unmountdmg(mountpoint)
