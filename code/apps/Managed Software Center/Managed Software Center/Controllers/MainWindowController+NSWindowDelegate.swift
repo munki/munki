@@ -19,7 +19,7 @@ extension MainWindowController: NSWindowDelegate {
     
     func windowDidBecomeMain(_ notification: Notification) {
         // Our window was activated, make sure controls enabled as needed
-        sidebarList.action = #selector(self.onItemClicked)
+        sidebarList.action = #selector(self.sidebarItemClicked)
     }
     
     func windowDidResignMain(_ notification: Notification) {

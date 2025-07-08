@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24093.8" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24093.8"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
         <capability name="NSView safe area layout guides" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -193,19 +193,16 @@
         </customObject>
         <customObject id="XGW-R4-ybE" customClass="MainWindowController" customModule="Managed_Software_Center" customModuleProvider="target">
             <connections>
-                <outlet property="categoriesMenuItem" destination="IjL-Sm-tWj" id="Nu2-xf-MO3"/>
                 <outlet property="contentViewController" destination="sDU-NH-Ooc" id="lHI-Tz-qLb"/>
                 <outlet property="findMenuItem" destination="JRN-bq-1gM" id="r2S-8Y-njg"/>
                 <outlet property="mainContentViewController" destination="sDU-NH-Ooc" id="9o8-h5-4RD"/>
-                <outlet property="myItemsMenuItem" destination="1bG-B4-adC" id="PCP-Ye-eRl"/>
                 <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
+                <outlet property="navigateMenu" destination="1Dc-SU-RKH" id="4kZ-ho-8Nl"/>
                 <outlet property="reloadPageMenuItem" destination="RZb-6e-dMo" id="an6-Pg-ieO"/>
                 <outlet property="searchField" destination="0L3-LH-chu" id="RPN-At-q8L"/>
                 <outlet property="sidebarList" destination="pGV-ZA-L14" id="rl2-BU-gEi"/>
                 <outlet property="sidebarViewController" destination="Yvj-yI-e1z" id="1j7-Df-HYD"/>
-                <outlet property="softwareMenuItem" destination="YIg-jD-AbB" id="D6s-mC-x4d"/>
                 <outlet property="toolbar" destination="kUE-z7-M8M" id="QBe-Nd-mZo"/>
-                <outlet property="updatesMenuItem" destination="HOZ-SU-4Sm" id="UdT-3I-JpJ"/>
                 <outlet property="webViewPlaceholder" destination="GVE-fL-y29" id="lX9-2Z-Wsn"/>
                 <outlet property="window" destination="EeR-uP-dFY" id="FfQ-Q4-xUU"/>
             </connections>
@@ -318,26 +315,6 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="0W8-g5-gCj"/>
-                            <menuItem title="Software" keyEquivalent="1" id="YIg-jD-AbB">
-                                <connections>
-                                    <action selector="loadAllSoftwarePage:" target="XGW-R4-ybE" id="dt1-OC-ObZ"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Categories" keyEquivalent="2" id="IjL-Sm-tWj">
-                                <connections>
-                                    <action selector="loadCategoriesPage:" target="XGW-R4-ybE" id="Agt-cx-joI"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="My Items" keyEquivalent="3" id="1bG-B4-adC">
-                                <connections>
-                                    <action selector="loadMyItemsPage:" target="XGW-R4-ybE" id="Hec-MQ-1q1"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Updates" keyEquivalent="4" id="HOZ-SU-4Sm">
-                                <connections>
-                                    <action selector="loadUpdatesPage:" target="XGW-R4-ybE" id="srC-0D-BF3"/>
-                                </connections>
-                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
@@ -396,7 +373,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="132" y="116" width="1000" height="500"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="3072" height="1265"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <value key="minSize" type="size" width="1000" height="500"/>
             <view key="contentView" id="H4V-bM-OJY" userLabel="View">
                 <rect key="frame" x="0.0" y="0.0" width="1000" height="500"/>
