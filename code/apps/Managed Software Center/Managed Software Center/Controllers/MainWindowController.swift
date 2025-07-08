@@ -51,11 +51,8 @@ class MainWindowController: NSWindowController {
     @IBOutlet weak var sidebarList: NSOutlineView!
     @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
     @IBOutlet weak var findMenuItem: NSMenuItem!
-    @IBOutlet weak var softwareMenuItem: NSMenuItem!
-    @IBOutlet weak var categoriesMenuItem: NSMenuItem!
-    @IBOutlet weak var myItemsMenuItem: NSMenuItem!
-    @IBOutlet weak var updatesMenuItem: NSMenuItem!
     @IBOutlet weak var reloadPageMenuItem: NSMenuItem!
+    @IBOutlet weak var navigateMenu: NSMenuItem!
     
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
@@ -99,6 +96,25 @@ class MainWindowController: NSWindowController {
         }
     }
     
+    func updateNavigationMenu(_ sidebarItems: [SidebarItem]) {
+        if let navigateMenu = navigateMenu.submenu {
+            // remove any previously-added items
+            let itemCount = navigateMenu.items.count
+            if itemCount > 4 {
+                navigateMenu.items.removeLast(itemCount - 4)
+            }
+            // add an item for each sidebar item
+            var index = 1
+            for item in sidebarItems {
+                let key = index < 10 ? String(index) : ""
+                navigateMenu.items.append(
+                    NSMenuItem(title: item.title, action: #selector(navigationMenuItemClicked), keyEquivalent: key)
+                )
+                index += 1
+            }
+        }
+    }
+    
     func getSidebarItems() -> [SidebarItem] {
         // enable custom sidebar items if 11.0 or later
         // because SF Symbols only supported on 11.0 or later
@@ -124,23 +140,40 @@ class MainWindowController: NSWindowController {
                 SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: SidebarPage.updates.rawValue)
             ]
         }
+        // update Navigate menu to reflect the sidebar contents
+        updateNavigationMenu(sidebarItems)
         return sidebarItems
     }
+    
+    func loadSidebarItemPage(_ page: String) {
+        if page.hasPrefix("munki://") {
+            if let url = URL(string: page) {
+                handleMunkiURL(url)
+            } else {
+                msc_debug_log("Could not parse sidebar item page URL \(page)")
+            }
+        } else {
+            load_page(page)
+        }
+    }
+    
+    @objc func navigationMenuItemClicked(_ sender: NSMenuItem) {
+        let itemTitle = sender.title
+        for item in sidebar_items {
+            if item.title == itemTitle {
+                highlightSidebarItem(itemTitle)
+                loadSidebarItemPage(item.page)
+                break
+            }
+        }
+    }
 
-    @objc func onItemClicked() {
+    @objc func sidebarItemClicked() {
         let row = sidebarList.clickedRow
         guard row >= 0 && row < sidebar_items.count else { return }
         clearSearchField()
         let item = sidebar_items[row]
-        if item.page.hasPrefix("munki://") {
-            if let url = URL(string: item.page) {
-                handleMunkiURL(url)
-            } else {
-                msc_debug_log("Could not parse URL \(item.page)")
-            }
-        } else {
-            load_page(item.page)
-        }
+        loadSidebarItemPage(item.page)
     }
     
     func appShouldTerminate() -> NSApplication.TerminateReply {
@@ -287,10 +320,12 @@ class MainWindowController: NSWindowController {
     
     func updatesOnlyWindowMode() {
         findMenuItem.isHidden = true
+        /*
         softwareMenuItem.isHidden = true
         categoriesMenuItem.isHidden = true
         myItemsMenuItem.isHidden = true
         updatesMenuItem.isHidden = true
+        */
         // ensure sidebar is collapsed
         guard let firstSplitView = splitViewController.splitViewItems.first else { return }
         if !firstSplitView.animator().isCollapsed {
@@ -301,10 +336,12 @@ class MainWindowController: NSWindowController {
     
     func updatesAndOptionalWindowMode() {
         findMenuItem.isHidden = false
+        /*
         softwareMenuItem.isHidden = false
         categoriesMenuItem.isHidden = false
         myItemsMenuItem.isHidden = false
         updatesMenuItem.isHidden = false
+         */
         // ensure sidebar is visible
         guard let firstSplitView = splitViewController.splitViewItems.first else { return }
         if firstSplitView.animator().isCollapsed {
