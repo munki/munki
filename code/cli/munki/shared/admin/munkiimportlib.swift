@@ -660,7 +660,7 @@ func promptForSubdirectory(_ repo: Repo, _ subdirectory: String?) async -> Strin
 
 /// Opens pkginfo list in the user's chosen editor.
 func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
-    guard let editor = adminPref("editor") as? String else {
+    guard let editor = adminPref("editor") as? String, !editor.isEmpty else {
         return pkginfo
     }
     print("Edit pkginfo before upload? [y/N]: ", terminator: "")
