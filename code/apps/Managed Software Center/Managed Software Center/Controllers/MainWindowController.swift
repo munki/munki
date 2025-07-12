@@ -122,6 +122,16 @@ class MainWindowController: NSWindowController {
         }
     }
     
+    /// Returns true if the sidebar items only refer to munki:// pages
+    func sidebarItemsContainOnlyMunkiPages() -> Bool {
+        for item in sidebar_items {
+            if !item.page.hasPrefix("munki://") {
+                return false
+            }
+        }
+        return true
+    }
+    
     func getSidebarItems() -> [SidebarItem] {
         // enable custom sidebar items if 11.0 or later
         // because SF Symbols only supported on 11.0 or later
@@ -329,9 +339,9 @@ class MainWindowController: NSWindowController {
     func hideMunkiNavigateMenuItems(_ shouldHide: Bool) {
         guard let menuItems = navigateMenu.submenu?.items else { return }
         if menuItems.count <= navigateMenuStaticItemCount { return }
-        for i in navigateMenuStaticItemCount ..< menuItems.count {
-            if sidebar_items[i].page.hasPrefix("munki://") {
-                menuItems[i].isHidden = shouldHide
+        for (i, item) in sidebar_items.enumerated() {
+            if item.page.hasPrefix("munki://") {
+                menuItems[i + navigateMenuStaticItemCount].isHidden = shouldHide
             }
         }
     }
@@ -339,10 +349,12 @@ class MainWindowController: NSWindowController {
     func updatesOnlyWindowMode() {
         findMenuItem.isHidden = true
         hideMunkiNavigateMenuItems(true)
-        // ensure sidebar is collapsed
-        guard let firstSplitView = splitViewController.splitViewItems.first else { return }
-        if !firstSplitView.animator().isCollapsed {
-            firstSplitView.animator().isCollapsed = true
+        if sidebarItemsContainOnlyMunkiPages() {
+            // ensure sidebar is collapsed
+            guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+            if !firstSplitView.animator().isCollapsed {
+                firstSplitView.animator().isCollapsed = true
+            }
         }
         loadUpdatesPage(self)
     }
@@ -917,16 +929,23 @@ class MainWindowController: NSWindowController {
         return getEffectiveUpdateList().count
     }
     
+    func updatesSidebarItemView() -> MSCTableCellView? {
+        for (i, item) in sidebar_items.enumerated() {
+            if item.page == "munki://updates" {
+                if let view = self.sidebarList.rowView(atRow: i, makeIfNecessary: false) {
+                    return view.view(atColumn: 0) as? MSCTableCellView
+                }
+            }
+        }
+        return nil
+    }
+    
     func displayUpdateCount() {
         // Display the update count as a badge in the sidebar
         // and as an icon badge in the Dock
         let updateCount = getUpdateCount()
         
-        var cellView:MSCTableCellView?
-
-        if let view = self.sidebarList.rowView(atRow: 3, makeIfNecessary: false) {
-            cellView = view.view(atColumn: 0) as? MSCTableCellView
-        }
+        let cellView = updatesSidebarItemView()
 
         if updateCount > 0 {
             NSApp.dockTile.badgeLabel = String(updateCount)
@@ -940,14 +959,7 @@ class MainWindowController: NSWindowController {
     
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
         // check if update sidebar item avalible
-        guard let index = sidebar_items.firstIndex(where: {
-            $0.page == MunkiURL.updates.rawValue
-        }) else {
-            return
-        }
-        
-        guard let rowView = sidebarList.rowView(atRow: index, makeIfNecessary: false),
-              let cellView = rowView.view(atColumn: 0) as? MSCTableCellView else {
+        guard let cellView = updatesSidebarItemView() else {
             return
         }
         if shouldDisplay {
