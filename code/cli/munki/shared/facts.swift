@@ -120,6 +120,8 @@ func getConditions() async -> PlistDict {
             }
             do {
                 let _ = try await runExternalScript(itemPath, timeout: 60)
+            } catch let ProcessError.error(description) {
+                display.error(description)
             } catch {
                 display.error("Error while running \(itemPath): \(error.localizedDescription)")
             }
