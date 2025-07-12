@@ -67,6 +67,8 @@ class MainWindowController: NSWindowController {
         get { return contentViewController as? MainSplitViewController }
         set { contentViewController = newValue }
     }
+    
+    let navigateMenuStaticItemCount = 4
 
     func setupSplitView() {
         let originalFrame = window?.frame ?? .zero
@@ -99,9 +101,10 @@ class MainWindowController: NSWindowController {
     func updateNavigationMenu(_ sidebarItems: [SidebarItem]) {
         if let navigateMenu = navigateMenu.submenu {
             // remove any previously-added items
+            
             let itemCount = navigateMenu.items.count
-            if itemCount > 4 {
-                navigateMenu.items.removeLast(itemCount - 4)
+            if itemCount > navigateMenuStaticItemCount {
+                navigateMenu.items.removeLast(itemCount - navigateMenuStaticItemCount)
             }
             // add an item for each sidebar item
             var index = 1
@@ -323,14 +326,19 @@ class MainWindowController: NSWindowController {
         return false
     }
     
+    func hideMunkiNavigateMenuItems(_ shouldHide: Bool) {
+        guard let menuItems = navigateMenu.submenu?.items else { return }
+        if menuItems.count <= navigateMenuStaticItemCount { return }
+        for i in navigateMenuStaticItemCount ..< menuItems.count {
+            if sidebar_items[i].page.hasPrefix("munki://") {
+                menuItems[i].isHidden = shouldHide
+            }
+        }
+    }
+    
     func updatesOnlyWindowMode() {
         findMenuItem.isHidden = true
-        /*
-        softwareMenuItem.isHidden = true
-        categoriesMenuItem.isHidden = true
-        myItemsMenuItem.isHidden = true
-        updatesMenuItem.isHidden = true
-        */
+        hideMunkiNavigateMenuItems(true)
         // ensure sidebar is collapsed
         guard let firstSplitView = splitViewController.splitViewItems.first else { return }
         if !firstSplitView.animator().isCollapsed {
@@ -341,12 +349,7 @@ class MainWindowController: NSWindowController {
     
     func updatesAndOptionalWindowMode() {
         findMenuItem.isHidden = false
-        /*
-        softwareMenuItem.isHidden = false
-        categoriesMenuItem.isHidden = false
-        myItemsMenuItem.isHidden = false
-        updatesMenuItem.isHidden = false
-         */
+        hideMunkiNavigateMenuItems(false)
         // ensure sidebar is visible
         guard let firstSplitView = splitViewController.splitViewItems.first else { return }
         if firstSplitView.animator().isCollapsed {
@@ -1399,7 +1402,7 @@ class MainWindowController: NSWindowController {
         var page = "updates.html"
         if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
             // get the page for the selected item
-            let item = selected_item - 4
+            let item = selected_item - navigateMenuStaticItemCount
             if selected_item >= 0 {
                 if let link = CustomSidebarItems[item]["link"] {
                     page = link
