@@ -191,16 +191,7 @@ func verifyFileOnlyWritableByMunkiAndRoot(_ path: String) throws {
 
 /// Verifies path is executable
 func verifyExecutable(_ path: String) throws {
-    let filemanager = FileManager.default
-    var attributes: NSDictionary
-    do {
-        attributes = try filemanager.attributesOfItem(atPath: path) as NSDictionary
-    } catch {
-        throw ExternalScriptError.statusError(
-            detail: "\(path): could not get filesystem attributes")
-    }
-    let mode = attributes.filePosixPermissions()
-    if Int32(mode) & X_OK == 0 {
+    if !FileManager.default.isExecutableFile(atPath: path) {
         throw ExternalScriptError.statusError(
             detail: "\(path) is not executable")
     }
