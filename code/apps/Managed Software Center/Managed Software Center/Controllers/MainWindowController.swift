@@ -15,13 +15,6 @@ struct SidebarItem {
     let page: String
 }
 
-enum MunkiURL: String {
-    case software = "munki://category-all"
-    case categories = "munki://categories"
-    case myItems = "munki://myitems"
-    case updates = "munki://updates"
-}
-
 class MainWindowController: NSWindowController {
     
     var mainWindowConfigurationComplete = false
@@ -68,6 +61,7 @@ class MainWindowController: NSWindowController {
         set { contentViewController = newValue }
     }
     
+    // number of items in the Navigate menu that aren't dynamic
     let navigateMenuStaticItemCount = 4
 
     func setupSplitView() {
@@ -81,7 +75,7 @@ class MainWindowController: NSWindowController {
         splitViewController.addSplitViewItem(sidebarItem)
         
         let mainContentItem = NSSplitViewItem(viewController: mainContentViewController)
-        // TODO: remove this when Xcode 26 ships and we require it to build
+        // TODO: remove this after Xcode 26 ships and if/when require Xcode 26+ to build
         // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
         // and there's no other straightforward way to do conditional compliation based on SDK
         // availability
@@ -132,30 +126,50 @@ class MainWindowController: NSWindowController {
         return true
     }
     
+    /// returns a custom sidebar configuration, if any
+    /// implemented as a seperate method so we can provide alternative ways to
+    /// specify the config
+    func getCustomSidebarConfig() -> [[String: String]] {
+        if #available(macOS 11.0, *) {
+            // enable custom sidebar items if 11.0 or later
+            // because SF Symbols only supported on 11.0 or later
+            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: String]] {
+                return sidebarConfig
+            }
+        }
+        // default (standard) sidebar
+        return [
+            ["title": "Software",
+             "icon": "AllItemsTemplate",
+             "page": MunkiURL.software.rawValue
+            ],
+            ["title": "Categories",
+             "icon": "CategoriesTemplate",
+             "page": MunkiURL.categories.rawValue
+            ],
+            ["title": "My Items",
+             "icon": "MyStuffTemplate",
+             "page": MunkiURL.myItems.rawValue
+            ],
+            ["title": "Updates",
+             "icon": "UpdatesTemplate",
+             "page": MunkiURL.updates.rawValue
+            ],
+        ]
+    }
+    
     func getSidebarItems() -> [SidebarItem] {
         // enable custom sidebar items if 11.0 or later
         // because SF Symbols only supported on 11.0 or later
         var sidebarItems: [SidebarItem] = []
-        if #available(macOS 11.0, *) {
-            if let configItems = pref("CustomSidebarItems") as? [[String: String]] {
-                for item in configItems {
-                    guard let title = item["title"],
-                          let icon = item["icon"],
-                          let page = item["page"] else {
-                        continue
-                    }
-                    sidebarItems.append(SidebarItem(title: title, icon: icon, page: page))
-                }
+        let configItems = getCustomSidebarConfig()
+        for item in configItems {
+            guard let title = item["title"],
+                  let icon = item["icon"],
+                  let page = item["page"] else {
+                continue
             }
-        }
-        // set to default if needed
-        if sidebarItems.isEmpty {
-            sidebarItems = [
-                SidebarItem(title: "Software", icon: "AllItemsTemplate", page: MunkiURL.software.rawValue),
-                SidebarItem(title: "Categories", icon: "CategoriesTemplate", page: MunkiURL.categories.rawValue),
-                SidebarItem(title: "My Items", icon: "MyStuffTemplate", page: MunkiURL.myItems.rawValue),
-                SidebarItem(title: "Updates", icon: "UpdatesTemplate", page: MunkiURL.updates.rawValue)
-            ]
+            sidebarItems.append(SidebarItem(title: title, icon: icon, page: page))
         }
         // update Navigate menu to reflect the sidebar contents
         updateNavigationMenu(sidebarItems)
@@ -176,10 +190,10 @@ class MainWindowController: NSWindowController {
     
     @objc func navigationMenuItemClicked(_ sender: NSMenuItem) {
         let itemTitle = sender.title
-        for item in sidebar_items {
+        for (index, item) in sidebar_items.enumerated() {
             if item.title == itemTitle {
                 clearSearchField()
-                highlightSidebarItem(itemTitle)
+                highlightSidebarItemByIndex(index)
                 loadSidebarItemPage(item.page)
                 break
             }
@@ -303,7 +317,7 @@ class MainWindowController: NSWindowController {
         }
         
         // disable all of the other controls
-        updatesOnlyWindowMode()
+        updatesOnlyWindowMode(hideSidebarRegardless: true)
         reloadPageMenuItem.isEnabled = false
         loadUpdatesPage(self)
         
@@ -346,14 +360,23 @@ class MainWindowController: NSWindowController {
         }
     }
     
-    func updatesOnlyWindowMode() {
+    func updatesOnlyWindowMode(hideSidebarRegardless: Bool = false) {
         findMenuItem.isHidden = true
-        hideMunkiNavigateMenuItems(true)
-        if sidebarItemsContainOnlyMunkiPages() {
+        if hideSidebarRegardless || sidebarItemsContainOnlyMunkiPages() {
+            hideMunkiNavigateMenuItems(true)
             // ensure sidebar is collapsed
             guard let firstSplitView = splitViewController.splitViewItems.first else { return }
             if !firstSplitView.animator().isCollapsed {
                 firstSplitView.animator().isCollapsed = true
+            }
+        } else {
+            // if there are non-munki:// items in the sidebar,
+            // make sure the sidebar is visbile
+            hideMunkiNavigateMenuItems(false)
+            // ensure sidebar is visible
+            guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+            if firstSplitView.animator().isCollapsed {
+                firstSplitView.animator().isCollapsed = false
             }
         }
         loadUpdatesPage(self)
@@ -369,10 +392,8 @@ class MainWindowController: NSWindowController {
         }
     }
     
-    func moveDirectlyToUpdatesPageIfNeeded() {
-        if getUpdateCount() > 0 || !getProblemItems().isEmpty {
-            loadUpdatesPage(self)
-        }
+    func shouldMoveToUpdatesPage() -> Bool {
+        return getUpdateCount() > 0 || !getProblemItems().isEmpty
     }
     
     func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() {
@@ -380,7 +401,9 @@ class MainWindowController: NSWindowController {
         // if updates available go right to update screen
         if optionalInstallsExist() {
             updatesAndOptionalWindowMode()
-            moveDirectlyToUpdatesPageIfNeeded()
+            if shouldMoveToUpdatesPage() {
+                loadUpdatesPage(self)
+            }
         } else {
             updatesOnlyWindowMode()
         }
@@ -389,20 +412,33 @@ class MainWindowController: NSWindowController {
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
         if optionalInstallsExist() {
-            loadAllSoftwarePage(self)
+            updatesAndOptionalWindowMode()
+            if shouldMoveToUpdatesPage() {
+                loadUpdatesPage(self)
+            } else {
+                loadAllSoftwarePage(self)
+            }
         } else {
-            loadUpdatesPage(self)
+            updatesOnlyWindowMode()
         }
-        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
         cached_self_service = SelfService()
     }
     
-    func highlightSidebarItem(_ nameToHighlight: String) {
+    /// Selects the sidebar item by index
+    func highlightSidebarItemByIndex(_ index: Int) {
+        sidebarList.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+    }
+    
+    /// Selects the sidebar item with a matching page URL
+    func highlightSidebarItemByPage(_ page: String) {
         for (index, item) in sidebar_items.enumerated() {
-            if nameToHighlight == item.title {
+            if page == item.page {
                 sidebarList.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+                return
             }
         }
+        // didn't find a matching item -- select nothing
+        sidebarList.deselectAll(self)
     }
     
     func clearSearchField() {
@@ -931,7 +967,7 @@ class MainWindowController: NSWindowController {
     
     func updatesSidebarItemView() -> MSCTableCellView? {
         for (i, item) in sidebar_items.enumerated() {
-            if item.page == "munki://updates" {
+            if munkiURL(from: item.page) == MunkiURL.updates.rawValue {
                 if let view = self.sidebarList.rowView(atRow: i, makeIfNecessary: false) {
                     return view.view(atColumn: 0) as? MSCTableCellView
                 }
@@ -1407,22 +1443,7 @@ class MainWindowController: NSWindowController {
         clearSearchField()
         load_page("updates.html")
     }
-    
-    func loadCustomPage(selected_item: Int) {
-        // Called by Navigate menu item'''
-        clearSearchField()
-        var page = "updates.html"
-        if let CustomSidebarItems = pref("CustomSidebarItems") as? Array<Dictionary<String, String>> {
-            // get the page for the selected item
-            let item = selected_item - navigateMenuStaticItemCount
-            if selected_item >= 0 {
-                if let link = CustomSidebarItems[item]["link"] {
-                    page = link
-                }
-            }
-        }
-        load_page(page)
-    }
+
     
     @IBAction func searchFilterChanged(_ sender: Any) {
         // User changed the search field
