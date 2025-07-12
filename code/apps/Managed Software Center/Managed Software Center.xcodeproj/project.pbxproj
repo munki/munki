@@ -20,6 +20,7 @@
 		849BF63A2E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */; };
 		849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */; };
 		849D46162E0907420054599E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 849D46152E0907420054599E /* AppIcon.icon */; };
+		84B8FAC32E22E05400ACB45B /* MunkiURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B8FAC22E22E05400ACB45B /* MunkiURL.swift */; };
 		C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
 		C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603D020D0A7FA00DEF9E4 /* SelfService.swift */; };
@@ -94,6 +95,7 @@
 		849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKNavigationDelegate.swift"; sourceTree = "<group>"; };
 		849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKScriptMessageHandler.swift"; sourceTree = "<group>"; };
 		849D46152E0907420054599E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		84B8FAC22E22E05400ACB45B /* MunkiURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiURL.swift; sourceTree = "<group>"; };
 		C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackgroundController.swift; sourceTree = "<group>"; };
 		C01603CE20CF8B6100DEF9E4 /* iconutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconutils.swift; sourceTree = "<group>"; };
 		C01603D020D0A7FA00DEF9E4 /* SelfService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfService.swift; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 				C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */,
 				56C33E802174D7A200D727DC /* MSCTableCellView.swift */,
 				C094C26B28B7E17800CFB0D8 /* osinstaller.swift */,
+				84B8FAC22E22E05400ACB45B /* MunkiURL.swift */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -494,6 +497,7 @@
 				C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */,
 				C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */,
 				849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */,
+				84B8FAC32E22E05400ACB45B /* MunkiURL.swift in Sources */,
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
 				849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */,
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
