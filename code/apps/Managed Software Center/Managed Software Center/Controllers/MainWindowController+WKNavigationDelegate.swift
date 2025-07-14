@@ -66,29 +66,53 @@ extension MainWindowController: WKNavigationDelegate {
         decisionHandler(.allow)
     }
     
+    /// Returns index of a sidebar item that has the given page. -1 if none
+    func sidebarHasItemWithURL(_ url: URL) -> Int {
+        for (index, item) in sidebar_items.enumerated() {
+            if item.page == url.absoluteString {
+                return index
+            }
+            let munkiURL = munkiURL(from: url.absoluteString)
+            if item.page == munkiURL {
+                return index
+            }
+        }
+        return -1
+    }
+    
     func webView(_ webView: WKWebView,
                  didStartProvisionalNavigation navigation: WKNavigation!) {
         // Animate progress spinner while we load a page and highlight the
         // proper toolbar button
         pageLoadProgress?.startAnimation(self)
-        if let main_url = webView.url {
-            let pagename = main_url.lastPathComponent
+        guard let main_url = webView.url else { return }
+        let pagename = main_url.lastPathComponent
+        if main_url.scheme == "file" {
             msc_debug_log("Requested pagename is \(pagename)")
-            if (pagename == "category-all.html" ||
-                pagename.hasPrefix("detail-") ||
-                pagename.hasPrefix("filter-") ||
-                pagename.hasPrefix("developer-")) {
-                highlightSidebarItem("Software")
-            } else if pagename == "categories.html" || pagename.hasPrefix("category-") {
-                highlightSidebarItem("Categories")
-            } else if pagename == "myitems.html" {
-                highlightSidebarItem("My Items")
-            } else if pagename == "updates.html" || pagename.hasPrefix("updatedetail-") {
-                highlightSidebarItem("Updates")
-            } else {
-                // no idea what type of item it is
-                highlightSidebarItem("")
-            }
+        } else {
+            msc_debug_log("Requested URL is \(main_url)")
+        }
+        // first try to find a matching sidebar item to highlight
+        let itemIndex = sidebarHasItemWithURL(main_url)
+        if itemIndex != -1 {
+            highlightSidebarItemByIndex(itemIndex)
+            return
+        }
+        // otherwise, attempt to figure out something relevant
+        if (pagename == "category-all.html" ||
+            pagename.hasPrefix("detail-") ||
+            pagename.hasPrefix("filter-") ||
+            pagename.hasPrefix("developer-")) {
+            highlightSidebarItemByPage(MunkiURL.software.rawValue)
+        } else if pagename == "categories.html" || pagename.hasPrefix("category-") {
+            highlightSidebarItemByPage(MunkiURL.categories.rawValue)
+        } else if pagename == "myitems.html" {
+            highlightSidebarItemByPage(MunkiURL.myItems.rawValue)
+        } else if pagename == "updates.html" || pagename.hasPrefix("updatedetail-") {
+            highlightSidebarItemByPage(MunkiURL.updates.rawValue)
+        } else {
+            // no idea what type of item it is, highlight nothing
+            highlightSidebarItemByPage("")
         }
     }
     
@@ -98,10 +122,8 @@ extension MainWindowController: WKNavigationDelegate {
         clearCache()
         let allowNavigateBack = webView.canGoBack
         let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
-        let onMainPage = (
-            ["category-all.html", "categories.html", "myitems.html", "updates.html"].contains(filename))
-        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onMainPage)
+        let onSidebarPage = page_url != nil ? sidebarHasItemWithURL(page_url!) != -1 : false
+        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onSidebarPage)
         if !navigateBackMenuItem.isEnabled {
             hideNavigationToolbarItem()
         } else {

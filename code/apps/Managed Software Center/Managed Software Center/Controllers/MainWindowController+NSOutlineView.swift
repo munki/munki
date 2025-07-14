@@ -54,6 +54,11 @@ extension MainWindowController: NSOutlineViewDelegate {
 
         let isSelected = (sidebarList.row(forItem: item) == sidebarList.selectedRow)
 
+        if let localized_title = sidebarItem.localized_title {
+            let availableLocales = localized_title.keys
+            // TODO: actually use the localized titles
+        }
+
         view.title.stringValue = sidebarItem.title.localized(withComment: "\(sidebarItem.title) label")
         view.title.textColor = isSelected ? .controlAccentColor : .labelColor
 
