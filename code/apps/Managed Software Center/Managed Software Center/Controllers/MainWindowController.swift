@@ -13,6 +13,7 @@ struct SidebarItem {
     let title: String
     let icon: String
     let page: String
+    let localized_title: [String: String]?
 }
 
 class MainWindowController: NSWindowController {
@@ -129,11 +130,11 @@ class MainWindowController: NSWindowController {
     /// returns a custom sidebar configuration, if any
     /// implemented as a seperate method so we can provide alternative ways to
     /// specify the config
-    func getCustomSidebarConfig() -> [[String: String]] {
+    func getCustomSidebarConfig() -> [[String: Any]] {
         if #available(macOS 11.0, *) {
             // enable custom sidebar items if 11.0 or later
             // because SF Symbols only supported on 11.0 or later
-            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: String]] {
+            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: Any]] {
                 return sidebarConfig
             }
         }
@@ -164,12 +165,18 @@ class MainWindowController: NSWindowController {
         var sidebarItems: [SidebarItem] = []
         let configItems = getCustomSidebarConfig()
         for item in configItems {
-            guard let title = item["title"],
-                  let icon = item["icon"],
-                  let page = item["page"] else {
+            guard let title = item["title"] as? String,
+                  let icon = item["icon"] as? String,
+                  let page = item["page"] as? String else {
                 continue
             }
-            sidebarItems.append(SidebarItem(title: title, icon: icon, page: page))
+            let localized_title = item["localized_title"] as? [String: String]
+            sidebarItems.append(SidebarItem(
+                title: title,
+                icon: icon,
+                page: page,
+                localized_title: localized_title
+            ))
         }
         // update Navigate menu to reflect the sidebar contents
         updateNavigationMenu(sidebarItems)
