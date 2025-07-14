@@ -23,7 +23,6 @@ enum SidebarPage: String {
 }
 
 class MainWindowController: NSWindowController {
-    
     var mainWindowConfigurationComplete = false
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
@@ -43,7 +42,6 @@ class MainWindowController: NSWindowController {
     var forceFrontmost = false
     
     // Cocoa UI binding properties
-    
     @IBOutlet weak var sidebarViewController: SidebarViewController!
     @IBOutlet weak var mainContentViewController: MainContentViewController!
     @IBOutlet weak var toolbar: NSToolbar!
@@ -124,14 +122,29 @@ class MainWindowController: NSWindowController {
         // because SF Symbols only supported on 11.0 or later
         var sidebarItems: [SidebarItem] = []
         if #available(macOS 11.0, *) {
-            if let configItems = pref("CustomSidebarItems") as? [[String: String]] {
+            if let configItems = pref("CustomSidebarItems") as? [[String: Any]] {
                 for item in configItems {
-                    guard let title = item["title"],
-                          let icon = item["icon"],
-                          let page = item["page"] else {
+                    guard let title = item["title"] as? String,
+                          let icon = item["icon"] as? String,
+                          let page = item["page"] as? String else {
                         continue
                     }
-                    sidebarItems.append(SidebarItem(title: title, icon: icon, page: page))
+
+                    var finalTitle = title
+                    var finalPage = page
+                    if let localizedStrings = item["localized_strings"] as? [String: Any],
+                       let langCode = Locale.current.languageCode {
+                        if let dict = localizedStrings[langCode] as? [String: String] {
+                            if let localizedTitle = dict["title"] {
+                                finalTitle = localizedTitle
+                            }
+                            if let localizedPage = dict["page"] {
+                                finalPage = localizedPage
+                            }
+                        }
+                    }
+
+                    sidebarItems.append(SidebarItem(title: finalTitle, icon: icon, page: finalPage))
                 }
             }
         }
