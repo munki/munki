@@ -67,10 +67,13 @@ extension MainWindowController: WKNavigationDelegate {
     }
     
     /// Returns index of a sidebar item that has the given page. -1 if none
-    func sidebarHasItemWithPage(_ page: String) -> Int {
-        let testPageURL = munkiURL(from: page)
+    func sidebarHasItemWithURL(_ url: URL) -> Int {
         for (index, item) in sidebar_items.enumerated() {
-            if munkiURL(from: item.page) == testPageURL {
+            if item.page == url.absoluteString {
+                return index
+            }
+            let munkiURL = munkiURL(from: url.absoluteString)
+            if item.page == munkiURL {
                 return index
             }
         }
@@ -84,9 +87,13 @@ extension MainWindowController: WKNavigationDelegate {
         pageLoadProgress?.startAnimation(self)
         guard let main_url = webView.url else { return }
         let pagename = main_url.lastPathComponent
-        msc_debug_log("Requested pagename is \(pagename)")
+        if main_url.scheme == "file" {
+            msc_debug_log("Requested pagename is \(pagename)")
+        } else {
+            msc_debug_log("Requested URL is \(main_url)")
+        }
         // first try to find a matching sidebar item to highlight
-        let itemIndex = sidebarHasItemWithPage(pagename)
+        let itemIndex = sidebarHasItemWithURL(main_url)
         if itemIndex != -1 {
             highlightSidebarItemByIndex(itemIndex)
             return
@@ -115,10 +122,8 @@ extension MainWindowController: WKNavigationDelegate {
         clearCache()
         let allowNavigateBack = webView.canGoBack
         let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
-        let onMainPage = (
-            ["category-all.html", "categories.html", "myitems.html", "updates.html"].contains(filename))
-        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onMainPage)
+        let onSidebarPage = page_url != nil ? sidebarHasItemWithURL(page_url!) != -1 : false
+        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onSidebarPage)
         if !navigateBackMenuItem.isEnabled {
             hideNavigationToolbarItem()
         } else {
