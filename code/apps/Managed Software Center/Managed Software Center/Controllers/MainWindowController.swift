@@ -156,6 +156,31 @@ class MainWindowController: NSWindowController {
         ]
     }
     
+    /// Given a set of language identifiers, return the preferred identifier based on the user's current preferred languages
+    func preferredLocalizationIdentifier(from identifiers: [String]) -> String? {
+        let preferredLanguages = NSLocale.preferredLanguages
+        for language in preferredLanguages {
+            // just do a simple match
+            if identifiers.contains(language) {
+                return language
+            } else if let languageWithoutRegionCode = language.split(separator: "-").first {
+                // now look for matches without region code
+                if identifiers.contains(String(languageWithoutRegionCode)) {
+                    return String(languageWithoutRegionCode)
+                } else {
+                    // finally, if needed, match items with same language but different region
+                    for identifier in identifiers {
+                        if identifier.hasPrefix(String(languageWithoutRegionCode) + "-") {
+                            return identifier
+                        }
+                    }
+                }
+            }
+        }
+        // didn't find any matches at all
+        return nil
+    }
+    
     func getSidebarItems() -> [SidebarItem] {
         // enable custom sidebar items if 11.0 or later
         // because SF Symbols only supported on 11.0 or later
@@ -170,18 +195,17 @@ class MainWindowController: NSWindowController {
             
             var finalTitle = title
             var finalPage = page
-            if let localizedStrings = item["localized_strings"] as? [String: Any],
-               let langCode = Locale.current.languageCode {
-                if let dict = localizedStrings[langCode] as? [String: String] {
-                    if let localizedTitle = dict["title"] {
-                        finalTitle = localizedTitle
-                    }
-                    if let localizedPage = dict["page"] {
-                        finalPage = localizedPage
-                    }
+            if let localizedStrings = item["localized_strings"] as? [String: Any] {
+                
+                let availableLanguages = Array(localizedStrings.keys)
+                if let preferredLanguage = preferredLocalizationIdentifier(from: availableLanguages),
+                   let languageDict = localizedStrings[preferredLanguage] as? [String: String]
+                {
+                    finalTitle = languageDict["title"] ?? title
+                    finalPage = languageDict["page"] ?? page
                 }
             }
-
+            
             sidebarItems.append(SidebarItem(
                 title: finalTitle,
                 icon: icon,
