@@ -13,11 +13,9 @@ struct SidebarItem {
     let title: String
     let icon: String
     let page: String
-    let localized_title: [String: String]?
 }
 
 class MainWindowController: NSWindowController {
-    
     var mainWindowConfigurationComplete = false
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
@@ -37,7 +35,6 @@ class MainWindowController: NSWindowController {
     var forceFrontmost = false
     
     // Cocoa UI binding properties
-    
     @IBOutlet weak var sidebarViewController: SidebarViewController!
     @IBOutlet weak var mainContentViewController: MainContentViewController!
     @IBOutlet weak var toolbar: NSToolbar!
@@ -170,12 +167,25 @@ class MainWindowController: NSWindowController {
                   let page = item["page"] as? String else {
                 continue
             }
-            let localized_title = item["localized_title"] as? [String: String]
+            
+            var finalTitle = title
+            var finalPage = page
+            if let localizedStrings = item["localized_strings"] as? [String: Any],
+               let langCode = Locale.current.languageCode {
+                if let dict = localizedStrings[langCode] as? [String: String] {
+                    if let localizedTitle = dict["title"] {
+                        finalTitle = localizedTitle
+                    }
+                    if let localizedPage = dict["page"] {
+                        finalPage = localizedPage
+                    }
+                }
+            }
+
             sidebarItems.append(SidebarItem(
-                title: title,
+                title: finalTitle,
                 icon: icon,
-                page: page,
-                localized_title: localized_title
+                page: finalPage
             ))
         }
         // update Navigate menu to reflect the sidebar contents
