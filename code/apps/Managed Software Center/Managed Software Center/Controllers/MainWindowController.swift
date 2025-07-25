@@ -124,15 +124,29 @@ class MainWindowController: NSWindowController {
         return true
     }
     
-    /// returns a custom sidebar configuration, if any
-    /// implemented as a seperate method so we can provide alternative ways to
-    /// specify the config
+    /// Returns a custom sidebar configuration, if any
+    /// First attempts to read the config from preferences
+    /// Then attempts to read the config from custom client resources
+    /// Falls back to the default.
     func getCustomSidebarConfig() -> [[String: Any]] {
         if #available(macOS 11.0, *) {
             // enable custom sidebar items if 11.0 or later
             // because SF Symbols only supported on 11.0 or later
+            //
+            // try preferences (includes managed prefs)
             if let sidebarConfig = pref("CustomSidebarItems") as? [[String: Any]] {
                 return sidebarConfig
+            }
+            // try custom client resources
+            let customSidebarConfigPath = NSString.path(withComponents: [html_dir(), "custom/sidebar.plist"])
+            if FileManager.default.fileExists(atPath: customSidebarConfigPath) {
+                if let plist = try? readPlist(customSidebarConfigPath) as? [String: Any] {
+                    if let sidebarConfig = plist["CustomSidebarItems"] as? [[String: Any]] {
+                        return sidebarConfig
+                    }
+                } else {
+                    // TODO: log error reading plist
+                }
             }
         }
         // default (standard) sidebar
