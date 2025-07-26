@@ -199,7 +199,7 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     }
 
     var arguments = ["-verboseR", "-pkg", resolvedPkgPath, "-target", "/"]
-    if let choicesXML = options["installer_choices_xml"] as? PlistDict,
+    if let choicesXML = options["installer_choices_xml"] as? [PlistDict],
        let tempDir = TempDir.shared.path
     {
         let choicesXMLPath = (tempDir as NSString).appendingPathComponent("choices.xml")
