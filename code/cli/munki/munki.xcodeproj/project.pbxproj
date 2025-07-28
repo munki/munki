@@ -404,6 +404,9 @@
 		C0BF62EA2CEC11EB0030885D /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
 		C0C4091D2D86549600704005 /* keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C4091C2D86548800704005 /* keychain.swift */; };
 		C0C4091E2D86549600704005 /* keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C4091C2D86548800704005 /* keychain.swift */; };
+		C0C7F1A42E37A31B0073E790 /* PosixSpawn.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F1A32E37A31B0073E790 /* PosixSpawn.swift */; };
+		C0C7F1A52E37A31B0073E790 /* PosixSpawn.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F1A32E37A31B0073E790 /* PosixSpawn.swift */; };
+		C0C7F1A82E37A39B0073E790 /* PosixSpawn.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F1A32E37A31B0073E790 /* PosixSpawn.swift */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
 		C0D00FA62C45804A0021DA9C /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -752,6 +755,7 @@
 		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0BF62CF2CEC00E90030885D /* repoclean.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoclean.swift; sourceTree = "<group>"; };
 		C0C4091C2D86548800704005 /* keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keychain.swift; sourceTree = "<group>"; };
+		C0C7F1A32E37A31B0073E790 /* PosixSpawn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosixSpawn.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
@@ -1181,6 +1185,7 @@
 				C06C21442C8F8C390023E9D9 /* appleupdates.swift */,
 				C0B7FA002D288C2700CC14F0 /* authrestart.swift */,
 				C005199A2D2A28510060DDB6 /* authrestartclient.swift */,
+				C0C7F1A32E37A31B0073E790 /* PosixSpawn.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1854,6 +1859,7 @@
 				C0684DCB2DB3F0780091E774 /* SignalHandler.swift in Sources */,
 				C030A9D02C41F798007F0B34 /* munkiimport.swift in Sources */,
 				C030A9D92C424057007F0B34 /* prefs.swift in Sources */,
+				C0C7F1A82E37A39B0073E790 /* PosixSpawn.swift in Sources */,
 				C0684DCC2DB3F0A00091E774 /* UNIXProcessInfo.swift in Sources */,
 				C058EF222DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C030A9E32C424158007F0B34 /* plistutils.swift in Sources */,
@@ -2028,6 +2034,7 @@
 				C058EF2B2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C0684E722DC7BE690091E774 /* compare.swift in Sources */,
 				C0684E632DC737430091E774 /* versionutils.swift in Sources */,
+				C0C7F1A52E37A31B0073E790 /* PosixSpawn.swift in Sources */,
 				C0684E972DC7E43E0091E774 /* Predicates.m in Sources */,
 				C0684E982DC7E52C0091E774 /* dmg.swift in Sources */,
 				C0684E7D2DC7C3710091E774 /* installationstate.swift in Sources */,
@@ -2207,6 +2214,7 @@
 				C01364402C2DCA5C008DB215 /* admincommon.swift in Sources */,
 				C008A0512D18BB880073ADBA /* launchd.swift in Sources */,
 				C07AED642C66CFBD00DE6119 /* appinventory.swift in Sources */,
+				C0C7F1A42E37A31B0073E790 /* PosixSpawn.swift in Sources */,
 				C01364592C3265D6008DB215 /* display.swift in Sources */,
 				C0D9C2A72C62C12E0019A067 /* munkistatus.swift in Sources */,
 				C0209B8A2C63DDF1007664A0 /* info.swift in Sources */,
