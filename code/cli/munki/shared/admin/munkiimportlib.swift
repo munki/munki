@@ -693,16 +693,11 @@ func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
         if editor.hasSuffix(".app") {
             cmd = "/usr/bin/open"
             args = ["-a", editor, filePath]
-        } else {
-            cmd = editor
-            args = [filePath]
-        }
-        let result = runCLI(cmd, arguments: args)
-        if result.exitcode != 0 {
-            printStderr("Problem running editor \(editor): \(result.error)")
-            return pkginfo
-        }
-        if editor.hasSuffix(".app") {
+            let result = runCLI(cmd, arguments: args)
+            if result.exitcode != 0 {
+                printStderr("Problem running editor \(editor): \(result.error)")
+                return pkginfo
+            }
             // wait for editor to exit
             var response: String? = "no"
             while let answer = response,
@@ -710,6 +705,13 @@ func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
             {
                 print("Pkginfo editing complete? [y/N]: ", terminator: "")
                 response = readLine()
+            }
+        } else {
+            do {
+                try PosixProcess(editor, filePath).spawn()
+            } catch {
+                printStderr(error.localizedDescription)
+                return pkginfo
             }
         }
         // read edited pkginfo
