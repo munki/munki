@@ -404,6 +404,11 @@
 		C0BF62EA2CEC11EB0030885D /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
 		C0C4091D2D86549600704005 /* keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C4091C2D86548800704005 /* keychain.swift */; };
 		C0C4091E2D86549600704005 /* keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C4091C2D86548800704005 /* keychain.swift */; };
+		C0C7F12C2E3722250073E790 /* PosixProcesss.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F12B2E3722250073E790 /* PosixProcesss.swift */; };
+		C0C7F12D2E3722250073E790 /* PosixProcesss.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F12B2E3722250073E790 /* PosixProcesss.swift */; };
+		C0C7F12E2E3722250073E790 /* PosixProcesss.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F12B2E3722250073E790 /* PosixProcesss.swift */; };
+		C0C7F12F2E3722250073E790 /* PosixProcesss.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F12B2E3722250073E790 /* PosixProcesss.swift */; };
+		C0C7F1302E3722250073E790 /* PosixProcesss.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C7F12B2E3722250073E790 /* PosixProcesss.swift */; };
 		C0D00FA12C457E2B0021DA9C /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C0D00FA32C457E5F0021DA9C /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
 		C0D00FA62C45804A0021DA9C /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
@@ -752,6 +757,7 @@
 		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0BF62CF2CEC00E90030885D /* repoclean.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoclean.swift; sourceTree = "<group>"; };
 		C0C4091C2D86548800704005 /* keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keychain.swift; sourceTree = "<group>"; };
+		C0C7F12B2E3722250073E790 /* PosixProcesss.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosixProcesss.swift; sourceTree = "<group>"; };
 		C0D00FA72C45814F0021DA9C /* repoutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = repoutils.swift; sourceTree = "<group>"; };
 		C0D00FAF2C458EAA0021DA9C /* version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		C0D00FB52C45BCB90021DA9C /* errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = errors.swift; sourceTree = "<group>"; };
@@ -1181,6 +1187,7 @@
 				C06C21442C8F8C390023E9D9 /* appleupdates.swift */,
 				C0B7FA002D288C2700CC14F0 /* authrestart.swift */,
 				C005199A2D2A28510060DDB6 /* authrestartclient.swift */,
+				C0C7F12B2E3722250073E790 /* PosixProcesss.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1849,6 +1856,7 @@
 				C030A9DE2C424083007F0B34 /* munkiimportlib.swift in Sources */,
 				C0D66AD52D2DBBED009EF807 /* dateutils.swift in Sources */,
 				C0D00FB42C458EAA0021DA9C /* version.swift in Sources */,
+				C0C7F1302E3722250073E790 /* PosixProcesss.swift in Sources */,
 				C030A9E42C42415C007F0B34 /* dmgutils.swift in Sources */,
 				C030A9EA2C42417D007F0B34 /* iconutils.swift in Sources */,
 				C0684DCB2DB3F0780091E774 /* SignalHandler.swift in Sources */,
@@ -1937,6 +1945,7 @@
 				C0684DEB2DBFDF290091E774 /* errors.swift in Sources */,
 				C0684E492DC586660091E774 /* osinstallerinfo.swift in Sources */,
 				C0684DE52DBFDD930091E774 /* sslerrors.swift in Sources */,
+				C0C7F12C2E3722250073E790 /* PosixProcesss.swift in Sources */,
 				C0684DF22DBFE1E30091E774 /* dateutils.swift in Sources */,
 				C0684DE62DBFDD930091E774 /* clientcerts.swift in Sources */,
 				C0684DDB2DBFDCE70091E774 /* prefs.swift in Sources */,
@@ -2017,6 +2026,7 @@
 				C0684E852DC7C6220091E774 /* download.swift in Sources */,
 				C0684E942DC7E3BC0091E774 /* dmgutils.swift in Sources */,
 				C0684E992DC7E5440091E774 /* unusedsoftware.swift in Sources */,
+				C0C7F12F2E3722250073E790 /* PosixProcesss.swift in Sources */,
 				C0684E9D2DC7E58D0091E774 /* sqlite3.swift in Sources */,
 				C0684E9C2DC7E5810091E774 /* appusage.swift in Sources */,
 				C0684E762DC7BEB10091E774 /* reports.swift in Sources */,
@@ -2089,6 +2099,7 @@
 				C0684E4D2DC586660091E774 /* osinstallerinfo.swift in Sources */,
 				C008A0592D25B21A0073ADBA /* stderrout.swift in Sources */,
 				C043ED1F2C4822C70047C025 /* sqlite3.swift in Sources */,
+				C0C7F12E2E3722250073E790 /* PosixProcesss.swift in Sources */,
 				C0011CB52C7EC5B60004ED70 /* msuutils.swift in Sources */,
 				C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */,
 				C06C21452C8F8C390023E9D9 /* appleupdates.swift in Sources */,
@@ -2177,6 +2188,7 @@
 				C07A6FBF2C2B5AF400090743 /* constants.swift in Sources */,
 				C0C4091E2D86549600704005 /* keychain.swift in Sources */,
 				C030A9902C39C135007F0B34 /* munkihash.swift in Sources */,
+				C0C7F12D2E3722250073E790 /* PosixProcesss.swift in Sources */,
 				C07074E02C33B9A000B86310 /* reports.swift in Sources */,
 				C07AED6C2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07074E62C34910F00B86310 /* osutils.swift in Sources */,
