@@ -708,7 +708,7 @@ func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
             }
         } else {
             do {
-                try PosixProcess(editor, filePath).spawn()
+                try posixSpawn(editor, filePath)
             } catch {
                 printStderr(error.localizedDescription)
                 return pkginfo
