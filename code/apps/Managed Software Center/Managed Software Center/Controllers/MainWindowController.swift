@@ -945,6 +945,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
 
         guard requestComponents.starts(with: baseComponents) else {
             msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
+            // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
             let errorURL = baseURL.appendingPathComponent("error.html")
             webView.load(URLRequest(url: errorURL))
             return
