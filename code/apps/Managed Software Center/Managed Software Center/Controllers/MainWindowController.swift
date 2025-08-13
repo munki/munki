@@ -1110,17 +1110,40 @@ class MainWindowController: NSWindowController {
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
+        var request: URLRequest
         
-        let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
-        var request = URLRequest(url: URL(fileURLWithPath: html_file),
-                                 cachePolicy: .reloadIgnoringLocalCacheData,
-                                 timeoutInterval: TimeInterval(10.0))
-        if url_fragment.starts(with: "http") {
-            request = URLRequest(url: URL(string: url_fragment)!,
-                                 cachePolicy: .reloadIgnoringLocalCacheData,
-                                 timeoutInterval: TimeInterval(10.0))
+        if let components = URLComponents(string: url_fragment),
+           ["https", "http"].contains(components.scheme)
+        {
+            // url_fragment is http:// or https:// URL
+            request = URLRequest(
+                url: URL(string: url_fragment)!,
+                cachePolicy: .reloadIgnoringLocalCacheData,
+                timeoutInterval: TimeInterval(10.0)
+            )
+        } else {
+            // url_fragment is just a path (or filename)
+            let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
+            let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
+            
+            let baseComponents = baseURL.pathComponents
+            let requestComponents = requestURL.pathComponents
+            
+            guard requestComponents.starts(with: baseComponents) else {
+                msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
+                // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
+                let errorURL = baseURL.appendingPathComponent("error.html")
+                webView.load(URLRequest(url: errorURL))
+                return
+            }
+            
+            request = URLRequest(
+                url: requestURL,
+                cachePolicy: .reloadIgnoringLocalCacheData,
+                timeoutInterval: 10.0
+            )
         }
-        
+
         webView.load(request)
         
         if url_fragment == "updates.html" {
