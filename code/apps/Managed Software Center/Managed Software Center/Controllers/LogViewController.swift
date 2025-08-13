@@ -81,6 +81,8 @@ class LogViewController: NSViewController {
     
     var updateTimer: Timer? = nil
     var fileHandle: FileHandle? = nil
+    var logFilePath = ""
+    var inode: Int = 0
     var logFileData = LogViewDataSource()
 
     override func viewDidLoad() {
@@ -107,12 +109,25 @@ class LogViewController: NSViewController {
     func initializeView() {
         let logWindow = view.window!
         let logFileURL = NSURL.fileURL(withPath: logFilePref())
+        logFilePath = logFileURL.path
         pathControl.url = logFileURL
         logWindow.title = logFileURL.lastPathComponent
         watchLogFile(logFileURL)
         logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }
     
+    func inodeChanged() -> Bool {
+        if inode == 0 {
+            return false
+        }
+        guard let newInode = try? FileManager.default.attributesOfItem(atPath: pathControl.url!.path)[.systemFileNumber] as? Int else { return false }
+        if inode != newInode {
+            inode = newInode
+            return true
+        }
+        return false
+    }
+
     func watchLogFile(_ logFileURL: URL) {
         // Display and continuously update a log file in the main window.
         stopWatching()
@@ -120,7 +135,8 @@ class LogViewController: NSViewController {
         logView.dataSource = logFileData
         logView.reloadData()
         do {
-            try fileHandle = FileHandle(forReadingFrom: logFileURL)
+            inode = (try? FileManager.default.attributesOfItem(atPath: logFileURL.path)[.systemFileNumber] as? Int) ?? 0
+            fileHandle = try FileHandle(forReadingFrom: logFileURL)
             refreshLog()
             // Kick off a timer that updates the log view periodically.
             updateTimer = Timer.scheduledTimer(timeInterval: 0.25,
@@ -147,31 +163,37 @@ class LogViewController: NSViewController {
     
     @objc func refreshLog() {
         // Check for new available data, read it, and scroll to the bottom.
-        if fileHandle != nil {
-            let data = fileHandle!.availableData
-            if !(data.isEmpty) {
-                var lastLineIsPartial = false
-                let uString = NSString(data: data, encoding: String.Encoding.utf8.rawValue)
-                var lines = uString!.components(separatedBy: "\n")
-                if lines.last!.isEmpty {
-                    // means text data ended with a newline character and therefore we have a complete line
-                    // at the end. Don't add the empty line to the data array.
-                    lines.removeLast()
-                } else {
-                    // text data did not end with a newline character; our last line is partial.
-                    lastLineIsPartial = true
-                }
-                for line in lines {
-                    logFileData.addLine(line)
-                }
-                // if the data ends with a \n the last line is not partial
-                logFileData.lastLineIsPartial = lastLineIsPartial
-                logView.reloadData()
-                let lineCount = logFileData.filteredData.count
-                if lineCount > 0 {
-                    logView.scrollRowToVisible(lineCount - 1)
-                }
+        if fileHandle == nil { return }
+        let data = fileHandle!.availableData
+        if data.isEmpty {
+            // maybe the file was rotated; check if the inode has changed
+            if inodeChanged() {
+                fileHandle!.closeFile()
+                fileHandle = FileHandle(forReadingAtPath: logFilePath)
             }
+            return
+        }
+
+        var lastLineIsPartial = false
+        let uString = NSString(data: data, encoding: String.Encoding.utf8.rawValue)
+        var lines = uString!.components(separatedBy: "\n")
+        if lines.last!.isEmpty {
+            // means text data ended with a newline character and therefore we have a complete line
+            // at the end. Don't add the empty line to the data array.
+            lines.removeLast()
+        } else {
+            // text data did not end with a newline character; our last line is partial.
+            lastLineIsPartial = true
+        }
+        for line in lines {
+            logFileData.addLine(line)
+        }
+        // if the data ends with a \n the last line is not partial
+        logFileData.lastLineIsPartial = lastLineIsPartial
+        logView.reloadData()
+        let lineCount = logFileData.filteredData.count
+        if lineCount > 0 {
+            logView.scrollRowToVisible(lineCount - 1)
         }
     }
     
