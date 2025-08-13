@@ -922,12 +922,28 @@ class MainWindowController: NSWindowController {
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
+
+        let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
+        let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
         
-        let html_file = NSString.path(withComponents: [htmlDir, url_fragment])
-        let request = URLRequest(url: URL(fileURLWithPath: html_file),
-                                 cachePolicy: .reloadIgnoringLocalCacheData,
-                                 timeoutInterval: TimeInterval(10.0))
+        let baseComponents = baseURL.pathComponents
+        let requestComponents = requestURL.pathComponents
+
+        guard requestComponents.starts(with: baseComponents) else {
+            msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
+            let errorURL = baseURL.appendingPathComponent("error.html")
+            webView.load(URLRequest(url: errorURL))
+            return
+        }
+        
+        let request = URLRequest(
+            url: requestURL,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 10.0
+        )
+        
         webView.load(request)
+        
         if url_fragment == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
