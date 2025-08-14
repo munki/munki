@@ -511,6 +511,7 @@ class MainWindowController: NSWindowController {
                 replacementWebView.setValue(false, forKey: "drawsBackground")
             }
             replacementWebView.translatesAutoresizingMaskIntoConstraints = false
+            /*
             // TODO: remove this when Xcode 26 ships and we require it to build
             // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
             // and there's no other straightforward way to do conditional compliation based on SDK
@@ -536,9 +537,10 @@ class MainWindowController: NSWindowController {
                 superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
             }
             #else
+            */
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
-            #endif
+            //#endif
             webView = replacementWebView
             if #available(macOS 11.0, *) {
                 let safeGuide = superview.safeAreaLayoutGuide
