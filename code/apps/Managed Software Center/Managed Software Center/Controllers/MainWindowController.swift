@@ -753,9 +753,7 @@ class MainWindowController: NSWindowController {
             // this is a bit of a hack since awakeFromNib gets called several times
             // but we only want this part of the config to run once
             mainWindowConfigurationComplete = true
-            print("Before setupSplitView window frame: \(String(describing: window?.frame))")
             setupSplitView()
-            print("After setupSplitView window frame: \(String(describing: window?.frame))")
             insertWebView()
             setNoPageCache()
             alert_controller = MSCAlertController()
