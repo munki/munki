@@ -352,12 +352,28 @@ def getiteminfo(itempath):
 
     elif (os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or
           os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist'))):
+        # Extracts the same metadata as applications
         infodict['type'] = 'bundle'
         infodict['path'] = itempath
         plist = pkgutils.getBundleInfo(itempath)
-        for key in ['CFBundleShortVersionString', 'CFBundleVersion']:
+        # Extract the same keys as applications
+        for key in ['CFBundleName', 'CFBundleIdentifier',
+                    'CFBundleShortVersionString', 'CFBundleVersion']:
             if key in plist:
                 infodict[key] = plist[key]
+        # Also extract minimum OS version info like applications
+        if 'LSMinimumSystemVersion' in plist:
+            infodict['minosversion'] = plist['LSMinimumSystemVersion']
+        elif 'LSMinimumSystemVersionByArchitecture' in plist:
+            # just grab the highest version if more than one is listed
+            versions = [item[1] for item in
+                        plist['LSMinimumSystemVersionByArchitecture'].items()]
+            highest_version = str(max([pkgutils.MunkiLooseVersion(version)
+                                       for version in versions]))
+            infodict['minosversion'] = highest_version
+        elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
+            infodict['minosversion'] = \
+                plist['SystemVersionCheck:MinimumSystemVersion']
 
     elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
@@ -388,7 +404,6 @@ def getiteminfo(itempath):
         if os.path.isfile(itempath):
             infodict['md5checksum'] = munkihash.getmd5hash(itempath)
     return infodict
-
 
 def makepkginfo(installeritem, options):
     '''Return a pkginfo dictionary for item'''
