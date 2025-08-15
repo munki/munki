@@ -68,8 +68,12 @@ func createPkgInfoFromPkg(_ pkgpath: String,
 /// directory and gets additional metadata for later comparison.
 func createInstallsItem(_ itempath: String) -> PlistDict {
     var info = PlistDict()
-    if isApplication(itempath) {
-        info["type"] = "application"
+    if let plist = getBundleInfo(itempath) {
+        if isApplication(itempath) {
+            info["type"] = "application"
+        } else {
+            info["type"] = "bundle"
+        }
         if let plist = getBundleInfo(itempath) {
             for key in ["CFBundleName", "CFBundleIdentifier",
                         "CFBundleShortVersionString", "CFBundleVersion"]
@@ -89,15 +93,6 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
                 }
             } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
                 info["minosversion"] = minSysVers
-            }
-        }
-    } else if let plist = getBundleInfo(itempath) {
-        // if we can find bundle info and we're not an app
-        // we must be a bundle
-        info["type"] = "bundle"
-        for key in ["CFBundleShortVersionString", "CFBundleVersion"] {
-            if let value = plist[key] as? String {
-                info[key] = value
             }
         }
     } else if let plist = try? readPlist(fromFile: itempath) as? PlistDict {
