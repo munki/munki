@@ -329,32 +329,14 @@ def getiteminfo(itempath):
     directory and gets additional metadata for later comparison.
     """
     infodict = {}
-    if pkgutils.isApplication(itempath):
-        infodict['type'] = 'application'
-        infodict['path'] = itempath
-        plist = pkgutils.getBundleInfo(itempath)
-        for key in ['CFBundleName', 'CFBundleIdentifier',
-                    'CFBundleShortVersionString', 'CFBundleVersion']:
-            if key in plist:
-                infodict[key] = plist[key]
-        if 'LSMinimumSystemVersion' in plist:
-            infodict['minosversion'] = plist['LSMinimumSystemVersion']
-        elif 'LSMinimumSystemVersionByArchitecture' in plist:
-            # just grab the highest version if more than one is listed
-            versions = [item[1] for item in
-                        plist['LSMinimumSystemVersionByArchitecture'].items()]
-            highest_version = str(max([pkgutils.MunkiLooseVersion(version)
-                                       for version in versions]))
-            infodict['minosversion'] = highest_version
-        elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
-            infodict['minosversion'] = \
-                plist['SystemVersionCheck:MinimumSystemVersion']
-
-    elif (os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or
+    if (os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or
           os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist'))):
-        # Extracts the same metadata as applications
-        infodict['type'] = 'bundle'
-        infodict['path'] = itempath
+        if pkgutils.isApplication(itempath):
+            infodict['type'] = 'application'
+            infodict['path'] = itempath
+        else:
+            infodict['type'] = 'bundle'
+            infodict['path'] = itempath
         plist = pkgutils.getBundleInfo(itempath)
         # Extract the same keys as applications
         for key in ['CFBundleName', 'CFBundleIdentifier',
