@@ -329,14 +329,21 @@ def getiteminfo(itempath):
     directory and gets additional metadata for later comparison.
     """
     infodict = {}
-    if pkgutils.isApplication(itempath):
-        infodict['type'] = 'application'
-        infodict['path'] = itempath
+    if (os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or
+          os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist'))):
+        if pkgutils.isApplication(itempath):
+            infodict['type'] = 'application'
+            infodict['path'] = itempath
+        else:
+            infodict['type'] = 'bundle'
+            infodict['path'] = itempath
         plist = pkgutils.getBundleInfo(itempath)
+        # Extract the same keys as applications
         for key in ['CFBundleName', 'CFBundleIdentifier',
                     'CFBundleShortVersionString', 'CFBundleVersion']:
             if key in plist:
                 infodict[key] = plist[key]
+        # Also extract minimum OS version info like applications
         if 'LSMinimumSystemVersion' in plist:
             infodict['minosversion'] = plist['LSMinimumSystemVersion']
         elif 'LSMinimumSystemVersionByArchitecture' in plist:
@@ -349,15 +356,6 @@ def getiteminfo(itempath):
         elif 'SystemVersionCheck:MinimumSystemVersion' in plist:
             infodict['minosversion'] = \
                 plist['SystemVersionCheck:MinimumSystemVersion']
-
-    elif (os.path.exists(os.path.join(itempath, 'Contents', 'Info.plist')) or
-          os.path.exists(os.path.join(itempath, 'Resources', 'Info.plist'))):
-        infodict['type'] = 'bundle'
-        infodict['path'] = itempath
-        plist = pkgutils.getBundleInfo(itempath)
-        for key in ['CFBundleShortVersionString', 'CFBundleVersion']:
-            if key in plist:
-                infodict[key] = plist[key]
 
     elif itempath.endswith("Info.plist") or itempath.endswith("version.plist"):
         infodict['type'] = 'plist'
@@ -388,7 +386,6 @@ def getiteminfo(itempath):
         if os.path.isfile(itempath):
             infodict['md5checksum'] = munkihash.getmd5hash(itempath)
     return infodict
-
 
 def makepkginfo(installeritem, options):
     '''Return a pkginfo dictionary for item'''
