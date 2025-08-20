@@ -269,10 +269,10 @@ def download_icons(item_list):
                 return
         if server_icon_hash != local_hash:
             # hashes don't match, so download the icon
-            if icon_hashes and icon_name not in icon_hashes:
-                # if we have a list of icon hashes, and the icon name is not
-                # in that list, then there's no point in attempting to
-                # download this icon
+            if not server_icon_hash:
+                # The icon hash must be in the ICON_HASHES_PLIST_NAME file 
+                # or the pkginfo itself. If it is not in either of these,
+                # then there's no point in attempting to download this icon.
                 continue
             item_name = item.get('display_name') or item['name']
             icon_url = icon_base_url + quote(icon_name.encode('UTF-8'))
