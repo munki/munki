@@ -12,8 +12,6 @@
 	</dict>
 	<key>Label</key>
 	<string>com.googlecode.munki.managedsoftwareupdate-install</string>
-	<key>OnDemand</key>
-	<true/>
 	<key>ProgramArguments</key>
 	<array>
 		<string>/usr/local/munki/supervisor</string>
