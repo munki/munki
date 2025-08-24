@@ -39,6 +39,9 @@ struct MakeCatalogs: AsyncParsableCommand {
           help: "Skip checking of pkg existence. Useful when pkgs aren't on the same server as pkginfo, catalogs and manifests.")
     var skipPkgCheck = false
 
+    @Flag(help: "Write catalogs in YAML format instead of XML plist.")
+    var yaml = false
+
     @Option(name: [.customLong("repo-url"), .customLong("repo_url")],
             help: "Optional repo URL that takes precedence over the default repo_url specified via preferences.")
     var repoURL = ""
@@ -89,7 +92,8 @@ struct MakeCatalogs: AsyncParsableCommand {
         let options = MakeCatalogOptions(
             skipPkgCheck: skipPkgCheck,
             force: force,
-            verbose: true
+            verbose: true,
+            yamlOutput: yaml
         )
 
         do {
