@@ -559,6 +559,26 @@ fi
 makeinfo admin "$PKGTMP/info" norestart
 
 
+##################
+## Swift dylibs ##
+##################
+
+echo "Creating Swift dylib package source..."
+
+LIBSROOT="$PKGTMP/munki_libs"
+mkdir -m 1775 "$LIBSROOT"
+mkdir -m 755 "$LIBSROOT/usr"
+mkdir -m 755 "$LIBSROOT/usr/local"
+mkdir -m 755 "$LIBSROOT/usr/local/lib"
+
+# copy in needed Swift dylibs
+CONCURRENCY_DYLIB="$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx/libswift_Concurrency.dylib"
+cp "$CONCURRENCY_DYLIB" "$LIBSROOT/usr/local/lib/"
+
+# Create package info file.
+makeinfo libs "$PKGTMP/info" norestart
+
+
 ###################
 ## /Applications ##
 ###################
@@ -927,6 +947,9 @@ COREDESC="Core command-line tools used by Munki."
 ADMINTITLE="Munki admin tools"
 ADMINDESC="Command-line munki admin tools."
 
+LIBSTITLE="Swift dynamic libraries"
+LIBSDESC="Swift runtime libraries for macOS 10.15 and 11"
+
 APPTITLE="Managed Software Center"
 APPDESC="Managed Software Center application."
 
@@ -1060,6 +1083,7 @@ cat > "$DISTFILE" <<EOF
         $CONFOUTLINE
         $CLIENTCERTOUTLINE
         $AUTORUNOUTLINE
+        <line choice="libs"/>
     </choices-outline>
     $ROSETTA2CHOICE
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -1068,16 +1092,16 @@ cat > "$DISTFILE" <<EOF
     <choice id="admin" title="$ADMINTITLE" description="$ADMINDESC">
         <pkg-ref id="$PKGID.admin"/>
     </choice>
+    <choice id="libs" title="$LIBSTITLE" description="$LIBSDESC" enabled='false' selected='system.compareVersions(system.version.ProductVersion, "12.0") &lt; 0'>
+        <pkg-ref id="$PKGID.libs"/>
+    </choice>
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
     <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
         <pkg-ref id="$PKGID.app_usage"/>
     </choice>
-    <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
-        <pkg-ref id="$PKGID.python"/>
-    </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
+     <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $PYTHONCHOICE
@@ -1089,6 +1113,7 @@ cat > "$DISTFILE" <<EOF
     $ROSETTA2REF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.libs" auth="Root">${PKGPREFIX}munkitools_libs.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
@@ -1108,13 +1133,15 @@ EOF
 
 echo "Setting ownership to root..."
 
-sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
+sudo chown root:admin "$COREROOT" "$ADMINROOT" "$LIBSROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
 sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"
+
+sudo chown -hR root:wheel "$LIBSROOT/usr"
 
 sudo chown -hR root:admin "$APPROOT/Applications"
 
@@ -1155,7 +1182,7 @@ if [ "$CLIENTCERTPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$CLIENTCERTROOT"
 fi
 
-ALLPKGS="core admin app launchd app_usage"
+ALLPKGS="core admin libs app launchd app_usage"
 if [ "$PYTHONPKG" == "YES" ] ; then 
     ALLPKGS="${ALLPKGS} python"
 fi
@@ -1223,6 +1250,9 @@ for pkg in $ALLPKGS ; do
         "rosetta2")
             ver="1.0"
             SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_rosetta2"
+            ;;
+        "libs")
+            ver="5.5"
             ;;
         *)
             ver="$VERSION"
