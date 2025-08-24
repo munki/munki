@@ -134,6 +134,9 @@ extension ManifestUtil {
               help: "Display manifest in XML format.")
         var xml: Bool = false
 
+        @Flag(help: "Display manifest in YAML format.")
+        var yaml: Bool = false
+
         @Argument(help: ArgumentHelp(
             "Prints the contents of the specified manifest",
             valueName: "manifest-name"
@@ -143,9 +146,13 @@ extension ManifestUtil {
         func run() async throws {
             guard let repo = RepoConnection.shared.repo else { return }
             if var manifest = await getManifest(repo: repo, name: manifestName) {
-                manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
+                if expand {
+                    manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
+                }
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
+                } else if yaml {
+                    print((try? yamlToString(manifest)) ?? "")
                 } else {
                     printPlist(manifest)
                 }

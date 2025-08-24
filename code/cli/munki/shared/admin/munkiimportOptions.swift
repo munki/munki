@@ -40,6 +40,9 @@ struct MunkiImportOptions: ParsableArguments {
     @Flag(name: .shortAndLong, help: "More detailed output.")
     var verbose = false
 
+    @Flag(help: "Create pkginfo files in YAML format instead of XML plist.")
+    var yaml = false
+
     mutating func validate() throws {
         // update plugin (not really a validation, but close enough)
         if plugin == nil {

@@ -29,6 +29,7 @@ struct MakeCatalogOptions {
     var skipPkgCheck: Bool = false
     var force: Bool = false
     var verbose: Bool = false
+    var yamlOutput: Bool = false
 }
 
 /// Struct that handles building catalogs
@@ -284,10 +285,11 @@ struct CatalogsMaker {
         // write the new catalogs
         for key in catalogs.keys {
             if !(catalogs[key]?.isEmpty ?? true) {
-                let catalogIdentifier = "catalogs/" + key
+                let fileExtension = options.yamlOutput ? ".yaml" : ""
+                let catalogIdentifier = "catalogs/" + key + fileExtension
                 do {
                     if let value = catalogs[key] {
-                        let data = try plistToData(value)
+                        let data = options.yamlOutput ? try yamlToData(value) : try plistToData(value)
                         try await repo.put(catalogIdentifier, content: data)
                         if options.verbose {
                             print("Created \(catalogIdentifier)...")
@@ -295,6 +297,8 @@ struct CatalogsMaker {
                     }
                 } catch let PlistError.writeError(description) {
                     errors.append("Could not serialize catalog \(key): \(description)")
+                } catch let YamlError.writeError(description) {
+                    errors.append("Could not serialize catalog \(key) as YAML: \(description)")
                 } catch let error as MunkiError {
                     errors.append("Failed to create catalog \(key): \(error.description)")
                 } catch {
