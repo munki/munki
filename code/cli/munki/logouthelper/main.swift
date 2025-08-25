@@ -175,7 +175,7 @@ func main() -> Int32 {
 
         // do we need to notify?
         let minutesUntilLogout = Int(logoutTime.timeIntervalSinceNow / 60)
-        let infoDict = ["logout_time": minutesUntilLogout]
+        let infoDict = ["logout_time": logoutTime]
         if NOTIFICATION_MINS.contains(minutesUntilLogout) {
             sentNotifications.append(minutesUntilLogout)
             log("Warning user of \(minutesUntilLogout) minutes until forced logout")
