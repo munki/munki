@@ -107,12 +107,17 @@ class MSCAlertController: NSObject {
             // less than 5 minutes until forced logout -- only button says "Logout"
             alert.addButton(withTitle: logout_btn_title)
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-                msc_log("user", "install_with_logout")
-                self.handlePossibleAuthRestart()
-                do {
-                    try logoutAndUpdate()
-                } catch {
-                    self.installSessionErrorAlert("\(error)")
+                if modalResponse == .alertFirstButtonReturn {
+                    // checking for the only button seems odd, but the modal can end
+                    // because we called mainWindow.endSheet(attachedSheet)
+                    // and we don't want to try to log out in that case
+                    msc_log("user", "install_with_logout")
+                    self.handlePossibleAuthRestart()
+                    do {
+                        try logoutAndUpdate()
+                    } catch {
+                        self.installSessionErrorAlert("\(error)")
+                    }
                 }
             })
         }
