@@ -192,7 +192,7 @@ func main() -> Int32 {
     }
 
     // exited loop, now time to force a logout
-    if currentGUIUsers().isEmpty, earliestForceInstallDate() != nil {
+    if !currentGUIUsers().isEmpty, earliestForceInstallDate() != nil {
         log("Beginning forced logout")
         forceLogoutNow()
     }
