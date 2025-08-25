@@ -368,7 +368,9 @@ class AsyncProcessRunner {
     }
 
     func cancel() {
-        task.terminate()
+        if task.isRunning {
+            task.terminate()
+        }
     }
 
     func run() async {
@@ -378,7 +380,7 @@ class AsyncProcessRunner {
             } catch {
                 // task didn't start
                 results.failureDetail.append("error running \(task.executableURL?.path ?? "")")
-                results.failureDetail.append(error.localizedDescription)
+                results.failureDetail.append(": \(error.localizedDescription)")
                 results.exitcode = -1
                 status.phase = .ended
                 delegate?.processUpdated()
