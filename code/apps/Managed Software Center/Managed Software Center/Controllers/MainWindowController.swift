@@ -635,6 +635,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // got a notification of an upcoming forced install
         // switch to updates view, then display alert
         loadUpdatesPage(self)
+        _alertedUserToOutstandingUpdates = true
         alert_controller.forcedLogoutWarning(notification)
     }
     
