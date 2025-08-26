@@ -113,10 +113,18 @@ extension ManifestUtil {
 
         @Flag(help: "Create manifest in YAML format instead of XML plist.")
         var yaml = false
+        
+        /// Determine if YAML output should be used based on flag or global preference
+        private var shouldUseYaml: Bool {
+            if yaml {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: "yaml")
+        }
 
         func run() async throws {
             guard let repo = RepoConnection.shared.repo else { return }
-            _ = await newManifest(repo: repo, name: manifestName, yamlOutput: yaml)
+            _ = await newManifest(repo: repo, name: manifestName, yamlOutput: shouldUseYaml)
         }
     }
 }

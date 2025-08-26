@@ -67,6 +67,14 @@ struct MakePkgInfo: ParsableCommand {
         valueName: "installer-item"
     ))
     var installerItem: String?
+    
+    /// Determine if YAML output should be used based on flag or global preference
+    private var shouldUseYaml: Bool {
+        if yaml {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "yaml")
+    }
 
     mutating func run() throws {
         if version {
@@ -103,7 +111,7 @@ struct MakePkgInfo: ParsableCommand {
 
         do {
             let pkginfo = try makepkginfo(installerItem, options: options)
-            let plistStr = try plistToString(pkginfo, yamlOutput: yaml)
+            let plistStr = try plistToString(pkginfo, yamlOutput: shouldUseYaml)
             print(plistStr)
         } catch let PlistError.writeError(description) {
             printStderr("ERROR: \(description)")
