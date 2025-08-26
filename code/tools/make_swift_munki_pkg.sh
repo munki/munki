@@ -223,16 +223,16 @@ if [ $APPSSVNREV -gt $DISTPKGSVNREV ] ; then
     DISTPKGSVNREV=$APPSSVNREV
 fi
 
-MUNKLIBVERS=6.6.5
+MUNKILIBVERS=6.6.5
 if [ "$PYTHONLIBS" == "YES" ] ; then
     # generate a version number for the Python libs
-    MUNKLIBVERSFILE="$MUNKIROOT/code/client/munkilib/version"
+    MUNKILIBVERSFILE="$MUNKIROOT/code/client/munkilib/version.plist"
     # Check to see if file exists
-    if [ -f "MUNKLIBVERSFILE.plist" ]; then
+    if [ -f "$MUNKILIBVERSFILE" ]; then
         # Get the version
-        MUNKLIBVERS=$(defaults read "$MUNKLIBVERSFILE" CFBundleShortVersionString)
+        MUNKILIBVERS=$(defaults read "$MUNKILIBVERSFILE" CFBundleShortVersionString)
         if [ "$?" != "0" ]; then
-            echo "${MUNKLIBVERSFILE}.plist can not be read" 1>&2
+            echo "${MUNKILIBVERSFILE}.plist can not be read" 1>&2
             exit 1
         fi
     fi
@@ -241,7 +241,7 @@ if [ "$PYTHONLIBS" == "YES" ] ; then
     PYTHONLIBSGITREV=$(git log -n1 --format="%H" -- code/client/munkilib)
     GITREVINDEX=$(git rev-list --count "$PYTHONLIBSGITREV")
     PYTHONLIBSSVNREV=$((GITREVINDEX + MAGICNUMBER))
-    PYTHONLIBSVERSION=$MUNKLIBVERS.$PYTHONLIBSSVNREV
+    PYTHONLIBSVERSION=$MUNKILIBVERS.$PYTHONLIBSSVNREV
 fi
 
 # get base apps version from MSC.app
