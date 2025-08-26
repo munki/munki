@@ -45,6 +45,14 @@ struct MakeCatalogs: AsyncParsableCommand {
     @Option(name: [.customLong("repo-url"), .customLong("repo_url")],
             help: "Optional repo URL that takes precedence over the default repo_url specified via preferences.")
     var repoURL = ""
+    
+    /// Determine if YAML output should be used based on flag or global preference
+    private var shouldUseYaml: Bool {
+        if yaml {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "yaml")
+    }
 
     @Option(help: "Specify a custom plugin to connect to the Munki repo.")
     var plugin = "FileRepo"
@@ -93,7 +101,7 @@ struct MakeCatalogs: AsyncParsableCommand {
             skipPkgCheck: skipPkgCheck,
             force: force,
             verbose: true,
-            yamlOutput: yaml
+            yamlOutput: shouldUseYaml
         )
 
         do {

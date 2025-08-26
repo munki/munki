@@ -136,6 +136,14 @@ extension ManifestUtil {
 
         @Flag(help: "Display manifest in YAML format.")
         var yaml: Bool = false
+        
+        /// Determine if YAML output should be used based on flag or global preference
+        private var shouldUseYaml: Bool {
+            if yaml {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: "yaml")
+        }
 
         @Argument(help: ArgumentHelp(
             "Prints the contents of the specified manifest",
@@ -151,7 +159,7 @@ extension ManifestUtil {
                 }
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
-                } else if yaml {
+                } else if shouldUseYaml {
                     print((try? yamlToString(manifest)) ?? "")
                 } else {
                     printPlist(manifest)
