@@ -106,7 +106,7 @@ func getAuthRestartKey(quiet: Bool = false) -> String? {
           let recoveryKey = recoveryKeyDict["RecoveryKey"] as? String
     else {
         if !quiet {
-            Authrestart.logger.error("Could not retreive recovery key from \(recoveryKeyPlist).")
+            Authrestart.logger.error("Could not retrieve recovery key from \(recoveryKeyPlist).")
         }
         return nil
     }

@@ -911,7 +911,7 @@ fi
 #################
 if [ "$CLIENTCERTPKG" == "YES" ] ; then
 
-    echo "Creating client cert package souce..."
+    echo "Creating client cert package source..."
 
     # Create directory structure
     CLIENTCERTROOT="$PKGTMP/munki_clientcert"

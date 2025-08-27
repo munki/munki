@@ -23,7 +23,7 @@ extension ManifestError: LocalizedError {
         case let .invalid(description):
             return "Manifest is invalid: \(description)"
         case let .notRetrieved(description):
-            return "Manifest was not retreived: \(description)"
+            return "Manifest was not retrieved: \(description)"
         case let .connection(errorCode, description):
             return "There was a connection error: \(errorCode): \(description)"
         case let .http(errorCode, description):

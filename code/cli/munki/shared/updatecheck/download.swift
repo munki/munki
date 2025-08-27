@@ -197,7 +197,7 @@ func getIconHashes() -> [String: String] {
         )
         return try readPlist(fromFile: iconsHashesPlist) as? [String: String] ?? [:]
     } catch {
-        display.debug1("Error while retreiving icon hashes: \(error.localizedDescription)")
+        display.debug1("Error while retrieving icon hashes: \(error.localizedDescription)")
         return [String: String]()
     }
 }

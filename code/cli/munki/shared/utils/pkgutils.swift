@@ -497,7 +497,7 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
             errors.append("No receipts found in Distribution or PackageInfo files within the package.")
         }
     } else {
-        errors.append("An error occurred while geting table of contents for \(pkgpath): \(tocResults.error)")
+        errors.append("An error occurred while getting table of contents for \(pkgpath): \(tocResults.error)")
     }
     // change back to original working dir
     filemanager.changeCurrentDirectoryPath(cwd)
