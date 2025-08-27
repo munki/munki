@@ -653,7 +653,7 @@ func getCatalogs(_ catalogList: [String]) {
                 throw PlistError.readError(description: "plist is in wrong format")
             }
         } catch {
-            display.error("Retreived catalog is invalid: \(error.localizedDescription)")
+            display.error("Retrieved catalog is invalid: \(error.localizedDescription)")
         }
     }
 }

@@ -118,7 +118,7 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     }
 
     // got a valid plist
-    display.detail("Retreived manifest \(name)")
+    display.detail("Retrieved manifest \(name)")
     Manifests.shared.set(name, path: manifestLocalPath)
     return manifestLocalPath
 }
@@ -169,7 +169,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
                     display.detail("Manifest \(identifier) not found...")
                     continue // try the next identifier
                 } else {
-                    // juse rethrow it
+                    // just rethrow it
                     throw error
                 }
             }
