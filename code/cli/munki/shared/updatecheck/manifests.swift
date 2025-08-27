@@ -141,7 +141,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
     if !clientIdentifier.isEmpty {
         manifest = try getManifest(clientIdentifier)
     } else {
-        // no clientIdentifer specified. Try a variety of possible identifiers
+        // no clientIdentifier specified. Try a variety of possible identifiers
         display.detail("No client identifier specified. Trying default manifest resolution...")
         var identifiers = [String]()
 

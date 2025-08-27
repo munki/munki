@@ -41,7 +41,7 @@ class GitFileRepo: FileRepo {
         return runCLI(cmd, arguments: args)
     }
 
-    /// Returns True if file referred to by identifer will be ignored by Git
+    /// Returns True if file referred to by identifier will be ignored by Git
     /// (usually due to being in a .gitignore file)
     func isGitIgnored(_ identifier: String) -> Bool {
         let results = runGit(
@@ -51,7 +51,7 @@ class GitFileRepo: FileRepo {
         return results.exitcode == 0
     }
 
-    /// Returns True if file referred to by identifer is in a Git repo, false otherwise.
+    /// Returns True if file referred to by identifier is in a Git repo, false otherwise.
     func isInGitRepo(_ identifier: String) -> Bool {
         let results = runGit(
             args: ["-C", parentDir(identifier),

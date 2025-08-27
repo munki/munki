@@ -220,8 +220,8 @@ func predicateInfoObject() async -> PlistDict {
 }
 
 /// Evaluates predicate against the info object; returns a boolean
-/// Calls out to an Objective-C function because NSPrediacte methods can
-/// raise NSExecption, whcih Swift cannot catch
+/// Calls out to an Objective-C function because NSPredicate methods can
+/// raise NSException, which Swift cannot catch
 func predicateEvaluatesAsTrue(
     _ predicateString: String,
     infoObject: PlistDict,

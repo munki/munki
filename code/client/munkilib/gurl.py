@@ -754,7 +754,7 @@ class Gurl(NSObject):
                         break
                 else:
                     continue
-                # this break is only excuted if we found a certificate
+                # this break is only executed if we found a certificate
                 break
             else:
                 self.log('Could not find matching identity')

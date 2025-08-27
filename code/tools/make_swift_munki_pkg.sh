@@ -440,7 +440,7 @@ EOF
 }
 
 
-# Pre-packgage-build cleanup.
+# Pre-package-build cleanup.
 
 if ! rm -rf "$DISTPKG" ; then
     echo "Error removing $DISTPKG before rebuilding it."

@@ -85,7 +85,7 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
             if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
                 info["minosversion"] = minOSVers
             } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
-                // get the highest/latest of all the minmum os versions
+                // get the highest/latest of all the minimum os versions
                 let minOSVersions = minOSVersByArch.values
                 let versions = minOSVersions.map { MunkiVersion($0) }
                 if let maxVersion = versions.max() {
@@ -249,7 +249,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
 /// Mounts a disk image if it"s not already mounted
 /// Builds pkginfo for the first installer item found at the root level,
 /// or a specific one if specified by options.pkgname or options.item
-/// Unmounts the disk image if it wasn"t already mounted
+/// Unmounts the disk image if it wasn't already mounted
 func createPkgInfoFromDmg(_ dmgpath: String,
                           options: PkginfoOptions) throws -> PlistDict
 {

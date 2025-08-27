@@ -46,7 +46,7 @@ class FDEUtil {
         }
     }
 
-    /// Convenience method: logs a message, then returns it so we can thow an error
+    /// Convenience method: logs a message, then returns it so we can throw an error
     /// with the same message
     func logAndReturn(_ message: String) -> String {
         server.log(message)

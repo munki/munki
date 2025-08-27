@@ -195,7 +195,7 @@ func doAuthorizedOrNormalRestart(
             // notify that it did then perform a normal restart
             Authrestart.logger.warning("Authorized Restart failed. Performing normal restart...")
         } else {
-            // we sucessfully triggered an authrestart
+            // we successfully triggered an authrestart
             return
         }
     }

@@ -18,7 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-// functions for retreiving info about osinstallers
+// functions for retrieving info about osinstallers
 // may not call display* functions or munkilog* functions
 
 import Foundation
@@ -148,7 +148,7 @@ func makeStartOSInstallPkgInfo(mountpoint: String, item: String) throws -> Plist
     let minimumOSVersion = "10.9"
     if version.hasPrefix("10.14") {
         // https://support.apple.com/en-us/HT201475
-        // use inital values
+        // use initial values
     } else if version.hasPrefix("11.") {
         // https://support.apple.com/en-us/HT211238
         installedSize = Int(35.5 * 1024 * 1024)
@@ -207,7 +207,7 @@ func makeStageOSInstallerPkgInfo(_ appPath: String) throws -> PlistDict {
     let minimumOSVersion = "10.9"
     if version.hasPrefix("11.") {
         // https://support.apple.com/en-us/HT211238
-        // use intial values
+        // use initial values
     } else if version.hasPrefix("12.") {
         // https://support.apple.com/en-us/HT212551
         installedSize = Int(26 * 1024 * 1024)

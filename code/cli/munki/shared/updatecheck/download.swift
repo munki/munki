@@ -91,7 +91,7 @@ func enoughDiskSpaceFor(
 
 /// Downloads an (un)installer item.
 /// Returns true if the item was downloaded, false if it was already cached.
-/// Thows an error if there are issues
+/// Throws an error if there are issues
 func downloadInstallerItem(
     _ item: PlistDict,
     installInfo: PlistDict,
@@ -427,7 +427,7 @@ func uncache(_ spaceNeededInKB: Int) {
     var deletedKB = 0
     let filemanager = FileManager.default
     for (path, size) in itemsWithSize {
-        // we delete the smallest item first, proceeeding until
+        // we delete the smallest item first, proceeding until
         // we've freed up enough space or deleted all the items
         if deletedKB >= spaceNeededInKB {
             break

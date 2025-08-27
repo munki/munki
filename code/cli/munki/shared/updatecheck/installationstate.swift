@@ -242,7 +242,7 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
 }
 
 /// Checks to see if there is any evidence that the item described
-/// by pkginfo (any version) is currenly installed.
+/// by pkginfo (any version) is currently installed.
 /// If any tests pass, the item might be installed.
 /// This is used when determining if we can remove the item, thus
 /// the attention given to the uninstall method.
