@@ -214,7 +214,7 @@ func findItemsToCheck(_ repo: Repo, items: [String] = []) async -> [PlistDict] {
     var catalogItems = [PlistDict]()
     do {
         let allCatalogData = try await repo.get("catalogs/all")
-        catalogItems = try (readPlist(fromData: allCatalogData)) as? [PlistDict] ?? []
+        catalogItems = try (readData(allCatalogData)) as? [PlistDict] ?? []
     } catch {
         printStderr("Error getting catalog data from repo: \(error.localizedDescription)")
         return []

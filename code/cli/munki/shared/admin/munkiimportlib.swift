@@ -161,7 +161,7 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
     }
 
     do {
-        catalogItems = try readPlist(fromData: allCatalog) as? [PlistDict] ?? [PlistDict]()
+                catalogItems = try readData(allCatalog) as? [PlistDict] ?? [PlistDict]()
     } catch let PlistError.readError(description) {
         throw CatalogError.decodeError(
             description: "Could not decode data from catalogs/all: \(description)")
@@ -720,7 +720,7 @@ func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
         }
         // read edited pkginfo
         do {
-            if let editedPkginfo = try readPlist(fromFile: filePath) as? PlistDict {
+            if let editedPkginfo = try detectFileContent(fromFile: filePath) as? PlistDict {
                 return editedPkginfo
             } else {
                 throw PlistError.readError(description: "Plist has bad format")
