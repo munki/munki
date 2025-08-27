@@ -77,7 +77,7 @@ class TabCompleter {
     /// this is a singleton, so only one instance, please
     private init() {}
 
-    /// retreive our lists of repo items and store them
+    /// retrieve our lists of repo items and store them
     func cache(manifestsOnly: Bool = false) async {
         debugLog("Caching completion data. manifestsOnly: \(manifestsOnly)")
         if let repo = RepoConnection.shared.repo {

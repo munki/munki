@@ -19,7 +19,7 @@ gurl.py
 Created by Greg Neagle on 2013-11-21.
 Modified in Feb 2016 to add support for NSURLSession.
 Updated June 2019 for compatibility with Python 3 and PyObjC 5.1.2+
-Updated May 2022 for compatibilty with PyObjC 8.5 on macOS Mojave
+Updated May 2022 for compatibility with PyObjC 8.5 on macOS Mojave
 Updated Feb 2025 to add support for Certificate Chains when using Client Certificates
 
 curl replacement using NSURLConnection and friends
@@ -754,7 +754,7 @@ class Gurl(NSObject):
                         break
                 else:
                     continue
-                # this break is only excuted if we found a certificate
+                # this break is only executed if we found a certificate
                 break
             else:
                 self.log('Could not find matching identity')

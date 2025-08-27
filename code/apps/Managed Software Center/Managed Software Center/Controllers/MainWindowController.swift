@@ -75,7 +75,7 @@ class MainWindowController: NSWindowController {
         let mainContentItem = NSSplitViewItem(viewController: mainContentViewController)
         // TODO: remove this after Xcode 26 ships and if/when require Xcode 26+ to build
         // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
-        // and there's no other straightforward way to do conditional compliation based on SDK
+        // and there's no other straightforward way to do conditional compilation based on SDK
         // availability
         #if canImport(PermissionKit)
         if #available(macOS 26.0, *) {
@@ -426,7 +426,7 @@ class MainWindowController: NSWindowController {
             }
         } else {
             // if there are non-munki:// items in the sidebar,
-            // make sure the sidebar is visbile
+            // make sure the sidebar is visible
             hideMunkiNavigateMenuItems(false)
             // ensure sidebar is visible
             guard let firstSplitView = splitViewController.splitViewItems.first else { return }
@@ -696,7 +696,7 @@ class MainWindowController: NSWindowController {
             /*
             // TODO: remove this when Xcode 26 ships and we require it to build
             // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
-            // and there's no other straightforward way to do conditional compliation based on SDK
+            // and there's no other straightforward way to do conditional compilation based on SDK
             // availability
             #if canImport(PermissionKit)
             if #available(macOS 26.0, *) {
@@ -1050,7 +1050,7 @@ class MainWindowController: NSWindowController {
     }
     
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
-        // check if update sidebar item avalible
+        // check if update sidebar item available
         guard let cellView = updatesSidebarItemView() else {
             return
         }

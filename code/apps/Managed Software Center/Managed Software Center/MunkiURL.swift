@@ -16,7 +16,7 @@ enum MunkiURL: String {
     case updates = "munki://updates"
 }
 
-/// "Normalzes" several string formats into a standard munki:// URL
+/// "Normalizes" several string formats into a standard munki:// URL
 func munkiURL(from urlString: String) -> String {
     let basename = (urlString as NSString).lastPathComponent
     return "munki://" + ((basename as NSString).deletingPathExtension)

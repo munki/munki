@@ -197,7 +197,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     if item["preinstall_script"] is String {
         let retcode = await runEmbeddedScript(name: "preinstall_script", pkginfo: item)
         if retcode != 0 {
-            // if preinstall_script fails, do not proceeed
+            // if preinstall_script fails, do not proceed
             return (retcode, false)
         }
     }
@@ -437,7 +437,7 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     if item["preuninstall_script"] is String {
         let retcode = await runEmbeddedScript(name: "preuninstall_script", pkginfo: item)
         if retcode != 0 {
-            // if preuninstall_script fails, do not proceeed
+            // if preuninstall_script fails, do not proceed
             return (retcode, false)
         }
     }

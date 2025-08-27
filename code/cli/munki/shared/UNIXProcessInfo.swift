@@ -114,7 +114,7 @@ func parseArgumentData(_ data: Data) throws -> [String] {
     //
     // <https://opensource.apple.com/source/adv_cmds/adv_cmds-176/ps/print.c.auto.html>
 
-    // returns a list of strings: [0] is the execuatable path,
+    // returns a list of strings: [0] is the executable path,
     // the rest is `argv[0]` through `argv[argc - 1]
 
     // Parse `argc`.  We’re assuming the value is little endian here, which is

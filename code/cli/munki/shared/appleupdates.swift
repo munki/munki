@@ -121,7 +121,7 @@ func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     // There's a couple of strategies we could use here:
     //
     //  1) Match update names that start with "macOS" and end with a version
-    //     number matching the uupdate version, then compare the first part
+    //     number matching the update version, then compare the first part
     //     of that version against the currently installed OS. IOW,
     //     if we are currently running 13.6.9, an update to 14.6.1 or 15.0
     //     would be a major update. This could break if Apple changes its

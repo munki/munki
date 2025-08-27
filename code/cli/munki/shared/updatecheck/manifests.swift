@@ -23,7 +23,7 @@ extension ManifestError: LocalizedError {
         case let .invalid(description):
             return "Manifest is invalid: \(description)"
         case let .notRetrieved(description):
-            return "Manifest was not retreived: \(description)"
+            return "Manifest was not retrieved: \(description)"
         case let .connection(errorCode, description):
             return "There was a connection error: \(errorCode): \(description)"
         case let .http(errorCode, description):
@@ -118,7 +118,7 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     }
 
     // got a valid plist
-    display.detail("Retreived manifest \(name)")
+    display.detail("Retrieved manifest \(name)")
     Manifests.shared.set(name, path: manifestLocalPath)
     return manifestLocalPath
 }
@@ -141,7 +141,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
     if !clientIdentifier.isEmpty {
         manifest = try getManifest(clientIdentifier)
     } else {
-        // no clientIdentifer specified. Try a variety of possible identifiers
+        // no clientIdentifier specified. Try a variety of possible identifiers
         display.detail("No client identifier specified. Trying default manifest resolution...")
         var identifiers = [String]()
 
@@ -169,7 +169,7 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
                     display.detail("Manifest \(identifier) not found...")
                     continue // try the next identifier
                 } else {
-                    // juse rethrow it
+                    // just rethrow it
                     throw error
                 }
             }

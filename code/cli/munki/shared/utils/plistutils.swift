@@ -109,7 +109,7 @@ func plistToString(_ dataObject: Any) throws -> String {
 }
 
 /// Parses a string, looking for the first thing that looks like a plist.
-/// Returns two strings. The first will be a string representaion of a plist (or empty)
+/// Returns two strings. The first will be a string representation of a plist (or empty)
 /// The second is any characters remaining after the found plist
 func parseFirstPlist(fromString str: String) -> (String, String) {
     let header = "<?xml version"

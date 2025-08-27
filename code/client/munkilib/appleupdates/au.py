@@ -346,7 +346,7 @@ class AppleUpdates(object):
             # record items we aren't planning to attempt to install
             remaining_apple_updates = [item for item in installlist
                                        if item not in filtered_installlist]
-            # set the list of items to install to our newly-filted list
+            # set the list of items to install to our newly-filtered list
             installlist = filtered_installlist
 
         elif os_version_tuple >= (10, 14):

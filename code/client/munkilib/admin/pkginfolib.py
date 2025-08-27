@@ -620,7 +620,7 @@ def makepkginfo(installeritem, options):
             # handle case where value may have been set (e.g. flat package)
             item_minosversions.append(pkgutils.MunkiLooseVersion(
                 pkginfo['minimum_os_version']))
-        # get the maximum from the list and covert back to string
+        # get the maximum from the list and convert back to string
         pkginfo['minimum_os_version'] = str(max(item_minosversions))
 
     if not 'minimum_os_version' in pkginfo:

@@ -440,7 +440,7 @@ EOF
 }
 
 
-# Pre-packgage-build cleanup.
+# Pre-package-build cleanup.
 
 if ! rm -rf "$DISTPKG" ; then
     echo "Error removing $DISTPKG before rebuilding it."
@@ -911,7 +911,7 @@ fi
 #################
 if [ "$CLIENTCERTPKG" == "YES" ] ; then
 
-    echo "Creating client cert package souce..."
+    echo "Creating client cert package source..."
 
     # Create directory structure
     CLIENTCERTROOT="$PKGTMP/munki_clientcert"

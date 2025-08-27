@@ -463,7 +463,7 @@ func getItemDetail(
             display.debug1("Our Munki version is \(munkiVersion)")
             if MunkiVersion(munkiVersion) < MunkiVersion(minimumMunkiVersion) {
                 rejectedItems.append(
-                    "Rejected item \(name), version \(version) with minumum Munki version required \(minimumMunkiVersion). Our Munki version is \(munkiVersion)."
+                    "Rejected item \(name), version \(version) with minimum Munki version required \(minimumMunkiVersion). Our Munki version is \(munkiVersion)."
                 )
                 return false
             }
@@ -653,7 +653,7 @@ func getCatalogs(_ catalogList: [String]) {
                 throw PlistError.readError(description: "plist is in wrong format")
             }
         } catch {
-            display.error("Retreived catalog is invalid: \(error.localizedDescription)")
+            display.error("Retrieved catalog is invalid: \(error.localizedDescription)")
         }
     }
 }

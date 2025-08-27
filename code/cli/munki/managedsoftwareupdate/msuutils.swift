@@ -220,7 +220,7 @@ func notifyUserOfUpdates(force: Bool = false) {
         // doesn't require exactly 24 hours to elapse
         // subtract 6 hours
         // IOW, if we notify today at 4pm, we don't really want to wait
-        // until after 4pm tomorrow to notifiy again.
+        // until after 4pm tomorrow to notify again.
         Double((daysBetweenNotifications * 24 * 60 * 60) - (6 * 60 * 60))
     } else {
         0.0
