@@ -24,7 +24,10 @@ import Foundation
 func getManifest(repo: Repo, name: String) async -> PlistDict? {
     do {
         let data = try await repo.get("manifests/\(name)")
-        return try readPlist(fromData: data) as? PlistDict
+        // run a file content detection since manifests don't have extensions
+        let shouldPreferYaml = UserDefaults.standard.bool(forKey: "yaml")
+        let manifest = try readData(data, preferYaml: shouldPreferYaml, filepath: "manifests/\(name)")
+        return manifest as? PlistDict
     } catch {
         printStderr("Could not retrieve manifest: \(error.localizedDescription)")
         return nil
