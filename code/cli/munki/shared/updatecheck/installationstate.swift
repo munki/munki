@@ -196,8 +196,8 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
     if pkginfo["version_script"] is String {
         // if there's a version_script, let's use that to determine
         // if some version installed
-        let comparsionResult = await compareUsingVersionScript(pkginfo)
-        if comparsionResult == .notPresent {
+        let comparisonResult = await compareUsingVersionScript(pkginfo)
+        if comparisonResult == .notPresent {
             return false
         }
         return true

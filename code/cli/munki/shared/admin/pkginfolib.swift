@@ -544,7 +544,7 @@ func makepkginfo(_ filepath: String?,
         }
     }
     if let minimumMunkiVersion = options.other.minimumMunkiVersion {
-        pkginfo["miminum_munki_version"] = minimumMunkiVersion
+        pkginfo["minimum_munki_version"] = minimumMunkiVersion
     }
     if options.other.onDemand {
         pkginfo["OnDemand"] = true

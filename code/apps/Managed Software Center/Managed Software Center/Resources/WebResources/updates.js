@@ -63,9 +63,9 @@ function registerWindowClicks() {
                 // clicked a More link
                 item_description = e.target.parentNode.getElementsByClassName('description')[0];
                 item_version_and_size = e.target.parentNode.parentNode.getElementsByClassName('version_and_size')[0];
-                modal_descritption = document.getElementById("fullDescription")
+                modal_description = document.getElementById("fullDescription")
                 modal_version_and_size = document.getElementById("versionAndSize")
-                modal_descritption.innerHTML = item_description.innerHTML
+                modal_description.innerHTML = item_description.innerHTML
                 modal_version_and_size.innerHTML = item_version_and_size.innerHTML
                 modal = document.getElementById("moreInfoModal");
                 modal.style.display = "block";
