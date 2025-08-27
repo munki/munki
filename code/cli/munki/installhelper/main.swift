@@ -18,7 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-// original Python implmentation by Ben Toms @ Jamf (dataJAR)
+// original Python implementation by Ben Toms @ Jamf (dataJAR)
 
 import Foundation
 import SystemConfiguration
@@ -417,7 +417,7 @@ func main() {
     rotateLog(LOGFILENAME, ifLargerThan: 1_000_000)
     log("Starting \(APP_NAME) \(APP_VERSION)")
 
-    // get our launch group from either the enviroment or the first argument
+    // get our launch group from either the environment or the first argument
     var group = "<none>"
     var manualLaunch = true
     let env = ProcessInfo.processInfo.environment

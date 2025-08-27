@@ -358,10 +358,10 @@ func getIconIdentifier(_ pkginfo: PlistDict) -> String {
 
 /// Returns true if there is an icon for this item in the repo
 func iconIsInRepo(_ repo: Repo, pkginfo: PlistDict) async -> Bool {
-    let iconIdentifer = getIconIdentifier(pkginfo)
+    let iconIdentifier = getIconIdentifier(pkginfo)
     do {
         let iconList = try await listItemsOfKind(repo, "icons")
-        return iconList.contains(iconIdentifer)
+        return iconList.contains(iconIdentifier)
     } catch let error as MunkiError {
         printStderr("Unable to get list of icons: \(error.description)")
         return false

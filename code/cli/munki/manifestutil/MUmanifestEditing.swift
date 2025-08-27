@@ -296,7 +296,7 @@ extension ManifestUtil {
     }
 }
 
-/// Add an inlcuded_manifest to a manifest
+/// Add an included_manifest to a manifest
 extension ManifestUtil {
     struct AddIncludedManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(

@@ -456,7 +456,7 @@ def uncache(space_needed_in_kb):
         if deleted_kb >= space_needed_in_kb:
             break
         # remove and return last item in precached_items
-        # we delete the smallest item first, proceeeding until we've freed up
+        # we delete the smallest item first, proceeding until we've freed up
         # enough space or deleted all the items
         item = precached_items.pop()
         item_path = os.path.join(cachedir, item[0])

@@ -8,7 +8,7 @@
 import Foundation
 
 /// This is a function that is called by our custom signal handlers that react to SIGINT or SIGTERM.
-/// Wtihout this, the terminal can be a mess if someone hits Control-C to interrupt the process while
+/// Without this, the terminal can be a mess if someone hits Control-C to interrupt the process while
 /// `readline` is waiting for input
 func cleanupReadline() {
     if rl_line_buffer != nil {
@@ -29,7 +29,7 @@ func cleanupReadline() {
 /// to insert the prompt and default text _after_ we fire up _readline_. Like I said, a nasty hack.
 func getInput(prompt: String? = nil, defaultText: String? = nil) -> String? {
     // A really awful hack to get default text since
-    // the readline implmentation is so broken
+    // the readline implementation is so broken
     let queue = OperationQueue()
     let insertOperation = BlockOperation {
         usleep(10000) // 0.01 seconds

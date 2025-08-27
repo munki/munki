@@ -227,7 +227,7 @@ func main() async -> Int32 {
 
     // get socket file descriptor from launchd
     guard let socketFD = try? getSocketFd(APPNAME) else {
-        munkiLog("Could not get socket decriptor from launchd", logFile: APPUSAGED_LOGFILENAME)
+        munkiLog("Could not get socket descriptor from launchd", logFile: APPUSAGED_LOGFILENAME)
         usleep(1_000_000 * 10)
         return -1
     }

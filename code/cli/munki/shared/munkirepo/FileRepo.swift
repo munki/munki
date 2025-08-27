@@ -262,7 +262,7 @@ class FileRepo: Repo {
     }
 
     /// Returns the filesystem path to the item in the repo
-    /// Non-filesystem Repo sublcasses should implement this but return nil
+    /// Non-filesystem Repo subclasses should implement this but return nil
     func pathFor(_ identifier: String) -> String? {
         return fullPath(identifier)
     }

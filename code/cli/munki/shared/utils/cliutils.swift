@@ -132,7 +132,7 @@ class ProcessRunner {
         // delegate?.processUpdated()
     }
 
-    // making this a seperate method so the non-timeout calls
+    // making this a separate method so the non-timeout calls
     // don't need to worry about catching exceptions
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
@@ -193,7 +193,7 @@ class ProcessRunner {
 
 /// Runs a command line tool synchronously, returns CLIResults
 /// this implementation attempts to handle scenarios in which a large amount of stdout
-/// or sterr output is generated
+/// or stderr output is generated
 func runCLI(_ tool: String,
             arguments: [String] = [],
             environment: [String: String] = [:],
@@ -408,7 +408,7 @@ class AsyncProcessRunner {
         delegate?.processUpdated()
     }
 
-    // making this a seperate method so the non-timeout calls
+    // making this a separate method so the non-timeout calls
     // don't need to worry about catching exceptions
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run

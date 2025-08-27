@@ -264,13 +264,13 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     }
 
     guard let mainManifest = manifestData(mainManifestPath) else {
-        display.error("Could not get manifest data from main mainfest \(mainManifestPath)")
+        display.error("Could not get manifest data from main manifest \(mainManifestPath)")
         return .finishedWithErrors
     }
     guard let mainManifestCatalogsList = mainManifest["catalogs"] as? [String],
           !mainManifestCatalogsList.isEmpty
     else {
-        display.error("Main mainfest \(mainManifestPath) does not have a list of catalogs")
+        display.error("Main manifest \(mainManifestPath) does not have a list of catalogs")
         return .finishedWithErrors
     }
 
@@ -446,7 +446,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         installInfo["managed_installs"] = managedInstalls
 
         if startOSInstallItems.count > 1 {
-            display.warning("There are mulitple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
+            display.warning("There are multiple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
         }
 
         // record detail before we throw it away...

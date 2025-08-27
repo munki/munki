@@ -121,7 +121,7 @@ func main() -> Int32 {
     var logoutTimeOverride: Date?
     var logoutTime = Date.distantFuture
 
-    // minimium notification of 60 minutes + 3 seconds
+    // minimum notification of 60 minutes + 3 seconds
     let minimumNotificationMinutes = Double(MANDATORY_NOTIFICATIONS.max() ?? 60)
     let minimumNotificationsLogoutTime = Date().addingTimeInterval(60 * minimumNotificationMinutes + 30)
 

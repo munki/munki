@@ -104,7 +104,7 @@ func setBootstrapMode() throws {
         atPath: CHECKANDINSTALLATSTARTUPFLAG, contents: nil
     ) {
         resetFDEAutoLogin()
-        throw MunkiError("Could not reate bootstrapping flag file")
+        throw MunkiError("Could not create bootstrapping flag file")
     }
 }
 

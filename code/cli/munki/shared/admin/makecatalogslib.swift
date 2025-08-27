@@ -103,7 +103,7 @@ struct CatalogsMaker {
         return iconHashes
     }
 
-    /// Returns a case-insentitive match for installer_item from pkgsList, if any
+    /// Returns a case-insensitive match for installer_item from pkgsList, if any
     func caseInsensitivePkgsListContains(_ installer_item: String) -> String? {
         for repo_pkg in pkgsList {
             if installer_item.lowercased() == repo_pkg.lowercased() {

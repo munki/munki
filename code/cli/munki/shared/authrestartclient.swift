@@ -83,7 +83,7 @@ class AuthRestartClient {
         return result.hasPrefix("OK")
     }
 
-    /// Returns Ttue if we are ready to attempt an auth restart
+    /// Returns True if we are ready to attempt an auth restart
     func verifyCanAttemptAuthRestart() throws -> Bool {
         let request = ["task": "verify_can_attempt_auth_restart"]
         let result = try process(request)

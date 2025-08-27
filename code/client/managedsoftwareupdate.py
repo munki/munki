@@ -377,7 +377,7 @@ def startLogoutHelper():
 
 
 def doRestart(shutdown=False):
-    """Handle the need for a restart or a possbile shutdown."""
+    """Handle the need for a restart or a possible shutdown."""
     restartMessage = 'Software installed or removed requires a restart.'
     if shutdown:
         munkilog.log('Software installed or removed requires a shut down.')
@@ -718,7 +718,7 @@ def main():
         'install without logging out. Not for general use.')
     other_options.add_option(
         '--launchosinstaller', action='store_true',
-        help='Used interally. Not for general use.')
+        help='Used internally. Not for general use.')
     other_options.add_option(
         '--manualcheck', action='store_true',
         help='Used by launchd LaunchAgent when checking manually. Not for '
@@ -1115,7 +1115,7 @@ def main():
         else:
             # staged OS installer is missing
             display.display_error(
-                'Requsted to launch staged OS installer, but no info on a '
+                'Requested to launch staged OS installer, but no info on a '
                 'staged installer was found.')
 
     if updatesavailable or appleupdatesavailable:

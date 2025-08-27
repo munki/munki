@@ -167,7 +167,7 @@ struct MunkiImport: AsyncParsableCommand {
         guard let repoURL = munkiImportOptions.repoURL,
               let plugin = munkiImportOptions.plugin
         else {
-            // won"t happen because we validated it earlier
+            // won't happen because we validated it earlier
             throw ExitCode(1)
         }
 

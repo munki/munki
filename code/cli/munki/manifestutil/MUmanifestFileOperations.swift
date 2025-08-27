@@ -57,7 +57,7 @@ func copyOrRenameManifest(repo: Repo, sourceName: String, destinationName: Strin
     do {
         let data = try await repo.get("manifests/\(sourceName)")
         try await repo.put("manifests/\(destinationName)", content: data)
-        // TODO: on a case-insenstive file system this can end up deleting the file
+        // TODO: on a case-insensitive file system this can end up deleting the file
         // (If you rename "test" to "TEST", then delete "test" you actually delete "TEST")
         if deleteSource {
             try await repo.delete("manifests/\(sourceName)")

@@ -109,7 +109,7 @@ def create_launch_daemon(launchd_group):
         cmd = ['/bin/launchctl', 'bootout', 'system/' + launch_daemon_name]
         subprocess.call(cmd)
 
-    # Populate launch deamon dict
+    # Populate launch daemon dict
     launch_daemon = {}
     launch_daemon['EnvironmentVariables'] = {'INSTALLHELPER_RUN_TYPE': launchd_group}
     launch_daemon['Label'] = launch_daemon_name

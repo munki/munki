@@ -17,7 +17,7 @@ func composedURLWithBase(_ baseURLString: String, adding path: String) -> String
 /// Returns a URL to something in a Munki repo.
 /// If type is empty, returns the base URL for the Munki repo.
 /// If type is one of the supported types, returns the type-specific URL.
-/// If type is specifiied and resource is also specifiied, a full URL to the resource is
+/// If type is specified and resource is also specified, a full URL to the resource is
 /// constructed and returned
 func munkiRepoURL(_ type: String = "", resource: String = "") -> String? {
     // we could use composedURLWithBase, but that doesn't handle

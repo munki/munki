@@ -145,7 +145,7 @@ class MSCAlertController: NSObject {
             alert.informativeText = NSLocalizedString(
                 "Your administrator has restricted installation of these updates. Contact your administrator for assistance.",
                 comment: "Apple Software Updates Unable detail")
-            // disable insstall now button
+            // disable install now button
             alert.buttons[0].isEnabled = false
         } else {
             // prompt user to install using System Preferences
