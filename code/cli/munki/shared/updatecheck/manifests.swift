@@ -109,7 +109,7 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
 
     // validate the plist
     do {
-        _ = try readPlist(fromFile: manifestLocalPath)
+        _ = try detectFileContent(fromFile: manifestLocalPath)
     } catch {
         display.error("Manifest returned for \(name) is invalid.")
         try? FileManager.default.removeItem(atPath: manifestLocalPath)
@@ -199,7 +199,7 @@ func cleanUpManifests() {
 func manifestData(_ path: String) -> PlistDict? {
     if pathExists(path) {
         do {
-            if let plist = try readPlist(fromFile: path) as? PlistDict {
+            if let plist = try detectFileContent(fromFile: path) as? PlistDict {
                 return plist
             } else {
                 // could not coerce to correct format
