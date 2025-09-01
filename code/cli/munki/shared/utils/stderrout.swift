@@ -21,7 +21,7 @@
 import Foundation
 
 /// similar to print() function, but prints to stderr
-func printStderr(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+public func printStderr(_ items: Any..., separator: String = " ", terminator: String = "\n") {
     let output = items
         .map { String(describing: $0) }
         .joined(separator: separator) + terminator

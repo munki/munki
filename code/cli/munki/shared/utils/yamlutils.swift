@@ -75,7 +75,8 @@ func readYaml(fromString string: String) throws -> Any? {
 /// Attempt to write YAML to a file
 func writeYaml(_ dataObject: Any, toFile filepath: String) throws {
     do {
-        let yamlString = try Yams.dump(object: dataObject, 
+        let sanitizedData = sanitizeForYaml(dataObject)
+        let yamlString = try Yams.dump(object: sanitizedData, 
                                       indent: 2,
                                       width: -1, 
                                       allowUnicode: true)
@@ -85,10 +86,129 @@ func writeYaml(_ dataObject: Any, toFile filepath: String) throws {
     }
 }
 
+/// Sanitize data object for YAML serialization by converting NSNumber, NSString, etc. to native Swift types
+func sanitizeForYaml(_ object: Any) -> Any {
+    switch object {
+    case let nsNumber as NSNumber:
+        // Handle boolean values first
+        if nsNumber === kCFBooleanTrue {
+            return true
+        }
+        if nsNumber === kCFBooleanFalse {
+            return false
+        }
+        
+        // Get the underlying CFNumber type to determine how to convert
+        let objCType = String(cString: nsNumber.objCType)
+        
+        // Handle different numeric types
+        switch objCType {
+        case "c", "C":  // char/unsigned char (often used for booleans)
+            return nsNumber.intValue != 0
+        case "s", "S":  // short/unsigned short
+            return nsNumber.intValue
+        case "i", "I":  // int/unsigned int
+            return nsNumber.intValue
+        case "l", "L":  // long/unsigned long
+            return nsNumber.intValue
+        case "q", "Q":  // long long/unsigned long long
+            return nsNumber.intValue
+        case "f":       // float
+            return nsNumber.floatValue
+        case "d":       // double
+            return nsNumber.doubleValue
+        default:
+            // Fallback: try to determine if it's an integer or floating point
+            if nsNumber.doubleValue == Double(nsNumber.intValue) {
+                return nsNumber.intValue
+            } else {
+                return nsNumber.doubleValue
+            }
+        }
+    case let nsString as NSString:
+        return nsString as String
+    case let nsArray as NSArray:
+        return nsArray.map { sanitizeForYaml($0) }
+    case let nsDictionary as NSDictionary:
+        var result: [String: Any] = [:]
+        for (key, value) in nsDictionary {
+            if let stringKey = key as? String {
+                result[stringKey] = sanitizeForYaml(value)
+            } else if let stringKey = sanitizeForYaml(key) as? String {
+                result[stringKey] = sanitizeForYaml(value)
+            }
+        }
+        return result
+    case let nsDate as NSDate:
+        // Convert NSDate to ISO 8601 string
+        let formatter = ISO8601DateFormatter()
+        return formatter.string(from: nsDate as Date)
+    case let date as Date:
+        // Convert Date to ISO 8601 string
+        let formatter = ISO8601DateFormatter()
+        return formatter.string(from: date)
+    case let nsData as NSData:
+        // Convert NSData to base64 string
+        return nsData.base64EncodedString()
+    case let data as Data:
+        // Convert Data to base64 string
+        return data.base64EncodedString()
+    case let array as [Any]:
+        return array.map { sanitizeForYaml($0) }
+    case let dictionary as [String: Any]:
+        var result: [String: Any] = [:]
+        for (key, value) in dictionary {
+            result[key] = sanitizeForYaml(value)
+        }
+        return result
+    case let dictionary as [AnyHashable: Any]:
+        var result: [String: Any] = [:]
+        for (key, value) in dictionary {
+            if let stringKey = key as? String {
+                result[stringKey] = sanitizeForYaml(value)
+            } else if let stringKey = "\(key)" as String? {
+                result[stringKey] = sanitizeForYaml(value)
+            }
+        }
+        return result
+    case is String, is Int, is Double, is Float, is Bool:
+        // Basic Swift types that YAML can handle natively
+        return object
+    default:
+        // Handle any unrecognized object by converting to string representation
+        // This catches Core Foundation types, custom objects, etc.
+        let objectType = type(of: object)
+        let objectString = String(describing: object)
+        
+        // Enhanced logging for debugging
+        print("WARNING: Converting unrecognized object type \(objectType) to string: \(objectString)")
+        
+        // Check if it's a URL, file path, or other special string-like object
+        if let url = object as? URL {
+            return url.absoluteString
+        } else if let path = object as? NSString {
+            return path as String
+        } else if objectString.hasPrefix("/") || objectString.contains(".") {
+            // Likely a file path or similar string - just return it as a string
+            return objectString
+        }
+        
+        // Try to extract useful information from the object
+        if let describable = object as? CustomStringConvertible {
+            return describable.description
+        } else if let debugDescribable = object as? CustomDebugStringConvertible {
+            return debugDescribable.debugDescription
+        } else {
+            return objectString
+        }
+    }
+}
+
 /// Attempt to convert a data object to YAML string
 func yamlToString(_ dataObject: Any) throws -> String {
     do {
-        return try Yams.dump(object: dataObject, 
+        let sanitizedData = sanitizeForYaml(dataObject)
+        return try Yams.dump(object: sanitizedData, 
                            indent: 2,
                            width: -1, 
                            allowUnicode: true)
