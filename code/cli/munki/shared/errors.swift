@@ -21,7 +21,7 @@
 import Foundation
 
 /// General error class for Munki errors
-class MunkiError: Error, CustomStringConvertible {
+public class MunkiError: Error, CustomStringConvertible {
     private let message: String
 
     // Creates a new error with the given message.
@@ -36,7 +36,7 @@ class MunkiError: Error, CustomStringConvertible {
 
 /// Ensures we can return a useful localizedError
 extension MunkiError: LocalizedError {
-    var errorDescription: String? {
+    public var errorDescription: String? {
         return message
     }
 }
