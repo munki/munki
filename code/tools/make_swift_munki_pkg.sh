@@ -531,7 +531,8 @@ do
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$ADMINROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --preserve-metadata=entitlements \
+            --options runtime --timestamp --verbose "$ADMINROOT/usr/local/munki/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
