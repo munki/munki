@@ -50,6 +50,7 @@
 		C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */; };
 		C0D30BEB20CA445A005E876E /* MunkiItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D30BEA20CA445A005E876E /* MunkiItems.swift */; };
 		C0E2599E210AD8CE00C3A3D9 /* Socket.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E2599D210AD8CD00C3A3D9 /* Socket.swift */; };
+		C0E8F96B2E6A3FB8003A298C /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E8F96A2E6A3FB8003A298C /* UNIXProcessInfo.swift */; };
 		C0FBF1BD20D4945B00FAD1BE /* mschtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FBF1BC20D4945B00FAD1BE /* mschtml.swift */; };
 		C0FBF1BF20D4A0BB00FAD1BE /* Template.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FBF1BE20D4A0BB00FAD1BE /* Template.swift */; };
 		C0FD710A20D485A80018A002 /* HtmlFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FD710920D485A80018A002 /* HtmlFilter.swift */; };
@@ -140,6 +141,7 @@
 		C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCStatusController.swift; sourceTree = "<group>"; };
 		C0D30BEA20CA445A005E876E /* MunkiItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiItems.swift; sourceTree = "<group>"; };
 		C0E2599D210AD8CD00C3A3D9 /* Socket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Socket.swift; sourceTree = "<group>"; };
+		C0E8F96A2E6A3FB8003A298C /* UNIXProcessInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNIXProcessInfo.swift; sourceTree = "<group>"; };
 		C0F8E3DF2105622F00718259 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0F8E3E221057A1500718259 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C0F8E3E421057A2D00718259 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -237,6 +239,7 @@
 		C04F827D20BB319B00F9C57D /* Managed Software Center */ = {
 			isa = PBXGroup;
 			children = (
+				C0E8F96A2E6A3FB8003A298C /* UNIXProcessInfo.swift */,
 				8428C7F12E0DB23200D83D41 /* XIBs */,
 				C0E2599D210AD8CD00C3A3D9 /* Socket.swift */,
 				C0F8E3DF2105622F00718259 /* Info.plist */,
@@ -484,6 +487,7 @@
 				C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */,
 				C04CA61E20E6ADA100711461 /* MainWindowController.swift in Sources */,
 				8428C7E82E0CB55000D83D41 /* MainSplitViewController.swift in Sources */,
+				C0E8F96B2E6A3FB8003A298C /* UNIXProcessInfo.swift in Sources */,
 				C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */,
 				56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */,
 				8428C7F02E0DABC700D83D41 /* LogWindowController.swift in Sources */,

@@ -69,7 +69,6 @@ class MSCStatusController: NSObject {
         // Monitors managedsoftwareupdate process for failure to start
         // or unexpected exit, so we're not waiting around forever if
         // managedsoftwareupdate isn't running.
-        let PYTHON_SCRIPT_NAME = "managedsoftwareupdate"
         let NEVER_STARTED = -2
         let UNEXPECTEDLY_QUIT = -1
         if !session_started {
@@ -82,7 +81,7 @@ class MSCStatusController: NSObject {
             saw_process = true
             // clear the flag so we have to get another status update
             got_status_update = false
-        } else if pythonScriptRunning(PYTHON_SCRIPT_NAME) {
+        } else if managedsoftwareupdateInstanceRunning() != nil {
             timeout_counter = 6
             saw_process = true
         } else {

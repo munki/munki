@@ -484,20 +484,70 @@ func justUpdate() throws {
     }
 }
 
-func pythonScriptRunning(_ scriptName: String) -> Bool {
-    let output = exec("/bin/ps", args: ["-eo", "command="])
-    let lines = output.components(separatedBy: "\n")
-    for line in lines {
-        let part = line.components(separatedBy: " ")
-        if (part[0].contains("/MacOS/Python") || part[0].contains("python")) {
-            if part.count > 1 {
-                if part[1].contains(scriptName) {
-                    return true
+/// Returns ProcessID for a running python script matching the scriptName
+/// as long as the pid is not the same as ours
+/// this is used to see if the managedsoftwareupdate script is already running
+func pythonScriptRunning(_ scriptName: String) -> Int32? {
+    let ourPid = ProcessInfo().processIdentifier
+    let processes = UNIXProcessListWithPaths()
+    for item in processes {
+        if item.pid == ourPid {
+            continue
+        }
+        let executable = (item.path as NSString).lastPathComponent
+        if executable.contains("python") || executable.contains("Python") {
+            // get all the args for this pid
+            if var args = executableAndArgsForPid(item.pid), args.count > 2 {
+                // first value is executable path, drop it
+                // next value is command, drop it
+                args = Array(args.dropFirst(2))
+                // drop leading args that start with a hyphen
+                args = Array(args.drop(while: { $0.hasPrefix("-") }))
+                if args.count > 0, args[0].hasSuffix(scriptName) {
+                    return item.pid
                 }
             }
         }
     }
-    return false
+    return nil
+}
+
+/// Returns Process ID for a running executable matching the name
+func executableRunning(_ name: String) -> Int32? {
+    let processes = UNIXProcessListWithPaths()
+    for item in processes {
+        if name.hasPrefix("/") {
+            // full path, so exact comparison
+            if item.path == name {
+                return item.pid
+            }
+        } else {
+            // does executable path end with the name?
+            if item.path.hasSuffix(name) {
+                return item.pid
+            }
+        }
+    }
+    return nil
+}
+
+/// Returns the pid of managedsoftwareupdate process, if found
+func managedsoftwareupdateInstanceRunning() -> Int32? {
+    // A Python version of managedsoftwareupdate might be running,
+    // or a compiled version
+    if let pid = executableRunning("managedsoftwareupdate") {
+        return pid
+    }
+    if let pid = pythonScriptRunning(".managedsoftwareupdate.py") {
+        return pid
+    }
+    if let pid = pythonScriptRunning("managedsoftwareupdate.py") {
+        return pid
+    }
+    if let pid = pythonScriptRunning("managedsoftwareupdate") {
+        return pid
+    }
+    return nil
 }
 
 func getRunningProcessesWithUsers() -> [[String:String]] {
