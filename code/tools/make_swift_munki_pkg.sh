@@ -612,19 +612,26 @@ if [ "$APPSIGNINGCERT" != "" ]; then
         exit 2
     fi
 
-    echo "Signing MunkiStatus.app Frameworks..."
-    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
-    SIGNING_RESULT="$?"
-    if [ "$SIGNING_RESULT" -ne 0 ]; then
-        echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
-        exit 2
+    # Frameworks may or may not exist depending on OS target and linked Frameworks
+    if [ -e "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" ] ; then
+        echo "Signing MunkiStatus.app Frameworks..."
+        /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
+            exit 2
+        fi
     fi
-    echo "Signing Managed Software Center.app Frameworks..."
-    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
-    SIGNING_RESULT="$?"
-    if [ "$SIGNING_RESULT" -ne 0 ]; then
-        echo "Error signing Managed Software Center.app Frameworks: $SIGNING_RESULT"
-        exit 2
+
+    # Frameworks may or may not exist depending on OS target and linked Frameworks
+    if [ -e "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" ] ; then
+        echo "Signing Managed Software Center.app Frameworks..."
+        /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing Managed Software Center.app Frameworks: $SIGNING_RESULT"
+            exit 2
+        fi
     fi
 
     echo "Signing Managed Software Center.app..."
