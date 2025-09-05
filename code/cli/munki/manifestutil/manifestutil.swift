@@ -118,7 +118,7 @@ extension ManifestUtil {
         static var configuration = CommandConfiguration(abstract: "Print version information.")
 
         func run() throws {
-            print(CLI_TOOLS_VERSION)
+            print(getVersion())
         }
     }
 }
