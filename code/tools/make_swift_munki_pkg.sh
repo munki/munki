@@ -362,7 +362,7 @@ mv "${VERSIONFILE}.bak" "${VERSIONFILE}"
 echo "Building Managed Software Center.xcodeproj..."
 pushd "$MUNKIROOT/code/apps/Managed Software Center" > /dev/null
 /usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets clean > /dev/null
-/usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets build > /dev/null
+/usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets build #> /dev/null
 XCODEBUILD_RESULT="$?"
 popd > /dev/null
 if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
