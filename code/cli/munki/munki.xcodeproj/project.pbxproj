@@ -225,11 +225,6 @@
 		C0684DF72DBFE2E30091E774 /* ODutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C213F2C8E1FF50023E9D9 /* ODutils.swift */; };
 		C0684DF82DBFE3B20091E774 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C0684DF92DBFE3D70091E774 /* scriptutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2A22C61939E0019A067 /* scriptutils.swift */; };
-		C0684E212DBFF81B0091E774 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0684E202DBFF81B0091E774 /* ArgumentParser */; };
-		C0684E252DC008A30091E774 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
-		C0684E262DC024480091E774 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
-		C0684E272DC024630091E774 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
-		C0684E282DC028940091E774 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
 		C0684E342DC0409C0091E774 /* prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FAF2C2B22A400090743 /* prefs.swift */; };
 		C0684E352DC040A30091E774 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
 		C0684E362DC040B20091E774 /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
@@ -549,15 +544,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
-		C0684DFF2DBFF33E0091E774 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 		C0684E2B2DC040450091E774 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -712,7 +698,6 @@
 		C05DB2022DAC53150081FACD /* manifestutil */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manifestutil; sourceTree = BUILT_PRODUCTS_DIR; };
 		C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "manifestutil-Bridging-Header.h"; sourceTree = "<group>"; };
 		C0684DD12DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = precache_agent; sourceTree = BUILT_PRODUCTS_DIR; };
-		C0684E012DBFF33E0091E774 /* supervisor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = supervisor; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0684E2D2DC040450091E774 /* installhelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = installhelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplications.swift; sourceTree = "<group>"; };
 		C0684E472DC586660091E774 /* osinstallerinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstallerinfo.swift; sourceTree = "<group>"; };
@@ -804,7 +789,6 @@
 		C00519A22D2A5B850060DDB6 /* authrestartd */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = authrestartd; sourceTree = "<group>"; };
 		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C09616492DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, C096164D2DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
 		C0684DD22DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = precache_agent; sourceTree = "<group>"; };
-		C0684E022DBFF33E0091E774 /* supervisor */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = supervisor; sourceTree = "<group>"; };
 		C0684E2E2DC040450091E774 /* installhelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = installhelper; sourceTree = "<group>"; };
 		C0684E5D2DC736EE0091E774 /* munkiCLItesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = munkiCLItesting; sourceTree = "<group>"; };
 		C0D66AC02D2CA1DE009EF807 /* logouthelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = logouthelper; sourceTree = "<group>"; };
@@ -856,14 +840,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0684DF12DBFE17A0091E774 /* X509 in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C0684DFE2DBFF33E0091E774 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C0684E212DBFF81B0091E774 /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1080,7 +1056,6 @@
 				C0D66AC02D2CA1DE009EF807 /* logouthelper */,
 				C05DB2032DAC53150081FACD /* manifestutil */,
 				C0684DD22DBFDBD20091E774 /* precache_agent */,
-				C0684E022DBFF33E0091E774 /* supervisor */,
 				C0684E2E2DC040450091E774 /* installhelper */,
 				C0684E5D2DC736EE0091E774 /* munkiCLItesting */,
 				C07A6FA62C2A82B400090743 /* Products */,
@@ -1106,7 +1081,6 @@
 				C0D66ABF2D2CA1DE009EF807 /* logouthelper */,
 				C05DB2022DAC53150081FACD /* manifestutil */,
 				C0684DD12DBFDBD20091E774 /* precache_agent */,
-				C0684E012DBFF33E0091E774 /* supervisor */,
 				C0684E2D2DC040450091E774 /* installhelper */,
 				C0684E5C2DC736EE0091E774 /* munkiCLItesting.xctest */,
 			);
@@ -1421,29 +1395,6 @@
 			productReference = C0684DD12DBFDBD20091E774 /* precache_agent */;
 			productType = "com.apple.product-type.tool";
 		};
-		C0684E002DBFF33E0091E774 /* supervisor */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = C0684E052DBFF33E0091E774 /* Build configuration list for PBXNativeTarget "supervisor" */;
-			buildPhases = (
-				C0684DFD2DBFF33E0091E774 /* Sources */,
-				C0684DFE2DBFF33E0091E774 /* Frameworks */,
-				C0684DFF2DBFF33E0091E774 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C0684E022DBFF33E0091E774 /* supervisor */,
-			);
-			name = supervisor;
-			packageProductDependencies = (
-				C0684E202DBFF81B0091E774 /* ArgumentParser */,
-			);
-			productName = supervisor;
-			productReference = C0684E012DBFF33E0091E774 /* supervisor */;
-			productType = "com.apple.product-type.tool";
-		};
 		C0684E2C2DC040450091E774 /* installhelper */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C0684E312DC040450091E774 /* Build configuration list for PBXNativeTarget "installhelper" */;
@@ -1697,9 +1648,6 @@
 					C0684DD02DBFDBD10091E774 = {
 						CreatedOnToolsVersion = 16.3;
 					};
-					C0684E002DBFF33E0091E774 = {
-						CreatedOnToolsVersion = 16.3;
-					};
 					C0684E2C2DC040450091E774 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -1769,7 +1717,6 @@
 				C0D66ABE2D2CA1DE009EF807 /* logouthelper */,
 				C05DB2012DAC53150081FACD /* manifestutil */,
 				C0684DD02DBFDBD10091E774 /* precache_agent */,
-				C0684E002DBFF33E0091E774 /* supervisor */,
 				C0684E2C2DC040450091E774 /* installhelper */,
 				C0684E5B2DC736EE0091E774 /* munkiCLItesting */,
 			);
@@ -1953,17 +1900,6 @@
 				C0684DDE2DBFDD190091E774 /* constants.swift in Sources */,
 				C058EF302DCD18D3002775E0 /* tempfileutils.swift in Sources */,
 				C058EF7E2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C0684DFD2DBFF33E0091E774 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C0684E252DC008A30091E774 /* UNIXProcessInfo.swift in Sources */,
-				C0684E272DC024630091E774 /* prefs.swift in Sources */,
-				C0684E262DC024480091E774 /* munkilog.swift in Sources */,
-				C0684E282DC028940091E774 /* constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2596,36 +2532,6 @@
 			};
 			name = Release;
 		};
-		C0684E062DBFF33E0091E774 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Manual;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.supervisor;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		C0684E072DBFF33E0091E774 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Manual;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.supervisor;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 		C0684E322DC040450091E774 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3188,15 +3094,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C0684E052DBFF33E0091E774 /* Build configuration list for PBXNativeTarget "supervisor" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C0684E062DBFF33E0091E774 /* Debug */,
-				C0684E072DBFF33E0091E774 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		C0684E312DC040450091E774 /* Build configuration list for PBXNativeTarget "installhelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -3346,11 +3243,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C0B715BC2DA6F43E00F255FB /* XCRemoteSwiftPackageReference "swift-certificates" */;
 			productName = X509;
-		};
-		C0684E202DBFF81B0091E774 /* ArgumentParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
-			productName = ArgumentParser;
 		};
 		C0684E9F2DC7E5CD0091E774 /* X509 */ = {
 			isa = XCSwiftPackageProductDependency;

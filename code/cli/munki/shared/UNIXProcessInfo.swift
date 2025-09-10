@@ -23,6 +23,7 @@ struct UNIXProcessInfo {
     let pid: Int32
     let ppid: Int32
     let uid: UInt32
+    let starttime: Int
     let command: String
 }
 
@@ -52,6 +53,7 @@ func UNIXProcessList() -> [UNIXProcessInfo] {
                 pid: kinfo.kp_proc.p_pid,
                 ppid: kinfo.kp_eproc.e_ppid,
                 uid: kinfo.kp_eproc.e_ucred.cr_uid,
+                starttime: kinfo.kp_proc.p_un.__p_starttime.tv_sec,
                 command: command
             )
         )
@@ -168,6 +170,7 @@ struct UNIXProcessInfoWithPath {
     let pid: Int32
     let ppid: Int32
     let uid: UInt32
+    let starttime: Int
     let command: String
     let path: String
 }
@@ -187,6 +190,7 @@ func UNIXProcessListWithPaths() -> [UNIXProcessInfoWithPath] {
                         pid: proc.pid,
                         ppid: proc.ppid,
                         uid: proc.uid,
+                        starttime: proc.starttime,
                         command: proc.command,
                         path: args[0]
                     )
