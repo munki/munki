@@ -468,7 +468,7 @@ mkdir -m 755 "$COREROOT/usr/local"
 mkdir -m 755 "$COREROOT/usr/local/munki"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper removepackages managedsoftwareupdate precache_agent supervisor
+for TOOL in authrestartd launchapp logouthelper removepackages managedsoftwareupdate precache_agent
 do
     cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
     # sign tool
