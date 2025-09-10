@@ -14,10 +14,6 @@
 	<string>com.googlecode.munki.managedsoftwareupdate-manualcheck</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/supervisor</string>
-		<string>--timeout</string>
-		<string>43200</string>
-		<string>--</string>
 		<string>/usr/local/munki/managedsoftwareupdate</string>
 		<string>--manualcheck</string>
 	</array>
