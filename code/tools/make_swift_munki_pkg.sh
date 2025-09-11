@@ -594,11 +594,12 @@ LIBSROOT="$PKGTMP/munki_libs"
 mkdir -m 1775 "$LIBSROOT"
 mkdir -m 755 "$LIBSROOT/usr"
 mkdir -m 755 "$LIBSROOT/usr/local"
-mkdir -m 755 "$LIBSROOT/usr/local/lib"
+mkdir -m 755 "$LIBSROOT/usr/local/munki"
+mkdir -m 755 "$LIBSROOT/usr/local/munki/lib"
 
 # copy in needed Swift dylibs
 CONCURRENCY_DYLIB="$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx/libswift_Concurrency.dylib"
-cp "$CONCURRENCY_DYLIB" "$LIBSROOT/usr/local/lib/"
+cp "$CONCURRENCY_DYLIB" "$LIBSROOT/usr/local/munki/lib/"
 
 # Create package info file.
 makeinfo libs "$PKGTMP/info" norestart
