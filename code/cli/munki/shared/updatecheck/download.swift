@@ -452,9 +452,9 @@ func startPrecachingAgent() {
         return
     }
     // first look in same dir as the current executable
-    var precacheAgentPath = currentExecutableDir(appendingPathComponent: "precache_agent")
+    var precacheAgentPath = currentExecutableDir(appendingPathComponent: "libexec/precache_agent")
     if !pathExists(precacheAgentPath) {
-        precacheAgentPath = "/usr/local/munki/precache_agent"
+        precacheAgentPath = "/usr/local/munki/libexec/precache_agent"
     }
     if pathExists(precacheAgentPath) {
         display.info("Starting precaching agent")

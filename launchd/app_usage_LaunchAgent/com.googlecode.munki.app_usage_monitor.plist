@@ -8,7 +8,7 @@
 	<string>com.googlecode.munki.app_usage_monitor</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/app_usage_monitor</string>
+		<string>/usr/local/munki/libexec/app_usage_monitor</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

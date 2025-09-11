@@ -18,7 +18,7 @@
 	</array>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/launchapp</string>
+		<string>/usr/local/munki/libexec/launchapp</string>
 		<string>-a</string>
 		<string>/Applications/Managed Software Center.app</string>
 	</array>

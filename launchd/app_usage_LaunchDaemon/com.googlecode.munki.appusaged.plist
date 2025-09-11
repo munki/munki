@@ -6,7 +6,7 @@
 	<string>com.googlecode.munki.appusaged</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/appusaged</string>
+		<string>/usr/local/munki/libexec/appusaged</string>
 	</array>
 	<key>Sockets</key>
 	<dict>

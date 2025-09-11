@@ -119,7 +119,7 @@ func createInstallHelperLaunchDaemon(_ group: String) {
     let launchDaemon: [String: Any] = [
         "EnvironmentVariables": ["INSTALLHELPER_RUN_TYPE": group],
         "Label": label,
-        "ProgramArguments": ["/usr/local/munki/installhelper"],
+        "ProgramArguments": ["/usr/local/munki/libexec/installhelper"],
         "RunAtLoad": true,
     ]
     // write out launchd plist

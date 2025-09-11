@@ -109,7 +109,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 let ourPid = ProcessInfo().processIdentifier
                 munkiLog(String(repeating: "*", count: 60))
                 munkiLog("\(ourName) launched as pid \(ourPid)")
-                munkiLog("Another instance of \(ourName) is running as pid \(proc.pid).")
+                munkiLog("Another instance of \(ourName) is running as pid \(proc.pid) from \(proc.path)")
                 munkiLog("This process (pid \(ourPid)) exiting.")
                 munkiLog(String(repeating: "*", count: 60))
                 printStderr("Another instance of \(ourName) is running. Exiting.")
