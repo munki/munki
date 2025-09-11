@@ -2647,6 +2647,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
+					"@executable_path/lib",
 					"@executable_path/../lib",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
@@ -2711,6 +2712,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
+					"@executable_path/lib",
 					"@executable_path/../lib",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
