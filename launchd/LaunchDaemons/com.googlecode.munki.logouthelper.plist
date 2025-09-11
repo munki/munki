@@ -6,7 +6,7 @@
 	<string>com.googlecode.munki.logouthelper</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/logouthelper</string>
+		<string>/usr/local/munki/libexec/logouthelper</string>
 	</array>
 </dict>
 </plist>

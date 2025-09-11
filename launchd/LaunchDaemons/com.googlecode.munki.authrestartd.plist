@@ -6,7 +6,7 @@
 	<string>com.googlecode.munki.authrestartd</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/munki/authrestartd</string>
+		<string>/usr/local/munki/libexec/authrestartd</string>
 	</array>
 	<key>Sockets</key>
 	<dict>

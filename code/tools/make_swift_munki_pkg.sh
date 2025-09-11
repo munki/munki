@@ -466,9 +466,10 @@ mkdir -m 1775 "$COREROOT"
 mkdir -m 755 "$COREROOT/usr"
 mkdir -m 755 "$COREROOT/usr/local"
 mkdir -m 755 "$COREROOT/usr/local/munki"
+mkdir -m 755 "$COREROOT/usr/local/munki/libexec"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper removepackages managedsoftwareupdate precache_agent
+for TOOL in removepackages managedsoftwareupdate
 do
     cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
     # sign tool
@@ -485,10 +486,28 @@ do
         fi
     fi
 done
+for TOOL in authrestartd launchapp logouthelper precache_agent
+do
+    cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$COREROOT/usr/local/munki/libexec/" 2>&1
+    # sign tool
+    if [ "$APPSIGNINGCERT" != "" ]; then
+        echo "Signing $TOOL..."
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" \
+            --preserve-metadata=entitlements \
+            --options runtime --timestamp --verbose \
+            "$COREROOT/usr/local/munki/libexec/$TOOL"
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing $TOOL: $SIGNING_RESULT"
+            exit 2
+        fi
+    fi
+done
 
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
+chmod +x "$COREROOT/usr/local/munki/libexec"
 
 # make paths.d file
 mkdir -m 755 "$COREROOT/private"
@@ -675,6 +694,7 @@ mkdir -m  755 "$LAUNCHDROOT/Library/LaunchDaemons"
 mkdir -m  755 "$LAUNCHDROOT/usr"
 mkdir -m  755 "$LAUNCHDROOT/usr/local"
 mkdir -m  755 "$LAUNCHDROOT/usr/local/munki"
+mkdir -m  755 "$LAUNCHDROOT/usr/local/munki/libexec"
 
 # Copy launch daemons and launch agents.
 cp -X "$MUNKIROOT/launchd/LaunchAgents/"*.plist "$LAUNCHDROOT/Library/LaunchAgents/"
@@ -686,11 +706,11 @@ chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
 # edit this if list of tools changes!
 for TOOL in installhelper
 do
-	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$LAUNCHDROOT/usr/local/munki/" 2>&1
+	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$LAUNCHDROOT/usr/local/munki/libexec/" 2>&1
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$LAUNCHDROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$LAUNCHDROOT/usr/local/munki/libexec/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
@@ -701,6 +721,7 @@ done
 # Set permissions.
 chmod -R go-w "$LAUNCHDROOT/usr/local/munki"
 chmod +x "$LAUNCHDROOT/usr/local/munki"
+chmod +x "$LAUNCHDROOT/usr/local/munki/libexec"
 
 # copy in launchd cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
@@ -726,6 +747,7 @@ mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
 mkdir -m 755 "$APPUSAGEROOT/usr"
 mkdir -m 755 "$APPUSAGEROOT/usr/local"
 mkdir -m 755 "$APPUSAGEROOT/usr/local/munki"
+mkdir -m 755 "$APPUSAGEROOT/usr/local/munki/libexec"
 # Copy launch agent, launch daemon, daemon, and agent
 # LaunchAgent
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
@@ -737,11 +759,11 @@ chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
 # edit this if list of tools changes!
 for TOOL in appusaged app_usage_monitor installhelper
 do
-	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
+	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$APPUSAGEROOT/usr/local/munki/libexec/" 2>&1
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$APPUSAGEROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$APPUSAGEROOT/usr/local/munki/libexec/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
@@ -752,6 +774,7 @@ done
 # Set permissions.
 chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
 chmod +x "$APPUSAGEROOT/usr/local/munki"
+chmod +x "$APPUSAGEROOT/usr/local/munki/libexec"
 
 # copy in app_usage cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/app_usage_cleanup_scripts/" ] ; then
