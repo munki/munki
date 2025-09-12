@@ -62,9 +62,9 @@ extension MainWindowController: NSOutlineViewDelegate {
             view.imgView.image = image
             view.imgView.contentTintColor = isSelected ? .controlAccentColor : .secondaryLabelColor
         } else if #available(macOS 11.0, *) {
-            if let systemImage = NSImage(systemSymbolName: sidebarItem.icon, accessibilityDescription: nil) {
-                systemImage.isTemplate = true
-                view.imgView.image = systemImage
+            if let image = NSImage(systemSymbolName: sidebarItem.icon, accessibilityDescription: nil) {
+                image.isTemplate = true
+                view.imgView.image = image
                 view.imgView.contentTintColor = isSelected ? .controlAccentColor : .secondaryLabelColor
             } else {
                 view.imgView.image = nil

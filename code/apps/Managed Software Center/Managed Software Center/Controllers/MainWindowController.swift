@@ -100,15 +100,28 @@ class MainWindowController: NSWindowController {
             }
             // add an item for each sidebar item
             var index = 1
-            for item in sidebarItems {
+            for sidebarItem in sidebarItems {
                 let key = index < 10 ? String(index) : ""
-                navigateMenu.items.append(
-                    NSMenuItem(
-                        title: item.title.localized(withComment: "\(item.title) label"),
-                        action: #selector(navigationMenuItemClicked),
-                        keyEquivalent: key
-                    )
+                let menuItem = NSMenuItem(
+                    title: sidebarItem.title.localized(withComment: "\(sidebarItem.title) label"),
+                    action: #selector(navigationMenuItemClicked),
+                    keyEquivalent: key
                 )
+                if #available(macOS 26.0, *) {
+                    if let image = NSImage(named: NSImage.Name(sidebarItem.icon))?.copy() as? NSImage {
+                        // we make a copy since we're resizing it and this same image is
+                        // used in the sidebar (and we don't want it to be the same size
+                        // both places)
+                        image.isTemplate = true
+                        let fontsize = NSFont.menuFont(ofSize: 0.0).pointSize
+                        image.size.height = fontsize
+                        image.size.width = fontsize
+                        menuItem.image = image
+                    } else if let image = NSImage(systemSymbolName: sidebarItem.icon, accessibilityDescription: nil) {
+                        menuItem.image = image
+                    }
+                }
+                navigateMenu.items.append(menuItem)
                 index += 1
             }
         }
