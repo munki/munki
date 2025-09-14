@@ -14,6 +14,7 @@
 		C081D8C91E5F5F2500323D9C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C081D8C81E5F5F2500323D9C /* Cocoa.framework */; };
 		C081D8CE1E60A82600323D9C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C081D8D01E60A82600323D9C /* Localizable.strings */; };
 		C081D8D41E60A82600323D9C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C081D8D61E60A82600323D9C /* InfoPlist.strings */; };
+		C0BC059B2E76638600FC3020 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = C0BC059A2E76638600FC3020 /* AppIcon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +70,7 @@
 		C0891DC11E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C0891DC21E60B527001446D5 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C0891DCB1E60B972001446D5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C0BC059A2E76638600FC3020 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				C07A6F7F2817033800755D2C /* Assets.xcassets */,
+				C0BC059A2E76638600FC3020 /* AppIcon.icon */,
 				C081D8D61E60A82600323D9C /* InfoPlist.strings */,
 				C081D8D01E60A82600323D9C /* Localizable.strings */,
 				C081D8BF1E5F4F5E00323D9C /* MainMenu.xib */,
@@ -215,6 +218,7 @@
 				C081D8CE1E60A82600323D9C /* Localizable.strings in Resources */,
 				C07A6F802817033800755D2C /* Assets.xcassets in Resources */,
 				C081D8C11E5F4F5E00323D9C /* MainMenu.xib in Resources */,
+				C0BC059B2E76638600FC3020 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
