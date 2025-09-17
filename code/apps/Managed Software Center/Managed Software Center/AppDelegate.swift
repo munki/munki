@@ -81,6 +81,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // have the statuscontroller register for its own notifications
         statusController.registerForNotifications()
         
+        // we need to let UNUserNotificationCenter know we
+        // support Dock icon badges
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.badge], completionHandler: { _, _ in return })
+        
         // user may have launched the app manually, or it may have
         // been launched by /usr/local/munki/managedsoftwareupdate
         // to display available updates, or via a munki: URL
