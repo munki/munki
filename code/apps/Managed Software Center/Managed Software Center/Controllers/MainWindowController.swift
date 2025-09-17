@@ -483,6 +483,7 @@ class MainWindowController: NSWindowController {
             updatesAndOptionalWindowMode()
             if shouldMoveToUpdatesPage() {
                 loadUpdatesPage(self)
+                displayUpdateCount()
             } else {
                 loadAllSoftwarePage(self)
             }
