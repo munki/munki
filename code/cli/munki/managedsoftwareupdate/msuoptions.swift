@@ -65,7 +65,7 @@ struct MSUConfigOptions: ParsableArguments {
 
 struct MSUOtherOptions: ParsableArguments {
     @Flag(name: .shortAndLong,
-          help: "Used by launchd LaunchDaemon for scheduled/background runs. No user feedback or interaction. Not tested or supported with any other option. This is a safer option to use than --installonly when using managedsoftwareupdate to install pending updates, since only unattended updates are installed if there is an active user. There is no progress feedback at the command-line.")
+          help: "Triggers an updatecheck, followed by an install/removal of items that can be done without user interaction. Used by launchd LaunchDaemon for scheduled/background runs. Not tested or supported with any other option. This is a safer option to use than --installonly when using managedsoftwareupdate to install pending updates, since only unattended updates are installed if there is an active user.")
     var auto = false
 
     @Flag(name: .shortAndLong,
