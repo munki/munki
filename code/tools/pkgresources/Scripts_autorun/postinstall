@@ -1,9 +1,6 @@
 #!/bin/sh
 
-# use launchctl to submit a job to run managedsoftwareupdate
-# so that the script returns before the job finishes and ending
-# the installer task does not end the managedsoftwareupdate run
-# (It's quite possible that `/usr/local/munki/managedsoftwareupdate --auto &`
-# would work as well!)
+# use launchctl to start a background check/install immediately instead
+# of waiting for the StartInterval
 
-/bin/launchctl submit -l com.googlecode.munki.autorun -- /usr/local/munki/managedsoftwareupdate --auto
+/bin/launchctl start com.googlecode.munki.managedsoftwareupdate-check
