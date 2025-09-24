@@ -117,6 +117,7 @@ func createInstallHelperLaunchDaemon(_ group: String) {
     }
 
     let launchDaemon: [String: Any] = [
+        "AssociatedBundleIdentifiers": ["com.googlecode.munki.ManagedSoftwareCenter"],
         "EnvironmentVariables": ["INSTALLHELPER_RUN_TYPE": group],
         "Label": label,
         "ProgramArguments": ["/usr/local/munki/libexec/installhelper"],
