@@ -132,7 +132,9 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
         _ = try await processManifest(
             localOnlyManifest,
             forKey: key,
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            parentCatalogs: catalogList,
+            manifestName: "LocalOnlyManifest \(localOnlyManifestName)"
         )
         if stopRequested() {
             return
