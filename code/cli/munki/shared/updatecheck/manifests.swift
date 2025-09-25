@@ -298,11 +298,11 @@ func processManifest(
     }
 
     // process all included manifests first
-    for manifestName in manifestdata["included_manifests"] as? [String] ?? [] {
-        if manifestName.isEmpty {
+    for includedManifestName in manifestdata["included_manifests"] as? [String] ?? [] {
+        if includedManifestName.isEmpty {
             continue
         }
-        let nestedManifestPath = try getManifest(manifestName)
+        let nestedManifestPath = try getManifest(includedManifestName)
         if stopRequested() {
             return // maybe should throw a StopRequestedException?
         }
