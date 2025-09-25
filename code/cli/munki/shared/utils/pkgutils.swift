@@ -329,7 +329,7 @@ func getMinOSVersFromDist(_ filepath: String) -> String {
 // Parses a PackageInfo file and returns a package receipt
 // No official Apple documentation on the format of this file, but
 // http://s.sudre.free.fr/Stuff/Ivanhoe/FLAT.html has some
-func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
+func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict? {
     guard let data = NSData(contentsOfFile: filepath) else { return PlistDict() }
     guard let doc = try? XMLDocument(data: data as Data, options: []) else { return PlistDict() }
     guard let nodes = try? doc.nodes(forXPath: "//pkg-info") else { return PlistDict() }
@@ -355,9 +355,11 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict {
                 }
                 return pkginfo
             }
+            // no payloads means payload-free pkg that doesn't actually
+            // leave a receipt, so keep looking and eventually fall through
         }
     }
-    return PlistDict()
+    return nil
 }
 
 /// Converts the partial file urls found in Distribution pkg-refs to relative file paths
@@ -464,7 +466,9 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
                 if extractResults.exitcode == 0 {
                     let packageInfoPath = getAbsolutePath(
                         (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
-                    receiptarray.append(receiptFromPackageInfoFile(packageInfoPath))
+                    if let receipt = receiptFromPackageInfoFile(packageInfoPath) {
+                        receiptarray.append(receipt)
+                    }
                 } else {
                     errors.append(
                         "An error occurred while extracting \(tocEntry): \(tocResults.error)")
