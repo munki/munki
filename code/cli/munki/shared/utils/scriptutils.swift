@@ -26,7 +26,9 @@ func createExecutableFile(
 
 /// Runs a script, processes its output
 class ScriptRunner: AsyncProcessRunner {
-    var remainingOutput = ""
+    private var remainingOutput = ""
+    private var remainingError = ""
+    var combinedOutput = ""
 
     func linesAndRemainderOf(_ str: String) -> ([String], String) {
         var lines = str.components(separatedBy: "\n")
@@ -41,8 +43,19 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processOutput(_ str: String) {
         super.processOutput(str)
+        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingOutput + str)
         remainingOutput = remainder
+        for line in lines {
+            display.info(line)
+        }
+    }
+    
+    override func processError(_ str: String) {
+        super.processError(str)
+        combinedOutput.append(str)
+        let (lines, remainder) = linesAndRemainderOf(remainingError + str)
+        remainingError = remainder
         for line in lines {
             display.info(line)
         }
@@ -68,7 +81,7 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     if result.exitcode != 0, !suppressError {
         display.error("Running \(scriptName) for \(itemName) failed.")
         display.error(String(repeating: "-", count: 78))
-        for line in result.output.components(separatedBy: .newlines) {
+        for line in proc.combinedOutput.components(separatedBy: .newlines) {
             display.error("    " + line)
         }
         display.error(String(repeating: "-", count: 78))
