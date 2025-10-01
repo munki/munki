@@ -96,6 +96,18 @@
 		C0209B892C63DDF1007664A0 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
 		C0209B8A2C63DDF1007664A0 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
 		C0209B922C63E3B7007664A0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B912C63E3B7007664A0 /* main.swift */; };
+		C0276DBC2E8C07E300D443C3 /* FileRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD52C2B7F2100090743 /* FileRepo.swift */; };
+		C0276DBD2E8C07EE00D443C3 /* GitFileRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364482C2F8EFE008DB215 /* GitFileRepo.swift */; };
+		C0276DBE2E8C07F500D443C3 /* RepoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013644C2C30F5D8008DB215 /* RepoFactory.swift */; };
+		C0276DBF2E8C07FC00D443C3 /* repoutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FA72C45814F0021DA9C /* repoutils.swift */; };
+		C0276DC02E8C080400D443C3 /* RepoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */; };
+		C0276DC12E8C086F00D443C3 /* errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D00FB52C45BCB90021DA9C /* errors.swift */; };
+		C0276DC22E8C088900D443C3 /* admincommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C013643E2C2DCA5C008DB215 /* admincommon.swift */; };
+		C0276DC32E8C08DA00D443C3 /* constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FB12C2B22D300090743 /* constants.swift */; };
+		C0276DC42E8C08F900D443C3 /* plistutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364422C2DD1BA008DB215 /* plistutils.swift */; };
+		C0276DC52E8C0A6A00D443C3 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
+		C0276DC62E8C0A9D00D443C3 /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
+		C0276DC72E8C0AB300D443C3 /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
 		C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9902C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9972C3A2E18007F0B34 /* makepkginfo.swift */; };
@@ -508,6 +520,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		C0276DAF2E8C070500D443C3 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		C030A9932C3A2E18007F0B34 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -669,6 +690,7 @@
 		C0209B882C63DDF1007664A0 /* info.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
 		C0209B8F2C63E3B7007664A0 /* launchapp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launchapp; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0209B912C63E3B7007664A0 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C0276DB12E8C070500D443C3 /* repocheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repocheck; sourceTree = BUILT_PRODUCTS_DIR; };
 		C030A98E2C39C135007F0B34 /* munkihash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkihash.swift; sourceTree = "<group>"; };
 		C030A9952C3A2E18007F0B34 /* makepkginfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makepkginfo; sourceTree = BUILT_PRODUCTS_DIR; };
 		C030A9972C3A2E18007F0B34 /* makepkginfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfo.swift; sourceTree = "<group>"; };
@@ -787,6 +809,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C00519A22D2A5B850060DDB6 /* authrestartd */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = authrestartd; sourceTree = "<group>"; };
+		C0276DB22E8C070500D443C3 /* repocheck */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = repocheck; sourceTree = "<group>"; };
 		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C09616492DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, C096164D2DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
 		C0684DD22DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = precache_agent; sourceTree = "<group>"; };
 		C0684E2E2DC040450091E774 /* installhelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = installhelper; sourceTree = "<group>"; };
@@ -803,6 +826,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C0209B8C2C63E3B7007664A0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0276DAE2E8C070500D443C3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1058,6 +1088,7 @@
 				C0684DD22DBFDBD20091E774 /* precache_agent */,
 				C0684E2E2DC040450091E774 /* installhelper */,
 				C0684E5D2DC736EE0091E774 /* munkiCLItesting */,
+				C0276DB22E8C070500D443C3 /* repocheck */,
 				C07A6FA62C2A82B400090743 /* Products */,
 				C01364502C311DFA008DB215 /* Frameworks */,
 			);
@@ -1083,6 +1114,7 @@
 				C0684DD12DBFDBD20091E774 /* precache_agent */,
 				C0684E2D2DC040450091E774 /* installhelper */,
 				C0684E5C2DC736EE0091E774 /* munkiCLItesting.xctest */,
+				C0276DB12E8C070500D443C3 /* repocheck */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1307,6 +1339,28 @@
 			name = launchapp;
 			productName = launchapp;
 			productReference = C0209B8F2C63E3B7007664A0 /* launchapp */;
+			productType = "com.apple.product-type.tool";
+		};
+		C0276DB02E8C070500D443C3 /* repocheck */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0276DB72E8C070500D443C3 /* Build configuration list for PBXNativeTarget "repocheck" */;
+			buildPhases = (
+				C0276DAD2E8C070500D443C3 /* Sources */,
+				C0276DAE2E8C070500D443C3 /* Frameworks */,
+				C0276DAF2E8C070500D443C3 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C0276DB22E8C070500D443C3 /* repocheck */,
+			);
+			name = repocheck;
+			packageProductDependencies = (
+			);
+			productName = repocheck;
+			productReference = C0276DB12E8C070500D443C3 /* repocheck */;
 			productType = "com.apple.product-type.tool";
 		};
 		C030A9942C3A2E18007F0B34 /* makepkginfo */ = {
@@ -1626,7 +1680,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					C00519A02D2A5B850060DDB6 = {
@@ -1634,6 +1688,9 @@
 					};
 					C0209B8E2C63E3B7007664A0 = {
 						CreatedOnToolsVersion = 15.4;
+					};
+					C0276DB02E8C070500D443C3 = {
+						CreatedOnToolsVersion = 26.0.1;
 					};
 					C030A9942C3A2E18007F0B34 = {
 						CreatedOnToolsVersion = 15.4;
@@ -1719,6 +1776,7 @@
 				C0684DD02DBFDBD10091E774 /* precache_agent */,
 				C0684E2C2DC040450091E774 /* installhelper */,
 				C0684E5B2DC736EE0091E774 /* munkiCLItesting */,
+				C0276DB02E8C070500D443C3 /* repocheck */,
 			);
 		};
 /* End PBXProject section */
@@ -1759,6 +1817,25 @@
 			files = (
 				C008A05F2D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0209B922C63E3B7007664A0 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0276DAD2E8C070500D443C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0276DC12E8C086F00D443C3 /* errors.swift in Sources */,
+				C0276DBD2E8C07EE00D443C3 /* GitFileRepo.swift in Sources */,
+				C0276DC32E8C08DA00D443C3 /* constants.swift in Sources */,
+				C0276DC02E8C080400D443C3 /* RepoProtocol.swift in Sources */,
+				C0276DC42E8C08F900D443C3 /* plistutils.swift in Sources */,
+				C0276DC62E8C0A9D00D443C3 /* stderrout.swift in Sources */,
+				C0276DBE2E8C07F500D443C3 /* RepoFactory.swift in Sources */,
+				C0276DBC2E8C07E300D443C3 /* FileRepo.swift in Sources */,
+				C0276DC72E8C0AB300D443C3 /* fileutils.swift in Sources */,
+				C0276DC52E8C0A6A00D443C3 /* cliutils.swift in Sources */,
+				C0276DC22E8C088900D443C3 /* admincommon.swift in Sources */,
+				C0276DBF2E8C07FC00D443C3 /* repoutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2383,6 +2460,30 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.launchapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		C0276DB52E8C070500D443C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C0276DB62E8C070500D443C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -3056,6 +3157,15 @@
 			buildConfigurations = (
 				C0209B942C63E3B7007664A0 /* Debug */,
 				C0209B952C63E3B7007664A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0276DB72E8C070500D443C3 /* Build configuration list for PBXNativeTarget "repocheck" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0276DB52E8C070500D443C3 /* Debug */,
+				C0276DB62E8C070500D443C3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
