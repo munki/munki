@@ -50,7 +50,7 @@ class ScriptRunner: AsyncProcessRunner {
             display.info(line)
         }
     }
-    
+
     override func processError(_ str: String) {
         super.processError(str)
         combinedOutput.append(str)
