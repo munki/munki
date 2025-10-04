@@ -1,0 +1,23 @@
+name: Firefox
+version: "126.0"
+display_name: Mozilla Firefox
+description: Mozilla Firefox web browser
+developer: Mozilla
+category: Internet
+catalogs:
+  - testing
+  - production
+installer_type: copy_from_dmg
+installs:
+  - path: /Applications/Firefox.app
+    type: application
+    CFBundleName: Firefox
+    CFBundleIdentifier: org.mozilla.firefox
+    CFBundleShortVersionString: "126.0"
+    CFBundleVersion: "126.0"
+minimum_os_version: "10.15"
+supported_architectures:
+  - x86_64
+  - arm64
+uninstallable: true
+uninstall_method: remove_copied_items

@@ -59,11 +59,22 @@ struct MakePkgInfo: ParsableCommand {
           help: "Print the version of the Munki tools and exit.")
     var version = false
 
+    @Flag(help: "Output in YAML format instead of XML plist.")
+    var yaml = false
+
     @Argument(help: ArgumentHelp(
         "Path to installer item (package or disk image).",
         valueName: "installer-item"
     ))
     var installerItem: String?
+    
+    /// Determine if YAML output should be used based on flag or global preference
+    private var shouldUseYaml: Bool {
+        if yaml {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "yaml")
+    }
 
     mutating func run() throws {
         if version {
@@ -100,7 +111,7 @@ struct MakePkgInfo: ParsableCommand {
 
         do {
             let pkginfo = try makepkginfo(installerItem, options: options)
-            let plistStr = try plistToString(pkginfo)
+            let plistStr = try plistToString(pkginfo, yamlOutput: shouldUseYaml)
             print(plistStr)
         } catch let PlistError.writeError(description) {
             printStderr("ERROR: \(description)")

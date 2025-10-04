@@ -58,7 +58,7 @@ func getInstallerItemNames(repo: Repo, catalogs: [String]) async -> [String] {
         if catalogs.contains(catalogName) {
             do {
                 let data = try await repo.get("catalogs/\(catalogName)")
-                if let catalog = (try? readPlist(fromData: data)) as? [PlistDict] {
+                if let catalog = (try? readData(data)) as? [PlistDict] {
                     let itemNames = catalog.filter {
                         ($0["update_for"] as? String ?? "").isEmpty &&
                             !(($0["name"] as? String ?? "").isEmpty)

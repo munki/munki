@@ -42,7 +42,7 @@ func updateSelfServeManifest() {
     // read the user-generated manifest to ensure it's valid, then write it
     // to the system manifest location
     do {
-        if let plist = try readPlist(fromFile: userManifest) {
+        if let plist = try detectFileContent(fromFile: userManifest) {
             try writePlist(plist, toFile: systemManifest)
             try? FileManager.default.removeItem(atPath: userManifest)
         } else {
@@ -66,7 +66,7 @@ func processDefaultInstalls(_ defaultItems: [String]) {
     var manifest = PlistDict()
     if pathExists(selfServeManifest) {
         do {
-            manifest = try readPlist(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
+            manifest = try detectFileContent(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
         } catch {
             display.error("Could not read \(selfServeManifest): \(error.localizedDescription)")
             return
@@ -115,7 +115,7 @@ func cleanUpSelfServeManagedUninstalls(_ installInfoRemovals: [PlistDict]) {
     }
     var plist: PlistDict
     do {
-        plist = try readPlist(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
+        plist = try detectFileContent(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
     } catch {
         display.error("Could not read \(selfServeManifest): \(error.localizedDescription)")
         return
