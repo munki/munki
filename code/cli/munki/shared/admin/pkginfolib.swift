@@ -578,7 +578,7 @@ func makepkginfo(_ filepath: String?,
         pkginfo["requires"] = options.other.requires
     }
     if !options.other.blockingApplication.isEmpty {
-        pkginfo["blocking_application"] = options.other.blockingApplication
+        pkginfo["blocking_applications"] = options.other.blockingApplication
     }
     if let uninstallMethod = options.override.uninstallMethod {
         pkginfo["uninstall_method"] = uninstallMethod
