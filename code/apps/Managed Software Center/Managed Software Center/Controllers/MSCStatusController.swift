@@ -81,7 +81,7 @@ class MSCStatusController: NSObject {
             saw_process = true
             // clear the flag so we have to get another status update
             got_status_update = false
-        } else if managedsoftwareupdateInstanceRunning() != nil {
+        } else if managedsoftwareupdateInstanceRunning() {
             timeout_counter = 6
             saw_process = true
         } else {
