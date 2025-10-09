@@ -120,7 +120,7 @@ struct MakeCatalogs: AsyncParsableCommand {
                 throw ExitCode.failure
             }
         } catch {
-            if let e = error as? ExitCode {
+            if error is ExitCode {
                 throw error
             }
             printStderr("Unexpected error: \(error)")
