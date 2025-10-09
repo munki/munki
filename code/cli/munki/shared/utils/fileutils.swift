@@ -260,15 +260,18 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
             dirs.append(entryName)
             continue
         }
-        if entryType == DT_LNK, followLinks {
-            // need to find out what the type is of the item that is the
-            // symlink's target
+        if entryType == DT_UNKNOWN || entryType == DT_LNK {
+            // need to find the type of the unknown item or the symlink's target
             let itemPath = (top as NSString).appendingPathComponent(entryName)
             let sb = UnsafeMutablePointer<stat>.allocate(capacity: 1)
             stat(itemPath, sb)
             let isDir = sb.pointee.st_mode & S_IFDIR == S_IFDIR
             sb.deallocate()
             if isDir {
+                if entryType == DT_LNK && !followLinks {
+                    // don't follow symlinks to directories
+                    continue
+                }
                 dirs.append(entryName)
                 continue
             }
