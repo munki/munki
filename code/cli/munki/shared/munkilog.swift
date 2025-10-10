@@ -56,7 +56,9 @@ func munkiLog(_ message: String, logFile: String = "") {
         logPath = logNamed(MAIN_LOG_NAME)
     } else {
         logPath = logNamed(logFile)
-        subsystem = "com.googlecode.munki.\((logFile as NSString).deletingPathExtension)"
+        if logFile != MAIN_LOG_NAME {
+            subsystem = "com.googlecode.munki.\((logFile as NSString).deletingPathExtension)"
+        }
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
         if !FileManager.default.fileExists(atPath: logPath) {
