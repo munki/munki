@@ -268,7 +268,7 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
             let isDir = sb.pointee.st_mode & S_IFDIR == S_IFDIR
             sb.deallocate()
             if isDir {
-                if entryType == DT_LNK && !followLinks {
+                if entryType == DT_LNK, !followLinks {
                     // don't follow symlinks to directories
                     continue
                 }
