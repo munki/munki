@@ -79,9 +79,9 @@ func validateSourceAndDestination(mountpoint: String, item: PlistDict) -> (Bool,
     // source_item if not.
     var fullDestinationPath = ""
     if destinationItemName.isEmpty {
-        fullDestinationPath = (destinationPath as NSString).appendingPathComponent(sourceItemName)
+        fullDestinationPath = (destinationPath as NSString).appendingPathComponent(baseName(sourceItemName))
     } else {
-        fullDestinationPath = (destinationPath as NSString).appendingPathComponent(destinationItemName)
+        fullDestinationPath = (destinationPath as NSString).appendingPathComponent(baseName(destinationItemName))
     }
     return (true, sourceItemPath, fullDestinationPath)
 }
@@ -169,7 +169,7 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
             // setPermissions already displayed an error
             return permsresult
         }
-        // remove any previously exiting item at destinationPatj
+        // remove any previously exiting item at destinationPath
         if pathExists(destinationPath) {
             do {
                 try FileManager.default.removeItem(atPath: destinationPath)
