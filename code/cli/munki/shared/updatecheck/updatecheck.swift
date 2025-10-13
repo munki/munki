@@ -481,11 +481,11 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
         // record the filtered lists
         Report.shared.record(
-            installInfo["managed_installs"] as? [String] ?? [],
+            installInfo["managed_installs"] as? [PlistDict] ?? [],
             to: "ItemsToInstall"
         )
         Report.shared.record(
-            installInfo["removals"] as? [String] ?? [],
+            installInfo["removals"] as? [PlistDict] ?? [],
             to: "ItemsToRemove"
         )
 
