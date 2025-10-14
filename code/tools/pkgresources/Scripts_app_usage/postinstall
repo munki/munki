@@ -8,9 +8,8 @@
 # Only execute postinstall actions if we're installing on a live system.
 if [ "$3" = "/" ]
 then
-    installHelper='/usr/local/munki/installhelper'
-    if [ -f  "${installHelper}" ]
-    then
+    installHelper='/usr/local/munki/libexec/installhelper'
+    if [ -f  "${installHelper}" ] ; then
         /bin/echo "Loading ${installHelper}..."
         "${installHelper}" appusage &
     else
