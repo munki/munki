@@ -1,4 +1,0 @@
-#!/bin/sh
-
-# undo the removal prevention done in preinstall
-/usr/bin/chflags -fR noschg,nouchg "$3/usr/local/munki/Python.framework/Versions/"3.*

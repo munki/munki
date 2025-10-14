@@ -9,9 +9,14 @@
 import Cocoa
 import WebKit
 
+struct SidebarItem {
+    let title: String
+    let icon: String
+    let page: String
+}
 
-class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDelegate, WKScriptMessageHandler {
-    
+class MainWindowController: NSWindowController {
+    var mainWindowConfigurationComplete = false
     var _alertedUserToOutstandingUpdates = false
     var _update_in_progress = false
     var _obnoxiousNotificationMode = false
@@ -20,13 +25,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var alert_controller = MSCAlertController()
     var htmlDir = ""
     var wkContentController = WKUserContentController()
-    
-    let sidebar_items = [
-        ["title": "Software", "icon": "AllItemsTemplate"],
-        ["title": "Categories", "icon": "toolbarCategoriesTemplate"],
-        ["title": "My Items", "icon": "MyStuffTemplate"],
-        ["title": "Updates", "icon": "updatesTemplate"]
-    ]
+
+    lazy var sidebar_items: [SidebarItem] = getSidebarItems()
     
     // status properties
     var _status_title = ""
@@ -35,51 +35,245 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     var forceFrontmost = false
     
     // Cocoa UI binding properties
-    
-    @IBOutlet weak var navigateBackButton: NSButton!
-    @IBOutlet weak var progressSpinner: NSProgressIndicator!
-    
+    @IBOutlet weak var sidebarViewController: SidebarViewController!
+    @IBOutlet weak var mainContentViewController: MainContentViewController!
+    @IBOutlet weak var toolbar: NSToolbar!
     @IBOutlet weak var searchField: NSSearchField!
-    
-    @IBOutlet weak var sidebar: NSOutlineView!
-    
-    @IBOutlet weak var fullSidebar: NSVisualEffectView!
-    
+    @IBOutlet weak var sidebarList: NSOutlineView!
     @IBOutlet weak var navigateBackMenuItem: NSMenuItem!
     @IBOutlet weak var findMenuItem: NSMenuItem!
-    @IBOutlet weak var softwareMenuItem: NSMenuItem!
-    @IBOutlet weak var categoriesMenuItem: NSMenuItem!
-    @IBOutlet weak var myItemsMenuItem: NSMenuItem!
-    @IBOutlet weak var updatesMenuItem: NSMenuItem!
     @IBOutlet weak var reloadPageMenuItem: NSMenuItem!
+    @IBOutlet weak var navigateMenu: NSMenuItem!
     
-    @IBOutlet weak var webViewContainer: NSView!
     @IBOutlet weak var webViewPlaceholder: NSView!
     var webView: WKWebView!
     
     var blurredBackground: BackgroundBlurrer?
-
     
-    override func windowDidLoad() {
-        super.windowDidLoad()
+    var pageLoadProgress: NSProgressIndicator?
+    var navigateBackButton: NSToolbarItem?
+    
+    // Dangerous convenience alias so you can access the NSSplitViewController and manipulate it later on
+    private var splitViewController: MainSplitViewController! {
+        get { return contentViewController as? MainSplitViewController }
+        set { contentViewController = newValue }
     }
+    
+    // number of items in the Navigate menu that aren't dynamic
+    let navigateMenuStaticItemCount = 4
 
-    @objc private func onItemClicked() {
-        if 0 ... sidebar_items.count ~= sidebar.clickedRow {
-                clearSearchField()
-                switch sidebar.clickedRow {
-                    case 0:
-                        loadAllSoftwarePage(self)
-                    case 1:
-                        loadCategoriesPage(self)
-                    case 2:
-                        loadMyItemsPage(self)
-                    case 3:
-                        loadUpdatesPage(self)
-                    default:
-                        loadUpdatesPage(self)
+    func setupSplitView() {
+        let originalFrame = window?.frame ?? .zero
+        let splitViewController = MainSplitViewController()
+
+        let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
+        if !optionalInstallsExist() {
+            sidebarItem.isCollapsed = true
+        }
+        splitViewController.addSplitViewItem(sidebarItem)
+        
+        let mainContentItem = NSSplitViewItem(viewController: mainContentViewController)
+        // TODO: remove this after Xcode 26 ships and if/when require Xcode 26+ to build
+        // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
+        // and there's no other straightforward way to do conditional compilation based on SDK
+        // availability
+        #if canImport(PermissionKit)
+        if #available(macOS 26.0, *) {
+            mainContentItem.automaticallyAdjustsSafeAreaInsets = true
+        }
+        #endif
+        splitViewController.addSplitViewItem(mainContentItem)
+        self.splitViewController = splitViewController
+        // TODO: remove this hack. (Adding sidebar causes the window to expand, this resets it)
+        if let window, originalFrame != .zero {
+            window.setFrame(originalFrame, display: true)
+        }
+    }
+    
+    func updateNavigationMenu(_ sidebarItems: [SidebarItem]) {
+        if let navigateMenu = navigateMenu.submenu {
+            // remove any previously-added items
+            
+            let itemCount = navigateMenu.items.count
+            if itemCount > navigateMenuStaticItemCount {
+                navigateMenu.items.removeLast(itemCount - navigateMenuStaticItemCount)
+            }
+            // add an item for each sidebar item
+            var index = 1
+            for sidebarItem in sidebarItems {
+                let key = index < 10 ? String(index) : ""
+                let menuItem = NSMenuItem(
+                    title: sidebarItem.title.localized(withComment: "\(sidebarItem.title) label"),
+                    action: #selector(navigationMenuItemClicked),
+                    keyEquivalent: key
+                )
+                if #available(macOS 26.0, *) {
+                    if let image = NSImage(named: NSImage.Name(sidebarItem.icon))?.copy() as? NSImage {
+                        // we make a copy since we're resizing it and this same image is
+                        // used in the sidebar (and we don't want it to be the same size
+                        // both places)
+                        image.isTemplate = true
+                        let fontsize = NSFont.menuFont(ofSize: 0.0).pointSize
+                        image.size.height = fontsize
+                        image.size.width = fontsize
+                        menuItem.image = image
+                    } else if let image = NSImage(systemSymbolName: sidebarItem.icon, accessibilityDescription: nil) {
+                        menuItem.image = image
+                    }
+                }
+                navigateMenu.items.append(menuItem)
+                index += 1
             }
         }
+    }
+    
+    /// Returns true if the sidebar items only refer to munki:// pages
+    func sidebarItemsContainOnlyMunkiPages() -> Bool {
+        for item in sidebar_items {
+            if !item.page.hasPrefix("munki://") {
+                return false
+            }
+        }
+        return true
+    }
+    
+    /// Returns a custom sidebar configuration, if any
+    /// First attempts to read the config from preferences
+    /// Then attempts to read the config from custom client resources
+    /// Falls back to the default.
+    func getCustomSidebarConfig() -> [[String: Any]] {
+        if #available(macOS 11.0, *) {
+            // enable custom sidebar items if 11.0 or later
+            // because SF Symbols only supported on 11.0 or later
+            //
+            // try preferences (includes managed prefs)
+            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: Any]] {
+                return sidebarConfig
+            }
+            // try custom client resources
+            let customSidebarConfigPath = NSString.path(withComponents: [html_dir(), "custom/sidebar.plist"])
+            if FileManager.default.fileExists(atPath: customSidebarConfigPath) {
+                if let plist = try? readPlist(customSidebarConfigPath) as? [String: Any] {
+                    if let sidebarConfig = plist["CustomSidebarItems"] as? [[String: Any]] {
+                        return sidebarConfig
+                    }
+                } else {
+                    // TODO: log error reading plist
+                }
+            }
+        }
+        // default (standard) sidebar
+        return [
+            ["title": "Software",
+             "icon": "AllItemsTemplate",
+             "page": MunkiURL.software.rawValue
+            ],
+            ["title": "Categories",
+             "icon": "CategoriesTemplate",
+             "page": MunkiURL.categories.rawValue
+            ],
+            ["title": "My Items",
+             "icon": "MyStuffTemplate",
+             "page": MunkiURL.myItems.rawValue
+            ],
+            ["title": "Updates",
+             "icon": "UpdatesTemplate",
+             "page": MunkiURL.updates.rawValue
+            ],
+        ]
+    }
+    
+    /// Given a set of language identifiers, return the preferred identifier based on the user's current preferred languages
+    func preferredLocalizationIdentifier(from identifiers: [String]) -> String? {
+        let preferredLanguages = NSLocale.preferredLanguages
+        for language in preferredLanguages {
+            // just do a simple match
+            if identifiers.contains(language) {
+                return language
+            } else if let languageWithoutRegionCode = language.split(separator: "-").first {
+                // now look for matches without region code
+                if identifiers.contains(String(languageWithoutRegionCode)) {
+                    return String(languageWithoutRegionCode)
+                } else {
+                    // finally, if needed, match items with same language but different region
+                    for identifier in identifiers {
+                        if identifier.hasPrefix(String(languageWithoutRegionCode) + "-") {
+                            return identifier
+                        }
+                    }
+                }
+            }
+        }
+        // didn't find any matches at all
+        return nil
+    }
+    
+    func getSidebarItems() -> [SidebarItem] {
+        // enable custom sidebar items if 11.0 or later
+        // because SF Symbols only supported on 11.0 or later
+        var sidebarItems: [SidebarItem] = []
+        let configItems = getCustomSidebarConfig()
+        for item in configItems {
+            guard let title = item["title"] as? String,
+                  let icon = item["icon"] as? String,
+                  let page = item["page"] as? String else {
+                continue
+            }
+            
+            var finalTitle = title
+            var finalPage = page
+            if let localizedStrings = item["localized_strings"] as? [String: Any] {
+                
+                let availableLanguages = Array(localizedStrings.keys)
+                if let preferredLanguage = preferredLocalizationIdentifier(from: availableLanguages),
+                   let languageDict = localizedStrings[preferredLanguage] as? [String: String]
+                {
+                    finalTitle = languageDict["title"] ?? title
+                    finalPage = languageDict["page"] ?? page
+                }
+            }
+            
+            sidebarItems.append(SidebarItem(
+                title: finalTitle,
+                icon: icon,
+                page: finalPage
+            ))
+        }
+        // update Navigate menu to reflect the sidebar contents
+        updateNavigationMenu(sidebarItems)
+        return sidebarItems
+    }
+    
+    func loadSidebarItemPage(_ page: String) {
+        if page.hasPrefix("munki://") {
+            if let url = URL(string: page) {
+                handleMunkiURL(url)
+            } else {
+                msc_debug_log("Could not parse sidebar item page URL \(page)")
+            }
+        } else {
+            load_page(page)
+        }
+    }
+    
+    @objc func navigationMenuItemClicked(_ sender: NSMenuItem) {
+        let itemTitle = sender.title
+        for (index, item) in sidebar_items.enumerated() {
+            if item.title == itemTitle {
+                clearSearchField()
+                highlightSidebarItemByIndex(index)
+                loadSidebarItemPage(item.page)
+                break
+            }
+        }
+    }
+
+    @objc func sidebarItemClicked() {
+        let row = sidebarList.clickedRow
+        guard row >= 0 && row < sidebar_items.count else { return }
+        clearSearchField()
+        let item = sidebar_items[row]
+        loadSidebarItemPage(item.page)
     }
     
     func appShouldTerminate() -> NSApplication.TerminateReply {
@@ -122,9 +316,11 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     
     func currentPageIsUpdatesPage() -> Bool {
         // return true if current tab selected is Updates
-        return sidebar.selectedRow == 3
+        let row = sidebarList.selectedRow
+        guard row >= 0, row < sidebar_items.count else { return false }
+        return sidebar_items[row].page == MunkiURL.updates.rawValue
     }
-
+    
     func blurBackground() {
         blurredBackground = BackgroundBlurrer()
         if let window = self.window {
@@ -162,18 +358,18 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         
         // make sure we're frontmost
         NSApp.activate(ignoringOtherApps: true)
-
-      // If the window is not on the active space, force a space switch.
-      // Return early, before locking down the presentation options. This will let the run loop spin, allowing
-      // the space switch to occur. When the window becomes key, `makeUsObnoxious` will be called again.
-      // On the second invocation, the window will be on the active space and this block will be skipped.
-      if let window = self.window {
-          if (!window.isOnActiveSpace) {
-              NSApp.activate(ignoringOtherApps: true)
-              window.orderFrontRegardless()
-              return
-          }
-      }
+        
+        // If the window is not on the active space, force a space switch.
+        // Return early, before locking down the presentation options. This will let the run loop spin, allowing
+        // the space switch to occur. When the window becomes key, `makeUsObnoxious` will be called again.
+        // On the second invocation, the window will be on the active space and this block will be skipped.
+        if let window = self.window {
+            if (!window.isOnActiveSpace) {
+                NSApp.activate(ignoringOtherApps: true)
+                window.orderFrontRegardless()
+                return
+            }
+        }
         
         // make it very difficult to switch away from this app
         NSApp.presentationOptions = NSApp.currentSystemPresentationOptions.union(
@@ -189,7 +385,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         
         // disable all of the other controls
-        updatesOnlyWindowMode()
+        updatesOnlyWindowMode(hideSidebarRegardless: true)
         reloadPageMenuItem.isEnabled = false
         loadUpdatesPage(self)
         
@@ -222,51 +418,50 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         return false
     }
     
-    func updatesOnlyWindowMode() {
+    func hideMunkiNavigateMenuItems(_ shouldHide: Bool) {
+        guard let menuItems = navigateMenu.submenu?.items else { return }
+        if menuItems.count <= navigateMenuStaticItemCount { return }
+        for (i, item) in sidebar_items.enumerated() {
+            if item.page.hasPrefix("munki://") {
+                menuItems[i + navigateMenuStaticItemCount].isHidden = shouldHide
+            }
+        }
+    }
+    
+    func updatesOnlyWindowMode(hideSidebarRegardless: Bool = false) {
         findMenuItem.isHidden = true
-        softwareMenuItem.isHidden = true
-        categoriesMenuItem.isHidden = true
-        myItemsMenuItem.isHidden = true
-        updatesMenuItem.isHidden = true
-        fullSidebar.isHidden = true
-        webViewContainer.frame.origin.x = -1
-        webViewContainer.frame.size.width = self.window!.frame.width
-        navigateBackButton.frame.origin.x = 90
-        navigateBackButton.showsBorderOnlyWhileMouseInside = true
-        // adjusts window controls on newer OSs
-        if #available(macOS 10.13, *) {
-            let customToolbar = NSToolbar()
-            customToolbar.showsBaselineSeparator = false
-            self.window?.titleVisibility = .hidden
-            self.window?.toolbar = customToolbar
+        if hideSidebarRegardless || sidebarItemsContainOnlyMunkiPages() {
+            hideMunkiNavigateMenuItems(true)
+            // ensure sidebar is collapsed
+            guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+            if !firstSplitView.animator().isCollapsed {
+                firstSplitView.animator().isCollapsed = true
+            }
+        } else {
+            // if there are non-munki:// items in the sidebar,
+            // make sure the sidebar is visible
+            hideMunkiNavigateMenuItems(false)
+            // ensure sidebar is visible
+            guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+            if firstSplitView.animator().isCollapsed {
+                firstSplitView.animator().isCollapsed = false
+            }
         }
         loadUpdatesPage(self)
     }
     
     func updatesAndOptionalWindowMode() {
         findMenuItem.isHidden = false
-        softwareMenuItem.isHidden = false
-        categoriesMenuItem.isHidden = false
-        myItemsMenuItem.isHidden = false
-        updatesMenuItem.isHidden = false
-        fullSidebar.isHidden = false
-        webViewContainer.frame.origin.x = 220
-        navigateBackButton.frame.origin.x = 12
-        navigateBackButton.showsBorderOnlyWhileMouseInside = true
-        webViewContainer.frame.size.width = self.window!.frame.width - fullSidebar.frame.width
-        // adjusts window controls on newer OSs
-        if #available(macOS 10.13, *) {
-            let customToolbar = NSToolbar()
-            customToolbar.showsBaselineSeparator = false
-            self.window?.titleVisibility = .hidden
-            self.window?.toolbar = customToolbar
+        hideMunkiNavigateMenuItems(false)
+        // ensure sidebar is visible
+        guard let firstSplitView = splitViewController.splitViewItems.first else { return }
+        if firstSplitView.animator().isCollapsed {
+            firstSplitView.animator().isCollapsed = false
         }
     }
     
-    func moveDirectlyToUpdatesPageIfNeeded() {
-        if getUpdateCount() > 0 || !getProblemItems().isEmpty {
-            loadUpdatesPage(self)
-        }
+    func shouldMoveToUpdatesPage() -> Bool {
+        return getUpdateCount() > 0 || !getProblemItems().isEmpty
     }
     
     func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() {
@@ -274,43 +469,45 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // if updates available go right to update screen
         if optionalInstallsExist() {
             updatesAndOptionalWindowMode()
-            moveDirectlyToUpdatesPageIfNeeded()
+            if shouldMoveToUpdatesPage() {
+                loadUpdatesPage(self)
+            }
         } else {
             updatesOnlyWindowMode()
         }
     }
     
-    
     func loadInitialView() {
         // Called by app delegate from applicationDidFinishLaunching:
         if optionalInstallsExist() {
-            loadAllSoftwarePage(self)
+            updatesAndOptionalWindowMode()
+            if shouldMoveToUpdatesPage() {
+                loadUpdatesPage(self)
+                displayUpdateCount()
+            } else {
+                loadAllSoftwarePage(self)
+            }
         } else {
-            loadUpdatesPage(self)
+            updatesOnlyWindowMode()
         }
-        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
         cached_self_service = SelfService()
     }
-
-    func toolBarItemIsHighlighted(_ item: NSToolbarItem) -> Bool {
-        if let button = item.view as? NSButton {
-            return (button.state == .on)
-        }
-        return false
-    }
-
-    func setHighlightFor(item: NSToolbarItem, doHighlight: Bool) {
-        if let button = item.view as? NSButton {
-            button.state = (doHighlight ? .on : .off)
-        }
+    
+    /// Selects the sidebar item by index
+    func highlightSidebarItemByIndex(_ index: Int) {
+        sidebarList.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
     }
     
-    func highlightToolbarButtons(_ nameToHighlight: String) {
+    /// Selects the sidebar item with a matching page URL
+    func highlightSidebarItemByPage(_ page: String) {
         for (index, item) in sidebar_items.enumerated() {
-            if nameToHighlight == item["title"] {
-                sidebar.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+            if page == item.page {
+                sidebarList.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+                return
             }
         }
+        // didn't find a matching item -- select nothing
+        sidebarList.deselectAll(self)
     }
     
     func clearSearchField() {
@@ -471,71 +668,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         displayUpdateCount()
     }
     
-    // Begin NSWindowDelegate methods
-    
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        // NSWindowDelegate method called when user closes a window
-        // for us, closing the main window should be the same as quitting
-        NSApp.terminate(self)
-        return false
-    }
-    
-    func windowDidBecomeMain(_ notification: Notification) {
-        // Our window was activated, make sure controls enabled as needed
-        sidebar.action = #selector(onItemClicked)
-    }
-    
-    func windowDidResignMain(_ notification: Notification) {
-        // Our window was deactivated, make sure controls enabled as needed
-    }
-
-    func windowDidBecomeKey(_ notification: Notification) {
-        // If we just became key, enforce obnoxious mode if required.
-        if _obnoxiousNotificationMode {
-            makeUsObnoxious()
-        }
-    }
-    
-    // End NSWindowDelegate methods
-    
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        // react to messages set to us by JavaScript
-        print("Got message from JavaScript: \(message.name)")
-        if message.name == "installButtonClicked" {
-            installButtonClicked()
-        }
-        if message.name == "myItemsButtonClicked" {
-            if let item_name = message.body as? String {
-                myItemsActionButtonClicked(item_name)
-            }
-        }
-        if message.name == "actionButtonClicked" {
-            if let item_name = message.body as? String {
-                actionButtonClicked(item_name)
-            }
-        }
-        if message.name == "changeSelectedCategory" {
-            if let category_name = message.body as? String {
-                changeSelectedCategory(category_name)
-            }
-        }
-        if message.name == "updateOptionalInstallButtonClicked" {
-            if let item_name = message.body as? String {
-                updateOptionalInstallButtonClicked(item_name)
-            }
-        }
-        if message.name == "updateOptionalInstallButtonFinishAction" {
-            if let item_name = message.body as? String {
-                updateOptionalInstallButtonFinishAction(item_name)
-            }
-        }
-        if message.name == "openExternalLink" {
-            if let link = message.body as? String {
-                openExternalLink(link)
-            }
-        }
-    }
-    
     func addJSmessageHandlers() {
         // define messages JavaScript can send us
         wkContentController.add(self, name: "openExternalLink")
@@ -554,8 +686,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             let webConfiguration = WKWebViewConfiguration()
             addJSmessageHandlers()
             webConfiguration.userContentController = wkContentController
-            webConfiguration.preferences.javaScriptEnabled = true
-            webConfiguration.preferences.javaEnabled = false
+            
+            // this and its replacement WKWebpagePreferences.allowsContentJavaScript
+            // default to true. webConfiguration.preferences.javaScriptEnabled is deprecated,
+            // So the easiest thing to do is just not call it or its replacement
+            //webConfiguration.preferences.javaScriptEnabled = true
+            // webConfiguration.preferences.javaEnabled is deprecated as of macOS 10.15,
+            // and Java is no longer supported, so again, just don't set it
+            //webConfiguration.preferences.javaEnabled = false
+            
             if UserDefaults.standard.bool(forKey: "developerExtrasEnabled") {
                 webConfiguration.preferences.setValue(true, forKey: "developerExtrasEnabled")
             }
@@ -567,22 +706,75 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             if #available(OSX 10.12, *) {
                 replacementWebView.setValue(false, forKey: "drawsBackground")
             }
+            replacementWebView.translatesAutoresizingMaskIntoConstraints = false
+            /*
+            // TODO: remove this when Xcode 26 ships and we require it to build
+            // we use this stupid condition because PermissionKit was introduced in the macOS 26 SDK
+            // and there's no other straightforward way to do conditional compilation based on SDK
+            // availability
+            #if canImport(PermissionKit)
+            if #available(macOS 26.0, *) {
+                // replace the placeholder in the window view with
+                // a background extension view containing the webview
+                let backgroundExtensionView = NSBackgroundExtensionView()
+                backgroundExtensionView.frame = superview.frame
+                backgroundExtensionView.automaticallyPlacesContentView = false
+                backgroundExtensionView.contentView = replacementWebView
+                backgroundExtensionView.translatesAutoresizingMaskIntoConstraints = false
+                superview.replaceSubview(webViewPlaceholder, with: backgroundExtensionView)
+                NSLayoutConstraint.activate([
+                    backgroundExtensionView.leadingAnchor.constraint(equalTo: superview.leadingAnchor),
+                    backgroundExtensionView.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
+                    backgroundExtensionView.topAnchor.constraint(equalTo: superview.topAnchor),
+                    backgroundExtensionView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
+                ])
+            } else {
+                // replace the placeholder in the window view with the real webview
+                superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
+            }
+            #else
+            */
             // replace the placeholder in the window view with the real webview
             superview.replaceSubview(webViewPlaceholder, with: replacementWebView)
+            //#endif
             webView = replacementWebView
+            if #available(macOS 11.0, *) {
+                let safeGuide = superview.safeAreaLayoutGuide
+                NSLayoutConstraint.activate([
+                    webView.leadingAnchor.constraint(equalTo: safeGuide.leadingAnchor),
+                    webView.trailingAnchor.constraint(equalTo: safeGuide.trailingAnchor),
+                    webView.topAnchor.constraint(equalTo: superview.topAnchor),
+                    webView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
+                ])
+            } else {
+                // Fallback on earlier versions
+                NSLayoutConstraint.activate([
+                    webView.leadingAnchor.constraint(equalTo: superview.leadingAnchor),
+                    webView.trailingAnchor.constraint(equalTo: superview.trailingAnchor),
+                    webView.topAnchor.constraint(equalTo: superview.topAnchor),
+                    webView.bottomAnchor.constraint(equalTo: superview.bottomAnchor)
+                ])
+            }
+            
+            webView.navigationDelegate = self
         }
     }
     
     override func awakeFromNib() {
         // Stuff we need to initialize when we start
         super.awakeFromNib()
-        insertWebView()
-        webView.navigationDelegate = self
-        setNoPageCache()
-        alert_controller = MSCAlertController()
-        alert_controller.window = self.window
-        htmlDir = html_dir()
-        registerForNotifications()
+        if !mainWindowConfigurationComplete {
+            // this is a bit of a hack since awakeFromNib gets called several times
+            // but we only want this part of the config to run once
+            mainWindowConfigurationComplete = true
+            setupSplitView()
+            insertWebView()
+            setNoPageCache()
+            alert_controller = MSCAlertController()
+            alert_controller.window = self.window
+            htmlDir = html_dir()
+            registerForNotifications()
+        }
     }
     
     func registerForNotifications() {
@@ -664,17 +856,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     @objc func checkForUpdatesSkippingAppleUpdates() {
         checkForUpdates(suppress_apple_update_check: true)
     }
-    
-    @IBAction func reloadPage(_ sender: Any) {
-        // User selected Reload page menu item. Reload the page and kick off an updatecheck
-        msc_log("user", "reload_page_menu_item_selected")
-        setFilterAppleUpdates(false)
-        setFilterStagedOSUpdate(false)
-        checkForUpdates()
-        URLCache.shared.removeAllCachedResponses()
-        webView.reload(sender)
-    }
-    
+        
     func kickOffInstallSession() {
         // start an update install/removal session
         
@@ -853,16 +1035,23 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         return getEffectiveUpdateList().count
     }
     
+    func updatesSidebarItemView() -> MSCTableCellView? {
+        for (i, item) in sidebar_items.enumerated() {
+            if munkiURL(from: item.page) == MunkiURL.updates.rawValue {
+                if let view = self.sidebarList.rowView(atRow: i, makeIfNecessary: false) {
+                    return view.view(atColumn: 0) as? MSCTableCellView
+                }
+            }
+        }
+        return nil
+    }
+    
     func displayUpdateCount() {
-        // Display the update count as a badge in the window toolbar
+        // Display the update count as a badge in the sidebar
         // and as an icon badge in the Dock
         let updateCount = getUpdateCount()
         
-        var cellView:MSCTableCellView?
-
-        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
-            cellView = view.view(atColumn: 0) as? MSCTableCellView
-        }
+        let cellView = updatesSidebarItemView()
 
         if updateCount > 0 {
             NSApp.dockTile.badgeLabel = String(updateCount)
@@ -875,16 +1064,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     }
     
     func displayUpdatesProgressSpinner(_ shouldDisplay: Bool) {
-        //
-        var cellView:MSCTableCellView?
-        if let view = self.sidebar.rowView(atRow: 3, makeIfNecessary: false) {
-            cellView = view.view(atColumn: 0) as? MSCTableCellView
+        // check if update sidebar item available
+        guard let cellView = updatesSidebarItemView() else {
+            return
         }
         if shouldDisplay {
-            cellView?.badge.isHidden = true
-            cellView?.spinner.startAnimation(self)
+            cellView.badge.isHidden = true
+            cellView.spinner.startAnimation(self)
         } else {
-            cellView?.spinner.stopAnimation(self)
+            cellView.spinner.stopAnimation(self)
         }
     }
     
@@ -915,9 +1103,9 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         var our_filter = ""
         var developer = ""
         if key == "category" {
-             if value != "all" {
+            if value != "all" {
                 category = value
-             }
+            }
         } else if key == "filter" {
             our_filter = value
         } else if key == "developer" {
@@ -937,27 +1125,40 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
     func load_page(_ url_fragment: String) {
         // Tells the WebView to load the appropriate page
         msc_debug_log("load_page request for \(url_fragment)")
-
-        let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
-        let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
+        var request: URLRequest
         
-        let baseComponents = baseURL.pathComponents
-        let requestComponents = requestURL.pathComponents
-
-        guard requestComponents.starts(with: baseComponents) else {
-            msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
-            // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
-            let errorURL = baseURL.appendingPathComponent("error.html")
-            webView.load(URLRequest(url: errorURL))
-            return
+        if let components = URLComponents(string: url_fragment),
+           ["https", "http"].contains(components.scheme)
+        {
+            // url_fragment is http:// or https:// URL
+            request = URLRequest(
+                url: URL(string: url_fragment)!,
+                cachePolicy: .reloadIgnoringLocalCacheData,
+                timeoutInterval: TimeInterval(10.0)
+            )
+        } else {
+            // url_fragment is just a path (or filename)
+            let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
+            let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
+            
+            let baseComponents = baseURL.pathComponents
+            let requestComponents = requestURL.pathComponents
+            
+            guard requestComponents.starts(with: baseComponents) else {
+                msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
+                // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
+                let errorURL = baseURL.appendingPathComponent("error.html")
+                webView.load(URLRequest(url: errorURL))
+                return
+            }
+            
+            request = URLRequest(
+                url: requestURL,
+                cachePolicy: .reloadIgnoringLocalCacheData,
+                timeoutInterval: 10.0
+            )
         }
-        
-        let request = URLRequest(
-            url: requestURL,
-            cachePolicy: .reloadIgnoringLocalCacheData,
-            timeoutInterval: 10.0
-        )
-        
+
         webView.load(request)
         
         if url_fragment == "updates.html" {
@@ -1038,7 +1239,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             load_page(filename)
         }
     }
-
+    
     func setNoPageCache() {
         /* We disable the back/forward page cache because
          we generate each page dynamically; we want things
@@ -1046,10 +1247,10 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
          immediately in all page views */
         // TO-DO: figure this out for WKWebView
         /*let identifier = "com.googlecode.munki.ManagedSoftwareCenter"
-        if let prefs = WebPreferences(identifier: identifier) {
-            prefs.usesPageCache = false
-            webView.preferencesIdentifier = identifier
-        }*/
+         if let prefs = WebPreferences(identifier: identifier) {
+         prefs.usesPageCache = false
+         webView.preferencesIdentifier = identifier
+         }*/
     }
     
     func clearCache() {
@@ -1064,303 +1265,6 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
         // Fallback on earlier versions
         URLCache.shared.removeAllCachedResponses()
-    }
-
-    // WKNavigationDelegateMethods
-    
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if let url = navigationAction.request.url {
-            msc_debug_log("Got load request for \(url)")
-            if navigationAction.targetFrame == nil {
-                // new window target
-                // open link in default browser instead of in our app's WebView
-                NSWorkspace.shared.open(url)
-                decisionHandler(.cancel)
-                return
-            }
-        }
-        if let url = navigationAction.request.url, let scheme = url.scheme {
-            msc_debug_log("Got URL scheme: \(scheme)")
-            if scheme == "munki" {
-                handleMunkiURL(url)
-                decisionHandler(.cancel)
-                return
-            }
-            if scheme == "mailto" || scheme == "http" || scheme == "https" {
-                // open link in default mail client since WKWebView doesn't
-                // forward these links natively
-                NSWorkspace.shared.open(url)
-                decisionHandler(.cancel)
-                return
-            }
-            if url.scheme == "file" {
-                // if this is a MSC page, generate it!
-                if url.deletingLastPathComponent().path == htmlDir {
-                    let filename = url.lastPathComponent
-                    do {
-                        try buildPage(filename)
-                    } catch {
-                        msc_debug_log(
-                            "Could not build page for \(filename): \(error)")
-                    }
-                }
-            }
-        }
-        decisionHandler(.allow)
-    }
-    
-    func webView(_ webView: WKWebView,
-                 decidePolicyFor navigationResponse: WKNavigationResponse,
-                 decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        if !(navigationResponse.canShowMIMEType) {
-            if let url = navigationResponse.response.url {
-                // open link in default browser instead of in our app's WebView
-                NSWorkspace.shared.open(url)
-                decisionHandler(.cancel)
-                return
-            }
-        }
-        decisionHandler(.allow)
-    }
-    
-    func webView(_ webView: WKWebView,
-                 didStartProvisionalNavigation navigation: WKNavigation!) {
-        // Animate progress spinner while we load a page and highlight the
-        // proper toolbar button
-        progressSpinner.startAnimation(self)
-        if let main_url = webView.url {
-            let pagename = main_url.lastPathComponent
-            msc_debug_log("Requested pagename is \(pagename)")
-            if (pagename == "category-all.html" ||
-                pagename.hasPrefix("detail-") ||
-                pagename.hasPrefix("filter-") ||
-                pagename.hasPrefix("developer-")) {
-                highlightToolbarButtons("Software")
-            } else if pagename == "categories.html" || pagename.hasPrefix("category-") {
-                highlightToolbarButtons("Categories")
-            } else if pagename == "myitems.html" {
-                highlightToolbarButtons("My Items")
-            } else if pagename == "updates.html" || pagename.hasPrefix("updatedetail-") {
-                highlightToolbarButtons("Updates")
-            } else {
-                // no idea what type of item it is
-                highlightToolbarButtons("")
-            }
-        }
-    }
-    
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        // react to end of displaying a new page
-        progressSpinner.stopAnimation(self)
-        clearCache()
-        let allowNavigateBack = webView.canGoBack
-        let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
-        let onMainPage = (
-            ["category-all.html", "categories.html", "myitems.html", "updates.html"].contains(filename))
-        navigateBackButton.isHidden = !allowNavigateBack || onMainPage
-        navigateBackMenuItem.isEnabled = (allowNavigateBack && !onMainPage)
-    }
-    
-    func webView(_ webView: WKWebView,
-                 didFail navigation: WKNavigation!,
-                 withError error: Error) {
-        // Stop progress spinner and log error
-        progressSpinner.stopAnimation(self)
-        msc_debug_log("Committed load error: \(error)")
-    }
-    
-    func webView(_ webView: WKWebView,
-                 didFailProvisionalNavigation navigation: WKNavigation!,
-                 withError error: Error) {
-        // Stop progress spinner and log
-        progressSpinner.stopAnimation(self)
-        msc_debug_log("Provisional load error: \(error)")
-        do {
-            let files = try FileManager.default.contentsOfDirectory(atPath: htmlDir)
-            msc_debug_log("Files in html_dir: \(files)")
-        } catch {
-            // ignore
-        }
-    }
-
-    // JavaScript integration
-    
-    // handling DOM UI elements
-    
-    func setInnerHTML(_ htmlString: String, elementID: String) {
-        if let rawData = htmlString.data(using: .utf8) {
-            let encodedData = rawData.base64EncodedString()
-            webView.evaluateJavaScript("setInnerHTMLforElementID('\(elementID)', '\(encodedData)')")
-        }
-    }
-    
-    func addToInnerHTML(_ htmlString: String, elementID: String) {
-        if let rawData = htmlString.data(using: .utf8) {
-            let encodedData = rawData.base64EncodedString()
-            webView.evaluateJavaScript("addToInnerHTMLforElementID('\(elementID)', '\(encodedData)')")
-        }
-    }
-    
-    func setInnerText(_ textString: String, elementID: String) {
-        if let rawData = textString.data(using: .utf8) {
-            let encodedData = rawData.base64EncodedString()
-            webView.evaluateJavaScript("setInnerTextforElementID('\(elementID)', '\(encodedData)')")
-        }
-    }
-    
-    func openExternalLink(_ url: String) {
-        // open a link in the default browser
-        msc_debug_log("External link request: \(url)")
-        if let real_url = URL(string: url) {
-            NSWorkspace.shared.open(real_url)
-        }
-    }
-    
-    func installButtonClicked() {
-        // this method is called from JavaScript when the user
-        // clicks the Install button in the Updates view
-        if _update_in_progress {
-            // this is now a stop/cancel button
-            msc_log("user", "cancel_updates")
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller.disableStopButton()
-                status_controller._status_stopBtnState = 1
-            }
-            stop_requested = true
-            // send a notification that stop button was clicked
-            let stop_request_flag_file = "/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested"
-            if !FileManager.default.fileExists(atPath: stop_request_flag_file) {
-                FileManager.default.createFile(atPath: stop_request_flag_file, contents: nil, attributes: nil)
-            }
-        } else if getUpdateCount() == 0 {
-            // no updates, the button must say "Check Again"
-            msc_log("user", "refresh_clicked")
-            checkForUpdates()
-        } else {
-            // button must say "Update"
-            // we're on the Updates page, so users can see all the pending/
-            // outstanding updates
-            _alertedUserToOutstandingUpdates = true
-            if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
-                // if there are pending Apple updates, alert the user to
-                // install via System Preferences
-                alert_controller.alertToAppleUpdates()
-                setFilterAppleUpdates(true)
-            } else {
-                updateNow()
-            }
-        }
-    }
-    
-   func updateOptionalInstallButtonClicked(_ item_name: String) {
-        // this method is called from JavaScript when a user clicks
-        // the cancel or add button in the updates list
-        if let item = optionalItem(forName: item_name) {
-            if (item["status"] as? String ?? "" == "update-available" &&
-                    item["preupgrade_alert"] != nil) {
-                displayPreInstallUninstallAlert(item["preupgrade_alert"] as? PlistDict ?? PlistDict(),
-                                                action: updateOptionalInstallButtonBeginAction,
-                                                item: item_name)
-            } else {
-                updateOptionalInstallButtonBeginAction(item_name)
-            }
-        } else {
-            msc_debug_log("Unexpected error: Can't find item for \(item_name)")
-        }
-    }
-    
-    func updateOptionalInstallButtonBeginAction(_ item_name: String) {
-        webView.evaluateJavaScript("fadeOutAndRemove('\(item_name)')")
-    }
-    
-    func myItemsActionButtonClicked(_ item_name: String) {
-        // this method is called from JavaScript when the user clicks
-        // the Install/Remove/Cancel button in the My Items view
-        if let item = optionalItem(forName: item_name) {
-            if (item["status"] as? String ?? "" == "installed" &&
-                    item["preuninstall_alert"] != nil) {
-                displayPreInstallUninstallAlert(item["preuninstall_alert"] as? PlistDict ?? PlistDict(),
-                                                action: myItemsActionButtonPerformAction,
-                                                item: item_name)
-            } else {
-                myItemsActionButtonPerformAction(item_name)
-            }
-        } else {
-            msc_debug_log("Unexpected error: Can't find item for \(item_name)")
-        }
-    }
-    
-    func myItemsActionButtonPerformAction(_ item_name: String) {
-        // perform action needed when user clicks
-        // the Install/Remove/Cancel button in the My Items view
-        guard let item = optionalItem(forName: item_name) else {
-            msc_debug_log(
-                "User clicked MyItems action button for \(item_name)")
-            msc_debug_log("Could not find item for \(item_name)")
-            return
-        }
-        let prior_status = item["status"] as? String ?? ""
-        if !update_status_for_item(item) {
-            // there was a problem, can't continue
-            return
-        }
-        displayUpdateCount()
-        let current_status = item["status"] as? String ?? ""
-        if current_status == "not-installed" {
-            // we removed item from list of things to install
-            // now remove from display
-            webView.evaluateJavaScript("removeElementByID('\(item_name)_myitems_table_row')")
-        } else {
-            setInnerHTML(item["myitem_action_text"] as? String ?? "", elementID: "\(item_name)_action_button_text")
-            setInnerHTML(item["myitem_status_text"] as? String ?? "", elementID: "\(item_name)_status_text")
-            webView.evaluateJavaScript("document.getElementById('\(item_name)_status_text')).className = 'status \(current_status)'")
-        }
-        if ["install-requested", "removal-requested"].contains(current_status) {
-            _alertedUserToOutstandingUpdates = false
-            if !_update_in_progress {
-                updateNow()
-            }
-        } else if ["staged-os-installer",
-                   "will-be-installed",
-                   "update-will-be-installed",
-                   "will-be-removed"].contains(prior_status) {
-            // cancelled a pending install or removal; should run an updatecheck
-            checkForUpdates(suppress_apple_update_check: true)
-        }
-    }
-    
-    func actionButtonClicked(_ item_name: String) {
-        // this method is called from JavaScript when the user clicks
-        // the Install/Remove/Cancel button in the list or detail view
-        if let item = optionalItem(forName: item_name) {
-            var showAlert = true
-            let status = item["status"] as? String ?? ""
-            if status == "not-installed" && item["preinstall_alert"] != nil {
-                displayPreInstallUninstallAlert(item["preinstall_alert"] as? PlistDict ?? PlistDict(),
-                                                action: actionButtonPerformAction,
-                                                item: item_name)
-            } else if status == "installed" && item["preuninstall_alert"] != nil {
-                displayPreInstallUninstallAlert(item["preuninstall_alert"] as? PlistDict ?? PlistDict(),
-                                                action: actionButtonPerformAction,
-                                                item: item_name)
-            } else if status == "update-available" && item["preupgrade_alert"] != nil {
-                displayPreInstallUninstallAlert(item["preupgrade_alert"] as? PlistDict ?? PlistDict(),
-                                                action: actionButtonPerformAction,
-                                                item: item_name)
-            } else {
-                actionButtonPerformAction(item_name)
-                showAlert = false
-            }
-            if showAlert {
-                msc_log("user", "show_alert")
-            }
-        } else {
-            msc_debug_log(
-                "User clicked Install/Remove/Upgrade/Cancel button in the list " +
-                "or detail view")
-            msc_debug_log("Unexpected error: Can't find item for \(item_name)")
-        }
     }
     
     func displayPreInstallUninstallAlert(_ alert: PlistDict, action: @escaping (String)->Void, item: String) {
@@ -1581,7 +1485,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         }
     }
     
-    // some Cocoa UI bindings
+    // MARK: IBActions
     @IBAction func showHelp(_ sender: Any) {
         if let helpURL = pref("HelpURL") as? String {
             if let finalURL = URL(string: helpURL) {
@@ -1605,14 +1509,8 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         // Handle WebView back button
         webView.goBack(self)
         /*let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
-        navigateBackButton.isHidden = !filename.hasPrefix("detail-")*/
-    }
-    
-    @IBAction func navigateForwardBtnClicked(_ sender: Any) {
-        // Handle WebView forward button
-        clearSearchField()
-        webView.goForward(self)
+         let filename = page_url?.lastPathComponent ?? ""
+         navigateBackButton.isHidden = !filename.hasPrefix("detail-")*/
     }
     
     @IBAction func loadAllSoftwarePage(_ sender: Any) {
@@ -1638,6 +1536,7 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
         clearSearchField()
         load_page("updates.html")
     }
+
     
     @IBAction func searchFilterChanged(_ sender: Any) {
         // User changed the search field
@@ -1647,72 +1546,15 @@ class MainWindowController: NSWindowController, NSWindowDelegate, WKNavigationDe
             load_page("filter-\(filterString).html")
         }
     }
-}
-
-extension MainWindowController: NSOutlineViewDataSource {
-    // Number of items in the sidebar
-    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        return sidebar_items.count
+    
+    @IBAction func reloadPage(_ sender: Any) {
+        // User selected Reload page menu item. Reload the page and kick off an updatecheck
+        msc_log("user", "reload_page_menu_item_selected")
+        setFilterAppleUpdates(false)
+        setFilterStagedOSUpdate(false)
+        checkForUpdates()
+        URLCache.shared.removeAllCachedResponses()
+        webView.reload(sender)
     }
     
-    // Items to be added to sidebar
-    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        return sidebar_items[index]
-    }
-    
-    // Whether rows are expandable by an arrow
-    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        return false
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
-        return MSCTableRowView(frame: NSZeroRect);
-    }
-    
-    func outlineView(_ outlineView: NSOutlineView, didAdd rowView: NSTableRowView, forRow row: Int) {
-        rowView.selectionHighlightStyle = .regular
-    }
-}
-
-extension MainWindowController: NSOutlineViewDelegate {
-    
-    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        var view: MSCTableCellView?
-        let itemDict = item as? [String: String]
-        if let title = itemDict?["title"], let icon = itemDict?["icon"] {
-            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "ItemCell"), owner: self) as? MSCTableCellView
-            if let textField = view?.title {
-                textField.stringValue = title.localized(withComment: "\(title) label")
-            }
-            if let imageView = view?.imgView {
-                imageView.image = NSImage(named: NSImage.Name(icon))?.tint(color: .secondaryLabelColor)
-            }
-        }
-        return view
-    }
-}
-
-extension NSImage {
-    func tint(color: NSColor) -> NSImage {
-        guard !self.isTemplate else { return self }
-        
-        let image = self.copy() as! NSImage
-        image.lockFocus()
-        
-        color.set()
-        
-        let imageRect = NSRect(origin: NSZeroPoint, size: image.size)
-        imageRect.fill(using: .sourceAtop)
-        
-        image.unlockFocus()
-        image.isTemplate = false
-        
-        return image
-    }
-}
-
-extension String {
-    func localized(withComment comment: String? = nil) -> String {
-        return NSLocalizedString(self, comment: comment ?? "")
-    }
 }

@@ -69,7 +69,6 @@ class MSCStatusController: NSObject {
         // Monitors managedsoftwareupdate process for failure to start
         // or unexpected exit, so we're not waiting around forever if
         // managedsoftwareupdate isn't running.
-        let PYTHON_SCRIPT_NAME = "managedsoftwareupdate"
         let NEVER_STARTED = -2
         let UNEXPECTEDLY_QUIT = -1
         if !session_started {
@@ -82,7 +81,7 @@ class MSCStatusController: NSObject {
             saw_process = true
             // clear the flag so we have to get another status update
             got_status_update = false
-        } else if pythonScriptRunning(PYTHON_SCRIPT_NAME) {
+        } else if managedsoftwareupdateInstanceRunning() {
             timeout_counter = 6
             saw_process = true
         } else {
@@ -115,11 +114,11 @@ class MSCStatusController: NSObject {
         statusWindowController.munkiStatusSessionEnded(withStatus: result, errorMessage: "")
     }
     
-    @objc func updateStatus(_ notification: NSUserNotification) {
+    @objc func updateStatus(_ notification: NSNotification) {
         // Got update status notification from managedsoftwareupdate
         msc_debug_log("Got munkistatus update notification")
         got_status_update = true
-        guard let info = notification.userInfo else {
+        guard let info = notification.userInfo as? [String: Any] else {
             msc_debug_log("No userInfo in notification")
             return
         }

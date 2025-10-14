@@ -1,9 +1,6 @@
-#!/usr/local/munki/munki-python
+#!/bin/sh
 
-import sys
-sys.path.append("/usr/local/munki")
-from munkilib import launchd
+# use launchctl to start a background check/install immediately instead
+# of waiting for the StartInterval
 
-job = launchd.Job(
-    ["/usr/local/munki/managedsoftwareupdate", "--auto"], cleanup_at_exit=False)
-job.start()
+/bin/launchctl start com.googlecode.munki.managedsoftwareupdate-check

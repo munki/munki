@@ -10,6 +10,7 @@
 #import "AppDelegate.h"
 #import <objc/runtime.h>
 #import <UserNotifications/UserNotifications.h>
+#import <OSLog/OSLog.h>
 
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
 NSString * const MunkiAppURL = @"munki://";
@@ -23,24 +24,34 @@ long const DefaultUseNotificationCenterDays = 3;
     return NSTerminateNow;
 }
 
+- (void)applicationWillFinishLaunching:(NSNotification *)notification;
+{
+    writeToLog(@"applicationWillFinishLaunching");
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    center.delegate = self;
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 {
     // see if we've been directed to clear all delivered notifications
     // if so, do that and exit
+    writeToLog(@"applicationDidFinishLaunching");
     NSArray *args = [[NSProcessInfo processInfo] arguments];
     //NSLog(@"Arguments: %@", args);
     if ([args indexOfObject:@"-clear"] != NSNotFound) {
         //NSLog(@"Removing all delivered notifications");
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         sleep(1);
+        writeToLog(@"Application exiting");
         [NSApp terminate:self];
         return;
     }
     
     // notify user of available updates
-    NSUserNotification *userNotification = notification.userInfo[NSApplicationLaunchUserNotificationKey];
-    if (userNotification) {
-        [self userActivatedNotification:userNotification];
+    NSObject *notificationObject = notification.userInfo[NSApplicationLaunchUserNotificationKey];
+    if (notificationObject) {
+        writeToLog(@"Launched via user notification");
+        //[self userActivatedNotification:userNotification];
     } else {
         [self notifyUser];
     }
@@ -105,6 +116,7 @@ long const DefaultUseNotificationCenterDays = 3;
             // clear any previously posted updates available notifications and exit
             [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
         }
+        writeToLog(@"Application exiting");
         [NSApp terminate: self];
         return;
     }
@@ -123,6 +135,7 @@ long const DefaultUseNotificationCenterDays = 3;
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiAppURL]];
         sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
+        writeToLog(@"Application exiting");
         [NSApp terminate: self];
         return;
     }
@@ -156,6 +169,7 @@ long const DefaultUseNotificationCenterDays = 3;
         message = deadlineMessage;
     }
     
+    writeToLog(@"sending a notification");
     // deliver the notification
     [self deliverNotificationWithTitle:title
                               subtitle:subtitle
@@ -181,83 +195,70 @@ long const DefaultUseNotificationCenterDays = 3;
                              options:(NSDictionary *)options
                                sound:(NSString *)sound;
 {
-   /* if (@available(macOS 10.14, *)) {
-        // use newer UNUserNotifications
-        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-        // center.delegate = self;
-        // First remove earlier notifications from us
-        [center removeAllPendingNotificationRequests];
-        // request authorization
-        [center requestAuthorizationWithOptions:(UNAuthorizationOptionProvisional + UNAuthorizationOptionAlert)
-           completionHandler:^(BOOL granted, NSError * _Nullable error) {
-                if (error != nil) {
-                    NSLog(@"%@", error.localizedDescription);
-                }
-        }];
-        // create notification
-        NSString *identifier = @"msc_notification";
-        UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-        content.title = title;
-        if (! [subtitle isEqualToString:@""]) content.subtitle = subtitle;
-        content.body = message;
-        content.userInfo = options;
-        if (sound != nil) {
-            content.sound = [UNNotificationSound defaultSound];
-        }
-        UNNotificationRequest *request = [
-            UNNotificationRequest requestWithIdentifier:identifier
-                                  content: content
-                                  trigger:nil
-        ];
-        [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    center.delegate = self;
+    // First remove earlier notifications from us
+    [center removeAllPendingNotificationRequests];
+    // request authorization
+    [center requestAuthorizationWithOptions:(UNAuthorizationOptionProvisional + UNAuthorizationOptionAlert)
+       completionHandler:^(BOOL granted, NSError * _Nullable error) {
             if (error != nil) {
-               NSLog(@"%@", error.localizedDescription);
+                NSLog(@"%@", error.localizedDescription);
             }
-        }];
-        sleep(1);
-        [NSApp terminate: self];
-    } else { */
-        // pre-macOS 10.14, use NSUserNotifications
-        // First remove earlier notifications from us
-        [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
-        
-        NSUserNotification *userNotification = [NSUserNotification new];
-        userNotification.title = title;
-        if (! [subtitle isEqualToString:@""]) userNotification.subtitle = subtitle;
-        userNotification.informativeText = message;
-        userNotification.userInfo = options;
-        
-        if (floor(kCFCoreFoundationVersionNumber) > kCFCoreFoundationVersionNumber10_8) {
-            // We're running on 10.9 or higher
-            // Attempt to display as alert style (though user can override at any time)
-            [userNotification setValue:@YES forKey:@"_showsButtons"];
+    }];
+    // create notification
+    NSString *identifier = @"msc_notification";
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    content.title = title;
+    if (! [subtitle isEqualToString:@""]) content.subtitle = subtitle;
+    content.body = message;
+    content.userInfo = options;
+    if (sound != nil) {
+        content.sound = [UNNotificationSound defaultSound];
+    }
+    UNNotificationRequest *request = [
+        UNNotificationRequest requestWithIdentifier:identifier
+                              content: content
+                              trigger:nil
+    ];
+    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+           NSLog(@"%@", error.localizedDescription);
         }
-        userNotification.hasActionButton = YES;
-        userNotification.actionButtonTitle = NSLocalizedString(@"Details", @"Details label");
-        
-        if (sound != nil) {
-            userNotification.soundName = [sound isEqualToString: @"default"] ? NSUserNotificationDefaultSoundName : sound ;
-        }
-        
-        NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
-        center.delegate = self;
-        [center scheduleNotification:userNotification];
-   // }
+    }];
+    sleep(1);
+    writeToLog(@"Application exiting");
+    [NSApp terminate: self];
 }
 
-- (void)userActivatedNotification:(NSUserNotification *)userNotification;
+// MARK: UNUserNotificationCenterDelegate methods
+
+- (void) userNotificationCenter:(UNUserNotificationCenter *) center
+        willPresentNotification:(UNNotification *) notification
+          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options)) completionHandler;
 {
-    [[NSUserNotificationCenter defaultUserNotificationCenter] removeDeliveredNotification:userNotification];
+    completionHandler(UNNotificationPresentationOptionAlert);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler
+{
+    UNNotificationContent * notificationContent = response.notification.request.content;
+    [self userActivatedUNUserNotification:notificationContent];
     
-    NSString *action = userNotification.userInfo[@"action"];
-    NSString *value = userNotification.userInfo[@"value"];
+}
+
+- (void)userActivatedUNUserNotification:(UNNotificationContent *)notificationContent;
+{
+    writeToLog(@"In userActivatedNotification:UNNotificationContent");
+    NSString *action = notificationContent.userInfo[@"action"];
+    NSString *value = notificationContent.userInfo[@"value"];
     
-    NSLog(@"User activated notification:");
-    NSLog(@"    title: %@", userNotification.title);
-    NSLog(@" subtitle: %@", userNotification.subtitle);
-    NSLog(@"  message: %@", userNotification.informativeText);
-    NSLog(@"   action: %@", action);
-    NSLog(@"    value: %@", value);
+    writeToLog(@"User activated notification:");
+    writeToLog(notificationContent.title);
+    writeToLog(notificationContent.subtitle);
+    writeToLog(notificationContent.body);
+    writeToLog(action);
+    writeToLog(value);
     
     if ([action isEqualToString:@"open_url"]){
         // this option currently unused
@@ -270,21 +271,13 @@ long const DefaultUseNotificationCenterDays = 3;
         sleep(1);
         [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: MunkiNotificationURL]];
     }
+    writeToLog(@"Application exiting");
     [NSApp terminate: self];
 }
 
-
-- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center
-     shouldPresentNotification:(NSUserNotification *)userNotification;
-{
-    return YES;
-}
-
-// Once the notification is delivered we can exit.
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center
-        didDeliverNotification:(NSUserNotification *)userNotification;
-{
-    [NSApp terminate: self];
+void writeToLog(NSString *message) {
+    os_log_t customLog = os_log_create("com.googlecode.munki.munki-notifier", "notifications");
+    os_log(customLog, "%{public}s", [message cStringUsingEncoding: NSUTF8StringEncoding]);
 }
 
 @end

@@ -93,7 +93,7 @@ class MunkiStatusViewController: NSViewController {
             sawProcess = true
             // clear the flag so we have to get another status update
             gotStatusUpdate = false
-        } else if pythonScriptRunning("managedsoftwareupdate") {
+        } else if managedsoftwareupdateInstanceRunning() {
             print("managedsoftwareupdate is running")
             timeoutCounter = 6
             sawProcess = true

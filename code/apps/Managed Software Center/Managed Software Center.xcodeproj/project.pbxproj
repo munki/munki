@@ -9,6 +9,18 @@
 /* Begin PBXBuildFile section */
 		56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E762173DC8E00D727DC /* MSCTableRowView.swift */; };
 		56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E802174D7A200D727DC /* MSCTableCellView.swift */; };
+		8428C7E42E0CB41F00D83D41 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */; };
+		8428C7E62E0CB44200D83D41 /* MainContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */; };
+		8428C7E82E0CB55000D83D41 /* MainSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */; };
+		8428C7EA2E0CB59200D83D41 /* MainWindowController+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */; };
+		8428C7EE2E0DA9AF00D83D41 /* LogWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8428C7ED2E0DA9AF00D83D41 /* LogWindow.xib */; };
+		8428C7F02E0DABC700D83D41 /* LogWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */; };
+		849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */; };
+		849BF6382E104F74004A020D /* MainWindowController+NSOutlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */; };
+		849BF63A2E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */; };
+		849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */; };
+		849D46162E0907420054599E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 849D46152E0907420054599E /* AppIcon.icon */; };
+		84B8FAC32E22E05400ACB45B /* MunkiURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B8FAC22E22E05400ACB45B /* MunkiURL.swift */; };
 		C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
 		C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603D020D0A7FA00DEF9E4 /* SelfService.swift */; };
@@ -72,6 +84,18 @@
 		56C33E7821740B6F00D727DC /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		56C33E7921740D9B00D727DC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		56C33E802174D7A200D727DC /* MSCTableCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCTableCellView.swift; sourceTree = "<group>"; };
+		8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
+		8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentViewController.swift; sourceTree = "<group>"; };
+		8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitViewController.swift; sourceTree = "<group>"; };
+		8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+Toolbar.swift"; sourceTree = "<group>"; };
+		8428C7ED2E0DA9AF00D83D41 /* LogWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LogWindow.xib; sourceTree = "<group>"; };
+		8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWindowController.swift; sourceTree = "<group>"; };
+		849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+NSWindowDelegate.swift"; sourceTree = "<group>"; };
+		849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+NSOutlineView.swift"; sourceTree = "<group>"; };
+		849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKNavigationDelegate.swift"; sourceTree = "<group>"; };
+		849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKScriptMessageHandler.swift"; sourceTree = "<group>"; };
+		849D46152E0907420054599E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		84B8FAC22E22E05400ACB45B /* MunkiURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiURL.swift; sourceTree = "<group>"; };
 		C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackgroundController.swift; sourceTree = "<group>"; };
 		C01603CE20CF8B6100DEF9E4 /* iconutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconutils.swift; sourceTree = "<group>"; };
 		C01603D020D0A7FA00DEF9E4 /* SelfService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfService.swift; sourceTree = "<group>"; };
@@ -173,6 +197,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8428C7F12E0DB23200D83D41 /* XIBs */ = {
+			isa = PBXGroup;
+			children = (
+				C04F828220BB319B00F9C57D /* MainMenu.xib */,
+				8428C7ED2E0DA9AF00D83D41 /* LogWindow.xib */,
+			);
+			path = XIBs;
+			sourceTree = "<group>";
+		};
 		C0196318210507DB0009F51A /* MSCDockTilePlugin */ = {
 			isa = PBXGroup;
 			children = (
@@ -204,6 +237,7 @@
 		C04F827D20BB319B00F9C57D /* Managed Software Center */ = {
 			isa = PBXGroup;
 			children = (
+				8428C7F12E0DB23200D83D41 /* XIBs */,
 				C0E2599D210AD8CD00C3A3D9 /* Socket.swift */,
 				C0F8E3DF2105622F00718259 /* Info.plist */,
 				C84025EF256DA0B2001D73DC /* InfoPlist.strings */,
@@ -214,7 +248,7 @@
 				C04F829020BB34D100F9C57D /* Localization.swift */,
 				C04F827E20BB319B00F9C57D /* AppDelegate.swift */,
 				C04F828020BB319B00F9C57D /* Assets.xcassets */,
-				C04F828220BB319B00F9C57D /* MainMenu.xib */,
+				849D46152E0907420054599E /* AppIcon.icon */,
 				56C33E762173DC8E00D727DC /* MSCTableRowView.swift */,
 				C04F829E20BB713B00F9C57D /* munki.swift */,
 				C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */,
@@ -233,6 +267,7 @@
 				C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */,
 				56C33E802174D7A200D727DC /* MSCTableCellView.swift */,
 				C094C26B28B7E17800CFB0D8 /* osinstaller.swift */,
+				84B8FAC22E22E05400ACB45B /* MunkiURL.swift */,
 			);
 			path = "Managed Software Center";
 			sourceTree = "<group>";
@@ -251,10 +286,19 @@
 			children = (
 				C04F828C20BB32EA00F9C57D /* LogViewController.swift */,
 				C04CA61D20E6ADA100711461 /* MainWindowController.swift */,
+				849BF6372E104F74004A020D /* MainWindowController+NSOutlineView.swift */,
+				849BF6352E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift */,
+				8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */,
+				849BF6392E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift */,
+				849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */,
 				C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */,
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
 				C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */,
 				C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */,
+				8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */,
+				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
+				8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */,
+				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -305,9 +349,10 @@
 		C04F827320BB319B00F9C57D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = MSC;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 2600;
 				ORGANIZATIONNAME = "The Munki Project";
 				TargetAttributes = {
 					C0196316210507DB0009F51A = {
@@ -374,12 +419,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8428C7EE2E0DA9AF00D83D41 /* LogWindow.xib in Resources */,
 				C019631121039F020009F51A /* templates in Resources */,
 				C84025F1256DA0B2001D73DC /* InfoPlist.strings in Resources */,
 				C04F828120BB319B00F9C57D /* Assets.xcassets in Resources */,
 				C05F87932105587A000DB8D8 /* Localizable.strings in Resources */,
 				C04F828420BB319B00F9C57D /* MainMenu.xib in Resources */,
 				C019631221039F020009F51A /* WebResources in Resources */,
+				849D46162E0907420054599E /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -421,29 +468,39 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0FBF1BF20D4A0BB00FAD1BE /* Template.swift in Sources */,
+				8428C7EA2E0CB59200D83D41 /* MainWindowController+Toolbar.swift in Sources */,
 				C0FD710A20D485A80018A002 /* HtmlFilter.swift in Sources */,
 				C0FBF1BD20D4945B00FAD1BE /* mschtml.swift in Sources */,
 				C03107C320C8B65E007FE337 /* msclib.swift in Sources */,
 				C04F829F20BB713B00F9C57D /* munki.swift in Sources */,
+				8428C7E62E0CB44200D83D41 /* MainContentViewController.swift in Sources */,
 				C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */,
 				C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */,
+				849BF6382E104F74004A020D /* MainWindowController+NSOutlineView.swift in Sources */,
 				C0E2599E210AD8CE00C3A3D9 /* Socket.swift in Sources */,
 				C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */,
+				8428C7E42E0CB41F00D83D41 /* SidebarViewController.swift in Sources */,
 				C04F82A120BB77CF00F9C57D /* FoundationPlist.swift in Sources */,
 				C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */,
 				C04CA61E20E6ADA100711461 /* MainWindowController.swift in Sources */,
+				8428C7E82E0CB55000D83D41 /* MainSplitViewController.swift in Sources */,
 				C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */,
 				56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */,
+				8428C7F02E0DABC700D83D41 /* LogWindowController.swift in Sources */,
 				C04CA61C20E68B1800711461 /* authrestart.swift in Sources */,
 				C04F827F20BB319B00F9C57D /* AppDelegate.swift in Sources */,
 				C0D30BEB20CA445A005E876E /* MunkiItems.swift in Sources */,
 				C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */,
+				849BF63A2E1050E2004A020D /* MainWindowController+WKNavigationDelegate.swift in Sources */,
 				56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */,
 				C03107C520C8F220007FE337 /* msclog.swift in Sources */,
 				C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */,
 				C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */,
 				C04F828D20BB32EA00F9C57D /* LogViewController.swift in Sources */,
+				849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */,
+				84B8FAC32E22E05400ACB45B /* MunkiURL.swift in Sources */,
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
+				849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */,
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
@@ -544,7 +601,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = MSCDockTilePlugin/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MSCDockTilePlugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -564,7 +621,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				INFOPLIST_FILE = MSCDockTilePlugin/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.MSCDockTilePlugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -576,6 +633,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -625,7 +683,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -638,6 +696,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -681,7 +740,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -705,7 +764,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -729,7 +788,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.ManagedSoftwareCenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
