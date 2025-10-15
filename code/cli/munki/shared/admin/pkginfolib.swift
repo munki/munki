@@ -115,6 +115,8 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         } else {
             info["version_comparison_key"] = "CFBundleShortVersionString"
         }
+    } else if info["CFBundleVersion"] != nil {
+        info["version_comparison_key"] = "CFBundleVersion"
     }
 
     if !info.keys.contains("CFBundleShortVersionString"), !info.keys.contains("CFBundleVersion") {
