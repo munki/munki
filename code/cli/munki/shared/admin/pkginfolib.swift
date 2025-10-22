@@ -74,26 +74,24 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         } else {
             info["type"] = "bundle"
         }
-        if let plist = getBundleInfo(itempath) {
-            for key in ["CFBundleName", "CFBundleIdentifier",
-                        "CFBundleShortVersionString", "CFBundleVersion"]
-            {
-                if let value = plist[key] as? String {
-                    info[key] = value
-                }
+        for key in ["CFBundleName", "CFBundleIdentifier",
+                    "CFBundleShortVersionString", "CFBundleVersion"]
+        {
+            if let value = plist[key] as? String {
+                info[key] = value
             }
-            if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
-                info["minosversion"] = minOSVers
-            } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
-                // get the highest/latest of all the minimum os versions
-                let minOSVersions = minOSVersByArch.values
-                let versions = minOSVersions.map { MunkiVersion($0) }
-                if let maxVersion = versions.max() {
-                    info["minosversion"] = maxVersion.value
-                }
-            } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
-                info["minosversion"] = minSysVers
+        }
+        if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
+            info["minosversion"] = minOSVers
+        } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
+            // get the highest/latest of all the minimum os versions
+            let minOSVersions = minOSVersByArch.values
+            let versions = minOSVersions.map { MunkiVersion($0) }
+            if let maxVersion = versions.max() {
+                info["minosversion"] = maxVersion.value
             }
+        } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
+            info["minosversion"] = minSysVers
         }
     } else if let plist = try? readPlist(fromFile: itempath) as? PlistDict {
         // we must be a plist
