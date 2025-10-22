@@ -168,7 +168,7 @@ class FileRepo: Repo {
             }
         }
         // does root dir exist now?
-        if !pathIsDirectory(root) {
+        if !pathIsDirectory(root, followSymlinks: true) {
             throw MunkiError("Repo path does not exist")
         }
     }
