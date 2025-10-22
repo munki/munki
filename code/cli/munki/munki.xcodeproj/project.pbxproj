@@ -790,27 +790,10 @@
 		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C09616492DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				tokenize.swift,
-			);
-			target = C07A6FB62C2B5ADE00090743 /* munkitester */;
-		};
-		C096164D2DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				tokenize.swift,
-			);
-			target = C0684E5B2DC736EE0091E774 /* munkiCLItesting */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C00519A22D2A5B850060DDB6 /* authrestartd */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = authrestartd; sourceTree = "<group>"; };
 		C0276DB22E8C070500D443C3 /* repocheck */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = repocheck; sourceTree = "<group>"; };
-		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C09616492DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, C096164D2DEA2C0900281B6B /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
+		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
 		C0684DD22DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = precache_agent; sourceTree = "<group>"; };
 		C0684E2E2DC040450091E774 /* installhelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = installhelper; sourceTree = "<group>"; };
 		C0684E5D2DC736EE0091E774 /* munkiCLItesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = munkiCLItesting; sourceTree = "<group>"; };
