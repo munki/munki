@@ -339,12 +339,12 @@ func getHTTPfileIfChangedAtomically(
     var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
-        getOnlyIfNewer = true
-        // see if we have an etag attribute
+        // see if we have an etag or last-modified attribute
         do {
             let data = try getXattr(named: GURL_XATTR, atPath: destinationPath)
             if let headers = try readPlist(fromData: data) as? [String: String] {
-                // We can use onlyIfNewer if we have either etag or last-modified
+                eTag = headers["etag"] ?? ""
+                // Use conditional request if we have either header
                 if headers["etag"] != nil || headers["last-modified"] != nil {
                     getOnlyIfNewer = true
                 }
