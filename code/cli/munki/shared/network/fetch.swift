@@ -336,10 +336,9 @@ func getHTTPfileIfChangedAtomically(
     resume: Bool = false,
     followRedirects: String = "none",
 ) throws -> Bool {
-    var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
-        // see if we have an etag or last-modified attribute
+        // see if we have a stored etag or last-modified header
         do {
             let data = try getXattr(named: GURL_XATTR, atPath: destinationPath)
             if let headers = try readPlist(fromData: data) as? [String: String] {
