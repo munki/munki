@@ -263,10 +263,7 @@ func reloadUserLaunchAgents(group: String) {
         // first, unload active Munki jobs
         var activeAgentLabels = getMunkiLaunchdLabels(uid: uid)
         if group == "appusage" {
-            if activeAgentLabels.contains(APPUSAGE_AGENT) {
-                // only unload APPUSAGE_AGENT
-                activeAgentLabels = [APPUSAGE_AGENT]
-            }
+            activeAgentLabels = activeAgentLabels.filter { $0 == APPUSAGE_AGENT }
         }
         if group == "launchd" {
             // unload everything but APPUSAGE_AGENT
@@ -341,9 +338,7 @@ func reloadLaunchDaemons(group: String) {
     var activeDaemonLabels = getMunkiLaunchdLabels()
     if group == "appusage" {
         // we should only unload APPUSAGE_DAEMON if if's active
-        if activeDaemonLabels.contains(APPUSAGE_DAEMON) {
-            activeDaemonLabels = [APPUSAGE_DAEMON]
-        }
+        activeDaemonLabels = activeDaemonLabels.filter { $0 == APPUSAGE_DAEMON }
     }
     if group == "launchd" {
         // unload all Munki jobs _except_ APPUSAGE_DAEMON and our installhelper jobs
