@@ -39,7 +39,7 @@ func pathIsRegularFile(_ path: String) -> Bool {
     return false
 }
 
-/// Returns true if path is a symlink/
+/// Returns true if path is a symlink
 func pathIsSymlink(_ path: String) -> Bool {
     if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeSymbolicLink.rawValue
@@ -47,10 +47,17 @@ func pathIsSymlink(_ path: String) -> Bool {
     return false
 }
 
-/// Returns true if path is a directory/
-func pathIsDirectory(_ path: String) -> Bool {
+/// Returns true if path is a directory; follows symlinks if followSymlinks=true
+func pathIsDirectory(_ path: String, followSymlinks: Bool = false) -> Bool {
     if let fileType = fileType(path) {
-        return fileType == FileAttributeType.typeDirectory.rawValue
+        if fileType == FileAttributeType.typeDirectory.rawValue {
+            return true
+        }
+        if followSymlinks, fileType == FileAttributeType.typeSymbolicLink.rawValue {
+            if let target = try? FileManager.default.destinationOfSymbolicLink(atPath: path) {
+                return pathIsDirectory(target)
+            }
+        }
     }
     return false
 }
