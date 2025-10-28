@@ -422,10 +422,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 _ = forceInstallPackageCheck() // this might mark some more items as unattended
                 // now install anything that can be done unattended
                 munkiLog("Installing only items marked unattended because SuppressLoginwindowInstall is true.")
-                _ = await doInstallTasks(
-                    doAppleUpdates: appleUpdateCount > 0,
-                    onlyUnattended: true
-                )
+                _ = await doInstallTasks(onlyUnattended: true)
                 return
             }
             if getIdleSeconds() < 10 {
