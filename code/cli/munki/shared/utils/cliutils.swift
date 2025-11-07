@@ -21,8 +21,6 @@
 import Darwin
 import Foundation
 
-private let display = DisplayAndLog.main
-
 /// Removes a final newline character from a string if present
 func trimTrailingNewline(_ s: String) -> String {
     var trimmedString = s
