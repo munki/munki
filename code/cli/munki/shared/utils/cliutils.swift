@@ -21,6 +21,8 @@
 import Darwin
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// Removes a final newline character from a string if present
 func trimTrailingNewline(_ s: String) -> String {
     var trimmedString = s
@@ -28,6 +30,13 @@ func trimTrailingNewline(_ s: String) -> String {
         trimmedString = String(trimmedString.dropLast())
     }
     return trimmedString
+}
+
+/// Get system uptime in seconds. Uptime is paused while the device is sleeping.
+func get_uptime() -> Double {
+    let uptime = clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX)
+    let seconds = Double(uptime) / Double(NSEC_PER_SEC)
+    return seconds
 }
 
 struct CLIResults {
@@ -137,11 +146,11 @@ class ProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) throws {
-        var deadline: UInt64?
+        var deadline: Double?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = mach_absolute_time() + UInt64(timeout) * UInt64(NSEC_PER_SEC)
+                    deadline = get_uptime() + Double(timeout)
                 }
                 try task.run()
             } catch {
@@ -158,7 +167,7 @@ class ProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if mach_absolute_time() >= deadline {
+                if get_uptime() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
@@ -413,11 +422,11 @@ class AsyncProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) async throws {
-        var deadline: UInt64?
+        var deadline: Double?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = mach_absolute_time() + UInt64(timeout) * UInt64(NSEC_PER_SEC)
+                    deadline = get_uptime() + Double(timeout)
                 }
                 try task.run()
             } catch {
@@ -436,7 +445,7 @@ class AsyncProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if mach_absolute_time() >= deadline {
+                if get_uptime() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
