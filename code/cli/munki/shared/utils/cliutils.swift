@@ -137,11 +137,11 @@ class ProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) throws {
-        var deadline: Date?
+        var deadline: UInt64?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                    deadline = mach_absolute_time() + UInt64(timeout) * UInt64(NSEC_PER_SEC)
                 }
                 try task.run()
             } catch {
@@ -158,7 +158,7 @@ class ProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if Date() >= deadline {
+                if mach_absolute_time() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
@@ -413,11 +413,11 @@ class AsyncProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) async throws {
-        var deadline: Date?
+        var deadline: UInt64?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                    deadline = mach_absolute_time() + UInt64(timeout) * UInt64(NSEC_PER_SEC)
                 }
                 try task.run()
             } catch {
@@ -436,7 +436,7 @@ class AsyncProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if Date() >= deadline {
+                if mach_absolute_time() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
