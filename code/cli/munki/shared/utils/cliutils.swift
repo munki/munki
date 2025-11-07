@@ -38,6 +38,28 @@ struct CLIResults {
     var failureDetail: String = "" // error text from this code
 }
 
+/// Tracks elapsed time via mach_absolute_time so sleep/wake doesn't skew deadlines.
+private struct MonotonicDeadline {
+    private let startTick: UInt64
+    private let timeoutNanoseconds: Double
+    private let timebase: mach_timebase_info_data_t
+
+    init?(seconds timeout: Int) {
+        guard timeout > 0 else { return nil }
+        startTick = mach_absolute_time()
+        timeoutNanoseconds = Double(timeout) * 1_000_000_000.0
+        var info = mach_timebase_info_data_t()
+        mach_timebase_info(&info)
+        timebase = info
+    }
+
+    func isExpired() -> Bool {
+        let elapsedTicks = mach_absolute_time() - startTick
+        let elapsedNanoseconds = Double(elapsedTicks) * Double(timebase.numer) / Double(timebase.denom)
+        return elapsedNanoseconds >= timeoutNanoseconds
+    }
+}
+
 /// A class to run processes synchronously
 class ProcessRunner {
     let task = Process()
@@ -413,12 +435,9 @@ class AsyncProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) async throws {
-        var deadline: Date?
+        let deadline = MonotonicDeadline(seconds: timeout)
         if !task.isRunning {
             do {
-                if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
-                }
                 try task.run()
             } catch {
                 // task didn't start
@@ -435,14 +454,12 @@ class AsyncProcessRunner {
         // task.waitUntilExit()
         while task.isRunning {
             // loop until process exits
-            if let deadline {
-                if Date() >= deadline {
-                    results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
-                    task.terminate()
-                    results.exitcode = Int.max // maybe we should define a specific code
-                    results.timedOut = true
-                    throw ProcessError.timeout
-                }
+            if deadline?.isExpired() == true {
+                results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                task.terminate()
+                results.exitcode = Int.max // maybe we should define a specific code
+                results.timedOut = true
+                throw ProcessError.timeout
             }
             await Task.yield()
         }
