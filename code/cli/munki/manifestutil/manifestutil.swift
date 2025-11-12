@@ -75,6 +75,7 @@ struct ManifestUtil: AsyncParsableCommand {
             CopyManifest.self,
             RenameManifest.self,
             DeleteManifest.self,
+            Convert.self,
             Configure.self,
             Version.self,
             RunInteractive.self,

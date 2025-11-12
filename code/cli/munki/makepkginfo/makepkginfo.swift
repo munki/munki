@@ -22,107 +22,14 @@ import ArgumentParser
 import Foundation
 
 @main
-struct MakePkgInfo: ParsableCommand {
+struct MakePkgInfo: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "makepkginfo",
-        abstract: "Creates a pkginfo file (or fragment thereof) from given input."
+        abstract: "Creates a pkginfo file (or fragment thereof) from given input.",
+        subcommands: [
+            Convert.self,
+            Create.self,
+        ],
+        defaultSubcommand: Create.self
     )
-
-    @OptionGroup(title: "Pkginfo Override Options")
-    var overrideOptions: OverrideOptions
-
-    @OptionGroup(title: "Script Options")
-    var scriptOptions: ScriptOptions
-
-    @OptionGroup(title: "Drag-n-drop Disk Image Options")
-    var dmgOptions: DragNDropOptions
-
-    @OptionGroup(title: "Installer Package Options")
-    var packageOptions: ApplePackageOptions
-
-    @OptionGroup(title: "Forced/Unattended Options")
-    var unattendedOptions: UnattendedInstallOptions
-
-    @OptionGroup(title: "Generating 'installs' Items")
-    var installsOptions: GeneratingInstallsOptions
-
-    @OptionGroup(title: "Installer Types")
-    var installerTypeOptions: InstallerTypeOptions
-
-    @OptionGroup(title: "Additional Options")
-    var additionalOptions: AdditionalPkginfoOptions
-
-    @OptionGroup(visibility: .private)
-    var hiddenOptions: HiddenPkginfoOptions
-
-    @Flag(name: [.long, .customShort("V")],
-          help: "Print the version of the Munki tools and exit.")
-    var version = false
-
-    @Flag(help: "Output in YAML format instead of XML plist.")
-    var yaml = false
-
-    @Argument(help: ArgumentHelp(
-        "Path to installer item (package or disk image).",
-        valueName: "installer-item"
-    ))
-    var installerItem: String?
-    
-    /// Determine if YAML output should be used based on flag or global preference
-    private var shouldUseYaml: Bool {
-        if yaml {
-            return true
-        }
-        return UserDefaults.standard.bool(forKey: "yaml")
-    }
-
-    mutating func run() throws {
-        if version {
-            print(getVersion())
-            return
-        }
-
-        let options = PkginfoOptions(
-            override: overrideOptions,
-            script: scriptOptions,
-            dmg: dmgOptions,
-            pkg: packageOptions,
-            force: unattendedOptions,
-            installs: installsOptions,
-            type: installerTypeOptions,
-            other: additionalOptions,
-            hidden: hiddenOptions
-        )
-
-        if installerItem == nil,
-           options.installs.file.isEmpty,
-           options.type.nopkg == false,
-           options.pkg.installerEnvironment.isEmpty,
-           options.script.installcheckScript == nil,
-           options.script.uninstallcheckScript == nil,
-           options.script.preinstallScript == nil,
-           options.script.postinstallScript == nil,
-           options.script.preuninstallScript == nil,
-           options.script.postuninstallScript == nil,
-           options.script.uninstallScript == nil
-        {
-            throw ValidationError("Can't figure out what to do!")
-        }
-
-        do {
-            let pkginfo = try makepkginfo(installerItem, options: options)
-            let plistStr = try plistToString(pkginfo, yamlOutput: shouldUseYaml)
-            print(plistStr)
-        } catch let PlistError.writeError(description) {
-            printStderr("ERROR: \(description)")
-            throw ExitCode(-1)
-        } catch let error as MunkiError {
-            printStderr("ERROR: \(error.description)")
-            throw ExitCode(-1)
-        } catch {
-            printStderr("Unexpected error: \(type(of: error))")
-            printStderr(error)
-            throw ExitCode(-1)
-        }
-    }
 }
