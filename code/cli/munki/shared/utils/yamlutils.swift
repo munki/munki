@@ -38,7 +38,7 @@ extension YamlError: LocalizedError {
 }
 
 /// Check if a file path has a YAML extension
-func isYamlFile(_ filepath: String) -> Bool {
+public func isYamlFile(_ filepath: String) -> Bool {
     let fileExtension = (filepath as NSString).pathExtension.lowercased()
     return fileExtension == "yaml" || fileExtension == "yml"
 }
@@ -218,7 +218,7 @@ func yamlToString(_ dataObject: Any) throws -> String {
 }
 
 /// Attempt to convert YAML string to Data
-func yamlToData(_ dataObject: Any) throws -> Data {
+public func yamlToData(_ dataObject: Any) throws -> Data {
     do {
         let yamlString = try yamlToString(dataObject)
         guard let data = yamlString.data(using: .utf8) else {
