@@ -53,3 +53,19 @@ func addTZOffsetToDate(_ date: Date) -> Date {
     // return new Date plus the offset
     return Date(timeInterval: secondsOffset, since: date)
 }
+
+/// Returns an ISO 8601-formatted string in UTC for given date
+func ISO8601String(for date: Date) -> String {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter.string(from: date)
+}
+
+/// Retutns an RFC 3339-formatted string in the current time zone for given date
+func RFC3339String(for date: Date) -> String {
+    // RFC 3339 date format like `2024-07-01 17:30:32-08:00`
+    let formatter = ISO8601DateFormatter()
+    formatter.timeZone = TimeZone.current
+    formatter.formatOptions = [.withInternetDateTime, .withSpaceBetweenDateAndTime]
+    return formatter.string(from: date)
+}
