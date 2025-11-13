@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-This is not the place to ask for support or help with using Munki. This is to report a reproducible bug with the Munki code. For support or help with using Munki, please use the munki-discuss Google Group.
+This is not the place to ask for support or help with using Munki. This is to report a reproducible bug with the Munki code. For support or help with using Munki, please use the munki-discuss Google Group (https://groups.google.com/g/munki-discuss).
 
 **Describe the bug**
 A clear and concise description of what the bug is.
