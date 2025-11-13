@@ -268,7 +268,7 @@ func installWithInstallInfo(
 
         if installerType == "startosinstall" {
             skippedInstalls.append(item)
-            display.debug1("Skipping install of \(itemName) because it's a startosinstall item. Will install later.")
+            display.debug1("Skipping install of \(itemName) because it's a startosinstall item, which is no longer supported.")
             continue
         }
         if onlyUnattended {
