@@ -447,8 +447,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         managedInstalls = nonStartOSInstallItems + startOSInstallItems
         installInfo["managed_installs"] = managedInstalls
 
-        if startOSInstallItems.count > 1 {
-            display.warning("There are multiple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
+        if startOSInstallItems.count > 0 {
+            display.warning("There are startosinstall items in managed_installs. This type of install is no longer supported.")
         }
 
         // record detail before we throw it away...
