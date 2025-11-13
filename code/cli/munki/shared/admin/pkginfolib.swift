@@ -155,25 +155,9 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     guard !dragNDropItem.isEmpty else {
         throw MunkiError("No application found on disk image.")
     }
-    // check to see if item is a macOS installer and we can generate a startosinstall item
-    // TODO: remove this or print warning
-    // since it looks like Munki 7 won't support this installer_type
-    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
-    let itemIsInstallMacOSApp = pathIsInstallMacOSApp(itempath)
-    if itemIsInstallMacOSApp,
-       options.type.installerType == .startosinstall
-    {
-        if options.hidden.printWarnings,
-           installMacOSAppIsStub(itempath)
-        {
-            printStderr("WARNING: the provided disk image appears to contain an Install macOS application, but the application does not contain Contents/SharedSupport/InstallESD.dmg or Contents/SharedSupport/SharedSupport.dmg")
-        }
-        return try makeStartOSInstallPkgInfo(
-            mountpoint: mountpoint, item: dragNDropItem
-        )
-    }
 
     // continue as copy_from_dmg item
+    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
     installsitem = createInstallsItem(itempath)
 
     if !installsitem.isEmpty {
@@ -234,7 +218,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
         info["uninstall_method"] = "remove_copied_items"
 
         // Should we add extra info for a stage_os_installer item?
-        if itemIsInstallMacOSApp,
+        if pathIsInstallMacOSApp(itempath),
            options.type.installerType == nil || options.type.installerType == .stage_os_installer
         {
             let additionalInfo = try makeStageOSInstallerPkgInfo(itempath)
