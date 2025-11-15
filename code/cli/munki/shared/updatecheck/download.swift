@@ -207,10 +207,11 @@ func downloadIcons(_ itemList: [PlistDict]) {
     var iconsToKeep = [String]()
     let iconsDir = managedInstallsDir(subpath: "icons")
     let iconHashes = getIconHashes()
+    let supportedIconExtensions = ["bmp", "gif", "icns", "jpg", "jpeg", "png", "psd", "tga", "tif", "tiff", "yuv"]
 
     for item in itemList {
         var iconName = item["icon_name"] as? String ?? item["name"] as? String ?? "<unknown>"
-        if (iconName as NSString).pathExtension.isEmpty {
+        if !supportedIconExtensions.contains((iconName as NSString).pathExtension) {
             iconName += ".png"
         }
         iconsToKeep.append(iconName)
