@@ -47,17 +47,75 @@ public func isYamlFile(_ filepath: String) -> Bool {
 func readYaml(fromFile filepath: String) throws -> Any? {
     do {
         let yamlString = try String(contentsOfFile: filepath, encoding: .utf8)
-        return try Yams.load(yaml: yamlString)
+        let parsed = try Yams.load(yaml: yamlString)
+        return normalizeYamlTypes(parsed)
     } catch {
         throw YamlError.readError(description: "Failed to read YAML from \(filepath): \(error)")
     }
 }
 
+/// Normalize YAML parsed data to ensure version strings are strings, not floats
+/// This prevents the common mistake of writing unquoted version numbers like:
+///   minimum_os_version: 10.12  (becomes float 10.12)
+/// Instead of:
+///   minimum_os_version: '10.12'  (string "10.12")
+///
+/// Without this normalization, the version check in catalogs.swift would fail:
+///   if let minimumOSVersion = item["minimum_os_version"] as? String
+/// The cast would return nil for a float, silently bypassing the OS version check.
+///
+/// This ensures version-related fields are always strings, matching munki's expectations.
+func normalizeYamlTypes(_ object: Any?) -> Any? {
+    guard let object = object else { return nil }
+    
+    // Known keys that should always be strings, even if they look like numbers
+    let stringKeys: Set<String> = [
+        "minimum_os_version",
+        "maximum_os_version", 
+        "minimum_munki_version",
+        "minimum_update_version",
+        "version",
+        "installer_item_version",
+        "installed_version",
+        "product_version"
+    ]
+    
+    if let dict = object as? [String: Any] {
+        var normalized: [String: Any] = [:]
+        for (key, value) in dict {
+            // Convert numeric values to strings for version-related keys
+            if stringKeys.contains(key) {
+                if let floatValue = value as? Double {
+                    // Convert float to string, preserving precision
+                    // Remove trailing zeros: 14.0 -> "14", 10.12 -> "10.12"
+                    let formatted = String(format: "%.10g", floatValue)
+                    normalized[key] = formatted
+                } else if let intValue = value as? Int {
+                    normalized[key] = String(intValue)
+                } else if let stringValue = value as? String {
+                    normalized[key] = stringValue
+                } else {
+                    normalized[key] = normalizeYamlTypes(value)
+                }
+            } else {
+                normalized[key] = normalizeYamlTypes(value)
+            }
+        }
+        return normalized
+    } else if let array = object as? [Any] {
+        return array.map { normalizeYamlTypes($0) }
+    } else {
+        return object
+    }
+}
+
+
 /// Attempt to read YAML from data
 func readYaml(fromData data: Data) throws -> Any? {
     do {
         let yamlString = String(data: data, encoding: .utf8) ?? ""
-        return try Yams.load(yaml: yamlString)
+        let parsed = try Yams.load(yaml: yamlString)
+        return normalizeYamlTypes(parsed)
     } catch {
         throw YamlError.readError(description: "Failed to parse YAML data: \(error)")
     }
@@ -66,7 +124,8 @@ func readYaml(fromData data: Data) throws -> Any? {
 /// Attempt to read YAML from a string
 func readYaml(fromString string: String) throws -> Any? {
     do {
-        return try Yams.load(yaml: string)
+        let parsed = try Yams.load(yaml: string)
+        return normalizeYamlTypes(parsed)
     } catch {
         throw YamlError.readError(description: "Failed to parse YAML string: \(error)")
     }
