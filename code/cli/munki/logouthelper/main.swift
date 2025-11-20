@@ -121,7 +121,7 @@ func main() -> Int32 {
     var logoutTimeOverride: Date?
     var logoutTime = Date.distantFuture
 
-    // minimium notification of 60 minutes + 3 seconds
+    // minimum notification of 60 minutes + 3 seconds
     let minimumNotificationMinutes = Double(MANDATORY_NOTIFICATIONS.max() ?? 60)
     let minimumNotificationsLogoutTime = Date().addingTimeInterval(60 * minimumNotificationMinutes + 30)
 
@@ -175,7 +175,7 @@ func main() -> Int32 {
 
         // do we need to notify?
         let minutesUntilLogout = Int(logoutTime.timeIntervalSinceNow / 60)
-        let infoDict = ["logout_time": minutesUntilLogout]
+        let infoDict = ["logout_time": logoutTime]
         if NOTIFICATION_MINS.contains(minutesUntilLogout) {
             sentNotifications.append(minutesUntilLogout)
             log("Warning user of \(minutesUntilLogout) minutes until forced logout")
@@ -192,7 +192,7 @@ func main() -> Int32 {
     }
 
     // exited loop, now time to force a logout
-    if currentGUIUsers().isEmpty, earliestForceInstallDate() != nil {
+    if !currentGUIUsers().isEmpty, earliestForceInstallDate() != nil {
         log("Beginning forced logout")
         forceLogoutNow()
     }

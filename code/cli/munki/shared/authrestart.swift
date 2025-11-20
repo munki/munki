@@ -106,7 +106,7 @@ func getAuthRestartKey(quiet: Bool = false) -> String? {
           let recoveryKey = recoveryKeyDict["RecoveryKey"] as? String
     else {
         if !quiet {
-            Authrestart.logger.error("Could not retreive recovery key from \(recoveryKeyPlist).")
+            Authrestart.logger.error("Could not retrieve recovery key from \(recoveryKeyPlist).")
         }
         return nil
     }
@@ -195,7 +195,7 @@ func doAuthorizedOrNormalRestart(
             // notify that it did then perform a normal restart
             Authrestart.logger.warning("Authorized Restart failed. Performing normal restart...")
         } else {
-            // we sucessfully triggered an authrestart
+            // we successfully triggered an authrestart
             return
         }
     }

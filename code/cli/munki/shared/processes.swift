@@ -40,7 +40,7 @@ func getRunningProcesses() -> [String] {
 /// Returns ProcessID for a running python script matching the scriptName
 /// as long as the pid is not the same as ours
 /// this is used to see if the managedsoftwareupdate script is already running
-func pythonScriptRunning(_ scriptName: String) -> Int32? {
+func pythonScriptRunning(_ scriptName: String) -> UNIXProcessInfoWithPath? {
     let ourPid = ProcessInfo().processIdentifier
     let processes = UNIXProcessListWithPaths()
     for item in processes {
@@ -57,7 +57,7 @@ func pythonScriptRunning(_ scriptName: String) -> Int32? {
                 // drop leading args that start with a hyphen
                 args = Array(args.drop(while: { $0.hasPrefix("-") }))
                 if args.count > 0, args[0].hasSuffix(scriptName) {
-                    return item.pid
+                    return item
                 }
             }
         }
@@ -67,7 +67,7 @@ func pythonScriptRunning(_ scriptName: String) -> Int32? {
 
 /// Returns Process ID for a running executable matching the name
 /// as long as it isn't our pid
-func executableRunning(_ name: String) -> Int32? {
+func executableRunning(_ name: String) -> UNIXProcessInfoWithPath? {
     let ourPid = ProcessInfo().processIdentifier
     let processes = UNIXProcessListWithPaths()
     for item in processes {
@@ -77,12 +77,12 @@ func executableRunning(_ name: String) -> Int32? {
         if name.hasPrefix("/") {
             // full path, so exact comparison
             if item.path == name {
-                return item.pid
+                return item
             }
         } else {
             // does executable path end with the name?
             if item.path.hasSuffix(name) {
-                return item.pid
+                return item
             }
         }
     }
@@ -90,20 +90,20 @@ func executableRunning(_ name: String) -> Int32? {
 }
 
 /// Returns the pid of another managedsoftwareupdate process, if found
-func anotherManagedsoftwareupdateInstanceRunning() -> Int32? {
+func anotherManagedsoftwareupdateInstanceRunning() -> UNIXProcessInfoWithPath? {
     // A Python version of managedsoftwareupdate might be running,
     // or a compiled version
-    if let pid = executableRunning("managedsoftwareupdate") {
-        return pid
+    if let item = executableRunning("managedsoftwareupdate") {
+        return item
     }
-    if let pid = pythonScriptRunning(".managedsoftwareupdate.py") {
-        return pid
+    if let item = pythonScriptRunning(".managedsoftwareupdate.py") {
+        return item
     }
-    if let pid = pythonScriptRunning("managedsoftwareupdate.py") {
-        return pid
+    if let item = pythonScriptRunning("managedsoftwareupdate.py") {
+        return item
     }
-    if let pid = pythonScriptRunning("managedsoftwareupdate") {
-        return pid
+    if let item = pythonScriptRunning("managedsoftwareupdate") {
+        return item
     }
     return nil
 }

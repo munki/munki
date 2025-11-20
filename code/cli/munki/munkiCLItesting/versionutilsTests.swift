@@ -26,7 +26,7 @@ struct MunkiVersionTests {
         #expect(version1 == version2)
     }
 
-    /// Test that less-than comparision is numeric and not alpha
+    /// Test that less-than comparison is numeric and not alpha
     @Test func versionsCompareFoo() async throws {
         let version1 = MunkiVersion("1.2")
         let version2 = MunkiVersion("1.10")

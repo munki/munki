@@ -23,6 +23,7 @@ struct UNIXProcessInfo {
     let pid: Int32
     let ppid: Int32
     let uid: UInt32
+    let starttime: Int
     let command: String
 }
 
@@ -52,6 +53,7 @@ func UNIXProcessList() -> [UNIXProcessInfo] {
                 pid: kinfo.kp_proc.p_pid,
                 ppid: kinfo.kp_eproc.e_ppid,
                 uid: kinfo.kp_eproc.e_ucred.cr_uid,
+                starttime: kinfo.kp_proc.p_un.__p_starttime.tv_sec,
                 command: command
             )
         )
@@ -114,7 +116,7 @@ func parseArgumentData(_ data: Data) throws -> [String] {
     //
     // <https://opensource.apple.com/source/adv_cmds/adv_cmds-176/ps/print.c.auto.html>
 
-    // returns a list of strings: [0] is the execuatable path,
+    // returns a list of strings: [0] is the executable path,
     // the rest is `argv[0]` through `argv[argc - 1]
 
     // Parse `argc`.  We’re assuming the value is little endian here, which is
@@ -168,6 +170,7 @@ struct UNIXProcessInfoWithPath {
     let pid: Int32
     let ppid: Int32
     let uid: UInt32
+    let starttime: Int
     let command: String
     let path: String
 }
@@ -187,6 +190,7 @@ func UNIXProcessListWithPaths() -> [UNIXProcessInfoWithPath] {
                         pid: proc.pid,
                         ppid: proc.ppid,
                         uid: proc.uid,
+                        starttime: proc.starttime,
                         command: proc.command,
                         path: args[0]
                     )

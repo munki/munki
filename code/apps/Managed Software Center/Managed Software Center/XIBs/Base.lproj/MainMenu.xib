@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24118.1" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24127" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24118.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24127"/>
         <capability name="NSView safe area layout guides" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -192,7 +192,6 @@
         </customObject>
         <customObject id="XGW-R4-ybE" customClass="MainWindowController" customModule="Managed_Software_Center" customModuleProvider="target">
             <connections>
-                <outlet property="contentViewController" destination="sDU-NH-Ooc" id="lHI-Tz-qLb"/>
                 <outlet property="findMenuItem" destination="JRN-bq-1gM" id="r2S-8Y-njg"/>
                 <outlet property="mainContentViewController" destination="sDU-NH-Ooc" id="9o8-h5-4RD"/>
                 <outlet property="navigateBackMenuItem" destination="4nC-yt-nEz" id="bDM-jd-pUL"/>
@@ -298,17 +297,17 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Navigate" autoenablesItems="NO" id="gGe-RP-Ys4">
                         <items>
-                            <menuItem title="Back" keyEquivalent="[" id="4nC-yt-nEz">
+                            <menuItem title="Back" secondaryImage="NSGoBackTemplate" keyEquivalent="[" id="4nC-yt-nEz">
                                 <connections>
                                     <action selector="navigateBackBtnClicked:" target="XGW-R4-ybE" id="1Js-TT-NXZ"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Reload Page" keyEquivalent="r" id="RZb-6e-dMo">
+                            <menuItem title="Reload Page" secondaryImage="NSRefreshTemplate" keyEquivalent="r" id="RZb-6e-dMo">
                                 <connections>
                                     <action selector="reloadPage:" target="XGW-R4-ybE" id="0AT-pi-VuZ"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Search" keyEquivalent="f" id="JRN-bq-1gM">
+                            <menuItem title="Search" secondaryImage="magnifyingglass" catalog="system" keyEquivalent="f" id="JRN-bq-1gM">
                                 <connections>
                                     <action selector="selectText:" target="0L3-LH-chu" id="ykw-S6-5Kl"/>
                                 </connections>
@@ -441,6 +440,9 @@
         <userDefaultsController representsSharedInstance="YES" id="Gxl-ZZ-6oq"/>
     </objects>
     <resources>
+        <image name="NSGoBackTemplate" width="12" height="17"/>
+        <image name="NSRefreshTemplate" width="18" height="21"/>
         <image name="NSTouchBarShareTemplate" width="19" height="23"/>
+        <image name="magnifyingglass" catalog="system" width="16" height="15"/>
     </resources>
 </document>

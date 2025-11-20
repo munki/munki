@@ -21,7 +21,7 @@ Incorporating work and ideas from Michael Lynn here:
     https://gist.github.com/pudquick/7704254
 and here:
     https://gist.github.com/pudquick/836a19b5ff17c5b7640d#file-cert_tricks-py
-Updated October 2022 for compatibilty with macOS Ventura
+Updated October 2022 for compatibility with macOS Ventura
 """
 from __future__ import absolute_import, print_function
 

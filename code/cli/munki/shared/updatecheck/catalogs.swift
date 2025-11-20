@@ -177,18 +177,28 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
            let nameTable = catalogDB["named"] as? CatalogDBTable,
            let versionsDict = nameTable[itemName]
         {
-            var indexesToAdd: Set<Int> = []
             for (version, indexes) in versionsDict {
                 if version == "latest" {
                     continue
                 }
-                indexesToAdd.formUnion(indexes)
-            }
-            for index in indexesToAdd {
-                let item = items[index]
-                let version = item["version"] as? String ?? "<unknown>"
-                display.debug1("Adding item \(itemName), version \(version) from catalog \(catalogName)...")
-                itemList.append(item)
+                for index in indexes {
+                    do {
+                        let item = items[index]
+                        // need to compare encoded representations because
+                        // PlistDict (aka [String: Any] is not hashable
+                        let itemEncoded = try plistToData(item)
+                        let alreadyAddedItem = try itemList.contains(
+                            where: { try plistToData($0) == itemEncoded })
+                        if !alreadyAddedItem {
+                            let version = item["version"] as? String ?? "<unknown>"
+                            display.debug1("Adding item \(itemName), version \(version) from catalog \(catalogName)...")
+                            itemList.append(item)
+                        }
+                    } catch {
+                        // error converting an item to plistData. Really unlikely,
+                        // but if it happens we just don't add the item and continue on
+                    }
+                }
             }
         }
     }
@@ -463,7 +473,7 @@ func getItemDetail(
             display.debug1("Our Munki version is \(munkiVersion)")
             if MunkiVersion(munkiVersion) < MunkiVersion(minimumMunkiVersion) {
                 rejectedItems.append(
-                    "Rejected item \(name), version \(version) with minumum Munki version required \(minimumMunkiVersion). Our Munki version is \(munkiVersion)."
+                    "Rejected item \(name), version \(version) with minimum Munki version required \(minimumMunkiVersion). Our Munki version is \(munkiVersion)."
                 )
                 return false
             }
@@ -653,7 +663,7 @@ func getCatalogs(_ catalogList: [String]) {
                 throw PlistError.readError(description: "plist is in wrong format")
             }
         } catch {
-            display.error("Retreived catalog is invalid: \(error.localizedDescription)")
+            display.error("Retrieved catalog is invalid: \(error.localizedDescription)")
         }
     }
 }

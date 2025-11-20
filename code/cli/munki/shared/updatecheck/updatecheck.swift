@@ -132,7 +132,9 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
         _ = try await processManifest(
             localOnlyManifest,
             forKey: key,
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            parentCatalogs: catalogList,
+            manifestName: "LocalOnlyManifest \(localOnlyManifestName)"
         )
         if stopRequested() {
             return
@@ -264,13 +266,13 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     }
 
     guard let mainManifest = manifestData(mainManifestPath) else {
-        display.error("Could not get manifest data from main mainfest \(mainManifestPath)")
+        display.error("Could not get manifest data from main manifest \(mainManifestPath)")
         return .finishedWithErrors
     }
     guard let mainManifestCatalogsList = mainManifest["catalogs"] as? [String],
           !mainManifestCatalogsList.isEmpty
     else {
-        display.error("Main mainfest \(mainManifestPath) does not have a list of catalogs")
+        display.error("Main manifest \(mainManifestPath) does not have a list of catalogs")
         return .finishedWithErrors
     }
 
@@ -446,7 +448,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         installInfo["managed_installs"] = managedInstalls
 
         if startOSInstallItems.count > 1 {
-            display.warning("There are mulitple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
+            display.warning("There are multiple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
         }
 
         // record detail before we throw it away...
@@ -479,11 +481,11 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
         // record the filtered lists
         Report.shared.record(
-            installInfo["managed_installs"] as? [String] ?? [],
+            installInfo["managed_installs"] as? [PlistDict] ?? [],
             to: "ItemsToInstall"
         )
         Report.shared.record(
-            installInfo["removals"] as? [String] ?? [],
+            installInfo["removals"] as? [PlistDict] ?? [],
             to: "ItemsToRemove"
         )
 

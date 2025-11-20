@@ -107,12 +107,17 @@ class MSCAlertController: NSObject {
             // less than 5 minutes until forced logout -- only button says "Logout"
             alert.addButton(withTitle: logout_btn_title)
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-                msc_log("user", "install_with_logout")
-                self.handlePossibleAuthRestart()
-                do {
-                    try logoutAndUpdate()
-                } catch {
-                    self.installSessionErrorAlert("\(error)")
+                if modalResponse == .alertFirstButtonReturn {
+                    // checking for the only button seems odd, but the modal can end
+                    // because we called mainWindow.endSheet(attachedSheet)
+                    // and we don't want to try to log out in that case
+                    msc_log("user", "install_with_logout")
+                    self.handlePossibleAuthRestart()
+                    do {
+                        try logoutAndUpdate()
+                    } catch {
+                        self.installSessionErrorAlert("\(error)")
+                    }
                 }
             })
         }
@@ -140,7 +145,7 @@ class MSCAlertController: NSObject {
             alert.informativeText = NSLocalizedString(
                 "Your administrator has restricted installation of these updates. Contact your administrator for assistance.",
                 comment: "Apple Software Updates Unable detail")
-            // disable insstall now button
+            // disable install now button
             alert.buttons[0].isEnabled = false
         } else {
             // prompt user to install using System Preferences

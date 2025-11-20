@@ -220,7 +220,7 @@ func notifyUserOfUpdates(force: Bool = false) {
         // doesn't require exactly 24 hours to elapse
         // subtract 6 hours
         // IOW, if we notify today at 4pm, we don't really want to wait
-        // until after 4pm tomorrow to notifiy again.
+        // until after 4pm tomorrow to notify again.
         Double((daysBetweenNotifications * 24 * 60 * 60) - (6 * 60 * 60))
     } else {
         0.0
@@ -332,7 +332,7 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
     }
 
     var munkiItemsRestartAction = PostAction.none
-    var appleItemsRestartAction = PostAction.none
+    //var appleItemsRestartAction = PostAction.none
 
     if munkiUpdatesAvailable() > 0 {
         // install Munki updates
@@ -341,7 +341,7 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
             if munkiUpdatesContainItemWithInstallerType("startosinstall") {
                 Report.shared.save()
                 // install macOS
-                // TODO: implement this (install macOS via startOSInstall)
+                // TODO: implement this (install macOS via startOSInstall) (will likely never implement)
             }
         }
     }
@@ -353,7 +353,8 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
 
     Report.shared.save()
 
-    return max(appleItemsRestartAction, munkiItemsRestartAction)
+    //return max(appleItemsRestartAction, munkiItemsRestartAction) // we no longer support installing Apple updates
+    return munkiItemsRestartAction
 }
 
 /// Handle the need for a forced logout. Start our logouthelper

@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		56C33E772173DC8E00D727DC /* MSCTableRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E762173DC8E00D727DC /* MSCTableRowView.swift */; };
 		56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C33E802174D7A200D727DC /* MSCTableCellView.swift */; };
-		8428C7E42E0CB41F00D83D41 /* SidebarViewControiller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E32E0CB41F00D83D41 /* SidebarViewControiller.swift */; };
+		8428C7E42E0CB41F00D83D41 /* SidebarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */; };
 		8428C7E62E0CB44200D83D41 /* MainContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */; };
 		8428C7E82E0CB55000D83D41 /* MainSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */; };
 		8428C7EA2E0CB59200D83D41 /* MainWindowController+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */; };
@@ -84,7 +84,7 @@
 		56C33E7821740B6F00D727DC /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		56C33E7921740D9B00D727DC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		56C33E802174D7A200D727DC /* MSCTableCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCTableCellView.swift; sourceTree = "<group>"; };
-		8428C7E32E0CB41F00D83D41 /* SidebarViewControiller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewControiller.swift; sourceTree = "<group>"; };
+		8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewController.swift; sourceTree = "<group>"; };
 		8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentViewController.swift; sourceTree = "<group>"; };
 		8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitViewController.swift; sourceTree = "<group>"; };
 		8428C7E92E0CB59200D83D41 /* MainWindowController+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+Toolbar.swift"; sourceTree = "<group>"; };
@@ -295,7 +295,7 @@
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
 				C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */,
 				C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */,
-				8428C7E32E0CB41F00D83D41 /* SidebarViewControiller.swift */,
+				8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */,
 				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
 				8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */,
 				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
@@ -479,7 +479,7 @@
 				849BF6382E104F74004A020D /* MainWindowController+NSOutlineView.swift in Sources */,
 				C0E2599E210AD8CE00C3A3D9 /* Socket.swift in Sources */,
 				C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */,
-				8428C7E42E0CB41F00D83D41 /* SidebarViewControiller.swift in Sources */,
+				8428C7E42E0CB41F00D83D41 /* SidebarViewController.swift in Sources */,
 				C04F82A120BB77CF00F9C57D /* FoundationPlist.swift in Sources */,
 				C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */,
 				C04CA61E20E6ADA100711461 /* MainWindowController.swift in Sources */,
@@ -633,6 +633,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -682,7 +683,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -695,6 +696,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -738,7 +740,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;

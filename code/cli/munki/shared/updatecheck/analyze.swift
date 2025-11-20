@@ -647,7 +647,8 @@ func processOptionalInstall(
             if let installerType = pkginfo["installer_type"] as? String,
                installerType == "stage_os_installer"
             {
-                // .thisVersionNotInstalled means installer is staged, but not _installed_
+                // .thisVersionInstalled means installer is staged, but not _installed_
+                // (if it's installed, it will be .newerVersionInstalled
                 needsUpdate = installationState != .newerVersionInstalled
             } else {
                 needsUpdate = installationState == .thisVersionNotInstalled
@@ -731,7 +732,12 @@ func processOptionalInstall(
     {
         processedItem["note"] = pkgInfoNote
     } else if needsUpdate || !isCurrentlyInstalled {
-        if !enoughDiskSpaceFor(
+        if let installerType = pkginfo["installer_type"] as? String,
+           installerType == "stage_os_installer",
+           await installedState(pkginfo) == .thisVersionInstalled
+        {
+            // Install macOS app is already staged so there's nothing to download
+        } else if !enoughDiskSpaceFor(
             pkginfo,
             installList: installInfo["managed_installs"] as? [PlistDict] ?? [],
             warn: false

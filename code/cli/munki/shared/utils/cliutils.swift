@@ -30,6 +30,13 @@ func trimTrailingNewline(_ s: String) -> String {
     return trimmedString
 }
 
+/// Get system uptime in seconds. Uptime is paused while the device is sleeping.
+func get_uptime() -> Double {
+    let uptime = clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX)
+    let seconds = Double(uptime) / Double(NSEC_PER_SEC)
+    return seconds
+}
+
 struct CLIResults {
     var exitcode: Int = 0
     var output: String = "" // process stdout
@@ -132,16 +139,16 @@ class ProcessRunner {
         // delegate?.processUpdated()
     }
 
-    // making this a seperate method so the non-timeout calls
+    // making this a separate method so the non-timeout calls
     // don't need to worry about catching exceptions
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) throws {
-        var deadline: Date?
+        var deadline: Double?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                    deadline = get_uptime() + Double(timeout)
                 }
                 try task.run()
             } catch {
@@ -158,7 +165,7 @@ class ProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if Date() >= deadline {
+                if get_uptime() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
@@ -193,7 +200,7 @@ class ProcessRunner {
 
 /// Runs a command line tool synchronously, returns CLIResults
 /// this implementation attempts to handle scenarios in which a large amount of stdout
-/// or sterr output is generated
+/// or stderr output is generated
 func runCLI(_ tool: String,
             arguments: [String] = [],
             environment: [String: String] = [:],
@@ -368,7 +375,9 @@ class AsyncProcessRunner {
     }
 
     func cancel() {
-        task.terminate()
+        if task.isRunning {
+            task.terminate()
+        }
     }
 
     func run() async {
@@ -378,7 +387,7 @@ class AsyncProcessRunner {
             } catch {
                 // task didn't start
                 results.failureDetail.append("error running \(task.executableURL?.path ?? "")")
-                results.failureDetail.append(error.localizedDescription)
+                results.failureDetail.append(": \(error.localizedDescription)")
                 results.exitcode = -1
                 status.phase = .ended
                 delegate?.processUpdated()
@@ -406,16 +415,16 @@ class AsyncProcessRunner {
         delegate?.processUpdated()
     }
 
-    // making this a seperate method so the non-timeout calls
+    // making this a separate method so the non-timeout calls
     // don't need to worry about catching exceptions
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) async throws {
-        var deadline: Date?
+        var deadline: Double?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                    deadline = get_uptime() + Double(timeout)
                 }
                 try task.run()
             } catch {
@@ -434,7 +443,7 @@ class AsyncProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if Date() >= deadline {
+                if get_uptime() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code

@@ -236,7 +236,10 @@ struct PackageInfoFileTests {
         let unwrappedPkginfoPath = try #require(
             pkginfoPath, "Failed to create temporary pkgInfo file"
         )
-        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
         #expect((receipt["packageid"] as? String ?? "") == "com.googlecode.munki.core")
     }
 
@@ -244,7 +247,10 @@ struct PackageInfoFileTests {
         let unwrappedPkginfoPath = try #require(
             pkginfoPath, "Failed to create temporary pkgInfo file"
         )
-        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
         #expect((receipt["version"] as? String ?? "") == "7.0.0.5096")
     }
 
@@ -252,7 +258,10 @@ struct PackageInfoFileTests {
         let unwrappedPkginfoPath = try #require(
             pkginfoPath, "Failed to create temporary pkgInfo file"
         )
-        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
         #expect((receipt["installed_size"] as? Int ?? 0) == 39393)
     }
 }

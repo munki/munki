@@ -18,7 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-// original Python implmentation by Ben Toms @ Jamf (dataJAR)
+// original Python implementation by Ben Toms @ Jamf (dataJAR)
 
 import Foundation
 import SystemConfiguration
@@ -117,9 +117,10 @@ func createInstallHelperLaunchDaemon(_ group: String) {
     }
 
     let launchDaemon: [String: Any] = [
+        "AssociatedBundleIdentifiers": ["com.googlecode.munki.ManagedSoftwareCenter"],
         "EnvironmentVariables": ["INSTALLHELPER_RUN_TYPE": group],
         "Label": label,
-        "ProgramArguments": ["/usr/local/munki/installhelper"],
+        "ProgramArguments": ["/usr/local/munki/libexec/installhelper"],
         "RunAtLoad": true,
     ]
     // write out launchd plist
@@ -262,10 +263,7 @@ func reloadUserLaunchAgents(group: String) {
         // first, unload active Munki jobs
         var activeAgentLabels = getMunkiLaunchdLabels(uid: uid)
         if group == "appusage" {
-            if activeAgentLabels.contains(APPUSAGE_AGENT) {
-                // only unload APPUSAGE_AGENT
-                activeAgentLabels = [APPUSAGE_AGENT]
-            }
+            activeAgentLabels = activeAgentLabels.filter { $0 == APPUSAGE_AGENT }
         }
         if group == "launchd" {
             // unload everything but APPUSAGE_AGENT
@@ -340,9 +338,7 @@ func reloadLaunchDaemons(group: String) {
     var activeDaemonLabels = getMunkiLaunchdLabels()
     if group == "appusage" {
         // we should only unload APPUSAGE_DAEMON if if's active
-        if activeDaemonLabels.contains(APPUSAGE_DAEMON) {
-            activeDaemonLabels = [APPUSAGE_DAEMON]
-        }
+        activeDaemonLabels = activeDaemonLabels.filter { $0 == APPUSAGE_DAEMON }
     }
     if group == "launchd" {
         // unload all Munki jobs _except_ APPUSAGE_DAEMON and our installhelper jobs
@@ -417,7 +413,7 @@ func main() {
     rotateLog(LOGFILENAME, ifLargerThan: 1_000_000)
     log("Starting \(APP_NAME) \(APP_VERSION)")
 
-    // get our launch group from either the enviroment or the first argument
+    // get our launch group from either the environment or the first argument
     var group = "<none>"
     var manualLaunch = true
     let env = ProcessInfo.processInfo.environment
