@@ -480,31 +480,43 @@ func makepkginfo(_ filepath: String?,
     if let installcheckScript = options.script.installcheckScript {
         if let scriptText = try? String(contentsOfFile: installcheckScript, encoding: .utf8) {
             pkginfo["installcheck_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(installcheckScript)")
         }
     }
     if let uninstallcheckScript = options.script.uninstallcheckScript {
         if let scriptText = try? String(contentsOfFile: uninstallcheckScript, encoding: .utf8) {
             pkginfo["uninstallcheck_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(uninstallcheckScript)")
         }
     }
     if let postinstallScript = options.script.postinstallScript {
         if let scriptText = try? String(contentsOfFile: postinstallScript, encoding: .utf8) {
             pkginfo["postinstall_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(postinstallScript)")
         }
     }
     if let preinstallScript = options.script.preinstallScript {
         if let scriptText = try? String(contentsOfFile: preinstallScript, encoding: .utf8) {
             pkginfo["preinstall_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(preinstallScript)")
         }
     }
     if let postuninstallScript = options.script.postuninstallScript {
         if let scriptText = try? String(contentsOfFile: postuninstallScript, encoding: .utf8) {
             pkginfo["postuninstall_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(postuninstallScript)")
         }
     }
     if let preuninstallScript = options.script.preuninstallScript {
         if let scriptText = try? String(contentsOfFile: preuninstallScript, encoding: .utf8) {
             pkginfo["preuninstall_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(preuninstallScript)")
         }
     }
     if let uninstallScript = options.script.uninstallScript {
@@ -512,11 +524,15 @@ func makepkginfo(_ filepath: String?,
             pkginfo["uninstall_script"] = scriptText
             pkginfo["uninstall_method"] = "uninstall_script"
             pkginfo["uninstallable"] = true
+        } else {
+            throw MunkiError("Could not get contents of \(uninstallScript)")
         }
     }
     if let versionScript = options.script.versionScript {
         if let scriptText = try? String(contentsOfFile: versionScript, encoding: .utf8) {
             pkginfo["version_script"] = scriptText
+        } else {
+            throw MunkiError("Could not get contents of \(versionScript)")
         }
     }
     // more options and pkginfo bits
