@@ -311,7 +311,7 @@ struct someVersionInstalledTests {
         ]
         #expect(await someVersionInstalled(item) == false)
     }
-    
+
     /// if install array is defined but empty, ignore it and fall through to considering receipts
     @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
         // If the installs array is empty, the check should fail though to
@@ -491,7 +491,7 @@ struct evidenceThisIsInstalledTests {
         ]
         #expect(await evidenceThisIsInstalled(item) == true)
     }
-    
+
     /// if install array is defined but empty, ignore it and fall through to considering receipts
     @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
         // If the installs array is empty, the check should fail though to
@@ -509,5 +509,4 @@ struct evidenceThisIsInstalledTests {
         ]
         #expect(await evidenceThisIsInstalled(item) == false)
     }
-
 }
