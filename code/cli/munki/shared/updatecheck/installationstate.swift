@@ -213,7 +213,9 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
         return true
     }
     // do we have installs items?
-    if let installItems = pkginfo["installs"] as? [PlistDict] {
+    if let installItems = pkginfo["installs"] as? [PlistDict],
+       !installItems.isEmpty
+    {
         for item in installItems {
             do {
                 let compareResult = try compareItem(item)
@@ -304,6 +306,7 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
     }
     var foundAllInstallItems = false
     if let installItems = pkginfo["installs"] as? [PlistDict],
+       !installItems.isEmpty,
        (pkginfo["uninstall_method"] as? String ?? "") != "removepackages"
     {
         display.debug2("Checking 'installs' items...")

@@ -180,9 +180,6 @@ struct installedStateTests {
 
     /// if install array is defined but empty, ignore it and fall through to considering receipts
     @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
-        // this depends on a receipt installed by Apple that is present
-        // on macOS Sequoia and Tahoe, but might go away in the future.
-        //
         // If the installs array is empty, the check should fail though to
         // use the receipts array, and should return .thisVersionNotInstalled
         let item: PlistDict = [
@@ -311,6 +308,24 @@ struct someVersionInstalledTests {
             #!/bin/sh
             exit 1
             """,
+        ]
+        #expect(await someVersionInstalled(item) == false)
+    }
+    
+    /// if install array is defined but empty, ignore it and fall through to considering receipts
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+        // If the installs array is empty, the check should fail though to
+        // use the receipts array, and should return false
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "1.2.3",
+            "installs": [],
+            "receipts": [
+                [
+                    "packageid": "bar.doesntexist.foo",
+                    "version": "1.2.3",
+                ],
+            ],
         ]
         #expect(await someVersionInstalled(item) == false)
     }
@@ -476,4 +491,23 @@ struct evidenceThisIsInstalledTests {
         ]
         #expect(await evidenceThisIsInstalled(item) == true)
     }
+    
+    /// if install array is defined but empty, ignore it and fall through to considering receipts
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+        // If the installs array is empty, the check should fail though to
+        // use the receipts array, and should return false
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "1.2.3",
+            "installs": [],
+            "receipts": [
+                [
+                    "packageid": "bar.doesntexist.foo",
+                    "version": "1.2.3",
+                ],
+            ],
+        ]
+        #expect(await evidenceThisIsInstalled(item) == false)
+    }
+
 }
