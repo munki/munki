@@ -128,7 +128,9 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
         return .thisVersionInstalled
     }
     // do we have installs items?
-    if let installItems = pkginfo["installs"] as? [PlistDict] {
+    if let installItems = pkginfo["installs"] as? [PlistDict],
+       !installItems.isEmpty
+    {
         for item in installItems {
             do {
                 let compareResult = try compareItem(item)
@@ -145,6 +147,8 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
             }
         }
     } else if let receipts = pkginfo["receipts"] as? [PlistDict] {
+        // if there are no 'installs' items, then we'll use receipt info
+        // to determine install status.
         for item in receipts {
             do {
                 let compareResult = try await compareReceipt(item)
