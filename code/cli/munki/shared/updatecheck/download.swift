@@ -91,7 +91,7 @@ func enoughDiskSpaceFor(
 
 /// Downloads an (un)installer item.
 /// Returns true if the item was downloaded, false if it was already cached.
-/// Thows an error if there are issues
+/// Throws an error if there are issues
 func downloadInstallerItem(
     _ item: PlistDict,
     installInfo: PlistDict,
@@ -197,7 +197,7 @@ func getIconHashes() -> [String: String] {
         )
         return try readPlist(fromFile: iconsHashesPlist) as? [String: String] ?? [:]
     } catch {
-        display.debug1("Error while retreiving icon hashes: \(error.localizedDescription)")
+        display.debug1("Error while retrieving icon hashes: \(error.localizedDescription)")
         return [String: String]()
     }
 }
@@ -427,7 +427,7 @@ func uncache(_ spaceNeededInKB: Int) {
     var deletedKB = 0
     let filemanager = FileManager.default
     for (path, size) in itemsWithSize {
-        // we delete the smallest item first, proceeeding until
+        // we delete the smallest item first, proceeding until
         // we've freed up enough space or deleted all the items
         if deletedKB >= spaceNeededInKB {
             break
@@ -452,9 +452,9 @@ func startPrecachingAgent() {
         return
     }
     // first look in same dir as the current executable
-    var precacheAgentPath = currentExecutableDir(appendingPathComponent: "precache_agent")
+    var precacheAgentPath = currentExecutableDir(appendingPathComponent: "libexec/precache_agent")
     if !pathExists(precacheAgentPath) {
-        precacheAgentPath = "/usr/local/munki/precache_agent"
+        precacheAgentPath = "/usr/local/munki/libexec/precache_agent"
     }
     if pathExists(precacheAgentPath) {
         display.info("Starting precaching agent")

@@ -39,7 +39,7 @@ func pathIsRegularFile(_ path: String) -> Bool {
     return false
 }
 
-/// Returns true if path is a symlink/
+/// Returns true if path is a symlink
 func pathIsSymlink(_ path: String) -> Bool {
     if let fileType = fileType(path) {
         return fileType == FileAttributeType.typeSymbolicLink.rawValue
@@ -47,10 +47,17 @@ func pathIsSymlink(_ path: String) -> Bool {
     return false
 }
 
-/// Returns true if path is a directory/
-func pathIsDirectory(_ path: String) -> Bool {
+/// Returns true if path is a directory; follows symlinks if followSymlinks=true
+func pathIsDirectory(_ path: String, followSymlinks: Bool = false) -> Bool {
     if let fileType = fileType(path) {
-        return fileType == FileAttributeType.typeDirectory.rawValue
+        if fileType == FileAttributeType.typeDirectory.rawValue {
+            return true
+        }
+        if followSymlinks, fileType == FileAttributeType.typeSymbolicLink.rawValue {
+            if let target = try? FileManager.default.destinationOfSymbolicLink(atPath: path) {
+                return pathIsDirectory(target)
+            }
+        }
     }
     return false
 }
@@ -260,15 +267,18 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
             dirs.append(entryName)
             continue
         }
-        if entryType == DT_LNK, followLinks {
-            // need to find out what the type is of the item that is the
-            // symlink's target
+        if entryType == DT_UNKNOWN || entryType == DT_LNK {
+            // need to find the type of the unknown item or the symlink's target
             let itemPath = (top as NSString).appendingPathComponent(entryName)
             let sb = UnsafeMutablePointer<stat>.allocate(capacity: 1)
             stat(itemPath, sb)
             let isDir = sb.pointee.st_mode & S_IFDIR == S_IFDIR
             sb.deallocate()
             if isDir {
+                if entryType == DT_LNK, !followLinks {
+                    // don't follow symlinks to directories
+                    continue
+                }
                 dirs.append(entryName)
                 continue
             }

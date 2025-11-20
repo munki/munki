@@ -202,7 +202,7 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
 ///
 /// If item has md5checksum attribute, compares on disk file's checksum.
 ///
-/// Throws a MunkiError if there's a problwm with the input
+/// Throws a MunkiError if there's a problem with the input
 func filesystemItemStatus(_ item: PlistDict) throws -> MunkiComparisonResult {
     guard let filepath = item["path"] as? String else {
         throw MunkiError("No path specified for filesystem item")

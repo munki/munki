@@ -818,7 +818,7 @@ def get_conditions():
     conditionalitemspath = os.path.join(
         prefs.pref('ManagedInstallDir'), 'ConditionalItems.plist')
     try:
-        # delete CondtionalItems.plist so that we're starting fresh
+        # delete ConditionalItems.plist so that we're starting fresh
         os.unlink(conditionalitemspath)
     except (OSError, IOError):
         pass

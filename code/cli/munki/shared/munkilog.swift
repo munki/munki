@@ -56,7 +56,9 @@ func munkiLog(_ message: String, logFile: String = "") {
         logPath = logNamed(MAIN_LOG_NAME)
     } else {
         logPath = logNamed(logFile)
-        subsystem = "com.googlecode.munki.\((logFile as NSString).deletingPathExtension)"
+        if logFile != MAIN_LOG_NAME {
+            subsystem = "com.googlecode.munki.\((logFile as NSString).deletingPathExtension)"
+        }
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
         if !FileManager.default.fileExists(atPath: logPath) {
@@ -124,7 +126,7 @@ func munkiLogRotateMainLog() {
 }
 
 /// A nicer abstraction for the various Munki logging functions.
-/// The "classic" UNIX logging levels each have a method, though tradtionally Munki has
+/// The "classic" UNIX logging levels each have a method, though traditionally Munki has
 /// not used many of these levels.
 class MunkiLogger {
     // an easy way to get the standard logger. can't use the name "default"
@@ -183,14 +185,14 @@ class MunkiLogger {
         debug1(message)
     }
 
-    /// These aren't traditional UNIX logging levels, but Munki has traditonally used them
+    /// These aren't traditional UNIX logging levels, but Munki has traditionally used them
     func debug1(_ message: String) {
         if level > 1 {
             munkiLog("DEBUG1: \(message)", logFile: logname)
         }
     }
 
-    /// These aren't traditional UNIX logging levels, but Munki has traditonally used them
+    /// These aren't traditional UNIX logging levels, but Munki has traditionally used them
     func debug2(_ message: String) {
         if level > 2 {
             munkiLog("DEBUG2: \(message)", logFile: logname)

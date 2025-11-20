@@ -32,6 +32,8 @@ let EXIT_STATUS_SERVER_UNAVAILABLE: Int32 = 150
 let EXIT_STATUS_INVALID_PARAMETERS: Int32 = 200
 let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
+let MSU_MAX_RUNTIME_SECS = 43200 // 12 hours
+
 #if DEBUG
     let BUNDLE_ID = (ProcessInfo.processInfo.environment["MUNKI_BUNDLE_ID"] ?? "ManagedInstalls") as CFString
 #else

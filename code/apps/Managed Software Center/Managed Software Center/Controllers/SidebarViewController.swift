@@ -1,5 +1,5 @@
 //
-//  SidebarViewControiller.swift
+//  SidebarViewController.swift
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/25/25.

@@ -223,16 +223,16 @@ if [ $APPSSVNREV -gt $DISTPKGSVNREV ] ; then
     DISTPKGSVNREV=$APPSSVNREV
 fi
 
-MUNKLIBVERS=6.6.5
+MUNKILIBVERS=6.6.5
 if [ "$PYTHONLIBS" == "YES" ] ; then
     # generate a version number for the Python libs
-    MUNKLIBVERSFILE="$MUNKIROOT/code/client/munkilib/version"
+    MUNKILIBVERSFILE="$MUNKIROOT/code/client/munkilib/version.plist"
     # Check to see if file exists
-    if [ -f "MUNKLIBVERSFILE.plist" ]; then
+    if [ -f "$MUNKILIBVERSFILE" ]; then
         # Get the version
-        MUNKLIBVERS=$(defaults read "$MUNKLIBVERSFILE" CFBundleShortVersionString)
+        MUNKILIBVERS=$(defaults read "$MUNKILIBVERSFILE" CFBundleShortVersionString)
         if [ "$?" != "0" ]; then
-            echo "${MUNKLIBVERSFILE}.plist can not be read" 1>&2
+            echo "${MUNKILIBVERSFILE}.plist can not be read" 1>&2
             exit 1
         fi
     fi
@@ -241,7 +241,7 @@ if [ "$PYTHONLIBS" == "YES" ] ; then
     PYTHONLIBSGITREV=$(git log -n1 --format="%H" -- code/client/munkilib)
     GITREVINDEX=$(git rev-list --count "$PYTHONLIBSGITREV")
     PYTHONLIBSSVNREV=$((GITREVINDEX + MAGICNUMBER))
-    PYTHONLIBSVERSION=$MUNKLIBVERS.$PYTHONLIBSSVNREV
+    PYTHONLIBSVERSION=$MUNKILIBVERS.$PYTHONLIBSSVNREV
 fi
 
 # get base apps version from MSC.app
@@ -440,7 +440,7 @@ EOF
 }
 
 
-# Pre-packgage-build cleanup.
+# Pre-package-build cleanup.
 
 if ! rm -rf "$DISTPKG" ; then
     echo "Error removing $DISTPKG before rebuilding it."
@@ -466,15 +466,36 @@ mkdir -m 1775 "$COREROOT"
 mkdir -m 755 "$COREROOT/usr"
 mkdir -m 755 "$COREROOT/usr/local"
 mkdir -m 755 "$COREROOT/usr/local/munki"
+mkdir -m 755 "$COREROOT/usr/local/munki/libexec"
 # Copy command line utilities.
 # edit this if list of tools changes!
-for TOOL in authrestartd launchapp logouthelper removepackages managedsoftwareupdate precache_agent supervisor
+for TOOL in removepackages managedsoftwareupdate
 do
     cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$COREROOT/usr/local/munki/" 2>&1
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$COREROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" \
+            --preserve-metadata=entitlements \
+            --options runtime --timestamp --verbose \
+            "$COREROOT/usr/local/munki/$TOOL"
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing $TOOL: $SIGNING_RESULT"
+            exit 2
+        fi
+    fi
+done
+for TOOL in authrestartd launchapp logouthelper precache_agent
+do
+    cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$COREROOT/usr/local/munki/libexec/" 2>&1
+    # sign tool
+    if [ "$APPSIGNINGCERT" != "" ]; then
+        echo "Signing $TOOL..."
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" \
+            --preserve-metadata=entitlements \
+            --options runtime --timestamp --verbose \
+            "$COREROOT/usr/local/munki/libexec/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
@@ -486,6 +507,7 @@ done
 # Set permissions.
 chmod -R go-w "$COREROOT/usr/local/munki"
 chmod +x "$COREROOT/usr/local/munki"
+chmod +x "$COREROOT/usr/local/munki/libexec"
 
 # make paths.d file
 mkdir -m 755 "$COREROOT/private"
@@ -531,7 +553,10 @@ do
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$ADMINROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" \
+            --preserve-metadata=entitlements \
+            --options runtime --timestamp --verbose \
+            "$ADMINROOT/usr/local/munki/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
@@ -557,6 +582,27 @@ fi
 
 # Create package info file.
 makeinfo admin "$PKGTMP/info" norestart
+
+
+##################
+## Swift dylibs ##
+##################
+
+echo "Creating Swift dylib package source..."
+
+LIBSROOT="$PKGTMP/munki_libs"
+mkdir -m 1775 "$LIBSROOT"
+mkdir -m 755 "$LIBSROOT/usr"
+mkdir -m 755 "$LIBSROOT/usr/local"
+mkdir -m 755 "$LIBSROOT/usr/local/munki"
+mkdir -m 755 "$LIBSROOT/usr/local/munki/lib"
+
+# copy in needed Swift dylibs
+CONCURRENCY_DYLIB="$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx/libswift_Concurrency.dylib"
+cp "$CONCURRENCY_DYLIB" "$LIBSROOT/usr/local/munki/lib/"
+
+# Create package info file.
+makeinfo libs "$PKGTMP/info" norestart
 
 
 ###################
@@ -592,19 +638,26 @@ if [ "$APPSIGNINGCERT" != "" ]; then
         exit 2
     fi
 
-    echo "Signing MunkiStatus.app Frameworks..."
-    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
-    SIGNING_RESULT="$?"
-    if [ "$SIGNING_RESULT" -ne 0 ]; then
-        echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
-        exit 2
+    # Frameworks may or may not exist depending on OS target and linked Frameworks
+    if [ -e "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" ] ; then
+        echo "Signing MunkiStatus.app Frameworks..."
+        /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Helpers/MunkiStatus.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing MunkiStatus.app Frameworks: $SIGNING_RESULT"
+            exit 2
+        fi
     fi
-    echo "Signing Managed Software Center.app Frameworks..."
-    /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
-    SIGNING_RESULT="$?"
-    if [ "$SIGNING_RESULT" -ne 0 ]; then
-        echo "Error signing Managed Software Center.app Frameworks: $SIGNING_RESULT"
-        exit 2
+
+    # Frameworks may or may not exist depending on OS target and linked Frameworks
+    if [ -e "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" ] ; then
+        echo "Signing Managed Software Center.app Frameworks..."
+        /usr/bin/find "$APPROOT/Applications/Managed Software Center.app/Contents/Frameworks" -type f -perm -u=x -exec /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose {} \;
+        SIGNING_RESULT="$?"
+        if [ "$SIGNING_RESULT" -ne 0 ]; then
+            echo "Error signing Managed Software Center.app Frameworks: $SIGNING_RESULT"
+            exit 2
+        fi
     fi
 
     echo "Signing Managed Software Center.app..."
@@ -642,6 +695,7 @@ mkdir -m  755 "$LAUNCHDROOT/Library/LaunchDaemons"
 mkdir -m  755 "$LAUNCHDROOT/usr"
 mkdir -m  755 "$LAUNCHDROOT/usr/local"
 mkdir -m  755 "$LAUNCHDROOT/usr/local/munki"
+mkdir -m  755 "$LAUNCHDROOT/usr/local/munki/libexec"
 
 # Copy launch daemons and launch agents.
 cp -X "$MUNKIROOT/launchd/LaunchAgents/"*.plist "$LAUNCHDROOT/Library/LaunchAgents/"
@@ -653,11 +707,11 @@ chmod 644 "$LAUNCHDROOT/Library/LaunchDaemons/"*
 # edit this if list of tools changes!
 for TOOL in installhelper
 do
-	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$LAUNCHDROOT/usr/local/munki/" 2>&1
+	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$LAUNCHDROOT/usr/local/munki/libexec/" 2>&1
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$LAUNCHDROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$LAUNCHDROOT/usr/local/munki/libexec/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
@@ -668,6 +722,7 @@ done
 # Set permissions.
 chmod -R go-w "$LAUNCHDROOT/usr/local/munki"
 chmod +x "$LAUNCHDROOT/usr/local/munki"
+chmod +x "$LAUNCHDROOT/usr/local/munki/libexec"
 
 # copy in launchd cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/launchd_cleanup_scripts/" ] ; then
@@ -693,6 +748,7 @@ mkdir -m 755 "$APPUSAGEROOT/Library/LaunchDaemons"
 mkdir -m 755 "$APPUSAGEROOT/usr"
 mkdir -m 755 "$APPUSAGEROOT/usr/local"
 mkdir -m 755 "$APPUSAGEROOT/usr/local/munki"
+mkdir -m 755 "$APPUSAGEROOT/usr/local/munki/libexec"
 # Copy launch agent, launch daemon, daemon, and agent
 # LaunchAgent
 cp -X "$MUNKIROOT/launchd/app_usage_LaunchAgent/"*.plist "$APPUSAGEROOT/Library/LaunchAgents/"
@@ -704,11 +760,11 @@ chmod 644 "$APPUSAGEROOT/Library/LaunchDaemons/"*
 # edit this if list of tools changes!
 for TOOL in appusaged app_usage_monitor installhelper
 do
-	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$APPUSAGEROOT/usr/local/munki/" 2>&1
+	cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$APPUSAGEROOT/usr/local/munki/libexec/" 2>&1
     # sign tool
     if [ "$APPSIGNINGCERT" != "" ]; then
         echo "Signing $TOOL..."
-        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$APPUSAGEROOT/usr/local/munki/$TOOL"
+        /usr/bin/codesign -f -s "$APPSIGNINGCERT" --options runtime --timestamp --verbose "$APPUSAGEROOT/usr/local/munki/libexec/$TOOL"
         SIGNING_RESULT="$?"
         if [ "$SIGNING_RESULT" -ne 0 ]; then
             echo "Error signing $TOOL: $SIGNING_RESULT"
@@ -719,6 +775,7 @@ done
 # Set permissions.
 chmod -R go-w "$APPUSAGEROOT/usr/local/munki"
 chmod +x "$APPUSAGEROOT/usr/local/munki"
+chmod +x "$APPUSAGEROOT/usr/local/munki/libexec"
 
 # copy in app_usage cleanup scripts
 if [ -d "$MUNKIROOT/code/tools/pkgresources/app_usage_cleanup_scripts/" ] ; then
@@ -891,7 +948,7 @@ fi
 #################
 if [ "$CLIENTCERTPKG" == "YES" ] ; then
 
-    echo "Creating client cert package souce..."
+    echo "Creating client cert package source..."
 
     # Create directory structure
     CLIENTCERTROOT="$PKGTMP/munki_clientcert"
@@ -926,6 +983,9 @@ COREDESC="Core command-line tools used by Munki."
 
 ADMINTITLE="Munki admin tools"
 ADMINDESC="Command-line munki admin tools."
+
+LIBSTITLE="Swift dynamic libraries"
+LIBSDESC="Swift runtime libraries for macOS 10.15 and 11"
 
 APPTITLE="Managed Software Center"
 APPDESC="Managed Software Center application."
@@ -1060,6 +1120,7 @@ cat > "$DISTFILE" <<EOF
         $CONFOUTLINE
         $CLIENTCERTOUTLINE
         $AUTORUNOUTLINE
+        <line choice="libs"/>
     </choices-outline>
     $ROSETTA2CHOICE
     <choice id="core" title="$CORETITLE" description="$COREDESC">
@@ -1068,16 +1129,16 @@ cat > "$DISTFILE" <<EOF
     <choice id="admin" title="$ADMINTITLE" description="$ADMINDESC">
         <pkg-ref id="$PKGID.admin"/>
     </choice>
+    <choice id="libs" title="$LIBSTITLE" description="$LIBSDESC" enabled='false' selected='system.compareVersions(system.version.ProductVersion, "12.0") &lt; 0'>
+        <pkg-ref id="$PKGID.libs"/>
+    </choice>
     <choice id="app" title="$APPTITLE" description="$APPDESC">
         <pkg-ref id="$PKGID.app"/>
     </choice>
     <choice id="app_usage" title="$APPUSAGETITLE" description="$APPUSAGEDESC">
         <pkg-ref id="$PKGID.app_usage"/>
     </choice>
-    <choice id="python" title="$PYTHONTITLE" description="$PYTHONDESC">
-        <pkg-ref id="$PKGID.python"/>
-    </choice>
-    <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
+     <choice id="launchd" title="$LAUNCHDTITLE" description="$LAUNCHDDESC">
         <pkg-ref id="$PKGID.launchd"/>
     </choice>
     $PYTHONCHOICE
@@ -1089,6 +1150,7 @@ cat > "$DISTFILE" <<EOF
     $ROSETTA2REF
     <pkg-ref id="$PKGID.core" auth="Root">${PKGPREFIX}munkitools_core.pkg</pkg-ref>
     <pkg-ref id="$PKGID.admin" auth="Root">${PKGPREFIX}munkitools_admin.pkg</pkg-ref>
+    <pkg-ref id="$PKGID.libs" auth="Root">${PKGPREFIX}munkitools_libs.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app" auth="Root">${PKGPREFIX}munkitools_app.pkg</pkg-ref>
     <pkg-ref id="$PKGID.app_usage" auth="Root">${PKGPREFIX}munkitools_app_usage.pkg</pkg-ref>
     <pkg-ref id="$PKGID.launchd" auth="Root">${PKGPREFIX}munkitools_launchd.pkg</pkg-ref>
@@ -1108,13 +1170,15 @@ EOF
 
 echo "Setting ownership to root..."
 
-sudo chown root:admin "$COREROOT" "$ADMINROOT" "$APPROOT" "$LAUNCHDROOT"
+sudo chown root:admin "$COREROOT" "$ADMINROOT" "$LIBSROOT" "$APPROOT" "$LAUNCHDROOT"
 sudo chown -hR root:wheel "$COREROOT/usr"
 sudo chown -hR root:admin "$COREROOT/Library"
 sudo chown -hR root:wheel "$COREROOT/private"
 
 sudo chown -hR root:wheel "$ADMINROOT/usr"
 sudo chown -hR root:wheel "$ADMINROOT/private"
+
+sudo chown -hR root:wheel "$LIBSROOT/usr"
 
 sudo chown -hR root:admin "$APPROOT/Applications"
 
@@ -1155,7 +1219,7 @@ if [ "$CLIENTCERTPKG" == "YES" ] ; then
     sudo chown -hR root:admin "$CLIENTCERTROOT"
 fi
 
-ALLPKGS="core admin app launchd app_usage"
+ALLPKGS="core admin libs app launchd app_usage"
 if [ "$PYTHONPKG" == "YES" ] ; then 
     ALLPKGS="${ALLPKGS} python"
 fi
@@ -1223,6 +1287,9 @@ for pkg in $ALLPKGS ; do
         "rosetta2")
             ver="1.0"
             SCRIPTS="${MUNKIROOT}/code/tools/pkgresources/Scripts_rosetta2"
+            ;;
+        "libs")
+            ver="5.5"
             ;;
         *)
             ver="$VERSION"

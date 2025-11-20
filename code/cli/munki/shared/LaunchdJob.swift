@@ -110,9 +110,16 @@ class LaunchdJob {
             // need to use a different tmpdir than the shared one,
             // which will get cleaned up when managedsoftwareupdate
             // exits
-            tmpdir = TempDir().path
+            tmpdir = "/private/tmp/munki-\(UUID().uuidString)"
+            if let tmpdir {
+                do {
+                    try FileManager.default.createDirectory(atPath: tmpdir, withIntermediateDirectories: true)
+                } catch {
+                    // will be dealt with later when we check for existence of the tmpdir
+                }
+            }
         }
-        guard let tmpdir else {
+        guard let tmpdir, pathExists(tmpdir) else {
             throw MunkiError("Could not allocate temp dir for launchd job")
         }
         // label this job

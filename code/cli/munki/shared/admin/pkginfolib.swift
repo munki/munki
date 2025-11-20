@@ -74,26 +74,24 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         } else {
             info["type"] = "bundle"
         }
-        if let plist = getBundleInfo(itempath) {
-            for key in ["CFBundleName", "CFBundleIdentifier",
-                        "CFBundleShortVersionString", "CFBundleVersion"]
-            {
-                if let value = plist[key] as? String {
-                    info[key] = value
-                }
+        for key in ["CFBundleName", "CFBundleIdentifier",
+                    "CFBundleShortVersionString", "CFBundleVersion"]
+        {
+            if let value = plist[key] as? String {
+                info[key] = value
             }
-            if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
-                info["minosversion"] = minOSVers
-            } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
-                // get the highest/latest of all the minmum os versions
-                let minOSVersions = minOSVersByArch.values
-                let versions = minOSVersions.map { MunkiVersion($0) }
-                if let maxVersion = versions.max() {
-                    info["minosversion"] = maxVersion.value
-                }
-            } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
-                info["minosversion"] = minSysVers
+        }
+        if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
+            info["minosversion"] = minOSVers
+        } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
+            // get the highest/latest of all the minimum os versions
+            let minOSVersions = minOSVersByArch.values
+            let versions = minOSVersions.map { MunkiVersion($0) }
+            if let maxVersion = versions.max() {
+                info["minosversion"] = maxVersion.value
             }
+        } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
+            info["minosversion"] = minSysVers
         }
     } else if let plist = try? readPlist(fromFile: itempath) as? PlistDict {
         // we must be a plist
@@ -115,6 +113,8 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         } else {
             info["version_comparison_key"] = "CFBundleShortVersionString"
         }
+    } else if info["CFBundleVersion"] != nil {
+        info["version_comparison_key"] = "CFBundleVersion"
     }
 
     if !info.keys.contains("CFBundleShortVersionString"), !info.keys.contains("CFBundleVersion") {
@@ -249,7 +249,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
 /// Mounts a disk image if it"s not already mounted
 /// Builds pkginfo for the first installer item found at the root level,
 /// or a specific one if specified by options.pkgname or options.item
-/// Unmounts the disk image if it wasn"t already mounted
+/// Unmounts the disk image if it wasn't already mounted
 func createPkgInfoFromDmg(_ dmgpath: String,
                           options: PkginfoOptions) throws -> PlistDict
 {
@@ -544,7 +544,7 @@ func makepkginfo(_ filepath: String?,
         }
     }
     if let minimumMunkiVersion = options.other.minimumMunkiVersion {
-        pkginfo["miminum_munki_version"] = minimumMunkiVersion
+        pkginfo["minimum_munki_version"] = minimumMunkiVersion
     }
     if options.other.onDemand {
         pkginfo["OnDemand"] = true
@@ -578,7 +578,7 @@ func makepkginfo(_ filepath: String?,
         pkginfo["requires"] = options.other.requires
     }
     if !options.other.blockingApplication.isEmpty {
-        pkginfo["blocking_application"] = options.other.blockingApplication
+        pkginfo["blocking_applications"] = options.other.blockingApplication
     }
     if let uninstallMethod = options.override.uninstallMethod {
         pkginfo["uninstall_method"] = uninstallMethod

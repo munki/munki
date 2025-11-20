@@ -85,16 +85,36 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
 
     /// Triggers an exit if another instance of managedsoftwareupdate is running
     private func exitIfAnotherManagedSoftwareUpdateIsRunning() throws {
-        if let otherPid = anotherManagedsoftwareupdateInstanceRunning() {
-            let ourName = ProcessInfo().processName
-            let ourPid = ProcessInfo().processIdentifier
-            munkiLog(String(repeating: "*", count: 60))
-            munkiLog("\(ourName) launched as pid \(ourPid)")
-            munkiLog("Another instance of \(ourName) is running as pid \(otherPid).")
-            munkiLog("This process (pid \(ourPid)) exiting.")
-            munkiLog(String(repeating: "*", count: 60))
-            printStderr("Another instance of \(ourName) is running. Exiting.")
-            throw ExitCode(0)
+        while let proc = anotherManagedsoftwareupdateInstanceRunning() {
+            // find out how long it's been running
+            let runtime = Int(Date().timeIntervalSince1970) - proc.starttime
+            if runtime > MSU_MAX_RUNTIME_SECS {
+                // other managedsoftwareupdate has been running too long. kill it
+                munkiLog("Another managedsoftwareupdate has been running for \(runtime) seconds, which is more than the allowed \(MSU_MAX_RUNTIME_SECS) seconds. Killing it.")
+                munkiLog("Sending SIGKILL to \(proc.path) (pid \(proc.pid))")
+                Darwin.kill(proc.pid, SIGKILL)
+                // sleep a bit and then check if the pid is gone
+                usleep(1_000_000)
+                if let anotherProc = anotherManagedsoftwareupdateInstanceRunning(),
+                   anotherProc.pid == proc.pid
+                {
+                    // same pid as before!
+                    munkiLog("ERROR: \(proc.path) (pid \(proc.pid)) won't die. We should not continue.")
+                    throw ExitCode(0)
+                }
+            } else {
+                // another managedsoftwareupdate process is running. We should exit so
+                // we don't conflict with what it is doing
+                let ourName = ProcessInfo().processName
+                let ourPid = ProcessInfo().processIdentifier
+                munkiLog(String(repeating: "*", count: 60))
+                munkiLog("\(ourName) launched as pid \(ourPid)")
+                munkiLog("Another instance of \(ourName) is running as pid \(proc.pid) from \(proc.path)")
+                munkiLog("This process (pid \(ourPid)) exiting.")
+                munkiLog(String(repeating: "*", count: 60))
+                printStderr("Another instance of \(ourName) is running. Exiting.")
+                throw ExitCode(0)
+            }
         }
     }
 
@@ -402,10 +422,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 _ = forceInstallPackageCheck() // this might mark some more items as unattended
                 // now install anything that can be done unattended
                 munkiLog("Installing only items marked unattended because SuppressLoginwindowInstall is true.")
-                _ = await doInstallTasks(
-                    doAppleUpdates: appleUpdateCount > 0,
-                    onlyUnattended: true
-                )
+                _ = await doInstallTasks(onlyUnattended: true)
                 return
             }
             if getIdleSeconds() < 10 {

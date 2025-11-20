@@ -46,7 +46,7 @@ class FDEUtil {
         }
     }
 
-    /// Convenience method: logs a message, then returns it so we can thow an error
+    /// Convenience method: logs a message, then returns it so we can throw an error
     /// with the same message
     func logAndReturn(_ message: String) -> String {
         server.log(message)
@@ -322,7 +322,7 @@ func main() async -> Int32 {
 
     // get socket file descriptor from launchd
     guard let socketFD = try? getSocketFd(APPNAME) else {
-        munkiLog("Could not get socket decriptor from launchd", logFile: LOGFILENAME)
+        munkiLog("Could not get socket descriptor from launchd", logFile: LOGFILENAME)
         usleep(1_000_000 * 10)
         return -1
     }

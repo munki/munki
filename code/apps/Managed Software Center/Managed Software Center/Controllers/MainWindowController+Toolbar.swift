@@ -54,15 +54,15 @@ extension MainWindowController: NSToolbarDelegate {
                 pageLoadProgress!.controlSize = .small
                 pageLoadProgress!.isDisplayedWhenStopped = false
             }
-            let progressSoinner = customToolbarItem(
+            let progressSpinner = customToolbarItem(
                 itemForItemIdentifier: NSToolbarItem.Identifier.progressIndicatorItem.rawValue,
                 label: "Progress",
                 paletteLabel: "Progress",
                 toolTip: "Shows page load progress",
                 itemContent: pageLoadProgress!
             )
-            progressSoinner?.isBordered = false
-            return progressSoinner
+            progressSpinner?.isBordered = false
+            return progressSpinner
         case .navigationGoBackItem:
             let toolbarItem = customToolbarItem(
                 itemForItemIdentifier: NSToolbarItem.Identifier.navigationGoBackItem.rawValue,

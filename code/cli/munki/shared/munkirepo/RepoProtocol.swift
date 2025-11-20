@@ -33,7 +33,7 @@ public protocol Repo {
 }
 
 open class RepoPluginBuilder {
-    public init() {}
+    // public init() {}
 
     open func connect(_: String) -> Repo? {
         fatalError("You have to override this method.")

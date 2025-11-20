@@ -575,7 +575,7 @@ func removePackages(
             throw MunkiError("No matching pkgs found in database")
         }
     } catch {
-        display.error("Error retreiving pkg keys: \(error)")
+        display.error("Error retrieving pkg keys: \(error)")
         return -4
     }
     if stopRequested() {
