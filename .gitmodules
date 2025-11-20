@@ -1,6 +1,0 @@
-[submodule "code/mwa2"]
-	path = code/mwa2
-	url = https://github.com/rodchristiansen/mwa2.git
-[submodule "code/munkiadmin"]
-	path = code/munkiadmin
-	url = https://github.com/rodchristiansen/munkiadmin.git
