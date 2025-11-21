@@ -81,7 +81,7 @@ struct MakePkgInfo: ParsableCommand {
             print(getVersion())
             return
         }
-        
+
         let options = PkginfoOptions(
             override: overrideOptions,
             script: scriptOptions,
