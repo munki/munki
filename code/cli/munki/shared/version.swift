@@ -23,7 +23,7 @@ let CLI_TOOLS_VERSION = "7.0.3"
 let BUILD = "<BUILD_GOES_HERE>"
 
 /// Returns version of Munki tools
-public func getVersion() -> String {
+func getVersion() -> String {
     if Int(BUILD) != nil {
         // BUILD was updated to an integer by the build script
         return "\(CLI_TOOLS_VERSION).\(BUILD)"

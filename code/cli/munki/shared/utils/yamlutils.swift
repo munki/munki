@@ -2,9 +2,9 @@
 //  yamlutils.swift
 //  munki
 //
-//  Created by Greg Neagle on 6/20/25.
+//  Created by Rod Christiansen on 10/5/25.
 //
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2025 The Munki Project
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ extension YamlError: LocalizedError {
 }
 
 /// Check if a file path has a YAML extension
-public func isYamlFile(_ filepath: String) -> Bool {
+func isYamlFile(_ filepath: String) -> Bool {
     let fileExtension = (filepath as NSString).pathExtension.lowercased()
     return fileExtension == "yaml" || fileExtension == "yml"
 }
@@ -277,7 +277,7 @@ func yamlToString(_ dataObject: Any) throws -> String {
 }
 
 /// Attempt to convert YAML string to Data
-public func yamlToData(_ dataObject: Any) throws -> Data {
+func yamlToData(_ dataObject: Any) throws -> Data {
     do {
         let yamlString = try yamlToString(dataObject)
         guard let data = yamlString.data(using: .utf8) else {
@@ -293,14 +293,14 @@ public func yamlToData(_ dataObject: Any) throws -> Data {
 
 /// Attempt to read a file that could be either plist or YAML format
 /// Uses dual-parsing approach: tries preferred format first, falls back to other format
-public func readMixedFormatFile(fromFile filepath: String, preferYaml: Bool = false) throws -> Any? {
+func readMixedFormatFile(fromFile filepath: String, preferYaml: Bool = false) throws -> Any? {
     let data = try Data(contentsOf: URL(fileURLWithPath: filepath))
     return try readData(data, preferYaml: preferYaml, filepath: filepath)
 }
 
 /// Attempt to read data that could be either plist or YAML format
 /// Uses dual-parsing approach: tries preferred format first, falls back to other format
-public func readData(_ data: Data, preferYaml: Bool = false, filepath: String? = nil) throws -> Any? {
+func readData(_ data: Data, preferYaml: Bool = false, filepath: String? = nil) throws -> Any? {
     let fileDescription = filepath ?? "data"
     
     if preferYaml {
@@ -332,7 +332,7 @@ public func readData(_ data: Data, preferYaml: Bool = false, filepath: String? =
 
 /// Detect if file content is likely YAML based on content analysis
 /// This is a heuristic check that looks for YAML-specific patterns
-public func isLikelyYamlContent(_ content: String) -> Bool {
+func isLikelyYamlContent(_ content: String) -> Bool {
     let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
     
     // Check for YAML document separator
@@ -374,7 +374,7 @@ public func isLikelyYamlContent(_ content: String) -> Bool {
 
 /// Smart content-based format detection for files without extensions
 /// Reads file content and uses heuristics to determine format, then parses accordingly
-public func detectFileContent(fromFile filepath: String, preferYaml: Bool = false) throws -> Any? {
+func detectFileContent(fromFile filepath: String, preferYaml: Bool = false) throws -> Any? {
     let content = try String(contentsOfFile: filepath, encoding: .utf8)
     let likelyYaml = isLikelyYamlContent(content)
     

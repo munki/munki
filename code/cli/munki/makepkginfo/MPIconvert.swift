@@ -1,10 +1,10 @@
 //
-//  MPKconvert.swift
+//  MPIconvert.swift
 //  makepkginfo
 //
 //  Created by Rod Christiansen on 10/5/25.
 //
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2025 The Munki Project
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@
 
 import ArgumentParser
 import Foundation
-import MunkiShared
 
 extension MakePkgInfo {
-    struct Convert: AsyncParsableCommand {
+    struct Convert: ParsableCommand {
         static let configuration = CommandConfiguration(
             abstract: "Convert pkginfo files between YAML and plist formats.",
             discussion: """
@@ -92,13 +91,13 @@ extension MakePkgInfo {
             }
         }
         
-        func run() async throws {
+        mutating func run() throws {
             if let src = source, let dest = destination {
                 // Single file conversion
                 try convertSingleFile(from: src, to: dest)
             } else if let src = source, (toYaml || toPlist) {
                 // Batch directory conversion
-                try await convertDirectory(src, toYaml: toYaml)
+                try convertDirectory(src, toYaml: toYaml)
             } else {
                 throw ValidationError("Please specify either source/destination files or use --to-yaml/--to-plist for batch conversion")
             }
@@ -162,7 +161,7 @@ extension MakePkgInfo {
             }
         }
         
-        private func convertDirectory(_ directoryPath: String, toYaml: Bool) async throws {
+        private func convertDirectory(_ directoryPath: String, toYaml: Bool) throws {
             let directoryURL = URL(fileURLWithPath: directoryPath)
             
             guard FileManager.default.fileExists(atPath: directoryPath) else {
@@ -212,7 +211,7 @@ extension MakePkgInfo {
                     continue
                 }
                 
-                try await convertDirectoryFile(
+                try convertDirectoryFile(
                     fileURL: fileURL,
                     relativePath: relativePath,
                     toYaml: toYaml,
@@ -236,7 +235,7 @@ extension MakePkgInfo {
             relativePath: String,
             toYaml: Bool,
             stats: inout ConversionStats
-        ) async throws {
+        ) throws {
             let filename = fileURL.lastPathComponent
             let hasYamlExt = filename.hasSuffix(".yaml") || filename.hasSuffix(".yml")
             

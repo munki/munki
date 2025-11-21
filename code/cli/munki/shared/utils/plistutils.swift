@@ -128,7 +128,7 @@ func writePlist(_ dataObject: Any, toFile filepath: String) throws {
 }
 
 /// Attempt to convert a PropertyList object to a Data object
-public func plistToData(_ dataObject: Any) throws -> Data {
+func plistToData(_ dataObject: Any) throws -> Data {
     return try serialize(dataObject)
 }
 
@@ -144,7 +144,7 @@ func plistToString(_ dataObject: Any) throws -> String {
 
 /// Attempt to convert a PropertyList object to string
 /// If yamlOutput is true, returns YAML format; otherwise returns plist format
-public func plistToString(_ dataObject: Any, yamlOutput: Bool = false) throws -> String {
+func plistToString(_ dataObject: Any, yamlOutput: Bool = false) throws -> String {
     if yamlOutput {
         return try yamlToString(dataObject)
     } else {

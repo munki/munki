@@ -66,7 +66,7 @@ func findRepoInPlugins(_ name: String, url: String) throws -> Repo? {
 }
 
 /// Factory function that returns an instance of a specific Repo class
-public func repoConnect(url: String, plugin: String = "FileRepo") throws -> Repo {
+func repoConnect(url: String, plugin: String = "FileRepo") throws -> Repo {
     switch plugin {
     case "FileRepo":
         return try FileRepo(url)

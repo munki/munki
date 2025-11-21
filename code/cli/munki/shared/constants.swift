@@ -67,4 +67,4 @@ enum PostAction: Int, Codable, Comparable {
     case shutdown
 }
 
-public typealias PlistDict = [String: Any]
+typealias PlistDict = [String: Any]

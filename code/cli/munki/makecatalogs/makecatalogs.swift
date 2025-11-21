@@ -20,7 +20,6 @@
 
 import ArgumentParser
 import Foundation
-import MunkiShared
 
 @main
 struct MakeCatalogs: AsyncParsableCommand {
