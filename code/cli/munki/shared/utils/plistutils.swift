@@ -53,7 +53,7 @@ func deserialize(_ data: Data?) throws -> Any? {
 }
 
 /// Attempt to read a PropertyList from a file
-/// Now supports both plist and YAML files based on file extension
+/// Now supports both plist and yaml files based on file extension
 func readPlist(fromFile filepath: String) throws -> Any? {
     if isYamlFile(filepath) {
         return try readYaml(fromFile: filepath)
@@ -62,35 +62,35 @@ func readPlist(fromFile filepath: String) throws -> Any? {
 }
 
 /// Attempt to read a PropertyList from data
-/// Tries plist first, then YAML if that fails
+/// Tries plist first, then yaml if that fails
 func readPlist(fromData data: Data) throws -> Any? {
     // Try plist first
     do {
         return try deserialize(data)
     } catch {
-        // Try YAML as fallback
+        // Try yaml as fallback
         do {
             return try readYaml(fromData: data)
         } catch {
             // Throw the original plist error if both fail
-            throw PlistError.readError(description: "Failed to parse as plist or YAML: \(error)")
+            throw PlistError.readError(description: "Failed to parse as plist or yaml: \(error)")
         }
     }
 }
 
 /// Attempt to read a PropertyList from a string
-/// Tries plist first, then YAML if that fails
+/// Tries plist first, then yaml if that fails
 func readPlist(fromString string: String) throws -> Any? {
     // Try plist first
     do {
         return try deserialize(string.data(using: String.Encoding.utf8))
     } catch {
-        // Try YAML as fallback
+        // Try yaml as fallback
         do {
             return try readYaml(fromString: string)
         } catch {
             // Throw the original plist error if both fail
-            throw PlistError.readError(description: "Failed to parse as plist or YAML: \(error)")
+            throw PlistError.readError(description: "Failed to parse as plist or yaml: \(error)")
         }
     }
 }
@@ -110,7 +110,7 @@ func serialize(_ plist: Any) throws -> Data {
 }
 
 /// Attempt to write a PropertyList object to a file
-/// Writes YAML if filepath has .yaml/.yml extension, otherwise writes plist
+/// Writes yaml if filepath has .yaml/.yml extension, otherwise writes plist
 func writePlist(_ dataObject: Any, toFile filepath: String) throws {
     if isYamlFile(filepath) {
         try writeYaml(dataObject, toFile: filepath)
@@ -143,7 +143,7 @@ func plistToString(_ dataObject: Any) throws -> String {
 }
 
 /// Attempt to convert a PropertyList object to string
-/// If yamlOutput is true, returns YAML format; otherwise returns plist format
+/// If yamlOutput is true, returns yaml format; otherwise returns plist format
 func plistToString(_ dataObject: Any, yamlOutput: Bool = false) throws -> String {
     if yamlOutput {
         return try yamlToString(dataObject)
