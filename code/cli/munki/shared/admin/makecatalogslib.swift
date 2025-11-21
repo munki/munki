@@ -20,18 +20,18 @@
 
 import Foundation
 
-public enum MakeCatalogsError: Error {
+enum MakeCatalogsError: Error {
     case PkginfoAccessError(description: String)
     case CatalogWriteError(description: String)
 }
 
-public struct MakeCatalogOptions {
+struct MakeCatalogOptions {
     var skipPkgCheck: Bool = false
     var force: Bool = false
     var verbose: Bool = false
     var yamlOutput: Bool = false
     
-    public init(skipPkgCheck: Bool = false, force: Bool = false, verbose: Bool = false, yamlOutput: Bool = false) {
+    init(skipPkgCheck: Bool = false, force: Bool = false, verbose: Bool = false, yamlOutput: Bool = false) {
         self.skipPkgCheck = skipPkgCheck
         self.force = force
         self.verbose = verbose
@@ -40,16 +40,16 @@ public struct MakeCatalogOptions {
 }
 
 /// Struct that handles building catalogs
-public struct CatalogsMaker {
+struct CatalogsMaker {
     var repo: Repo
     var options: MakeCatalogOptions
     var pkgsinfoList: [String]
     var pkgsList: [String]
     var catalogs: [String: [PlistDict]]
-    public var errors: [String]
-    public var warnings: [String]
+    var errors: [String]
+    var warnings: [String]
 
-    public init(repo: Repo,
+    init(repo: Repo,
          options: MakeCatalogOptions = MakeCatalogOptions()) async throws
     {
         self.repo = repo
@@ -285,7 +285,7 @@ public struct CatalogsMaker {
     /// Assembles all pkginfo files into catalogs.
     /// User calling this needs to be able to write to the repo/catalogs directory.
     /// Returns a list of any errors it encountered
-    public mutating func makecatalogs() async {
+    mutating func makecatalogs() async {
         // process pkgsinfo items
         await processPkgsinfo()
 

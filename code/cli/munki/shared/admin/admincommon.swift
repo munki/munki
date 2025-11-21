@@ -31,7 +31,7 @@ let ADMIN_BUNDLE_ID = "com.googlecode.munki.munkiimport" as CFString
 /// - .GlobalPreferences defined at various levels (ByHost, user, system)
 /// But typically these preferences are _not_ managed and are stored in the
 /// user's preferences (~/Library/Preferences/com.googlecode.munki.munkiimport.plist)
-public func adminPref(_ pref_name: String) -> Any? {
+func adminPref(_ pref_name: String) -> Any? {
     return CFPreferencesCopyAppValue(pref_name as CFString, ADMIN_BUNDLE_ID)
 }
 

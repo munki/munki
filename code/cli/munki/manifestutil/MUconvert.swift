@@ -2,8 +2,9 @@
 //  MUconvert.swift
 //  manifestutil
 //
-//  Created for Munki v7 YAML migration support
-//  Copyright 2024-2025 Greg Neagle.
+//  Created by Rod Christiansen on 10/5/25.
+//
+//  Copyright 2025 The Munki Project
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,7 +20,6 @@
 
 import ArgumentParser
 import Foundation
-import MunkiShared
 
 /// Convert manifest files between YAML and plist formats
 extension ManifestUtil {
