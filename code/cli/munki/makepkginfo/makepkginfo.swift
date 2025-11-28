@@ -26,9 +26,40 @@ struct MakePkgInfo: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "makepkginfo",
         abstract: "Creates a pkginfo file (or fragment thereof) from given input.",
+        usage: """
+              makepkginfo [<options>] <installer-item>
+              makepkginfo convert [--to-yaml|--to-plist] <source> [<destination>]
+              """,
+        discussion: """
+              By default, makepkginfo creates a pkginfo file from a package or disk image.
+              Use 'makepkginfo convert' to convert existing pkginfo files between formats.
+              
+              For a full list of options, run: makepkginfo create --help
+              """,
         subcommands: [
+            Create.self,
             Convert.self,
-        ]
+        ],
+        defaultSubcommand: Create.self
+    )
+
+    // Note: --version flag is handled by the Create subcommand (default)
+    // The parent command only handles the case when no arguments are given
+
+    mutating func run() throws {
+        // If this run() is reached with no subcommand and no version flag,
+        // it means the user ran just 'makepkginfo' with no arguments.
+        // Show help since there's nothing to do.
+        throw CleanExit.helpRequest(self)
+    }
+}
+
+/// The default subcommand for creating pkginfo from installer items
+struct Create: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "create",
+        abstract: "Create a pkginfo file from an installer item (default command).",
+        shouldDisplay: true  // Show in help so users can see the full options
     )
 
     @OptionGroup(title: "Pkginfo Override Options")
@@ -61,13 +92,13 @@ struct MakePkgInfo: ParsableCommand {
     @Flag(name: [.long, .customShort("V")],
           help: "Print the version of the Munki tools and exit.")
     var version = false
-    
+
     @Flag(help: "Output in YAML format instead of XML plist.")
     var yaml = false
 
     @Argument(help: "Path to installer item (package or disk image)")
     var installerItem: String?
-    
+
     /// Determine if YAML output should be used based on flag or global preference
     private var shouldUseYaml: Bool {
         if yaml {
