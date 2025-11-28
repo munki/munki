@@ -93,11 +93,28 @@ extension MakePkgInfo {
         
         mutating func run() throws {
             if let src = source, let dest = destination {
-                // Single file conversion
+                // Single file conversion with explicit destination
                 try convertSingleFile(from: src, to: dest)
             } else if let src = source, (toYaml || toPlist) {
-                // Batch directory conversion
-                try convertDirectory(src, toYaml: toYaml)
+                // Check if source is a file or directory
+                var isDirectory: ObjCBool = false
+                guard FileManager.default.fileExists(atPath: src, isDirectory: &isDirectory) else {
+                    throw ValidationError("Source does not exist: \(src)")
+                }
+                
+                if isDirectory.boolValue {
+                    // Batch directory conversion
+                    try convertDirectory(src, toYaml: toYaml)
+                } else {
+                    // Single file conversion with auto-generated destination
+                    let sourceURL = URL(fileURLWithPath: src)
+                    let baseName = (sourceURL.lastPathComponent as NSString).deletingPathExtension
+                    let newExtension = toYaml ? "yaml" : "plist"
+                    let destURL = sourceURL.deletingLastPathComponent()
+                        .appendingPathComponent(baseName)
+                        .appendingPathExtension(newExtension)
+                    try convertSingleFile(from: src, to: destURL.path)
+                }
             } else {
                 throw ValidationError("Please specify either source/destination files or use --to-yaml/--to-plist for batch conversion")
             }
