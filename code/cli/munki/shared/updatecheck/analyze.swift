@@ -256,7 +256,7 @@ func processInstall(
     if installedState == .thisVersionNotInstalled {
         if !dependenciesMet {
             // we should not attempt to install
-            display.warning("Didn't attempt ro install \(manifestItemName) because could not resolve all dependencies.")
+            display.warning("Didn't attempt to install \(manifestItemName) because could not resolve all dependencies.")
             // add information to managed_installs so we have some feedback
             // to display in MSC.app
             processedItem["installed"] = false

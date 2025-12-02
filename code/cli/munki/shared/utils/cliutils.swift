@@ -211,7 +211,7 @@ func runCLI(_ tool: String,
     let task = Process()
     task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
-    if !environment.isEmpty == false {
+    if !environment.isEmpty {
         task.environment = environment
     }
 

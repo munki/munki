@@ -48,7 +48,6 @@ enum RestartAction: String, CaseIterable, ExpressibleByArgument {
 /// Supported installer types for --installer-type argument
 enum InstallerType: String, CaseIterable, ExpressibleByArgument {
     case copy_from_dmg
-    case startosinstall
     case stage_os_installer
 }
 

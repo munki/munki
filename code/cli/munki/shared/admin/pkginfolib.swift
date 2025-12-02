@@ -155,25 +155,9 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     guard !dragNDropItem.isEmpty else {
         throw MunkiError("No application found on disk image.")
     }
-    // check to see if item is a macOS installer and we can generate a startosinstall item
-    // TODO: remove this or print warning
-    // since it looks like Munki 7 won't support this installer_type
-    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
-    let itemIsInstallMacOSApp = pathIsInstallMacOSApp(itempath)
-    if itemIsInstallMacOSApp,
-       options.type.installerType == .startosinstall
-    {
-        if options.hidden.printWarnings,
-           installMacOSAppIsStub(itempath)
-        {
-            printStderr("WARNING: the provided disk image appears to contain an Install macOS application, but the application does not contain Contents/SharedSupport/InstallESD.dmg or Contents/SharedSupport/SharedSupport.dmg")
-        }
-        return try makeStartOSInstallPkgInfo(
-            mountpoint: mountpoint, item: dragNDropItem
-        )
-    }
 
     // continue as copy_from_dmg item
+    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
     installsitem = createInstallsItem(itempath)
 
     if !installsitem.isEmpty {
@@ -234,7 +218,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
         info["uninstall_method"] = "remove_copied_items"
 
         // Should we add extra info for a stage_os_installer item?
-        if itemIsInstallMacOSApp,
+        if pathIsInstallMacOSApp(itempath),
            options.type.installerType == nil || options.type.installerType == .stage_os_installer
         {
             let additionalInfo = try makeStageOSInstallerPkgInfo(itempath)
@@ -310,11 +294,12 @@ func createPkgInfoFromDmg(_ dmgpath: String,
 
 /// Attempt to read a file with the same name as the input string and return its text,
 /// otherwise return the input string
-func readFileOrString(_ fileNameOrString: String) -> String {
-    if !pathExists(fileNameOrString) {
+func readFileOrString(_ fileNameOrString: String) throws -> String {
+    let expandedPath = (fileNameOrString as NSString).expandingTildeInPath
+    if !pathExists(expandedPath) {
         return fileNameOrString
     }
-    return (try? String(contentsOfFile: fileNameOrString, encoding: .utf8)) ?? fileNameOrString
+    return try fileContents(fileNameOrString)
 }
 
 /// If path appears to be inside the repo's pkgs directory, return a path relative to the pkgs dir
@@ -357,6 +342,16 @@ func getMinimumOSVersionFromInstallsApps(_ pkginfo: PlistDict) -> String? {
         minimumOSVersions.append(MunkiVersion(pkgInfoMinimumOSVersion))
     }
     return minimumOSVersions.max()?.value
+}
+
+/// return contents of file at path, expanding tilde as needed
+func fileContents(_ path: String) throws -> String {
+    let expandedPath = (path as NSString).expandingTildeInPath
+    do {
+        return try String(contentsOfFile: expandedPath, encoding: .utf8)
+    } catch {
+        throw MunkiError("Failed to read file \(expandedPath): \(error)")
+    }
 }
 
 /// Return a pkginfo dictionary for installeritem
@@ -448,7 +443,7 @@ func makepkginfo(_ filepath: String?,
         pkginfo["catalogs"] = options.other.catalog
     }
     if let description = options.override.description {
-        pkginfo["description"] = readFileOrString(description)
+        pkginfo["description"] = try readFileOrString(description)
     }
     if let displayname = options.override.displayname {
         pkginfo["display_name"] = displayname
@@ -494,46 +489,30 @@ func makepkginfo(_ filepath: String?,
     // add pkginfo scripts if specified
     // TODO: verify scripts start with a shebang line?
     if let installcheckScript = options.script.installcheckScript {
-        if let scriptText = try? String(contentsOfFile: installcheckScript, encoding: .utf8) {
-            pkginfo["installcheck_script"] = scriptText
-        }
+        pkginfo["installcheck_script"] = try fileContents(installcheckScript)
     }
     if let uninstallcheckScript = options.script.uninstallcheckScript {
-        if let scriptText = try? String(contentsOfFile: uninstallcheckScript, encoding: .utf8) {
-            pkginfo["uninstallcheck_script"] = scriptText
-        }
+        pkginfo["uninstallcheck_script"] = try fileContents(uninstallcheckScript)
     }
     if let postinstallScript = options.script.postinstallScript {
-        if let scriptText = try? String(contentsOfFile: postinstallScript, encoding: .utf8) {
-            pkginfo["postinstall_script"] = scriptText
-        }
+        pkginfo["postinstall_script"] = try fileContents(postinstallScript)
     }
     if let preinstallScript = options.script.preinstallScript {
-        if let scriptText = try? String(contentsOfFile: preinstallScript, encoding: .utf8) {
-            pkginfo["preinstall_script"] = scriptText
-        }
+        pkginfo["preinstall_script"] = try fileContents(preinstallScript)
     }
     if let postuninstallScript = options.script.postuninstallScript {
-        if let scriptText = try? String(contentsOfFile: postuninstallScript, encoding: .utf8) {
-            pkginfo["postuninstall_script"] = scriptText
-        }
+        pkginfo["postuninstall_script"] = try fileContents(postuninstallScript)
     }
     if let preuninstallScript = options.script.preuninstallScript {
-        if let scriptText = try? String(contentsOfFile: preuninstallScript, encoding: .utf8) {
-            pkginfo["preuninstall_script"] = scriptText
-        }
+        pkginfo["preuninstall_script"] = try fileContents(preuninstallScript)
     }
     if let uninstallScript = options.script.uninstallScript {
-        if let scriptText = try? String(contentsOfFile: uninstallScript, encoding: .utf8) {
-            pkginfo["uninstall_script"] = scriptText
-            pkginfo["uninstall_method"] = "uninstall_script"
-            pkginfo["uninstallable"] = true
-        }
+        pkginfo["uninstall_script"] = try fileContents(uninstallScript)
+        pkginfo["uninstall_method"] = "uninstall_script"
+        pkginfo["uninstallable"] = true
     }
     if let versionScript = options.script.versionScript {
-        if let scriptText = try? String(contentsOfFile: versionScript, encoding: .utf8) {
-            pkginfo["version_script"] = scriptText
-        }
+        pkginfo["version_script"] = try fileContents(versionScript)
     }
     // more options and pkginfo bits
     if !installeritem.isEmpty || options.type.nopkg {
@@ -588,7 +567,7 @@ func makepkginfo(_ filepath: String?,
         pkginfo["installer_environment"] = options.pkg.installerEnvironmentDict
     }
     if let notes = options.other.notes {
-        pkginfo["notes"] = readFileOrString(notes)
+        pkginfo["notes"] = try readFileOrString(notes)
     }
 
     return pkginfo
