@@ -31,7 +31,7 @@ class ScriptRunner: AsyncProcessRunner {
     var combinedOutput = ""
 
     func linesAndRemainderOf(_ str: String) -> ([String], String) {
-        var lines = str.components(separatedBy: "\n")
+        var lines = str.trailingNewlineTrimmed.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline).map(String.init)
         var remainder = ""
         if lines.count > 0, !str.hasSuffix("\n") {
             // last line of string did not end with a newline; might be a partial
