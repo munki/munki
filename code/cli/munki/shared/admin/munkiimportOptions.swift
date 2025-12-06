@@ -40,6 +40,17 @@ struct MunkiImportOptions: ParsableArguments {
     @Flag(name: .shortAndLong, help: "More detailed output.")
     var verbose = false
 
+    @Flag(help: "Create pkginfo files in YAML format instead of XML plist.")
+    var yaml = false
+    
+    /// Determine if YAML output should be used based on flag or global preference
+    var shouldUseYaml: Bool {
+        if yaml {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "yaml")
+    }
+
     mutating func validate() throws {
         // update plugin (not really a validation, but close enough)
         if plugin == nil {

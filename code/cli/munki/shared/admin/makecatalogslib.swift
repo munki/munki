@@ -29,6 +29,14 @@ struct MakeCatalogOptions {
     var skipPkgCheck: Bool = false
     var force: Bool = false
     var verbose: Bool = false
+    var yamlOutput: Bool = false
+    
+    init(skipPkgCheck: Bool = false, force: Bool = false, verbose: Bool = false, yamlOutput: Bool = false) {
+        self.skipPkgCheck = skipPkgCheck
+        self.force = force
+        self.verbose = verbose
+        self.yamlOutput = yamlOutput
+    }
 }
 
 /// Struct that handles building catalogs
@@ -189,7 +197,10 @@ struct CatalogsMaker {
             let pkginfoIdentifier = "pkgsinfo/" + pkginfoName
             do {
                 let data = try await repo.get(pkginfoIdentifier)
-                pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
+                // Use file format detection for pkginfo files
+                // Some repos may have extensionless pkginfo files or mixed yaml/plist formats
+                let shouldPreferYaml = UserDefaults.standard.bool(forKey: "yaml")
+                pkginfo = try readData(data, preferYaml: shouldPreferYaml, filepath: pkginfoIdentifier) as? PlistDict ?? PlistDict()
             } catch {
                 errors.append("Unexpected error reading \(pkginfoIdentifier): \(error)")
                 continue
@@ -284,10 +295,11 @@ struct CatalogsMaker {
         // write the new catalogs
         for key in catalogs.keys {
             if !(catalogs[key]?.isEmpty ?? true) {
-                let catalogIdentifier = "catalogs/" + key
+                let fileExtension = options.yamlOutput ? ".yaml" : ""
+                let catalogIdentifier = "catalogs/" + key + fileExtension
                 do {
                     if let value = catalogs[key] {
-                        let data = try plistToData(value)
+                        let data = options.yamlOutput ? try yamlToData(value) : try plistToData(value)
                         try await repo.put(catalogIdentifier, content: data)
                         if options.verbose {
                             print("Created \(catalogIdentifier)...")
@@ -295,6 +307,8 @@ struct CatalogsMaker {
                     }
                 } catch let PlistError.writeError(description) {
                     errors.append("Could not serialize catalog \(key): \(description)")
+                } catch let YamlError.writeError(description) {
+                    errors.append("Could not serialize catalog \(key) as YAML: \(description)")
                 } catch let error as MunkiError {
                     errors.append("Failed to create catalog \(key): \(error.description)")
                 } catch {

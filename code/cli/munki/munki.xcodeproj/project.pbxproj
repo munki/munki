@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		398E815608C94E51AFC0E672 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
 		C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CAD2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CB22C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
@@ -111,6 +112,7 @@
 		C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9902C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9972C3A2E18007F0B34 /* makepkginfo.swift */; };
+		C030A99C2C3A2E18007F0B34 /* MPIconvert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A99D2C3A2E18007F0B34 /* MPIconvert.swift */; };
 		C030A9A12C3B4F5B007F0B34 /* pkginfoOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */; };
 		C030A9A22C3B4F63007F0B34 /* pkginfolib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E12C3489FA00B86310 /* pkginfolib.swift */; };
 		C030A9A42C3B4FC9007F0B34 /* pkgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E72C34932400B86310 /* pkgutils.swift */; };
@@ -499,6 +501,38 @@
 		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
+		44728203BA664CAB9B55A423 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		B5A572B032E048968565B535 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		C52CCC4E3374479E8D7FA5DA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		E6E24AD5B1E14E0CACFFD4A6 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		8EA12F1628DE4BF890BB3366 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		645EB50BFA35426FBDE4EE4D /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		D930A15EAB7E42D0BEB125DA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		13E4C7067E5D42ACA351E9EB /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		FF2DBD716A2C41A5BBE176BE /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		DD529739410642839A14E11A /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		1FD0D19BBFAD4956B46BA533 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		R2Y4B3B2XR5OWNGU7PUINP9V /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		7WD1R6JY69SLB3R5R8A32RLG /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		SP5UQJJ59SACHSFF2P31PRLY /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		UMJLWZ9PZEMPE1892OMMT1OF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		G97WFX4MLP7EC5T0L1MNNW88 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		TTU24H15286HIYTBOB2VFOLA /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		QKIRY89JNKRDPM74J0MHWCIZ /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		V7921MKURTQ1AUC43NLMY18D /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		T19A6OOC0X74PNBMTFTXK0WJ /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		AGOE4AV3G73BI8FG6Q5UBH7Y /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		9967QVRFDEZ11UQRSUXGI7IR /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		WRDJKS4WZGMZDZFNFTJOJY97 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		D4HLB3OLAI2KF8XDE189HXEA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		5CKB2LU9D83WIFBA8VR8312Z /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		E0F6O710025VFRCFPMHCBQU0 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		6OENHNW0WHFECJU20VXGX8PP /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		ZTGQ58OF3234SV04JFAKCU23 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		LIS80FWUFZFXL44TOKYIU44J /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		12V8CKR2BDWMSK6ANI03XAOR /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		Q9F9T0KDP8T5VP1U7YS9PL1Q /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		6779B7C8733F42AEACBC22CB /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -694,6 +728,7 @@
 		C030A98E2C39C135007F0B34 /* munkihash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = munkihash.swift; sourceTree = "<group>"; };
 		C030A9952C3A2E18007F0B34 /* makepkginfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makepkginfo; sourceTree = BUILT_PRODUCTS_DIR; };
 		C030A9972C3A2E18007F0B34 /* makepkginfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfo.swift; sourceTree = "<group>"; };
+		C030A99D2C3A2E18007F0B34 /* MPIconvert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIconvert.swift; sourceTree = "<group>"; };
 		C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkginfoOptions.swift; sourceTree = "<group>"; };
 		C030A9B12C3DB88E007F0B34 /* osinstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstaller.swift; sourceTree = "<group>"; };
 		C030A9B52C3DF6D0007F0B34 /* fileutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileutils.swift; sourceTree = "<group>"; };
@@ -788,6 +823,7 @@
 		C0E993F52C5BEDAB006FDF44 /* removepackages */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = removepackages; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0E993F72C5BEDAB006FDF44 /* removepackages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = removepackages.swift; sourceTree = "<group>"; };
 		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
+		BC921FEB5E2FB42F654C578E /* yamlutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = yamlutils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -805,6 +841,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				TTU24H15286HIYTBOB2VFOLA /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -819,6 +856,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5CKB2LU9D83WIFBA8VR8312Z /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -827,6 +865,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0E994202C5C1103006FDF44 /* ArgumentParser in Frameworks */,
+			
+				B5A572B032E048968565B535 /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -836,6 +876,8 @@
 			files = (
 				C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */,
 				C030A9F42C435113007F0B34 /* libedit.tbd in Frameworks */,
+			
+				E6E24AD5B1E14E0CACFFD4A6 /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -845,6 +887,8 @@
 			files = (
 				C05DB2132DAC681F0081FACD /* libedit.tbd in Frameworks */,
 				C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */,
+			
+				645EB50BFA35426FBDE4EE4D /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -852,6 +896,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12V8CKR2BDWMSK6ANI03XAOR /* Yams in Frameworks */,
 				C0684DF12DBFE17A0091E774 /* X509 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -860,6 +905,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				V7921MKURTQ1AUC43NLMY18D /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -878,6 +924,8 @@
 			files = (
 				C0B715C02DA71F2900F255FB /* X509 in Frameworks */,
 				C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */,
+			
+				6779B7C8733F42AEACBC22CB /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -885,6 +933,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6OENHNW0WHFECJU20VXGX8PP /* Yams in Frameworks */,
 				C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */,
 				C0B715BE2DA6F43E00F255FB /* X509 in Frameworks */,
 				C0E9941A2C5C10E1006FDF44 /* ArgumentParser in Frameworks */,
@@ -896,6 +945,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */,
+			
+				13E4C7067E5D42ACA351E9EB /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -903,6 +954,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				Q9F9T0KDP8T5VP1U7YS9PL1Q /* Yams in Frameworks */,
 				C0848D1F2C94D4610008B463 /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -912,6 +964,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0BF62D92CEC05AE0030885D /* ArgumentParser in Frameworks */,
+			
+				DD529739410642839A14E11A /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -919,6 +973,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AGOE4AV3G73BI8FG6Q5UBH7Y /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -926,6 +981,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7WD1R6JY69SLB3R5R8A32RLG /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -933,6 +989,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				UMJLWZ9PZEMPE1892OMMT1OF /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -940,6 +997,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				WRDJKS4WZGMZDZFNFTJOJY97 /* Yams in Frameworks */,
 				C008A0622D2861220073ADBA /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1008,6 +1066,7 @@
 			isa = PBXGroup;
 			children = (
 				C030A9972C3A2E18007F0B34 /* makepkginfo.swift */,
+				C030A99D2C3A2E18007F0B34 /* MPIconvert.swift */,
 			);
 			path = makepkginfo;
 			sourceTree = "<group>";
@@ -1195,6 +1254,7 @@
 				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 				C06C213F2C8E1FF50023E9D9 /* ODutils.swift */,
 				C0D66AD32D2DBBED009EF807 /* dateutils.swift */,
+				BC921FEB5E2FB42F654C578E /* yamlutils.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1302,6 +1362,7 @@
 			);
 			name = authrestartd;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 			);
 			productName = authrestartd;
 			productReference = C00519A12D2A5B850060DDB6 /* authrestartd */;
@@ -1341,6 +1402,7 @@
 			);
 			name = repocheck;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 			);
 			productName = repocheck;
 			productReference = C0276DB12E8C070500D443C3 /* repocheck */;
@@ -1360,6 +1422,7 @@
 			);
 			name = makepkginfo;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0E9941F2C5C1103006FDF44 /* ArgumentParser */,
 			);
 			productName = makepkginfo;
@@ -1380,6 +1443,7 @@
 			);
 			name = munkiimport;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0E994212C5C1109006FDF44 /* ArgumentParser */,
 			);
 			productName = munkiimport;
@@ -1403,6 +1467,7 @@
 			);
 			name = manifestutil;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C05DB20B2DAC62530081FACD /* ArgumentParser */,
 			);
 			productName = manifestutil;
@@ -1427,6 +1492,7 @@
 			name = precache_agent;
 			packageProductDependencies = (
 				C0684DF02DBFE17A0091E774 /* X509 */,
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 			);
 			productName = precache_agent;
 			productReference = C0684DD12DBFDBD20091E774 /* precache_agent */;
@@ -1449,6 +1515,7 @@
 			);
 			name = installhelper;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 			);
 			productName = installhelper;
 			productReference = C0684E2D2DC040450091E774 /* installhelper */;
@@ -1492,6 +1559,7 @@
 			);
 			name = managedsoftwareupdate;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0B3A8592CD04D380057BA0E /* ArgumentParser */,
 				C0B715BF2DA71F2900F255FB /* X509 */,
 			);
@@ -1513,6 +1581,7 @@
 			);
 			name = munkitester;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0E994192C5C10E1006FDF44 /* ArgumentParser */,
 				C0B715BD2DA6F43E00F255FB /* X509 */,
 			);
@@ -1534,6 +1603,7 @@
 			);
 			name = makecatalogs;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0E9941D2C5C10FE006FDF44 /* ArgumentParser */,
 			);
 			productName = makecatalogs;
@@ -1554,6 +1624,7 @@
 			);
 			name = iconimporter;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0848D1E2C94D4610008B463 /* ArgumentParser */,
 			);
 			productName = iconimporter;
@@ -1574,6 +1645,7 @@
 			);
 			name = repoclean;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C0BF62D82CEC05AE0030885D /* ArgumentParser */,
 			);
 			productName = repoclean;
@@ -1597,6 +1669,7 @@
 			);
 			name = logouthelper;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 			);
 			productName = logouthelper;
 			productReference = C0D66ABF2D2CA1DE009EF807 /* logouthelper */;
@@ -1615,6 +1688,9 @@
 			dependencies = (
 			);
 			name = app_usage_monitor;
+			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
+			);
 			productName = app_usage_monitor;
 			productReference = C0D9C24B2C5C5C920019A067 /* app_usage_monitor */;
 			productType = "com.apple.product-type.tool";
@@ -1650,6 +1726,8 @@
 			);
 			name = removepackages;
 			packageProductDependencies = (
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
+				DC8467BF2ECEE53A00EDAE22 /* Yams */,
 				C008A0612D2861220073ADBA /* ArgumentParser */,
 			);
 			productName = removepackages;
@@ -1737,6 +1815,7 @@
 			packageReferences = (
 				C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				C0B715BC2DA6F43E00F255FB /* XCRemoteSwiftPackageReference "swift-certificates" */,
+				DC8467BE2ECEE53A00EDAE22 /* XCRemoteSwiftPackageReference "Yams" */,
 			);
 			productRefGroup = C07A6FA62C2A82B400090743 /* Products */;
 			projectDirPath = "";
@@ -1779,6 +1858,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				G97WFX4MLP7EC5T0L1MNNW88 /* yamlutils.swift in Sources */,
 				C00519AF2D2AE0550060DDB6 /* launchd.swift in Sources */,
 				C00519AE2D2AE0080060DDB6 /* stderrout.swift in Sources */,
 				C00519B12D2AE2AC0060DDB6 /* constants.swift in Sources */,
@@ -1807,6 +1887,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4HLB3OLAI2KF8XDE189HXEA /* yamlutils.swift in Sources */,
 				C0276DC12E8C086F00D443C3 /* errors.swift in Sources */,
 				C0276DBD2E8C07EE00D443C3 /* GitFileRepo.swift in Sources */,
 				C0276DC32E8C08DA00D443C3 /* constants.swift in Sources */,
@@ -1829,6 +1910,7 @@
 				C030A9B82C3DF7DA007F0B34 /* fileutils.swift in Sources */,
 				C0684E432DC580850091E774 /* dmgutils.swift in Sources */,
 				C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */,
+				C030A99C2C3A2E18007F0B34 /* MPIconvert.swift in Sources */,
 				C0D00FA62C45804A0021DA9C /* admincommon.swift in Sources */,
 				C0684E452DC585FC0091E774 /* info.swift in Sources */,
 				C0684E4A2DC586660091E774 /* osinstallerinfo.swift in Sources */,
@@ -1847,6 +1929,8 @@
 				C030A9A42C3B4FC9007F0B34 /* pkgutils.swift in Sources */,
 				C0684E442DC585560091E774 /* osutils.swift in Sources */,
 				C030A9AC2C3B500E007F0B34 /* versionutils.swift in Sources */,
+			
+				44728203BA664CAB9B55A423 /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1890,6 +1974,8 @@
 				C0D00FAE2C45841D0021DA9C /* makecatalogslib.swift in Sources */,
 				C01CE24C2CA7ADD400542FA1 /* configure.swift in Sources */,
 				C058EF2A2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
+			
+				C52CCC4E3374479E8D7FA5DA /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1917,6 +2003,8 @@
 				C05DB2162DAC831E0081FACD /* FileRepo.swift in Sources */,
 				C05DB2172DAC831E0081FACD /* RepoFactory.swift in Sources */,
 				C09616C82DEE6DF400281B6B /* UNIXProcessInfo.swift in Sources */,
+			
+				8EA12F1628DE4BF890BB3366 /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1924,6 +2012,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				LIS80FWUFZFXL44TOKYIU44J /* yamlutils.swift in Sources */,
 				C0684E4F2DC5903E0091E774 /* osinstaller.swift in Sources */,
 				C0684DF92DBFE3D70091E774 /* scriptutils.swift in Sources */,
 				C0684DE72DBFDE0C0091E774 /* version.swift in Sources */,
@@ -1967,6 +2056,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				QKIRY89JNKRDPM74J0MHWCIZ /* yamlutils.swift in Sources */,
 				C0684E392DC070CB0091E774 /* plistutils.swift in Sources */,
 				C0684E3A2DC073940091E774 /* processes.swift in Sources */,
 				C0684E382DC04BCB0091E774 /* cliutils.swift in Sources */,
@@ -2119,6 +2209,8 @@
 				C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C07074DF2C33B9A000B86310 /* reports.swift in Sources */,
 				C058EF2D2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
+			
+				1FD0D19BBFAD4956B46BA533 /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2126,6 +2218,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0F6O710025VFRCFPMHCBQU0 /* yamlutils.swift in Sources */,
+				398E815608C94E51AFC0E672 /* yamlutils.swift in Sources */,
 				C0011CB92C7F86480004ED70 /* distributednotifications.swift in Sources */,
 				C07A9D9B2C83DDD000D5D4B2 /* installinfo.swift in Sources */,
 				C01364442C2DD1BA008DB215 /* plistutils.swift in Sources */,
@@ -2238,6 +2332,8 @@
 				C0D00FAB2C4581800021DA9C /* repoutils.swift in Sources */,
 				C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */,
 				C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */,
+			
+				D930A15EAB7E42D0BEB125DA /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2245,6 +2341,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ZTGQ58OF3234SV04JFAKCU23 /* yamlutils.swift in Sources */,
 				C0684E482DC586660091E774 /* osinstallerinfo.swift in Sources */,
 				C0848D252C94D7B90008B463 /* iconutils.swift in Sources */,
 				C0848D322C94EEA60008B463 /* version.swift in Sources */,
@@ -2295,6 +2392,8 @@
 				C058EF212DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0BF62DA2CEC07660030885D /* FileRepo.swift in Sources */,
 				C0BF62E32CEC11310030885D /* admincommon.swift in Sources */,
+			
+				FF2DBD716A2C41A5BBE176BE /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2302,6 +2401,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				T19A6OOC0X74PNBMTFTXK0WJ /* yamlutils.swift in Sources */,
 				C0D66ADA2D2DD174009EF807 /* info.swift in Sources */,
 				C0D66AC82D2CA459009EF807 /* plistutils.swift in Sources */,
 				C0D66ACF2D2DBB38009EF807 /* display.swift in Sources */,
@@ -2323,6 +2423,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				R2Y4B3B2XR5OWNGU7PUINP9V /* yamlutils.swift in Sources */,
 				C0D9C2522C5C5D1F0019A067 /* errors.swift in Sources */,
 				C0D9C24E2C5C5C920019A067 /* main.swift in Sources */,
 				C0D9C2852C5EA3410019A067 /* common.swift in Sources */,
@@ -2337,6 +2438,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				SP5UQJJ59SACHSFF2P31PRLY /* yamlutils.swift in Sources */,
 				C008A0442D16416F0073ADBA /* plistutils.swift in Sources */,
 				C008A0412D16401F0073ADBA /* common.swift in Sources */,
 				C008A0472D1643670073ADBA /* prefs.swift in Sources */,
@@ -2357,6 +2459,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9967QVRFDEZ11UQRSUXGI7IR /* yamlutils.swift in Sources */,
 				C0E994052C5BF4E5006FDF44 /* reports.swift in Sources */,
 				C0E994032C5BF4CF006FDF44 /* munkilog.swift in Sources */,
 				C0E993F82C5BEDAB006FDF44 /* removepackages.swift in Sources */,
@@ -3316,6 +3419,14 @@
 				minimumVersion = 1.5.0;
 			};
 		};
+		DC8467BE2ECEE53A00EDAE22 /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.2.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -3388,6 +3499,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C0E994182C5C10E1006FDF44 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
+		};
+		DC8467BF2ECEE53A00EDAE22 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC8467BE2ECEE53A00EDAE22 /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
