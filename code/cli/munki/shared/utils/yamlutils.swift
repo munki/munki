@@ -68,12 +68,19 @@ func sortPkginfoKeys(_ keys: [String]) -> [String] {
 /// Convert a value to a Yams Node, recursively handling dictionaries with custom key ordering
 private func toNode(_ value: Any) -> Node {
     switch value {
+    case is NSNull:
+        // Return an empty/null node - this shouldn't normally happen if we filter properly
+        return Node("")
     case let dict as [String: Any]:
         // Sort keys using custom ordering
         let sortedKeys = sortPkginfoKeys(Array(dict.keys))
         var pairs: [(Node, Node)] = []
         for key in sortedKeys {
             if let val = dict[key] {
+                // Skip NSNull values - don't include them in YAML output
+                if val is NSNull {
+                    continue
+                }
                 pairs.append((Node(key), toNode(val)))
             }
         }
@@ -222,6 +229,10 @@ func writeYaml(_ dataObject: Any, toFile filepath: String) throws {
 /// Sanitize data object for YAML serialization by converting NSNumber, NSString, etc. to native Swift types
 func sanitizeForYaml(_ object: Any) -> Any {
     switch object {
+    case is NSNull:
+        // NSNull represents a null value - return a marker that we'll filter out
+        // or convert to nil. For YAML, we typically want to omit null keys entirely.
+        return NSNull()
     case let nsNumber as NSNumber:
         // Handle boolean values first
         if nsNumber === kCFBooleanTrue {
@@ -261,10 +272,16 @@ func sanitizeForYaml(_ object: Any) -> Any {
     case let nsString as NSString:
         return nsString as String
     case let nsArray as NSArray:
-        return nsArray.map { sanitizeForYaml($0) }
+        // Filter out NSNull values from arrays
+        return nsArray.compactMap { item -> Any? in
+            if item is NSNull { return nil }
+            return sanitizeForYaml(item)
+        }
     case let nsDictionary as NSDictionary:
         var result: [String: Any] = [:]
         for (key, value) in nsDictionary {
+            // Skip NSNull values - don't include them in output
+            if value is NSNull { continue }
             if let stringKey = key as? String {
                 result[stringKey] = sanitizeForYaml(value)
             } else if let stringKey = sanitizeForYaml(key) as? String {
@@ -287,16 +304,24 @@ func sanitizeForYaml(_ object: Any) -> Any {
         // Convert Data to base64 string
         return data.base64EncodedString()
     case let array as [Any]:
-        return array.map { sanitizeForYaml($0) }
+        // Filter out NSNull values from arrays
+        return array.compactMap { item -> Any? in
+            if item is NSNull { return nil }
+            return sanitizeForYaml(item)
+        }
     case let dictionary as [String: Any]:
         var result: [String: Any] = [:]
         for (key, value) in dictionary {
+            // Skip NSNull values
+            if value is NSNull { continue }
             result[key] = sanitizeForYaml(value)
         }
         return result
     case let dictionary as [AnyHashable: Any]:
         var result: [String: Any] = [:]
         for (key, value) in dictionary {
+            // Skip NSNull values
+            if value is NSNull { continue }
             if let stringKey = key as? String {
                 result[stringKey] = sanitizeForYaml(value)
             } else if let stringKey = "\(key)" as String? {
