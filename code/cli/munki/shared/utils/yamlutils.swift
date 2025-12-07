@@ -71,14 +71,23 @@ private func toNode(_ value: Any) -> Node {
     case is NSNull:
         // Return an empty/null node - this shouldn't normally happen if we filter properly
         return Node("")
+    case let string as String:
+        // Check for null sentinel first
+        if string == "__YAML_NULL_SENTINEL__" {
+            return Node("")
+        }
+        return Node(string)
     case let dict as [String: Any]:
         // Sort keys using custom ordering
         let sortedKeys = sortPkginfoKeys(Array(dict.keys))
         var pairs: [(Node, Node)] = []
         for key in sortedKeys {
             if let val = dict[key] {
-                // Skip NSNull values - don't include them in YAML output
+                // Skip NSNull values and null sentinels - don't include them in YAML output
                 if val is NSNull {
+                    continue
+                }
+                if let str = val as? String, str == "__YAML_NULL_SENTINEL__" {
                     continue
                 }
                 pairs.append((Node(key), toNode(val)))
@@ -86,10 +95,14 @@ private func toNode(_ value: Any) -> Node {
         }
         return Node(pairs, .implicit, .block)
     case let array as [Any]:
-        let nodes = array.map { toNode($0) }
+        // Filter out null sentinels
+        let filtered = array.filter { item in
+            if item is NSNull { return false }
+            if let str = item as? String, str == "__YAML_NULL_SENTINEL__" { return false }
+            return true
+        }
+        let nodes = filtered.map { toNode($0) }
         return Node(nodes, .implicit, .block)
-    case let string as String:
-        return Node(string)
     case let int as Int:
         return Node(String(int), .implicit, .any)
     case let double as Double:
@@ -102,7 +115,12 @@ private func toNode(_ value: Any) -> Node {
     case let data as Data:
         return Node(data.base64EncodedString())
     default:
-        return Node(String(describing: value))
+        let desc = String(describing: value)
+        // Last check for null-like values
+        if desc == "<null>" || desc == "nil" || desc == "null" {
+            return Node("")
+        }
+        return Node(desc)
     }
 }
 
@@ -226,13 +244,37 @@ func writeYaml(_ dataObject: Any, toFile filepath: String) throws {
     }
 }
 
+/// Check if a value represents null (NSNull or nil-equivalent)
+private func isNullValue(_ value: Any) -> Bool {
+    if value is NSNull {
+        return true
+    }
+    // Check for other null representations
+    let mirror = Mirror(reflecting: value)
+    if mirror.displayStyle == .optional && mirror.children.isEmpty {
+        return true
+    }
+    // Check string representation as last resort
+    let desc = String(describing: value)
+    if desc == "<null>" || desc == "nil" {
+        return true
+    }
+    return false
+}
+
 /// Sanitize data object for YAML serialization by converting NSNumber, NSString, etc. to native Swift types
 func sanitizeForYaml(_ object: Any) -> Any {
+    // First check for null values using our comprehensive check
+    if isNullValue(object) {
+        // Return a sentinel that we filter out - but this should rarely happen
+        // as we filter nulls at the dictionary/array level
+        return "__YAML_NULL_SENTINEL__"
+    }
+    
     switch object {
     case is NSNull:
-        // NSNull represents a null value - return a marker that we'll filter out
-        // or convert to nil. For YAML, we typically want to omit null keys entirely.
-        return NSNull()
+        // NSNull represents a null value - return sentinel to filter out
+        return "__YAML_NULL_SENTINEL__"
     case let nsNumber as NSNumber:
         // Handle boolean values first
         if nsNumber === kCFBooleanTrue {
@@ -272,20 +314,25 @@ func sanitizeForYaml(_ object: Any) -> Any {
     case let nsString as NSString:
         return nsString as String
     case let nsArray as NSArray:
-        // Filter out NSNull values from arrays
+        // Filter out NSNull values and sentinels from arrays
         return nsArray.compactMap { item -> Any? in
-            if item is NSNull { return nil }
-            return sanitizeForYaml(item)
+            if isNullValue(item) { return nil }
+            let sanitized = sanitizeForYaml(item)
+            if let str = sanitized as? String, str == "__YAML_NULL_SENTINEL__" { return nil }
+            return sanitized
         }
     case let nsDictionary as NSDictionary:
         var result: [String: Any] = [:]
         for (key, value) in nsDictionary {
-            // Skip NSNull values - don't include them in output
-            if value is NSNull { continue }
+            // Skip NSNull values and null-like values - don't include them in output
+            if isNullValue(value) { continue }
+            let sanitizedValue = sanitizeForYaml(value)
+            // Also skip if sanitization returned the null sentinel
+            if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
             if let stringKey = key as? String {
-                result[stringKey] = sanitizeForYaml(value)
+                result[stringKey] = sanitizedValue
             } else if let stringKey = sanitizeForYaml(key) as? String {
-                result[stringKey] = sanitizeForYaml(value)
+                result[stringKey] = sanitizedValue
             }
         }
         return result
@@ -304,28 +351,34 @@ func sanitizeForYaml(_ object: Any) -> Any {
         // Convert Data to base64 string
         return data.base64EncodedString()
     case let array as [Any]:
-        // Filter out NSNull values from arrays
+        // Filter out NSNull values and sentinels from arrays
         return array.compactMap { item -> Any? in
-            if item is NSNull { return nil }
-            return sanitizeForYaml(item)
+            if isNullValue(item) { return nil }
+            let sanitized = sanitizeForYaml(item)
+            if let str = sanitized as? String, str == "__YAML_NULL_SENTINEL__" { return nil }
+            return sanitized
         }
     case let dictionary as [String: Any]:
         var result: [String: Any] = [:]
         for (key, value) in dictionary {
-            // Skip NSNull values
-            if value is NSNull { continue }
-            result[key] = sanitizeForYaml(value)
+            // Skip NSNull values and null-like values
+            if isNullValue(value) { continue }
+            let sanitizedValue = sanitizeForYaml(value)
+            if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
+            result[key] = sanitizedValue
         }
         return result
     case let dictionary as [AnyHashable: Any]:
         var result: [String: Any] = [:]
         for (key, value) in dictionary {
-            // Skip NSNull values
-            if value is NSNull { continue }
+            // Skip NSNull values and null-like values
+            if isNullValue(value) { continue }
+            let sanitizedValue = sanitizeForYaml(value)
+            if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
             if let stringKey = key as? String {
-                result[stringKey] = sanitizeForYaml(value)
+                result[stringKey] = sanitizedValue
             } else if let stringKey = "\(key)" as String? {
-                result[stringKey] = sanitizeForYaml(value)
+                result[stringKey] = sanitizedValue
             }
         }
         return result
@@ -338,8 +391,16 @@ func sanitizeForYaml(_ object: Any) -> Any {
         let objectType = type(of: object)
         let objectString = String(describing: object)
         
-        // Enhanced logging for debugging
-        print("WARNING: Converting unrecognized object type \(objectType) to string: \(objectString)")
+        // Check for null-like values one more time (in case our isNullValue check missed something)
+        if objectString == "<null>" || objectString == "nil" || objectString == "null" {
+            return "__YAML_NULL_SENTINEL__"
+        }
+        
+        // Only log warning for truly unexpected types (not null-related)
+        let typeString = String(describing: objectType)
+        if !typeString.contains("Null") && !typeString.contains("null") {
+            print("WARNING: Converting unrecognized object type \(objectType) to string: \(objectString)")
+        }
         
         // Check if it's a URL, file path, or other special string-like object
         if let url = object as? URL {
