@@ -26,6 +26,79 @@ enum YamlError: Error {
     case writeError(description: String)
 }
 
+// MARK: - Custom Key Ordering for pkginfo YAML output
+
+/// Keys that should appear first in pkginfo YAML output, in this order
+private let priorityKeys = ["name", "display_name", "version"]
+
+/// Keys that should appear last in pkginfo YAML output
+private let lastKeys = ["_metadata"]
+
+/// Sort pkginfo dictionary keys with custom ordering:
+/// - name, display_name, version appear first (in that order)
+/// - _metadata appears last
+/// - All other keys appear alphabetically in between
+func sortPkginfoKeys(_ keys: [String]) -> [String] {
+    var firstKeys: [String] = []
+    var middleKeys: [String] = []
+    var endKeys: [String] = []
+    
+    for key in keys {
+        if priorityKeys.contains(key) {
+            firstKeys.append(key)
+        } else if lastKeys.contains(key) {
+            endKeys.append(key)
+        } else {
+            middleKeys.append(key)
+        }
+    }
+    
+    // Sort first keys by their position in priorityKeys array
+    firstKeys.sort { priorityKeys.firstIndex(of: $0)! < priorityKeys.firstIndex(of: $1)! }
+    
+    // Sort middle keys alphabetically
+    middleKeys.sort()
+    
+    // Sort end keys alphabetically (in case we add more lastKeys in the future)
+    endKeys.sort()
+    
+    return firstKeys + middleKeys + endKeys
+}
+
+/// Convert a value to a Yams Node, recursively handling dictionaries with custom key ordering
+private func toNode(_ value: Any) -> Node {
+    switch value {
+    case let dict as [String: Any]:
+        // Sort keys using custom ordering
+        let sortedKeys = sortPkginfoKeys(Array(dict.keys))
+        var pairs: [(Node, Node)] = []
+        for key in sortedKeys {
+            if let val = dict[key] {
+                pairs.append((Node(key), toNode(val)))
+            }
+        }
+        return Node(pairs, .implicit, .block)
+    case let array as [Any]:
+        let nodes = array.map { toNode($0) }
+        return Node(nodes, .implicit, .block)
+    case let string as String:
+        return Node(string)
+    case let int as Int:
+        return Node(String(int), .implicit, .any)
+    case let double as Double:
+        return Node(String(double), .implicit, .any)
+    case let bool as Bool:
+        return Node(bool ? "true" : "false", .implicit, .any)
+    case let date as Date:
+        let formatter = ISO8601DateFormatter()
+        return Node(formatter.string(from: date))
+    case let data as Data:
+        return Node(data.base64EncodedString())
+    default:
+        return Node(String(describing: value))
+    }
+}
+
 extension YamlError: LocalizedError {
     var errorDescription: String? {
         switch self {
@@ -131,14 +204,15 @@ func readYaml(fromString string: String) throws -> Any? {
     }
 }
 
-/// Attempt to write YAML to a file
+/// Attempt to write YAML to a file with custom key ordering for pkginfo
 func writeYaml(_ dataObject: Any, toFile filepath: String) throws {
     do {
         let sanitizedData = sanitizeForYaml(dataObject)
-        let yamlString = try Yams.dump(object: sanitizedData, 
-                                      indent: 2,
-                                      width: -1, 
-                                      allowUnicode: true)
+        let node = toNode(sanitizedData)
+        let yamlString = try Yams.serialize(node: node, 
+                                           indent: 2,
+                                           width: -1, 
+                                           allowUnicode: true)
         try yamlString.write(toFile: filepath, atomically: true, encoding: String.Encoding.utf8)
     } catch {
         throw YamlError.writeError(description: "Failed to write YAML to \(filepath): \(error)")
@@ -263,14 +337,15 @@ func sanitizeForYaml(_ object: Any) -> Any {
     }
 }
 
-/// Attempt to convert a data object to YAML string
+/// Attempt to convert a data object to YAML string with custom key ordering for pkginfo
 func yamlToString(_ dataObject: Any) throws -> String {
     do {
         let sanitizedData = sanitizeForYaml(dataObject)
-        return try Yams.dump(object: sanitizedData, 
-                           indent: 2,
-                           width: -1, 
-                           allowUnicode: true)
+        let node = toNode(sanitizedData)
+        return try Yams.serialize(node: node, 
+                                 indent: 2,
+                                 width: -1, 
+                                 allowUnicode: true)
     } catch {
         throw YamlError.writeError(description: "Failed to convert to YAML string: \(error)")
     }
