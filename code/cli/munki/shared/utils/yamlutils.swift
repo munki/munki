@@ -34,6 +34,78 @@ private let priorityKeys = ["name", "display_name", "version"]
 /// Keys that should appear last in pkginfo YAML output
 private let lastKeys = ["_metadata"]
 
+/// Keys that indicate a receipt entry dictionary
+private let receiptKeys: Set<String> = ["packageid", "installed_size", "version", "filename", "name", "optional"]
+
+/// Preferred key order for receipt entries - packageid first for readability
+private let receiptKeyOrder = ["packageid", "name", "filename", "installed_size", "version", "optional"]
+
+/// Keys that indicate an installs item dictionary
+private let installsKeys: Set<String> = ["path", "type", "CFBundleIdentifier", "CFBundleShortVersionString", "CFBundleVersion", "md5checksum"]
+
+/// Preferred key order for installs items - path first for readability
+private let installsKeyOrder = ["path", "type", "CFBundleIdentifier", "CFBundleName", "CFBundleShortVersionString", "CFBundleVersion", "md5checksum", "minosversion"]
+
+/// Check if a dictionary looks like a receipt entry
+private func isReceiptDict(_ dict: [String: Any]) -> Bool {
+    // A receipt must have packageid and typically has version
+    return dict.keys.contains("packageid")
+}
+
+/// Check if a dictionary looks like an installs item
+private func isInstallsDict(_ dict: [String: Any]) -> Bool {
+    // An installs item must have path and type
+    return dict.keys.contains("path") && dict.keys.contains("type")
+}
+
+/// Sort receipt dictionary keys with packageid first
+private func sortReceiptKeys(_ keys: [String]) -> [String] {
+    var orderedKeys: [String] = []
+    var otherKeys: [String] = []
+    
+    for key in keys {
+        if receiptKeyOrder.contains(key) {
+            orderedKeys.append(key)
+        } else {
+            otherKeys.append(key)
+        }
+    }
+    
+    // Sort ordered keys by their position in receiptKeyOrder array
+    orderedKeys.sort { 
+        (receiptKeyOrder.firstIndex(of: $0) ?? 999) < (receiptKeyOrder.firstIndex(of: $1) ?? 999)
+    }
+    
+    // Sort other keys alphabetically
+    otherKeys.sort()
+    
+    return orderedKeys + otherKeys
+}
+
+/// Sort installs item dictionary keys with path first
+private func sortInstallsKeys(_ keys: [String]) -> [String] {
+    var orderedKeys: [String] = []
+    var otherKeys: [String] = []
+    
+    for key in keys {
+        if installsKeyOrder.contains(key) {
+            orderedKeys.append(key)
+        } else {
+            otherKeys.append(key)
+        }
+    }
+    
+    // Sort ordered keys by their position in installsKeyOrder array
+    orderedKeys.sort { 
+        (installsKeyOrder.firstIndex(of: $0) ?? 999) < (installsKeyOrder.firstIndex(of: $1) ?? 999)
+    }
+    
+    // Sort other keys alphabetically
+    otherKeys.sort()
+    
+    return orderedKeys + otherKeys
+}
+
 /// Sort pkginfo dictionary keys with custom ordering:
 /// - name, display_name, version appear first (in that order)
 /// - _metadata appears last
@@ -65,6 +137,17 @@ func sortPkginfoKeys(_ keys: [String]) -> [String] {
     return firstKeys + middleKeys + endKeys
 }
 
+/// Sort dictionary keys based on the dictionary's apparent type
+private func sortKeysForDict(_ dict: [String: Any]) -> [String] {
+    if isReceiptDict(dict) {
+        return sortReceiptKeys(Array(dict.keys))
+    } else if isInstallsDict(dict) {
+        return sortInstallsKeys(Array(dict.keys))
+    } else {
+        return sortPkginfoKeys(Array(dict.keys))
+    }
+}
+
 /// Convert a value to a Yams Node, recursively handling dictionaries with custom key ordering
 private func toNode(_ value: Any) -> Node {
     switch value {
@@ -78,8 +161,8 @@ private func toNode(_ value: Any) -> Node {
         }
         return Node(string)
     case let dict as [String: Any]:
-        // Sort keys using custom ordering
-        let sortedKeys = sortPkginfoKeys(Array(dict.keys))
+        // Sort keys using context-aware ordering (receipts, installs, or pkginfo)
+        let sortedKeys = sortKeysForDict(dict)
         var pairs: [(Node, Node)] = []
         for key in sortedKeys {
             if let val = dict[key] {
