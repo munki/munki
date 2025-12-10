@@ -517,7 +517,9 @@ func makepkginfo(_ filepath: String?,
     // more options and pkginfo bits
     if !installeritem.isEmpty || options.type.nopkg {
         pkginfo["_metadata"] = pkginfoMetadata()
-        pkginfo["autoremove"] = options.other.autoremove
+        if options.other.autoremove {
+            pkginfo["autoremove"] = true
+        }
         if pkginfo["catalogs"] == nil {
             pkginfo["catalogs"] = ["testing"]
         }
