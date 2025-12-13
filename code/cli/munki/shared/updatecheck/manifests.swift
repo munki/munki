@@ -63,7 +63,13 @@ class Manifests {
     }
 }
 
+/// File extensions to try when fetching manifests.
+/// Supports repositories with mixed extension conventions (.yaml, .plist, or extensionless).
+private let manifestExtensions = ["", ".yaml", ".plist"]
+
 /// Gets a manifest from the server.
+/// Tries the exact name first, then falls back to common extensions (.yaml, .plist)
+/// if the initial request fails with HTTP 404.
 ///
 /// Returns:
 ///    string local path to the downloaded manifest
@@ -83,44 +89,95 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
             "Could not create a local directory to store manifest")
     }
 
+    // Determine which extensions to try based on whether name already has one
+    let nameHasExtension = [".yaml", ".plist", ".xml"].contains(where: { name.hasSuffix($0) })
+    let extensionsToTry = nameHasExtension ? [""] : manifestExtensions
+
     // try to get the manifest from the server
-    display.detail("Getting manifest \(name)...")
     let message = "Retrieving list of software for this machine..."
-    do {
-        _ = try fetchMunkiResource(
-            kind: .manifest,
-            name: name,
-            destinationPath: manifestLocalPath,
-            message: message
-        )
-    } catch let FetchError.connection(errorCode, description) {
-        throw ManifestError.connection(errorCode: errorCode, description: description)
-    } catch let FetchError.http(errorCode, description) {
+    
+    var lastError: Error?
+    var lastHttpError: (Int, String)?
+    var triedExtension = false
+    
+    for ext in extensionsToTry {
+        let resourceName = name + ext
+        
+        // Only show "Getting manifest" on first attempt
+        if ext.isEmpty {
+            display.detail("Getting manifest \(name)...")
+        } else {
+            triedExtension = true
+        }
+        
+        do {
+            _ = try fetchMunkiResource(
+                kind: .manifest,
+                name: resourceName,
+                destinationPath: manifestLocalPath,
+                message: message
+            )
+            // Success - validate and return
+            do {
+                _ = try detectFileContent(fromFile: manifestLocalPath)
+            } catch {
+                display.error("Manifest returned for \(resourceName) is invalid.")
+                try? FileManager.default.removeItem(atPath: manifestLocalPath)
+                throw ManifestError.invalid(
+                    "Manifest returned for \(resourceName) is invalid: \(error.localizedDescription)")
+            }
+            
+            // got a valid manifest
+            if triedExtension {
+                display.detail("Trying with extension, retrieved manifest \(resourceName)")
+            } else {
+                display.detail("Retrieved manifest \(resourceName)")
+            }
+            Manifests.shared.set(name, path: manifestLocalPath)
+            return manifestLocalPath
+            
+        } catch let FetchError.http(errorCode, description) {
+            // HTTP 404 - silently try next extension
+            if errorCode == 404 {
+                lastHttpError = (errorCode, description)
+                continue
+            }
+            // Other HTTP error - fail immediately
+            if !suppressErrors {
+                display.error("Could not retrieve manifest \(resourceName) from the server. HTTP error \(errorCode): \(description)")
+            }
+            throw ManifestError.http(errorCode: errorCode, description: description)
+        } catch let FetchError.connection(errorCode, description) {
+            throw ManifestError.connection(errorCode: errorCode, description: description)
+        } catch {
+            lastError = error
+            // For non-HTTP errors on first attempt, try extensions before failing
+            if ext.isEmpty && extensionsToTry.count > 1 {
+                continue
+            }
+            if !suppressErrors {
+                display.error("Could not retrieve manifest \(resourceName) from the server: \(error.localizedDescription)")
+            }
+            throw ManifestError.notRetrieved(error.localizedDescription)
+        }
+    }
+    
+    // All extensions failed
+    if let (errorCode, description) = lastHttpError {
         if !suppressErrors {
             display.error("Could not retrieve manifest \(name) from the server. HTTP error \(errorCode): \(description)")
         }
         throw ManifestError.http(errorCode: errorCode, description: description)
-    } catch {
+    }
+    
+    if let error = lastError {
         if !suppressErrors {
             display.error("Could not retrieve manifest \(name) from the server: \(error.localizedDescription)")
         }
         throw ManifestError.notRetrieved(error.localizedDescription)
     }
-
-    // validate the plist
-    do {
-        _ = try detectFileContent(fromFile: manifestLocalPath)
-    } catch {
-        display.error("Manifest returned for \(name) is invalid.")
-        try? FileManager.default.removeItem(atPath: manifestLocalPath)
-        throw ManifestError.invalid(
-            "Manifest returned for \(name) is invalid: \(error.localizedDescription)")
-    }
-
-    // got a valid plist
-    display.detail("Retrieved manifest \(name)")
-    Manifests.shared.set(name, path: manifestLocalPath)
-    return manifestLocalPath
+    
+    throw ManifestError.notRetrieved("Failed to retrieve manifest \(name)")
 }
 
 /// Gets the primary client manifest from the server.
