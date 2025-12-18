@@ -84,10 +84,24 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
             display.info("\(scriptPath) return code: \(result.exitcode)")
         }
         if !result.output.isEmpty {
-            display.info("\(scriptPath) stdout:\n\(result.output.trailingNewlineTrimmed)")
+            display.info("\(scriptPath) stdout:")
+            let lines = result.output.trailingNewlineTrimmed.split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            ).map(String.init)
+            for line in lines {
+                display.info("\t\(line)")
+            }
         }
         if !result.error.isEmpty {
-            display.info("\(scriptPath) stderr:\n\(result.error.trailingNewlineTrimmed)")
+            display.info("\(scriptPath) stderr:")
+            let lines = result.error.trailingNewlineTrimmed.split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            ).map(String.init)
+            for line in lines {
+                display.info("\t\(line)")
+            }
         }
         return result.exitcode
     } catch ExternalScriptError.notFound {
