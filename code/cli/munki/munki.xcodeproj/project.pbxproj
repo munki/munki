@@ -496,6 +496,10 @@
 		C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941D2C5C10FE006FDF44 /* ArgumentParser */; };
 		C0E994202C5C1103006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E9941F2C5C1103006FDF44 /* ArgumentParser */; };
 		C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0E994212C5C1109006FDF44 /* ArgumentParser */; };
+		C0EC074D2EF4AE620051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC074E2EF4AE620051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC074F2EF4AE620051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07502EF4AFB40051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
 		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
@@ -787,6 +791,7 @@
 		C0D9C2AF2C62D4120019A067 /* powermanager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = powermanager.swift; sourceTree = "<group>"; };
 		C0E993F52C5BEDAB006FDF44 /* removepackages */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = removepackages; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0E993F72C5BEDAB006FDF44 /* removepackages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = removepackages.swift; sourceTree = "<group>"; };
+		C0EC07482EF4AE620051894F /* stringutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stringutils.swift; sourceTree = "<group>"; };
 		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1195,6 +1200,7 @@
 				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 				C06C213F2C8E1FF50023E9D9 /* ODutils.swift */,
 				C0D66AD32D2DBBED009EF807 /* dateutils.swift */,
+				C0EC07482EF4AE620051894F /* stringutils.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1945,6 +1951,7 @@
 				C0684DE22DBFDD930091E774 /* fetch.swift in Sources */,
 				C0684DEA2DBFDF0D0091E774 /* munkihash.swift in Sources */,
 				C0684DE32DBFDD930091E774 /* gurl.swift in Sources */,
+				C0EC07502EF4AFB40051894F /* stringutils.swift in Sources */,
 				C0684DE92DBFDEFF0091E774 /* xattr.swift in Sources */,
 				C0684DE42DBFDD930091E774 /* urls.swift in Sources */,
 				C0684DEB2DBFDF290091E774 /* errors.swift in Sources */,
@@ -1998,6 +2005,7 @@
 				C0684E922DC7E35E0091E774 /* osinstaller.swift in Sources */,
 				C0684E6F2DC73C690091E774 /* errors.swift in Sources */,
 				C0684E832DC7C54E0091E774 /* catalogs.swift in Sources */,
+				C0EC074D2EF4AE620051894F /* stringutils.swift in Sources */,
 				C0684E952DC7E3D20091E774 /* ODutils.swift in Sources */,
 				C0684E9A2DC7E5520091E774 /* selfservice.swift in Sources */,
 				C0684E7C2DC7BFAD0091E774 /* appinventory.swift in Sources */,
@@ -2099,6 +2107,7 @@
 				C07074DC2C33AE5F00B86310 /* munkilog.swift in Sources */,
 				C0D9C2B02C62D4120019A067 /* powermanager.swift in Sources */,
 				C07A6FB22C2B22D300090743 /* constants.swift in Sources */,
+				C0EC074E2EF4AE620051894F /* stringutils.swift in Sources */,
 				C030A9B22C3DB88E007F0B34 /* osinstaller.swift in Sources */,
 				C01364542C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C030A9B62C3DF6D0007F0B34 /* fileutils.swift in Sources */,
@@ -2153,6 +2162,7 @@
 				C01364552C321FE7008DB215 /* dmgutils.swift in Sources */,
 				C01792E32C73B590008CBC22 /* compare.swift in Sources */,
 				C01792D72C6E58D1008CBC22 /* download.swift in Sources */,
+				C0EC074F2EF4AE620051894F /* stringutils.swift in Sources */,
 				C008A0572D25B21A0073ADBA /* stderrout.swift in Sources */,
 				C0011CB32C7CDEC40004ED70 /* updatecheck.swift in Sources */,
 				C0209B872C63C9FD007664A0 /* stoprequested.swift in Sources */,

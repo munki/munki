@@ -54,21 +54,6 @@ func initMunkiDirs() -> Bool {
     return success
 }
 
-
-extension StringProtocol {
-    @inline(__always)
-    var trailingNewlineTrimmed: Self.SubSequence {
-        let view = self[...]
-
-        if view.last?.isNewline == true {
-            return view.dropLast()
-        } else {
-            return view
-        }
-    }
-}
-
-
 /// Run an external script. Do not run if the permissions on the external
 /// script file are weaker than the current executable.
 func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) async -> Int {
