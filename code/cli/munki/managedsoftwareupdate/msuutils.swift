@@ -75,7 +75,7 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
                 whereSeparator: \.isNewline
             ).map(String.init)
             for line in lines {
-                display.info("\t\(line)")
+                display.info("    \(line)")
             }
         }
         if !result.error.isEmpty {
@@ -85,7 +85,7 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
                 whereSeparator: \.isNewline
             ).map(String.init)
             for line in lines {
-                display.info("\t\(line)")
+                display.info("    \(line)")
             }
         }
         return result.exitcode
