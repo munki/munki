@@ -121,7 +121,9 @@ func getMunkiClientCertInfo() -> [String: Any] {
     for key in ["SoftwareRepoURL", "PackageURL", "CatalogURL",
                 "ManifestURL", "IconURL", "ClientResourceURL"]
     {
-        if let url = pref(key) as? String {
+        if let url = pref(key) as? String,
+           !url.isEmpty
+        {
             siteUrls.append(url.deletingSuffix("/") + "/")
         }
     }

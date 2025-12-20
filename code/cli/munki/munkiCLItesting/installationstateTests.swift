@@ -120,21 +120,6 @@ struct installedStateTests {
         #expect(await installedState(item) == .thisVersionNotInstalled)
     }
 
-    /*
-         /// If version_script something that isn't parseable as a version, return .thisVersionNotInstalled
-         @Test func installedStateWithVersionScriptInvalidOutputReturnsNotInstalled() async throws {
-             let item: PlistDict = [
-                 "name": "Foo",
-                 "version": "1.2.3",
-                 "version_script": """
-     #!/bin/sh
-     echo "Foobarbaz"
-     """
-             ]
-             #expect(await installedState(item) == .thisVersionNotInstalled)
-         }
-     */
-
     /// If version_script exits non-zero, return .thisVersionNotInstalled
     @Test func versionScriptErrorReturnsNotInstalled() async throws {
         let item: PlistDict = [
@@ -144,6 +129,69 @@ struct installedStateTests {
             #!/bin/sh
             exit 1
             """,
+        ]
+        #expect(await installedState(item) == .thisVersionNotInstalled)
+    }
+
+    /// If a receipt is not present, return .thisVersionNotInstalled
+    @Test func receiptNotPresentReturnsNotInstalled() async throws {
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "1.2.3",
+            "receipts": [
+                [
+                    "packageid": "bar.doesntexist.foo",
+                    "version": "1.2.3",
+                ],
+            ],
+        ]
+        #expect(await installedState(item) == .thisVersionNotInstalled)
+    }
+
+    /// if receipt present and higher version, return .newerVersionInstalled
+    @Test func receiptPresentReturnsInstalled() async throws {
+        // this depends on a receipt installed by Apple that is present
+        // on macOS Sequoia and Tahoe, but might go away in the future...
+        let item: PlistDict = [
+            "name": "com.apple.files.data-template",
+            "version": "0.1",
+            "receipts": [
+                [
+                    "packageid": "com.apple.files.data-template",
+                    "version": "0.1",
+                ],
+            ],
+        ]
+        #expect(await installedState(item) == .newerVersionInstalled)
+    }
+
+    /// if receipts array is empty (and no other installed criteria), return .thisVersionInstalled
+    @Test func emptyReceiptsArrayReturnsInstalled() async throws {
+        // If there's no way to determine what's installed,
+        // installedState() returns .thisVersionInstalled so that
+        // Munki does _not_ try to install
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "0.1",
+            "receipts": [],
+        ]
+        #expect(await installedState(item) == .thisVersionInstalled)
+    }
+
+    /// if install array is defined but empty, ignore it and fall through to considering receipts
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+        // If the installs array is empty, the check should fail though to
+        // use the receipts array, and should return .thisVersionNotInstalled
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "1.2.3",
+            "installs": [],
+            "receipts": [
+                [
+                    "packageid": "bar.doesntexist.foo",
+                    "version": "1.2.3",
+                ],
+            ],
         ]
         #expect(await installedState(item) == .thisVersionNotInstalled)
     }
@@ -260,6 +308,24 @@ struct someVersionInstalledTests {
             #!/bin/sh
             exit 1
             """,
+        ]
+        #expect(await someVersionInstalled(item) == false)
+    }
+
+    /// if install array is defined but empty, ignore it and fall through to considering receipts
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+        // If the installs array is empty, the check should fail though to
+        // use the receipts array, and should return false
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "1.2.3",
+            "installs": [],
+            "receipts": [
+                [
+                    "packageid": "bar.doesntexist.foo",
+                    "version": "1.2.3",
+                ],
+            ],
         ]
         #expect(await someVersionInstalled(item) == false)
     }
@@ -424,5 +490,23 @@ struct evidenceThisIsInstalledTests {
             "installer_type": "stage_os_installer",
         ]
         #expect(await evidenceThisIsInstalled(item) == true)
+    }
+
+    /// if install array is defined but empty, ignore it and fall through to considering receipts
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+        // If the installs array is empty, the check should fail though to
+        // use the receipts array, and should return false
+        let item: PlistDict = [
+            "name": "Foo",
+            "version": "1.2.3",
+            "installs": [],
+            "receipts": [
+                [
+                    "packageid": "bar.doesntexist.foo",
+                    "version": "1.2.3",
+                ],
+            ],
+        ]
+        #expect(await evidenceThisIsInstalled(item) == false)
     }
 }

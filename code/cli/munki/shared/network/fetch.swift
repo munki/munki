@@ -131,9 +131,9 @@ func headerDictFromList(_ strList: [String]?) -> [String: String] {
     if let strList {
         for item in strList {
             if item.contains(":") {
-                let parts = item.components(separatedBy: ":")
+                let parts = item.split(separator: ":", maxSplits: 1)
                 if parts.count == 2 {
-                    headerDict[parts[0]] = parts[1].trimmingCharacters(in: .whitespaces)
+                    headerDict[String(parts[0])] = String(parts[1]).trimmingCharacters(in: .whitespaces)
                 }
             }
         }

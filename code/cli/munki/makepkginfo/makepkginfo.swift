@@ -125,6 +125,10 @@ struct Create: ParsableCommand {
             hidden: hiddenOptions
         )
 
+        // we somewhat arbitrarily allow calling the tool without
+        // an installerItem for some specific options. This is not
+        // well-documented. The only option for which this behavior is
+        // clear and obvious is --nopkg.
         if installerItem == nil,
            options.installs.file.isEmpty,
            options.type.nopkg == false,
@@ -135,7 +139,8 @@ struct Create: ParsableCommand {
            options.script.postinstallScript == nil,
            options.script.preuninstallScript == nil,
            options.script.postuninstallScript == nil,
-           options.script.uninstallScript == nil
+           options.script.uninstallScript == nil,
+           options.script.versionScript == nil
         {
             throw ValidationError("Can't figure out what to do!")
         }

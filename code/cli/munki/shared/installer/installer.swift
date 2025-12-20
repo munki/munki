@@ -224,7 +224,9 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
         needToRestart = requiresRestart(item)
     default:
         // unknown or no longer supported installer type
-        if ["appdmg", "profiles"].contains(installerType) || installerType.hasPrefix("Adobe") {
+        if ["appdmg", "apple_update_metadata", "startosinstall", "profile"].contains(installerType) ||
+            installerType.hasPrefix("Adobe")
+        {
             display.error("Installer type '\(installerType)' for \(installerItem) is no longer supported.")
         } else {
             display.error("Installer type '\(installerType)' for \(installerItem) is an unknown installer type.")
@@ -266,7 +268,7 @@ func installWithInstallInfo(
 
         if installerType == "startosinstall" {
             skippedInstalls.append(item)
-            display.debug1("Skipping install of \(itemName) because it's a startosinstall item. Will install later.")
+            display.debug1("Skipping install of \(itemName) because it's a startosinstall item, which is no longer supported.")
             continue
         }
         if onlyUnattended {

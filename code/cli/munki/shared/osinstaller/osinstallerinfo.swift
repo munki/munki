@@ -44,17 +44,6 @@ func findInstallMacOSApp(_ dirpath: String) -> String? {
     return nil
 }
 
-/// Some downloaded macOS installer apps are stubs that don't contain
-/// all the needed resources, which are later downloaded when the app is run
-/// we can't use those
-func installMacOSAppIsStub(_ apppath: String) -> Bool {
-    let installESDdmg = (apppath as NSString).appendingPathComponent("Contents/SharedSupport/InstallESD.dmg")
-    let sharedSupportDmg = (apppath as NSString).appendingPathComponent("Contents/SharedSupport/SharedSupport.dmg")
-    let filemanager = FileManager.default
-    return !(filemanager.fileExists(atPath: installESDdmg) ||
-        filemanager.fileExists(atPath: sharedSupportDmg))
-}
-
 /// Returns info parsed out of OS Installer app
 func getInfoFromInstallMacOSApp(_ appPath: String) throws -> PlistDict {
     var appInfo = PlistDict()
@@ -126,62 +115,6 @@ func generateInstallableCondition(_ models: [String]) -> String {
         predicates.append("device_id IN {\(deviceIDList)}")
     }
     return predicates.joined(separator: " OR ")
-}
-
-/// Returns pkginfo for a macOS installer on a disk image, using the startosinstall installation method
-func makeStartOSInstallPkgInfo(mountpoint: String, item: String) throws -> PlistDict {
-    let appPath = (mountpoint as NSString).appendingPathComponent(item)
-    guard pathIsInstallMacOSApp(appPath) else {
-        throw MunkiError("Disk image item \(item) doesn't appear to be a macOS installer app")
-    }
-    let appName = (item as NSString).lastPathComponent
-    let appInfo = try getInfoFromInstallMacOSApp(appPath)
-    guard let version = appInfo["version"] as? String else {
-        throw MunkiError("Could not parse version from \(item)")
-    }
-    let displayName = (appName as NSString).deletingPathExtension
-    let munkiItemName = displayName.replacingOccurrences(of: " ", with: "_")
-    let description = "Installs macOS version \(version)"
-
-    var installedSize = Int(18.5 * 1024 * 1024)
-    var minimumMunkiVersion = "3.6.3"
-    let minimumOSVersion = "10.9"
-    if version.hasPrefix("10.14") {
-        // https://support.apple.com/en-us/HT201475
-        // use initial values
-    } else if version.hasPrefix("11.") {
-        // https://support.apple.com/en-us/HT211238
-        installedSize = Int(35.5 * 1024 * 1024)
-        minimumMunkiVersion = "5.1.0"
-    } else if version.hasPrefix("12.") {
-        // https://support.apple.com/en-us/HT212551
-        installedSize = Int(26 * 1024 * 1024)
-        minimumMunkiVersion = "5.1.0"
-    } else {
-        // no published guidance from Apple, just use same as Monterey
-        installedSize = Int(26 * 1024 * 1024)
-        minimumMunkiVersion = "5.1.0"
-    }
-    var pkginfo: PlistDict
-    pkginfo = [
-        "RestartAction": "RequireRestart",
-        "apple_item": true,
-        "description": description,
-        "display_name": displayName,
-        "installed_size": installedSize,
-        "installer_type": "startosinstall",
-        "minimum_munki_version": minimumMunkiVersion,
-        "minimum_os_version": minimumOSVersion,
-        "name": munkiItemName,
-        "supported_architectures": ["x86_64"],
-        "uninstallable": false,
-        "version": version,
-    ]
-    if let models = appInfo["SupportedDeviceModels"] as? [String] {
-        pkginfo["installable_condition_disabled"] = generateInstallableCondition(models)
-    }
-
-    return pkginfo
 }
 
 /// Returns additional pkginfo from macOS installer at app_path,
