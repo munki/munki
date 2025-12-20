@@ -69,10 +69,24 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
             display.info("\(scriptPath) return code: \(result.exitcode)")
         }
         if !result.output.isEmpty {
-            display.info("\(scriptPath) stdout: \(result.output)")
+            display.info("\(scriptPath) stdout:")
+            let lines = result.output.trailingNewlineTrimmed.split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            ).map(String.init)
+            for line in lines {
+                display.info("    \(line)")
+            }
         }
         if !result.error.isEmpty {
-            display.info("\(scriptPath) stderr: \(result.error)")
+            display.info("\(scriptPath) stderr:")
+            let lines = result.error.trailingNewlineTrimmed.split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            ).map(String.init)
+            for line in lines {
+                display.info("    \(line)")
+            }
         }
         return result.exitcode
     } catch ExternalScriptError.notFound {
@@ -229,13 +243,14 @@ func notifyUserOfUpdates(force: Bool = false) {
         if !force, activeDisplaySleepAssertion() {
             // user may be in a virtual meeting or presenting.
             // Skip the notification; hopefully we'll be able to notify later.
-            munkiLog("Skipping user notification.")
+            munkiLog("Skipping user notification because there is an active display sleep assertion.")
+            munkiLog("This may indicate the user is presenting or in a virtual meeting.")
             return
         }
         // record current notification date
         setPref("LastNotifiedDate", now)
         munkiLog("Notifying user of available updates.")
-        munkiLog("LastNotifiedDate was \(lastNotifiedDate)")
+        munkiLog("LastNotifiedDate was \(RFC3339String(for: lastNotifiedDate))")
         // trigger LaunchAgent to launch munki-notifier.app in the right context
         let launchfile = "/var/run/com.googlecode.munki.munki-notifier"
         FileManager.default.createFile(atPath: launchfile, contents: nil)
@@ -243,6 +258,9 @@ func notifyUserOfUpdates(force: Bool = false) {
         // clear the trigger file. We have to do it because we're root,
         // and the munki-notifier process is running as the user
         try? FileManager.default.removeItem(atPath: launchfile)
+    } else {
+        munkiLog("Skipping user notification")
+        munkiLog("Last notification was \(RFC3339String(for: lastNotifiedDate)) and notification interval is \(daysBetweenNotifications) day(s).")
     }
 }
 
@@ -332,7 +350,6 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
     }
 
     var munkiItemsRestartAction = PostAction.none
-    //var appleItemsRestartAction = PostAction.none
 
     if munkiUpdatesAvailable() > 0 {
         // install Munki updates
@@ -353,7 +370,6 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
 
     Report.shared.save()
 
-    //return max(appleItemsRestartAction, munkiItemsRestartAction) // we no longer support installing Apple updates
     return munkiItemsRestartAction
 }
 

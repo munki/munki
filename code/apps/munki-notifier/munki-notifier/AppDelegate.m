@@ -199,6 +199,7 @@ long const DefaultUseNotificationCenterDays = 3;
     center.delegate = self;
     // First remove earlier notifications from us
     [center removeAllPendingNotificationRequests];
+    [center removeAllDeliveredNotifications];
     // request authorization
     [center requestAuthorizationWithOptions:(UNAuthorizationOptionProvisional + UNAuthorizationOptionAlert)
        completionHandler:^(BOOL granted, NSError * _Nullable error) {

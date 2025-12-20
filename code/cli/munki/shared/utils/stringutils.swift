@@ -1,10 +1,10 @@
 //
-//  version.swift
+//  stringutils.swift
 //  munki
 //
-//  Created by Greg Neagle on 7/15/24.
+//  Created by Greg Neagle on 12/18/25.
 //
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2025 Greg Neagle.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,15 +18,17 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-/// one single place to define a version for CLI tools
-let CLI_TOOLS_VERSION = "7.0.5"
-let BUILD = "<BUILD_GOES_HERE>"
+import Foundation
 
-/// Returns version of Munki tools
-func getVersion() -> String {
-    if Int(BUILD) != nil {
-        // BUILD was updated to an integer by the build script
-        return "\(CLI_TOOLS_VERSION).\(BUILD)"
+extension StringProtocol {
+    @inline(__always)
+    var trailingNewlineTrimmed: Self.SubSequence {
+        let view = self[...]
+
+        if view.last?.isNewline == true {
+            return view.dropLast()
+        } else {
+            return view
+        }
     }
-    return CLI_TOOLS_VERSION
 }
