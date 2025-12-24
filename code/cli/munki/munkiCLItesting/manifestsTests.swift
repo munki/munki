@@ -20,7 +20,7 @@ struct manifestsTests {
         #expect(manifest!["catalogs"] as? [String] == ["testing", "production"])
         #expect(manifest!["managed_installs"] as? [String] == ["Firefox", "GoogleChrome"])
     }
-    
+
     /// Test that getManifestValue gets the expected values from a manifest file
     @Test func getManifestValueReturnsExpectedValue() async throws {
         let manifestPath = try #require(
