@@ -22,7 +22,11 @@ import Foundation
 
 /// Uses URL to compose a url string from base url and additional relative path
 func composedURLWithBase(_ baseURLString: String, adding path: String) -> String {
-    let baseURL = URL(string: baseURLString)
+    let baseURL = if baseURLString.hasSuffix("/") {
+        URL(string: baseURLString)
+    } else {
+        URL(string: baseURLString + "/")
+    }
     let composedURL = URL(string: path, relativeTo: baseURL)
     return composedURL?.absoluteString ?? ""
 }
@@ -32,13 +36,19 @@ func composedURLWithBase(_ baseURLString: String, adding path: String) -> String
 /// If type is one of the supported types, returns the type-specific URL.
 /// If type is specified and resource is also specified, a full URL to the resource is
 /// constructed and returned
-func munkiRepoURL(_ type: String = "", resource: String = "") -> String? {
+///
+/// munkiRepoURL parameter is meant for unit testing
+func munkiRepoURL(_ type: String = "", resource: String = "", munkiRepoURL: String? = nil) -> String? {
     // we could use composedURLWithBase, but that doesn't handle
     // URLs in the format of CGI invocations correctly, and would not
     // be consistent with the behavior of the Python version of Munki
     // So instead we'll do simple string concatenation
     // (with percent-encoding of the resource path)
-    let munkiBaseURL = pref("SoftwareRepoURL") as? String ?? ""
+    let munkiBaseURL = if let munkiRepoURL {
+        munkiRepoURL
+    } else {
+        pref("SoftwareRepoURL") as? String ?? ""
+    }
     if type.isEmpty {
         return munkiBaseURL
     }
@@ -54,7 +64,11 @@ func munkiRepoURL(_ type: String = "", resource: String = "") -> String? {
         return nil
     }
     // we're not actually handling errors in percent-encoding
-    var typeURL = munkiBaseURL + "/" + encodedType + "/"
+    var typeURL = if munkiBaseURL.hasSuffix("/") || munkiBaseURL.hasSuffix("?") {
+        munkiBaseURL + encodedType + "/"
+    } else {
+        munkiBaseURL + "/" + encodedType + "/"
+    }
     // if a more specific URL has been defined in preferences, use that
     if let key = map[type] {
         if let testURL = pref(key) as? String,
