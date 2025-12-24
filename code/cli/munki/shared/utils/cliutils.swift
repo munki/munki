@@ -21,15 +21,6 @@
 import Darwin
 import Foundation
 
-/// Removes a final newline character from a string if present
-func trimTrailingNewline(_ s: String) -> String {
-    var trimmedString = s
-    if trimmedString.last == "\n" {
-        trimmedString = String(trimmedString.dropLast())
-    }
-    return trimmedString
-}
-
 /// Get system uptime in seconds. Uptime is paused while the device is sleeping.
 func get_uptime() -> Double {
     let uptime = clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX)
@@ -270,8 +261,8 @@ func runCLI(_ tool: String,
 
     results.exitcode = Int(task.terminationStatus)
 
-    results.output = trimTrailingNewline(results.output)
-    results.error = trimTrailingNewline(results.error)
+    results.output = String(results.output.trailingNewlineTrimmed)
+    results.error = String(results.error.trailingNewlineTrimmed)
 
     return results
 }
@@ -491,6 +482,9 @@ func runCliAsync(_ tool: String,
         stdIn: stdIn
     )
     await proc.run()
+    // trim trailing newlines in output and stderr to match behavior of runCLI
+    proc.results.output = String(proc.results.output.trailingNewlineTrimmed)
+    proc.results.error = String(proc.results.error.trailingNewlineTrimmed)
     return proc.results
 }
 
