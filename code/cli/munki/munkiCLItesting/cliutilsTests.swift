@@ -18,58 +18,62 @@
 
 import Testing
 
-struct cliutilsTests {
+struct runCLITests {
     /// Basic tests for runCLI functionality
-    @Test func runCLIReturnsExpected() {
+    @Test func outputIsExpected() {
         let expectedOutput = "Hello, world"
         let results = runCLI("/bin/echo", arguments: [expectedOutput])
         #expect(results.exitcode == 0)
         #expect(results.output == expectedOutput)
     }
 
-    @Test func runCLIReturnsErrorForNonExistentTool() {
+    @Test func returnsErrorForNonExistentTool() {
         let results = runCLI("/bin/_does_not_exist")
         #expect(results.exitcode != 0)
     }
 
-    @Test func runCLIReturnsErrorWhenExpected() {
+    @Test func returnsErrorWhenExpected() {
         let results = runCLI("/usr/bin/false")
         #expect(results.exitcode == 1)
     }
+}
 
+struct runCliAsyncTests {
     /// Basic tests for runCliAsync functionality
-    @Test func runCliAsyncReturnsExpected() async {
+    @Test func outputIsExpected() async {
         let expectedOutput = "Hello, world"
         let results = await runCliAsync("/bin/echo", arguments: [expectedOutput])
         #expect(results.exitcode == 0)
         #expect(results.output == expectedOutput)
     }
 
-    @Test func runCliAsyncReturnsErrorForNonExistentTool() async {
+    @Test func returnsErrorForNonExistentTool() async {
         let results = await runCliAsync("/bin/_does_not_exist")
         #expect(results.exitcode != 0)
     }
 
-    @Test func runCliAsyncReturnsErrorWhenExpected() async {
+    @Test func returnsErrorWhenExpected() async {
         let results = await runCliAsync("/usr/bin/false")
         #expect(results.exitcode == 1)
     }
+}
 
+struct checkOutputTests {
     /// Basic tests for checkOutput functionality
-    @Test func checkOutputReturnsExpected() throws {
+    @Test func outputIsExpected() throws {
         let expectedOutput = "Hello, world"
         let toolOutput = try checkOutput("/bin/echo", arguments: [expectedOutput])
         #expect(toolOutput == expectedOutput)
     }
 
-    @Test func checkOutputThrowsForNonExistentTool() throws {
+    @Test func throwsExceptionForNonExistentTool() throws {
         let error = #expect(throws: ProcessError.self) {
             try checkOutput("/bin/_does_not_exist")
         }
         #expect(error != nil)
     }
 
-    @Test func checkOutputThrowsForToolError() throws {
+    @Test func throwsExceptionForToolError() throws {
         let error = #expect(throws: ProcessError.self) {
             try checkOutput("/usr/bin/false")
         }
