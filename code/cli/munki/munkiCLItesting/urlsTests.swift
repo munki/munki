@@ -18,9 +18,9 @@
 
 import Testing
 
-struct urlsTests {
+struct composedURLWithBaseTests {
     /// Tests URL construction when base URL has trailing slash
-    @Test func composedURLWithBaseConstructsExpected() async throws {
+    @Test func basicConstructsExpected() async throws {
         let baseURL = "https://munki.example.com/repo/"
         #expect(composedURLWithBase(baseURL, adding: "manifests") == "https://munki.example.com/repo/manifests")
         #expect(composedURLWithBase(baseURL, adding: "catalogs") == "https://munki.example.com/repo/catalogs")
@@ -28,15 +28,17 @@ struct urlsTests {
     }
 
     ///  Tests URL construction when base URL is missing trailing slash
-    @Test func composedURLWithBaseWithoutTrailingSlashConstructsExpected() async throws {
+    @Test func baseWithoutTrailingSlashConstructsExpected() async throws {
         let baseURL = "https://munki.example.com/repo"
         #expect(composedURLWithBase(baseURL, adding: "manifests") == "https://munki.example.com/repo/manifests")
         #expect(composedURLWithBase(baseURL, adding: "catalogs") == "https://munki.example.com/repo/catalogs")
         #expect(composedURLWithBase(baseURL, adding: "pkgs") == "https://munki.example.com/repo/pkgs")
     }
+}
 
+struct munkiRepoURLTests {
     ///  Tests building URLs to Munki repo directories and resources
-    @Test func munkiRepoURLContructsExpected() async throws {
+    @Test func basicContructsExpected() async throws {
         let munkiBaseURL = "https://munki.example.com/repo"
         #expect(munkiRepoURL(munkiRepoURL: munkiBaseURL) == "https://munki.example.com/repo")
         #expect(munkiRepoURL("manifests", munkiRepoURL: munkiBaseURL) == "https://munki.example.com/repo/manifests/")
@@ -44,7 +46,7 @@ struct urlsTests {
     }
 
     /// Tests building URLs to Munki repo directories and resources when base URL is a CGI-style URL
-    @Test func munkiRepoURLWithCGIContructsExpected() async throws {
+    @Test func urlWithCGIContructsExpected() async throws {
         let munkiBaseURL = "https://munki.example.com/cgi?"
         #expect(munkiRepoURL(munkiRepoURL: munkiBaseURL) == "https://munki.example.com/cgi?")
         #expect(munkiRepoURL("manifests", munkiRepoURL: munkiBaseURL) == munkiBaseURL + "manifests/")
@@ -52,7 +54,7 @@ struct urlsTests {
     }
 
     /// Tests building URLs to Munki repo resources when base URL iwhen resource name contains a special character
-    @Test func munkiRepoURLWithResourceWithSpecialCharcterContructsExpected() async throws {
+    @Test func urlWithResourceWithSpecialCharacterContructsExpected() async throws {
         let munkiBaseURL = "https://munki.example.com/repo"
         #expect(munkiRepoURL("manifests", resource: "site default", munkiRepoURL: munkiBaseURL) == "https://munki.example.com/repo/manifests/site%20default")
     }
