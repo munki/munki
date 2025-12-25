@@ -18,33 +18,35 @@
 
 import Testing
 
-struct scriptutilsTests {
-    let SCRIPT_TEXT = """
+private let SCRIPT_TEXT = """
+#!/bin/sh
+/bin/echo "Hello, world!"
+"""
+
+private let ERROR_SCRIPT_TEXT = """
+#!/bin/sh
+exit 1
+"""
+
+private let PKGINFO: PlistDict = [
+    "postinstall_script": """
     #!/bin/sh
     /bin/echo "Hello, world!"
-    """
+    """,
+]
 
-    let ERROR_SCRIPT_TEXT = """
-    #!/bin/sh
-    exit 1
-    """
-
-    let PKGINFO: PlistDict = [
-        "postinstall_script": """
-        #!/bin/sh
-        /bin/echo "Hello, world!"
-        """,
-    ]
-
-    @Test func createExecutableFileReturnsTrue() throws {
+struct createExecutableFileTests {
+    @Test func returnsTrue() throws {
         let filePath = try #require(tempFile(), "Can't get a temp file path")
         let success = createExecutableFile(
             atPath: filePath, withStringContents: SCRIPT_TEXT
         )
         #expect(success)
     }
+}
 
-    @Test func runScriptReturnsZero() async throws {
+struct runScriptTests {
+    @Test func returnsZero() async throws {
         let filePath = try #require(tempFile(), "Can't get a temp file path")
         let success = createExecutableFile(
             atPath: filePath, withStringContents: SCRIPT_TEXT
@@ -54,7 +56,7 @@ struct scriptutilsTests {
         #expect(exitCode == 0)
     }
 
-    @Test func runScriptReturnsNonZero() async throws {
+    @Test func returnsNonZero() async throws {
         let filePath = try #require(tempFile(), "Can't get a temp file path")
         let success = createExecutableFile(
             atPath: filePath, withStringContents: ERROR_SCRIPT_TEXT
@@ -65,8 +67,10 @@ struct scriptutilsTests {
         )
         #expect(exitCode != 0)
     }
+}
 
-    @Test func runScriptAndReturnResultsReturnsExpected() async throws {
+struct runScriptAndReturnResultsTests {
+    @Test func returnsExpected() async throws {
         let filePath = try #require(tempFile(), "Can't get a temp file path")
         let success = createExecutableFile(
             atPath: filePath, withStringContents: SCRIPT_TEXT
@@ -78,15 +82,19 @@ struct scriptutilsTests {
         #expect(results.exitcode == 0)
         #expect(results.output == "Hello, world!")
     }
+}
 
-    @Test func runEmbeddedScriptReturnsZero() async throws {
+struct runEmbeddedScriptTests {
+    @Test func returnsZero() async throws {
         let exitCode = await runEmbeddedScript(
             name: "postinstall_script", pkginfo: PKGINFO
         )
         #expect(exitCode == 0)
     }
+}
 
-    @Test func runEmbeddedScriptAndReturnResultsReturnsExpected() async throws {
+struct runEmbeddedScriptAndReturnResultsTests {
+    @Test func returnsExpected() async throws {
         let results = await runEmbeddedScriptAndReturnResults(
             name: "postinstall_script", pkginfo: PKGINFO
         )
