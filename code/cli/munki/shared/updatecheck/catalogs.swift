@@ -302,7 +302,26 @@ func lookForUpdatesForName(_ manifestname: String,
 }
 
 /// Attempts to find the best match in itemDict for version
-func bestVersionMatch(version _: String, itemDict _: [String: [String]]) -> String? {
+func bestVersionMatch(version: String, itemDict: [String: [String]]) -> String? {
+    let versionComponents = version.components(separatedBy: ".")
+    var precision = 1
+    while precision <= versionComponents.count {
+        let testVersion = versionComponents[0 ..< precision].joined(separator: ".")
+        var matchNames = [String]()
+        for (item, versions) in itemDict {
+            for itemVersion in versions {
+                if itemVersion.hasPrefix(testVersion),
+                   !matchNames.contains(item)
+                {
+                    matchNames.append(item)
+                }
+            }
+        }
+        if matchNames.count == 1 {
+            return matchNames[0]
+        }
+        precision += 1
+    }
     return nil
 }
 
