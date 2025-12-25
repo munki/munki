@@ -18,16 +18,16 @@
 
 import Testing
 
-struct fetchTests {
+struct headerDictFromListTests {
     /// Test basic splitting a string into header name and value
-    @Test func headerDictFromListParsesAuthHeader() async throws {
+    @Test func parsesAuthHeader() async throws {
         let headers = ["Authorization: Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)
         #expect(headerDict["Authorization"] == "Basic foobarbaz")
     }
 
     /// Test string with no colon seperator
-    @Test func headerDictFromListIgnoresBadlyFormattedString() async throws {
+    @Test func ignoresBadlyFormattedString() async throws {
         let headers = ["Authorization Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)
         // headerDict should contain only a value for User-Agent and nothing else
@@ -35,14 +35,14 @@ struct fetchTests {
     }
 
     /// Ensure extra spaces after the colon are trimmed
-    @Test func headerDictFromListParsesAuthHeaderWithExtraWhitespace() async throws {
+    @Test func parsesAuthHeaderWithExtraWhitespace() async throws {
         let headers = ["Authorization:    Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)
         #expect(headerDict["Authorization"] == "Basic foobarbaz")
     }
 
     /// Tests for issue in https://github.com/munki/munki/issues/1296/
-    @Test func headerDictFromListParsesValueContainingColon() async throws {
+    @Test func parsesValueContainingColon() async throws {
         let headers = ["Referer: https://foo.com"]
         let headerDict = headerDictFromList(headers)
         #expect(headerDict["Referer"] == "https://foo.com")
