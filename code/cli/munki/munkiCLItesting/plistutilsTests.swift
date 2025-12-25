@@ -19,37 +19,37 @@
 
 import Testing
 
-struct plistutilsTests {
-    let PLIST_STRING_WITH_TABS = """
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-    \t<key>catalogs</key>
-    \t<array>
-    \t\t<string>production</string>
-    \t</array>
-    \t<key>included_manifests</key>
-    \t<array/>
-    \t<key>managed_installs</key>
-    \t<array>
-    \t\t<string>Firefox</string>
-    \t</array>
-    \t<key>managed_uninstalls</key>
-    \t<array>
-    \t\t<string>GoogleChrome</string>
-    \t</array>
-    </dict>
-    </plist>
-    """
+private let PLIST_STRING_WITH_TABS = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+\t<key>catalogs</key>
+\t<array>
+\t\t<string>production</string>
+\t</array>
+\t<key>included_manifests</key>
+\t<array/>
+\t<key>managed_installs</key>
+\t<array>
+\t\t<string>Firefox</string>
+\t</array>
+\t<key>managed_uninstalls</key>
+\t<array>
+\t\t<string>GoogleChrome</string>
+\t</array>
+</dict>
+</plist>
+"""
 
-    let PLIST_DICT: PlistDict = [
-        "catalogs": ["production"],
-        "included_manifests": [],
-        "managed_installs": ["Firefox"],
-        "managed_uninstalls": ["GoogleChrome"],
-    ]
+private let PLIST_DICT: PlistDict = [
+    "catalogs": ["production"],
+    "included_manifests": [],
+    "managed_installs": ["Firefox"],
+    "managed_uninstalls": ["GoogleChrome"],
+]
 
+struct readPlistTests {
     /// Test that we can read a known plist from a file
     @Test func readPlistFromFileReturnsExpected() async throws {
         let manifestPath = try #require(
@@ -78,7 +78,9 @@ struct plistutilsTests {
         #expect(plist["managed_installs"] as? [String] == ["Firefox"])
         #expect(plist["managed_uninstalls"] as? [String] == ["GoogleChrome"])
     }
+}
 
+struct writePlistTests {
     /// Test that we can correctly write plist data to a file
     @Test func writePlistCreatesExpectedFile() async throws {
         let filepath = tempFile()
@@ -98,18 +100,22 @@ struct plistutilsTests {
         #expect(plist["managed_installs"] as? [String] == ["Firefox"])
         #expect(plist["managed_uninstalls"] as? [String] == ["GoogleChrome"])
     }
+}
 
+struct plistToStringTests {
     /// Test that converting a PlistDict to a string produces the expected result
-    @Test func plistToStringReturnsExpected() async throws {
+    @Test func returnsExpected() async throws {
         let convertedPlist = try #require(
             try? plistToString(PLIST_DICT),
             "Failed to convert plist data to string format"
         )
         #expect(convertedPlist.trailingNewlineTrimmed == PLIST_STRING_WITH_TABS.trailingNewlineTrimmed)
     }
+}
 
+struct parseFirstPlistTests {
     /// Test that we can find the first plist in a string that also contains non-plist lines
-    @Test func parseFirstPlistReturnsExpected() async throws {
+    @Test func returnsExpected() async throws {
         let notPlistText = "This is not a plist.\n"
         let testText = notPlistText + PLIST_STRING_WITH_TABS + notPlistText
         let (parsed, remainingText) = parseFirstPlist(fromString: testText)
