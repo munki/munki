@@ -21,6 +21,63 @@
 import Foundation
 import Yams
 
+// MARK: - Type-Flexible String Extraction
+
+/// Extract a string value from a dictionary, handling multiple YAML types.
+/// This allows clean YAML files without quote requirements for version-like values.
+///
+/// YAML parsers may interpret unquoted values differently:
+///   - `version: 10.13` → Double (10.13)
+///   - `version: 2025.12.25.1308` → String (multiple dots)
+///   - `version: '10.13'` → String
+///   - `version: 14` → Int
+///
+/// This function handles all cases by trying String first, then converting
+/// numeric types to strings with appropriate formatting.
+///
+/// Usage:
+///   ```swift
+///   // Instead of: item["minimum_os_version"] as? String
+///   // Use: getString(from: item, forKey: "minimum_os_version")
+///   ```
+func getString(from dict: [String: Any], forKey key: String) -> String? {
+    guard let value = dict[key] else { return nil }
+    
+    // Try String first (most common case)
+    if let stringValue = value as? String {
+        return stringValue.isEmpty ? nil : stringValue
+    }
+    
+    // Handle Double (e.g., 10.13 parsed as float)
+    if let doubleValue = value as? Double {
+        // Format to remove trailing zeros: 14.0 -> "14", 10.12 -> "10.12"
+        return String(format: "%.10g", doubleValue)
+    }
+    
+    // Handle Int (e.g., version: 14)
+    if let intValue = value as? Int {
+        return String(intValue)
+    }
+    
+    // Handle Bool (unlikely for versions but be safe)
+    if let boolValue = value as? Bool {
+        return String(boolValue)
+    }
+    
+    // Fallback: try to convert using String(describing:)
+    let described = String(describing: value)
+    return described.isEmpty ? nil : described
+}
+
+/// Convenience extension on Dictionary for cleaner syntax
+extension Dictionary where Key == String, Value == Any {
+    /// Get a string value, automatically converting numeric types to strings.
+    /// This allows YAML files to omit quotes on version-like values.
+    func stringValue(forKey key: String) -> String? {
+        return getString(from: self, forKey: key)
+    }
+}
+
 enum YamlError: Error {
     case readError(description: String)
     case writeError(description: String)
@@ -164,8 +221,8 @@ private func toNode(_ value: Any) -> Node {
         // Sort keys using context-aware ordering (receipts, installs, or pkginfo)
         let sortedKeys = sortKeysForDict(dict)
         var pairs: [(Node, Node)] = []
-        for key in sortedKeys {
-            if let val = dict[key] {
+        for dictKey in sortedKeys {
+            if let val = dict[dictKey] {
                 // Skip NSNull values and null sentinels - don't include them in YAML output
                 if val is NSNull {
                     continue
@@ -173,7 +230,7 @@ private func toNode(_ value: Any) -> Node {
                 if let str = val as? String, str == "__YAML_NULL_SENTINEL__" {
                     continue
                 }
-                pairs.append((Node(key), toNode(val)))
+                pairs.append((Node(dictKey), toNode(val)))
             }
         }
         return Node(pairs, .implicit, .block)
