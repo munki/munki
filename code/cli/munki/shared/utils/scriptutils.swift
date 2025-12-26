@@ -28,7 +28,6 @@ func createExecutableFile(
 class ScriptRunner: AsyncProcessRunner {
     private var remainingOutput = ""
     private var remainingError = ""
-    var combinedOutput = ""
 
     func linesAndRemainderOf(_ str: String) -> ([String], String) {
         var lines = str.trailingNewlineTrimmed.split(
@@ -46,7 +45,6 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processOutput(_ str: String) {
         super.processOutput(str)
-        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingOutput + str)
         remainingOutput = remainder
         for line in lines {
@@ -56,7 +54,6 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processError(_ str: String) {
         super.processError(str)
-        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingError + str)
         remainingError = remainder
         for line in lines {
@@ -83,8 +80,15 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
 
     if result.exitcode != 0, !suppressError {
         display.error("Running \(scriptName) for \(itemName) failed.")
+        display.error("stderr:")
         display.error(String(repeating: "-", count: 78))
-        for line in proc.combinedOutput.components(separatedBy: .newlines) {
+        for line in proc.results.error.components(separatedBy: .newlines) {
+            display.error("    " + line)
+        }
+        display.error(String(repeating: "-", count: 78))
+        display.error("stdout:")
+        display.error(String(repeating: "-", count: 78))
+        for line in proc.results.output.components(separatedBy: .newlines) {
             display.error("    " + line)
         }
         display.error(String(repeating: "-", count: 78))
