@@ -79,19 +79,27 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     let result = proc.results
 
     if result.exitcode != 0, !suppressError {
-        display.error("Running \(scriptName) for \(itemName) failed.")
-        display.error("stderr:")
-        display.error(String(repeating: "-", count: 78))
-        for line in proc.results.error.components(separatedBy: .newlines) {
-            display.error("    " + line)
+        display.error("Running \(scriptName) for \(itemName) failed with exitcode \(result.exitcode)")
+        if proc.results.error.isEmpty {
+            display.error("<no stderr output>")
+        } else {
+            display.error("stderr:")
+            display.error(String(repeating: "-", count: 78))
+            for line in proc.results.error.components(separatedBy: .newlines) {
+                display.error("    " + line)
+            }
+            display.error(String(repeating: "-", count: 78))
         }
-        display.error(String(repeating: "-", count: 78))
-        display.error("stdout:")
-        display.error(String(repeating: "-", count: 78))
-        for line in proc.results.output.components(separatedBy: .newlines) {
-            display.error("    " + line)
+        if proc.results.output.isEmpty {
+            display.error("<no stdout output>")
+        } else {
+            display.error("stdout:")
+            display.error(String(repeating: "-", count: 78))
+            for line in proc.results.output.components(separatedBy: .newlines) {
+                display.error("    " + line)
+            }
+            display.error(String(repeating: "-", count: 78))
         }
-        display.error(String(repeating: "-", count: 78))
     } else if !suppressError {
         munkiLog("Running \(scriptName) for \(itemName) was successful.")
     }
