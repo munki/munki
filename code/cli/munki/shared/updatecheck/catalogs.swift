@@ -468,7 +468,7 @@ func getItemDetail(
             display.error("Unexpected error getting item name or version or getting Munki version")
             return false
         }
-        if let minimumMunkiVersion = item["minimum_munki_version"] as? String {
+        if let minimumMunkiVersion = item.stringValue(forKey: "minimum_munki_version") {
             display.debug1("Considering item \(name), version \(version) with minimum Munki version required: \(minimumMunkiVersion)")
             display.debug1("Our Munki version is \(munkiVersion)")
             if MunkiVersion(munkiVersion) < MunkiVersion(minimumMunkiVersion) {
@@ -494,8 +494,9 @@ func getItemDetail(
             return false
         }
         // Is the current OS version >= minimum_os_version for the item?
+        // Use stringValue() to handle both quoted strings and unquoted numeric values
         if !skipMinimumOSCheck,
-           let minimumOSVersion = item["minimum_os_version"] as? String,
+           let minimumOSVersion = item.stringValue(forKey: "minimum_os_version"),
            !minimumOSVersion.isEmpty
         {
             display.debug1("Considering item \(name), version \(version) with minimum os version required \(minimumOSVersion)")
@@ -508,7 +509,8 @@ func getItemDetail(
             }
         }
         // current OS version <= maximum_os_version?
-        if let maximumOSVersion = item["maximum_os_version"] as? String,
+        // Use stringValue() to handle both quoted strings and unquoted numeric values
+        if let maximumOSVersion = item.stringValue(forKey: "maximum_os_version"),
            !maximumOSVersion.isEmpty
         {
             display.debug1("Considering item \(name), version \(version) with maximum os version required \(maximumOSVersion)")
