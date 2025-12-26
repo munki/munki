@@ -81,7 +81,7 @@ class DisplayAndLog: MunkiLogger {
             Report.shared.add(string: errorMsg, to: "Errors")
         }
         // let the superclass handle logging to the main log
-        super.error(errorMsg)
+        super.error(message)
     }
 
     /// Prints warning message to stderr and the log
