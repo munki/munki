@@ -65,7 +65,7 @@ func comparePlistVersion(_ item: PlistDict) throws -> MunkiComparisonResult {
     else {
         throw MunkiError("Missing plist path or version!")
     }
-    let minimumUpdateVersion = item["minimum_update_version"] as? String
+    let minimumUpdateVersion = item.stringValue(forKey: "minimum_update_version")
     display.debug1("\tChecking \(path) for \(versionComparisonKey) \(versionString)...")
     if !pathExists(path) {
         display.debug1("\tNo file found at \(path)")
