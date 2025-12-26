@@ -48,6 +48,23 @@ func unquote(_ aString: String) -> String {
     return NSString(string: aString).removingPercentEncoding ?? aString
 }
 
+/// Gets a string value from a dictionary, handling type coercion for values
+/// that YAML may have parsed as numbers (e.g., "10.13" becoming a Double).
+private func stringValue(from dict: [String: Any], forKey key: String) -> String? {
+    guard let value = dict[key] else { return nil }
+    if let stringValue = value as? String {
+        return stringValue.isEmpty ? nil : stringValue
+    }
+    if let doubleValue = value as? Double {
+        return String(format: "%.10g", doubleValue)
+    }
+    if let intValue = value as? Int {
+        return String(intValue)
+    }
+    let described = String(describing: value)
+    return described.isEmpty ? nil : described
+}
+
 func clearMunkiItemsCache() {
     // formerly known as reset()
     Cache.shared.clear()
@@ -625,7 +642,7 @@ class GenericItem: BaseItem {
                     "install this item.",
                     comment: "Long item requires a higher OS version text")
             }
-            let os_version = my["minimum_os_version"] as? String ?? "UNKNOWN"
+            let os_version = stringValue(from: my, forKey: "minimum_os_version") ?? "UNKNOWN"
             return NSString(format: base_string as NSString, os_version as NSString) as String
         }
         // we don't know how to localize this note, return empty string
