@@ -43,7 +43,7 @@ func logNamed(_ name: String) -> String {
 }
 
 /// General logging function
-func munkiLog(_ message: String, logFile: String = "") {
+func munkiLog(_ message: String, logFile: String = "", logLevel: OSLogType = .default) {
     // RFC 3339 date format like `2024-07-01T17:30:32-08:00`
     let dateformatter = ISO8601DateFormatter()
     dateformatter.timeZone = TimeZone.current
@@ -70,9 +70,14 @@ func munkiLog(_ message: String, logFile: String = "") {
         }
     }
     // log to Apple unified logging
-    if #available(macOS 11.0, *), boolPref("LogToSyslog") ?? false {
+    // (skip unified logging when doing duplicate logging to errors.log or warnings.log)
+    if #available(macOS 11.0, *),
+       boolPref("LogToSyslog") ?? false,
+       !["com.googlecode.munki.errors", "com.googlecode.munki.warnings"].contains(subsystem)
+    {
         let logger = Logger(subsystem: subsystem, category: "")
-        logger.log("\(message, privacy: .public)")
+        print("logging at logLevel \(logLevel.rawValue): \(message)")
+        logger.log(level: logLevel, "\(message, privacy: .public)")
     }
 }
 
@@ -144,40 +149,40 @@ class MunkiLogger {
     }
 
     func emergency(_ message: String) {
-        munkiLog("EMERGENCY: \(message)", logFile: logname)
+        munkiLog("EMERGENCY: \(message)", logFile: logname, logLevel: .fault)
     }
 
     func alert(_ message: String) {
-        munkiLog("ALERT: \(message)", logFile: logname)
+        munkiLog("ALERT: \(message)", logFile: logname, logLevel: .fault)
     }
 
     func critical(_ message: String) {
-        munkiLog("CRITICAL: \(message)", logFile: logname)
+        munkiLog("CRITICAL: \(message)", logFile: logname, logLevel: .fault)
     }
 
     func error(_ message: String) {
-        munkiLog("ERROR: \(message)", logFile: logname)
+        munkiLog("ERROR: \(message)", logFile: logname, logLevel: .error)
     }
 
     func warning(_ message: String) {
-        munkiLog("WARNING: \(message)", logFile: logname)
+        munkiLog("WARNING: \(message)", logFile: logname, logLevel: .error)
     }
 
     func notice(_ message: String) {
         if level > 0 {
-            munkiLog(message, logFile: logname)
+            munkiLog(message, logFile: logname, logLevel: .default)
         }
     }
 
     func info(_ message: String) {
         if level > 0 {
-            munkiLog(message, logFile: logname)
+            munkiLog(message, logFile: logname, logLevel: .default)
         }
     }
 
     func detail(_ message: String) {
         if level > 0 {
-            munkiLog(message, logFile: logname)
+            munkiLog(message, logFile: logname, logLevel: .info)
         }
     }
 
@@ -188,14 +193,14 @@ class MunkiLogger {
     /// These aren't traditional UNIX logging levels, but Munki has traditionally used them
     func debug1(_ message: String) {
         if level > 1 {
-            munkiLog("DEBUG1: \(message)", logFile: logname)
+            munkiLog("DEBUG1: \(message)", logFile: logname, logLevel: .debug)
         }
     }
 
     /// These aren't traditional UNIX logging levels, but Munki has traditionally used them
     func debug2(_ message: String) {
         if level > 2 {
-            munkiLog("DEBUG2: \(message)", logFile: logname)
+            munkiLog("DEBUG2: \(message)", logFile: logname, logLevel: .debug)
         }
     }
 }
