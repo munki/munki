@@ -96,7 +96,7 @@ class DisplayAndLog: MunkiLogger {
             Report.shared.add(string: warningMsg, to: "Warnings")
         }
         // let the superclass handle logging to the main log
-        super.warning(warningMsg)
+        super.warning(message)
     }
 
     /// Displays major status messages, formatting as needed
