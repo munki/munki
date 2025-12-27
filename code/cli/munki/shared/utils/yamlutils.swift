@@ -103,6 +103,12 @@ private let installsKeys: Set<String> = ["path", "type", "CFBundleIdentifier", "
 /// Preferred key order for installs items - path first for readability
 private let installsKeyOrder = ["path", "type", "CFBundleIdentifier", "CFBundleName", "CFBundleShortVersionString", "CFBundleVersion", "md5checksum", "minosversion"]
 
+/// Keys that indicate a conditional_items entry dictionary
+private let conditionalItemKeys: Set<String> = ["condition", "managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "included_manifests", "conditional_items"]
+
+/// Preferred key order for conditional_items - condition MUST be first for readability
+private let conditionalItemKeyOrder = ["condition", "managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "default_installs", "featured_items", "included_manifests", "conditional_items"]
+
 /// Check if a dictionary looks like a receipt entry
 private func isReceiptDict(_ dict: [String: Any]) -> Bool {
     // A receipt must have packageid and typically has version
@@ -113,6 +119,44 @@ private func isReceiptDict(_ dict: [String: Any]) -> Bool {
 private func isInstallsDict(_ dict: [String: Any]) -> Bool {
     // An installs item must have path and type
     return dict.keys.contains("path") && dict.keys.contains("type")
+}
+
+/// Check if a dictionary looks like a conditional_items entry (manifest conditional block)
+private func isConditionalItemDict(_ dict: [String: Any]) -> Bool {
+    // A conditional item typically has "condition" key, or has manifest list keys without name/version
+    // Check for condition key first (most reliable indicator)
+    if dict.keys.contains("condition") {
+        return true
+    }
+    // Also detect conditional items without explicit condition (unconditional blocks in conditional_items array)
+    // These have manifest keys but no pkginfo keys like name, version, display_name
+    let hasManifestKeys = dict.keys.contains { conditionalItemKeys.contains($0) }
+    let hasPkginfoKeys = dict.keys.contains("name") || dict.keys.contains("version") || dict.keys.contains("installer_item_location")
+    return hasManifestKeys && !hasPkginfoKeys
+}
+
+/// Sort conditional_items dictionary keys with condition first
+private func sortConditionalItemKeys(_ keys: [String]) -> [String] {
+    var orderedKeys: [String] = []
+    var otherKeys: [String] = []
+    
+    for key in keys {
+        if conditionalItemKeyOrder.contains(key) {
+            orderedKeys.append(key)
+        } else {
+            otherKeys.append(key)
+        }
+    }
+    
+    // Sort ordered keys by their position in conditionalItemKeyOrder array
+    orderedKeys.sort { 
+        (conditionalItemKeyOrder.firstIndex(of: $0) ?? 999) < (conditionalItemKeyOrder.firstIndex(of: $1) ?? 999)
+    }
+    
+    // Sort other keys alphabetically
+    otherKeys.sort()
+    
+    return orderedKeys + otherKeys
 }
 
 /// Sort receipt dictionary keys with packageid first
@@ -200,6 +244,8 @@ private func sortKeysForDict(_ dict: [String: Any]) -> [String] {
         return sortReceiptKeys(Array(dict.keys))
     } else if isInstallsDict(dict) {
         return sortInstallsKeys(Array(dict.keys))
+    } else if isConditionalItemDict(dict) {
+        return sortConditionalItemKeys(Array(dict.keys))
     } else {
         return sortPkginfoKeys(Array(dict.keys))
     }
