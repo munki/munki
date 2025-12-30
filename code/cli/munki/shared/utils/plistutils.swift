@@ -39,9 +39,13 @@ extension PlistError: LocalizedError {
 func deserialize(_ data: Data?) throws -> Any? {
     if data != nil {
         do {
+            // Use immutable containers to avoid memory corruption issues
+            // when bridging between Objective-C NSDictionary/NSArray and Swift types.
+            // The mutableContainers option can cause ARC reference counting issues
+            // when Swift code accesses values from the returned dictionaries.
             let dataObject = try PropertyListSerialization.propertyList(
                 from: data!,
-                options: PropertyListSerialization.MutabilityOptions.mutableContainers,
+                options: [],
                 format: nil
             )
             return dataObject
@@ -130,6 +134,18 @@ func writePlist(_ dataObject: Any, toFile filepath: String) throws {
 /// Attempt to convert a PropertyList object to a Data object
 func plistToData(_ dataObject: Any) throws -> Data {
     return try serialize(dataObject)
+}
+
+/// Creates a deep copy of a plist dictionary by serializing and deserializing.
+/// This ensures complete memory independence from the source dictionary,
+/// which is important when the source may contain Objective-C bridged objects.
+func independentCopy(of dict: PlistDict) -> PlistDict? {
+    do {
+        let data = try serialize(dict)
+        return try deserialize(data) as? PlistDict
+    } catch {
+        return nil
+    }
 }
 
 /// Attempt to convert a PropertyList object to string
