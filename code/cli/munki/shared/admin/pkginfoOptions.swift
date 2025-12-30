@@ -173,7 +173,8 @@ struct ApplePackageOptions: ParsableArguments {
     @Option(name: [.customShort("U"),
                    .long,
                    .customLong("uninstallerdmg"),
-                   .customLong("uninstallerpkg")],
+                   .customLong("uninstallerpkg"),
+                   .customLong("uninstallpkg")],
             help: "<uninstalleritem> is a path to an uninstall package or a disk image containing an uninstall package.")
     var uninstalleritem: String? = nil
 
