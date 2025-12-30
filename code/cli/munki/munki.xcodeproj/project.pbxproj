@@ -500,6 +500,20 @@
 		C0EC074E2EF4AE620051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
 		C0EC074F2EF4AE620051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
 		C0EC07502EF4AFB40051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC076D2F0449A00051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC076E2F0449A00051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC076F2F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07702F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07712F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07722F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07732F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07742F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07752F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07762F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07772F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07782F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC07792F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
+		C0EC077A2F044AC70051894F /* stringutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EC07482EF4AE620051894F /* stringutils.swift */; };
 		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
@@ -1786,6 +1800,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C00519AF2D2AE0550060DDB6 /* launchd.swift in Sources */,
+				C0EC07762F044AC70051894F /* stringutils.swift in Sources */,
 				C00519AE2D2AE0080060DDB6 /* stderrout.swift in Sources */,
 				C00519B12D2AE2AC0060DDB6 /* constants.swift in Sources */,
 				C00519B02D2AE1500060DDB6 /* fileutils.swift in Sources */,
@@ -1804,6 +1819,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0EC07732F044AC70051894F /* stringutils.swift in Sources */,
 				C008A05F2D2850E90073ADBA /* stderrout.swift in Sources */,
 				C0209B922C63E3B7007664A0 /* main.swift in Sources */,
 			);
@@ -1814,6 +1830,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0276DC12E8C086F00D443C3 /* errors.swift in Sources */,
+				C0EC077A2F044AC70051894F /* stringutils.swift in Sources */,
 				C0276DBD2E8C07EE00D443C3 /* GitFileRepo.swift in Sources */,
 				C0276DC32E8C08DA00D443C3 /* constants.swift in Sources */,
 				C0276DC02E8C080400D443C3 /* RepoProtocol.swift in Sources */,
@@ -1840,6 +1857,7 @@
 				C0684E4A2DC586660091E774 /* osinstallerinfo.swift in Sources */,
 				C030A9B02C3B50ED007F0B34 /* prefs.swift in Sources */,
 				C0D00FB32C458EAA0021DA9C /* version.swift in Sources */,
+				C0EC076D2F0449A00051894F /* stringutils.swift in Sources */,
 				C030A9A82C3B4FF1007F0B34 /* plistutils.swift in Sources */,
 				C008A0582D25B21A0073ADBA /* stderrout.swift in Sources */,
 				C030A9A22C3B4F63007F0B34 /* pkginfolib.swift in Sources */,
@@ -1894,6 +1912,7 @@
 				C0684E4B2DC586660091E774 /* osinstallerinfo.swift in Sources */,
 				C030A9F72C435183007F0B34 /* readline.swift in Sources */,
 				C0D00FAE2C45841D0021DA9C /* makecatalogslib.swift in Sources */,
+				C0EC076E2F0449A00051894F /* stringutils.swift in Sources */,
 				C01CE24C2CA7ADD400542FA1 /* configure.swift in Sources */,
 				C058EF2A2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 			);
@@ -1918,6 +1937,7 @@
 				C09616C62DEE6DBF00281B6B /* SignalHandler.swift in Sources */,
 				C09616C92DEE6E1300281B6B /* tempfileutils.swift in Sources */,
 				C058EF1F2DCD041A002775E0 /* RepoProtocol.swift in Sources */,
+				C0EC07782F044AC70051894F /* stringutils.swift in Sources */,
 				C05DB21C2DAC977C0081FACD /* cliutils.swift in Sources */,
 				C05DB2152DAC831E0081FACD /* repoutils.swift in Sources */,
 				C05DB2162DAC831E0081FACD /* FileRepo.swift in Sources */,
@@ -1977,6 +1997,7 @@
 				C0684E392DC070CB0091E774 /* plistutils.swift in Sources */,
 				C0684E3A2DC073940091E774 /* processes.swift in Sources */,
 				C0684E382DC04BCB0091E774 /* cliutils.swift in Sources */,
+				C0EC07792F044AC70051894F /* stringutils.swift in Sources */,
 				C0684E3B2DC131750091E774 /* UNIXProcessInfo.swift in Sources */,
 				C0684E342DC0409C0091E774 /* prefs.swift in Sources */,
 				C0684E352DC040A30091E774 /* constants.swift in Sources */,
@@ -2243,6 +2264,7 @@
 				C0D00FB22C458EAA0021DA9C /* version.swift in Sources */,
 				C07A6FCC2C2B5C3D00090743 /* constants.swift in Sources */,
 				C013644B2C2F8EFE008DB215 /* GitFileRepo.swift in Sources */,
+				C0EC076F2F044AC70051894F /* stringutils.swift in Sources */,
 				C07A6FD82C2B7F2100090743 /* FileRepo.swift in Sources */,
 				C058EF1E2DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0D00FAB2C4581800021DA9C /* repoutils.swift in Sources */,
@@ -2267,6 +2289,7 @@
 				C0848D282C94D8120008B463 /* constants.swift in Sources */,
 				C0684E4E2DC58B350091E774 /* versionutils.swift in Sources */,
 				C0848D2D2C94DDAF0008B463 /* prefs.swift in Sources */,
+				C0EC07742F044AC70051894F /* stringutils.swift in Sources */,
 				C0848D242C94D7B50008B463 /* fileutils.swift in Sources */,
 				C0848D3B2C94F7190008B463 /* osutils.swift in Sources */,
 				C0848D1A2C94D1840008B463 /* iconimporter.swift in Sources */,
@@ -2294,6 +2317,7 @@
 				C0BF62DF2CEC07AA0030885D /* cliutils.swift in Sources */,
 				C0BF62DB2CEC076A0030885D /* GitFileRepo.swift in Sources */,
 				C0BF62E22CEC086C0030885D /* fileutils.swift in Sources */,
+				C0EC07752F044AC70051894F /* stringutils.swift in Sources */,
 				C058EF2E2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
 				C03EC5BF2CFA372F00D2F1CA /* repoclean.swift in Sources */,
 				C0BF62DE2CEC077F0030885D /* errors.swift in Sources */,
@@ -2316,6 +2340,7 @@
 				C0D66AC82D2CA459009EF807 /* plistutils.swift in Sources */,
 				C0D66ACF2D2DBB38009EF807 /* display.swift in Sources */,
 				C0D66AD12D2DBB7A009EF807 /* stderrout.swift in Sources */,
+				C0EC07772F044AC70051894F /* stringutils.swift in Sources */,
 				C0D66ACD2D2DB811009EF807 /* UNIXProcessInfo.swift in Sources */,
 				C0D66AD92D2DBBED009EF807 /* dateutils.swift in Sources */,
 				C0D66ACE2D2DBB1B009EF807 /* cliutils.swift in Sources */,
@@ -2337,6 +2362,7 @@
 				C0D9C24E2C5C5C920019A067 /* main.swift in Sources */,
 				C0D9C2852C5EA3410019A067 /* common.swift in Sources */,
 				C008A05E2D2850E90073ADBA /* stderrout.swift in Sources */,
+				C0EC07712F044AC70051894F /* stringutils.swift in Sources */,
 				C0D9C2542C5C5EBC0019A067 /* constants.swift in Sources */,
 				C0D9C2552C5C5EC00019A067 /* plistutils.swift in Sources */,
 				C0D9C2832C5EA33A0019A067 /* client.swift in Sources */,
@@ -2349,6 +2375,7 @@
 			files = (
 				C008A0442D16416F0073ADBA /* plistutils.swift in Sources */,
 				C008A0412D16401F0073ADBA /* common.swift in Sources */,
+				C0EC07722F044AC70051894F /* stringutils.swift in Sources */,
 				C008A0472D1643670073ADBA /* prefs.swift in Sources */,
 				C0D9C28D2C5EDFAE0019A067 /* main.swift in Sources */,
 				C008A05B2D25B25B0073ADBA /* stderrout.swift in Sources */,
@@ -2367,6 +2394,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0EC07702F044AC70051894F /* stringutils.swift in Sources */,
 				C0E994052C5BF4E5006FDF44 /* reports.swift in Sources */,
 				C0E994032C5BF4CF006FDF44 /* munkilog.swift in Sources */,
 				C0E993F82C5BEDAB006FDF44 /* removepackages.swift in Sources */,
