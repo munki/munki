@@ -485,7 +485,10 @@ class MainWindowController: NSWindowController {
                 loadUpdatesPage(self)
                 displayUpdateCount()
             } else {
-                loadAllSoftwarePage(self)
+                // load the page for the first sidebar item
+                let item = sidebar_items[0]
+                loadSidebarItemPage(item.page)
+
             }
         } else {
             updatesOnlyWindowMode()
