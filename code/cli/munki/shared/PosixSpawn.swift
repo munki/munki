@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/28/25.
+//  Copyright 2025-2026 The Munki Project.
 //
 
 // Based on https://stackoverflow.com/a/69143985

@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 5/30/25.
+//  Copyright 2025-2026 The Munki Project.
 //
 
 /// Simple function to parse a string and return tokens similar to the way shells parse lines

@@ -3,6 +3,7 @@
 //  munkitester
 //
 //  Created by Greg Neagle on 8/3/24.
+//  Copyright 2024-2026 The Munki Project.
 //
 
 import Foundation
