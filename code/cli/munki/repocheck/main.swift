@@ -3,7 +3,7 @@
 //  repocheck
 //
 //  Created by Greg Neagle on 9/30/25.
-//  Copyright 2025-2026 The Munki Project.
+//  Copyright 2025-2026 The Munki Project. All rights reserved.
 //
 
 import Foundation

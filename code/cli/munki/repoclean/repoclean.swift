@@ -3,7 +3,7 @@
 //  repoclean
 //
 //  Created by Greg Neagle on 11/18/24.
-//  Copyright 2024-2026 The Munki Project.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 
 import ArgumentParser

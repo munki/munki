@@ -3,7 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/24/24.
-//  Copyright 2024-2026 The Munki Project.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 
 #ifndef Predicates_h

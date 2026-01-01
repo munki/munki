@@ -3,7 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/1/25.
-//  Copyright 2025-2026 The Munki Project.
+//  Copyright 2025-2026 The Munki Project. All rights reserved.
 //
 
 #ifndef readline_h
