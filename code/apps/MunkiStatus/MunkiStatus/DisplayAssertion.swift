@@ -3,7 +3,7 @@
 //  MunkiStatus
 //
 //  Created by Christopher A Grande on 5/9/25.
-//  Copyright © 2025 The Munki Project. All rights reserved.
+//  Copyright © 2025-2026 The Munki Project. All rights reserved.
 //
 
 import IOKit.pwr_mgt
