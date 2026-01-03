@@ -515,6 +515,8 @@ func sanitizeForYaml(_ object: Any) -> Any {
             let sanitizedValue = sanitizeForYaml(value)
             // Also skip if sanitization returned the null sentinel
             if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
+            // Skip empty strings - they serialize ambiguously in YAML and get interpreted as null
+            if let str = sanitizedValue as? String, str.isEmpty { continue }
             if let stringKey = key as? String {
                 result[stringKey] = sanitizedValue
             } else if let stringKey = sanitizeForYaml(key) as? String {
@@ -551,6 +553,8 @@ func sanitizeForYaml(_ object: Any) -> Any {
             if isNullValue(value) { continue }
             let sanitizedValue = sanitizeForYaml(value)
             if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
+            // Skip empty strings - they serialize ambiguously in YAML and get interpreted as null
+            if let str = sanitizedValue as? String, str.isEmpty { continue }
             result[key] = sanitizedValue
         }
         return result
@@ -561,6 +565,8 @@ func sanitizeForYaml(_ object: Any) -> Any {
             if isNullValue(value) { continue }
             let sanitizedValue = sanitizeForYaml(value)
             if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
+            // Skip empty strings - they serialize ambiguously in YAML and get interpreted as null
+            if let str = sanitizedValue as? String, str.isEmpty { continue }
             if let stringKey = key as? String {
                 result[stringKey] = sanitizedValue
             } else if let stringKey = "\(key)" as String? {
