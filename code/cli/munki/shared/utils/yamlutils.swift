@@ -448,6 +448,29 @@ private func isNullValue(_ value: Any) -> Bool {
     return false
 }
 
+/// Clean floating-point numbers that are very close to simpler decimal representations
+/// This prevents values like 26.2 from being serialized as 26.199999999999999
+private func cleanFloatingPoint(_ value: Double) -> Any {
+    // If it's actually an integer, return as Int
+    if value == Double(Int(value)) {
+        return Int(value)
+    }
+    
+    // Try rounding to 1-4 decimal places and see if we're very close
+    for decimals in 1...4 {
+        let multiplier = pow(10.0, Double(decimals))
+        let rounded = round(value * multiplier) / multiplier
+        let epsilon = pow(10.0, Double(-(decimals + 6))) // Very small tolerance
+        
+        if abs(value - rounded) < epsilon {
+            return rounded
+        }
+    }
+    
+    // If no clean representation found, return the original value
+    return value
+}
+
 /// Sanitize data object for YAML serialization by converting NSNumber, NSString, etc. to native Swift types
 func sanitizeForYaml(_ object: Any) -> Any {
     // First check for null values using our comprehensive check
@@ -486,15 +509,15 @@ func sanitizeForYaml(_ object: Any) -> Any {
         case "q", "Q":  // long long/unsigned long long
             return nsNumber.intValue
         case "f":       // float
-            return nsNumber.floatValue
+            return cleanFloatingPoint(Double(nsNumber.floatValue))
         case "d":       // double
-            return nsNumber.doubleValue
+            return cleanFloatingPoint(nsNumber.doubleValue)
         default:
             // Fallback: try to determine if it's an integer or floating point
             if nsNumber.doubleValue == Double(nsNumber.intValue) {
                 return nsNumber.intValue
             } else {
-                return nsNumber.doubleValue
+                return cleanFloatingPoint(nsNumber.doubleValue)
             }
         }
     case let nsString as NSString:
