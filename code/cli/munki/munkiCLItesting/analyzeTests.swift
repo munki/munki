@@ -18,6 +18,56 @@
 
 import Testing
 
+struct itemInInstallInfoTests {
+    let installInfo: [PlistDict] = [
+        ["name": "Firefox",
+         "installed": true,
+         "installed_version": "100.0"],
+        ["name": "GoogleChrome",
+         "version_to_install": "200.0"],
+    ]
+
+    /// Tests that given item is *not* in the list as expected
+    @Test func itemIsNotInInstallInfo() async throws {
+        let item: PlistDict = ["name": "NotAnApp"]
+        #expect(itemInInstallInfo(item, theList: installInfo) == false)
+    }
+
+    /// Tests that given item *is*  in the list as expected
+    @Test func itemIsInInstallInfo() async throws {
+        let item: PlistDict = ["name": "Firefox"]
+        #expect(itemInInstallInfo(item, theList: installInfo) == true)
+    }
+
+    /// Tests that the given item is in the list as the same version or higher as expected
+    @Test func itemInInstallInfoIsSameOrNewer() async throws {
+        let testVersion = "98.0"
+        let item: PlistDict = ["name": "Firefox", "version": testVersion]
+        #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == true)
+    }
+
+    /// Tests that the given item is in the list but is a lower version as expected
+    @Test func itemInInstallInfoIsNotSameOrNewer() async throws {
+        let testVersion = "101.0"
+        let item: PlistDict = ["name": "Firefox", "version": testVersion]
+        #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == false)
+    }
+
+    /// Tests that the given item is in the list (as not yet installed) as the same version or higher as expected
+    @Test func notInstalledItemInInstallInfoIsSameOrNewer() async throws {
+        let testVersion = "199.0"
+        let item: PlistDict = ["name": "GoogleChrome", "version": testVersion]
+        #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == true)
+    }
+
+    /// Tests that the given item is in the list (as not yet installed) but is a lower version as expected
+    @Test func notInstalledItemInInstallInfoIsNotSameOrNewer() async throws {
+        let testVersion = "201.0"
+        let item: PlistDict = ["name": "GoogleChrome", "version": testVersion]
+        #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == false)
+    }
+}
+
 struct isAppleItemTests {
     /// startosinstall items should return true
     @Test func startOSinstallItemReturnsTrue() async throws {
@@ -70,5 +120,30 @@ struct isAppleItemTests {
             ],
         ]
         #expect(isAppleItem(item) == true)
+    }
+}
+
+struct alreadyProcessedTests {
+    let installInfo: PlistDict = [
+        "managed_installs": [
+            ["name": "Firefox",
+             "installed": true,
+             "installed_version": "100.0"],
+            ["name": "GoogleChrome",
+             "version_to_install": "200.0"],
+        ],
+        "optional_installs": ["Slack", "Zoom"],
+    ]
+
+    /// Tests that alreadyProcessed() returns expected results
+    @Test func itemInInstallInfoAsExepcted() async throws {
+        #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["managed_installs", "optional_installs"]) == true)
+        #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["managed_installs"]) == true)
+        #expect(alreadyProcessed("GoogleChrome", installInfo: installInfo, sections: ["managed_installs"]) == true)
+        #expect(alreadyProcessed("Slack", installInfo: installInfo, sections: ["managed_installs"]) == false)
+        #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["optional_installs"]) == false)
+        #expect(alreadyProcessed("Slack", installInfo: installInfo, sections: ["optional_installs"]) == true)
+        #expect(alreadyProcessed("Zoom", installInfo: installInfo, sections: ["optional_installs"]) == true)
+        #expect(alreadyProcessed("Zoom", installInfo: installInfo, sections: ["managed_uninstalls"]) == false)
     }
 }
