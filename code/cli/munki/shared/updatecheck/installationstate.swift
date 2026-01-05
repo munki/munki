@@ -71,7 +71,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
     }
     let installerType = pkginfo["installer_type"] as? String ?? ""
     if installerType == "startosinstall",
-       var installerItemVersion = pkginfo["version"] as? String
+       var installerItemVersion = pkginfo.stringValue(forKey: "version")
     {
         let currentOSVersion = getOSVersion() // just gets major.minor
         let installerVersionParts = installerItemVersion.components(separatedBy: ".")
@@ -92,7 +92,7 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
         return .thisVersionInstalled
     }
     if installerType == "stage_os_installer",
-       var installerItemVersion = pkginfo["version"] as? String
+       var installerItemVersion = pkginfo.stringValue(forKey: "version")
     {
         // we return .newerVersionInstalled if the installed macOS is the same version
         // or higher than the version of this item

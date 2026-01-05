@@ -42,7 +42,7 @@ func makeCatalogDB(_ catalogItems: [PlistDict]) -> PlistDict {
 
     for (index, item) in catalogItems.enumerated() {
         guard var name = item["name"] as? String,
-              var version = item["version"] as? String
+              var version = item.stringValue(forKey: "version")
         else {
             display.warning("Bad pkginfo: \(item)")
             continue
@@ -64,7 +64,7 @@ func makeCatalogDB(_ catalogItems: [PlistDict]) -> PlistDict {
         // build 'table' of receipts
         for receipt in item["receipts"] as? [PlistDict] ?? [] {
             if let pkgid = receipt["packageid"] as? String,
-               let vers = receipt["version"] as? String
+               let vers = receipt.stringValue(forKey: "version")
             {
                 if pkgidTable[pkgid] == nil {
                     pkgidTable[pkgid] = [String: [Int]]()
@@ -132,7 +132,7 @@ func addPackageIDs(
             }
             for receipt in receipts {
                 guard let pkgid = receipt["packageid"] as? String,
-                      let version = receipt["version"] as? String
+                      let version = receipt.stringValue(forKey: "version")
                 else {
                     continue
                 }
@@ -190,7 +190,7 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
                         let alreadyAddedItem = try itemList.contains(
                             where: { try plistToData($0) == itemEncoded })
                         if !alreadyAddedItem {
-                            let version = item["version"] as? String ?? "<unknown>"
+                            let version = item.stringValue(forKey: "version") ?? "<unknown>"
                             display.debug1("Adding item \(itemName), version \(version) from catalog \(catalogName)...")
                             itemList.append(item)
                         }
@@ -205,7 +205,7 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
 
     // sort itemList so latest is first
     itemList.sort {
-        MunkiVersion($0["version"] as? String ?? "") > MunkiVersion($1["version"] as? String ?? "")
+        MunkiVersion($0.stringValue(forKey: "version") ?? "") > MunkiVersion($1.stringValue(forKey: "version") ?? "")
     }
 
     return itemList
@@ -462,7 +462,7 @@ func getItemDetail(
     /// the rejected_items list.
     func munkiVersionOK(_ item: PlistDict) -> Bool {
         guard let name = item["name"] as? String,
-              let version = item["version"] as? String,
+              let version = item.stringValue(forKey: "version"),
               let munkiVersion = machine["munki_version"] as? String
         else {
             display.error("Unexpected error getting item name or version or getting Munki version")
@@ -487,7 +487,7 @@ func getItemDetail(
     /// version check.
     func osVersionOK(_ item: PlistDict) -> Bool {
         guard let name = item["name"] as? String,
-              let version = item["version"] as? String,
+              let version = item.stringValue(forKey: "version"),
               let osVersion = machine["os_vers"] as? String
         else {
             display.error("Unexpected error getting item name or version or getting OS version")
@@ -530,7 +530,7 @@ func getItemDetail(
     /// the rejected_items list.
     func cpuArchOK(_ item: PlistDict) -> Bool {
         guard let name = item["name"] as? String,
-              let version = item["version"] as? String,
+              let version = item.stringValue(forKey: "version"),
               let currentArch = machine["arch"] as? String
         else {
             display.error("Unexpected error getting item name or version or getting machine architecture")
@@ -626,7 +626,7 @@ func getItemDetail(
                        cpuArchOK(item),
                        await installableConditionOK(item)
                     {
-                        display.debug1("Found \(item["name"] as? String ?? "<unknown>"), version \(item["version"] as? String ?? "<unknown>") in catalog \(catalogName)")
+                        display.debug1("Found \(item["name"] as? String ?? "<unknown>"), version \(item.stringValue(forKey: "version") ?? "<unknown>") in catalog \(catalogName)")
                         return item
                     }
                 }
