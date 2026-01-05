@@ -105,7 +105,7 @@ func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = 
     guard let name = pkginfo["name"] as? String else {
         throw MunkiError("pkginfo is missing value for 'name'")
     }
-    guard let version = pkginfo["version"] as? String else {
+    guard let version = pkginfo.stringValue(forKey: "version") else {
         throw MunkiError("pkginfo is missing value for 'version'")
     }
     var pkginfoName = "\(name)-\(version)\(arch)\(pkginfoExt)"
@@ -182,7 +182,7 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
             printStderr("WARNING: pkginfo item missing 'name': \(item)")
             continue
         }
-        guard let version = item["version"] as? String else {
+        guard let version = item.stringValue(forKey: "version") else {
             printStderr("WARNING: pkginfo item missing 'version': \(item)")
             continue
         }
@@ -220,7 +220,7 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
         if let receipts = item["receipts"] as? [PlistDict] {
             for receipt in receipts {
                 if let pkgid = receipt["packageid"] as? String,
-                   let version = receipt["version"] as? String
+                   let version = receipt.stringValue(forKey: "version")
                 {
                     if !pkgidTable.keys.contains(pkgid) {
                         pkgidTable[pkgid] = IndexDict()
