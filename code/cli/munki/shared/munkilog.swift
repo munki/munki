@@ -75,7 +75,6 @@ func munkiLog(_ message: String, logFile: String = "", logLevel: OSLogType = .de
        !["com.googlecode.munki.errors", "com.googlecode.munki.warnings"].contains(subsystem)
     {
         let logger = Logger(subsystem: subsystem, category: "")
-        print("logging at logLevel \(logLevel.rawValue): \(message)")
         logger.log(level: logLevel, "\(message, privacy: .public)")
     }
 }
