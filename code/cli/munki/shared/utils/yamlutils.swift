@@ -109,6 +109,71 @@ private let conditionalItemKeys: Set<String> = ["condition", "managed_installs",
 /// Preferred key order for conditional_items - condition MUST be first for readability
 private let conditionalItemKeyOrder = ["condition", "managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "default_installs", "featured_items", "included_manifests", "conditional_items"]
 
+// MARK: - Block Scalar Handling for Multi-line Strings
+
+/// Script field keys that should use YAML literal block scalar style (|)
+/// These fields contain executable scripts and must preserve exact newlines and formatting
+private let scriptFieldKeys: Set<String> = [
+    "preinstall_script",
+    "postinstall_script",
+    "installcheck_script",
+    "uninstallcheck_script",
+    "postuninstall_script",
+    "uninstall_script",
+    "preuninstall_script",
+    "embedded_script"
+]
+
+/// Prose field keys that should use YAML folded block scalar style (>)
+/// These fields contain human-readable text where line wrapping is acceptable
+private let proseFieldKeys: Set<String> = [
+    "description",
+    "notes"
+]
+
+/// Determine the appropriate YAML scalar style for a string value based on its key and content
+/// - Parameters:
+///   - key: The dictionary key name
+///   - value: The string value
+/// - Returns: The appropriate Node.Scalar.Style for this string
+private func scalarStyleForString(key: String, value: String) -> Node.Scalar.Style {
+    // Script fields always use literal style to preserve exact formatting
+    if scriptFieldKeys.contains(key) {
+        return .literal
+    }
+    
+    // Check if string contains newlines
+    let hasNewlines = value.contains("\n")
+    
+    if hasNewlines {
+        // Prose fields use folded style for readable text
+        if proseFieldKeys.contains(key) {
+            return .folded
+        }
+        
+        // Multi-line strings that look like scripts (shebang, common script patterns)
+        if value.hasPrefix("#!") ||                    // Shebang
+           value.hasPrefix("#!/") ||                   // Explicit shebang
+           value.contains("\nif ") ||                  // Shell/Python conditionals
+           value.contains("\nfor ") ||                 // Shell/Python loops
+           value.contains("\nwhile ") ||               // Shell/Python loops
+           value.contains("\necho ") ||                // Shell commands
+           value.contains("\nprint(") ||               // Python print
+           value.contains("\nreturn ") ||              // Return statements
+           value.contains("\nexit ") ||                // Exit commands
+           value.contains("\n  ") ||                   // Indented code blocks
+           value.contains("\n\t") {                    // Tab-indented code
+            return .literal
+        }
+        
+        // Default: use folded for other multi-line strings (readable prose)
+        return .folded
+    }
+    
+    // Single-line strings use default style
+    return .any
+}
+
 /// Check if a dictionary looks like a receipt entry
 private func isReceiptDict(_ dict: [String: Any]) -> Bool {
     // A receipt must have packageid and typically has version
@@ -252,7 +317,10 @@ private func sortKeysForDict(_ dict: [String: Any]) -> [String] {
 }
 
 /// Convert a value to a Yams Node, recursively handling dictionaries with custom key ordering
-private func toNode(_ value: Any) -> Node {
+/// - Parameters:
+///   - value: The value to convert
+///   - key: Optional key name for context-aware string styling (block scalars for scripts)
+private func toNode(_ value: Any, forKey key: String? = nil) -> Node {
     switch value {
     case is NSNull:
         // Return an empty/null node - this shouldn't normally happen if we filter properly
@@ -261,6 +329,11 @@ private func toNode(_ value: Any) -> Node {
         // Check for null sentinel first
         if string == "__YAML_NULL_SENTINEL__" {
             return Node("")
+        }
+        // Use appropriate block scalar style based on key and content
+        if let key = key {
+            let style = scalarStyleForString(key: key, value: string)
+            return Node(string, .implicit, style)
         }
         return Node(string)
     case let dict as [String: Any]:
@@ -276,7 +349,8 @@ private func toNode(_ value: Any) -> Node {
                 if let str = val as? String, str == "__YAML_NULL_SENTINEL__" {
                     continue
                 }
-                pairs.append((Node(dictKey), toNode(val)))
+                // Pass the key name for context-aware string styling
+                pairs.append((Node(dictKey), toNode(val, forKey: dictKey)))
             }
         }
         return Node(pairs, .implicit, .block)
