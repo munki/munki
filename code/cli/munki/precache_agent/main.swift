@@ -3,7 +3,6 @@
 //  precache_agent
 //
 //  Created by Greg Neagle on 4/28/25.
-//
 //  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");

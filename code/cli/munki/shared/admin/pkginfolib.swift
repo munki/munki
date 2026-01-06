@@ -1,10 +1,9 @@
 //
 //  pkginfolib.swift
+//  functions used by makepkginfo to create pkginfo files
 //  munki
 //
 //  Created by Greg Neagle on 7/2/24.
-//  functions used by makepkginfo to create pkginfo files
-//
 //  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");

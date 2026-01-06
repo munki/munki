@@ -1,9 +1,9 @@
 //
 //  versionutils.swift
+//  Functions for comparing version strings
 //  munki
 //
 //  Created by Greg Neagle on 7/2/24.
-//  Functions for comparing version strings
 //  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
