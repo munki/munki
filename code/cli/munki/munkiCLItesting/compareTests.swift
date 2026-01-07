@@ -93,3 +93,48 @@ struct compareUsingVersionScriptTests {
         #expect(await compareUsingVersionScript(item) == .notPresent)
     }
 }
+
+struct comparePlistVersionTests {
+    var testInfoPath: String
+
+    init() {
+        testInfoPath = TestingResource.path(for: "test_info.plist") ?? ""
+    }
+
+    @Test func comparePlistVersionWithLowerVersionReturnsNewer() throws {
+        try #require(!testInfoPath.isEmpty, "Could not get path for test info plist")
+        let item: PlistDict = [
+            "path": testInfoPath,
+            "CFBundleShortVersionString": "1.0",
+        ]
+        #expect(try comparePlistVersion(item) == .newer)
+    }
+
+    @Test func comparePlistVersionWithHigherVersionReturnsOlder() throws {
+        try #require(!testInfoPath.isEmpty, "Could not get path for test info plist")
+        let item: PlistDict = [
+            "path": testInfoPath,
+            "CFBundleShortVersionString": "100.0",
+        ]
+        #expect(try comparePlistVersion(item) == .older)
+    }
+
+    @Test func comparePlistVersionWithSameVersionReturnsSame() throws {
+        try #require(!testInfoPath.isEmpty, "Could not get path for test info plist")
+        let item: PlistDict = [
+            "path": testInfoPath,
+            "CFBundleShortVersionString": "7.0.5.5403",
+        ]
+        #expect(try comparePlistVersion(item) == .same)
+    }
+
+    @Test func comparePlistVersionWithAlternateVersionKey() throws {
+        try #require(!testInfoPath.isEmpty, "Could not get path for test info plist")
+        let item: PlistDict = [
+            "path": testInfoPath,
+            "CFBundleVersion": "5403",
+            "version_comparison_key": "CFBundleVersion",
+        ]
+        #expect(try comparePlistVersion(item) == .same)
+    }
+}

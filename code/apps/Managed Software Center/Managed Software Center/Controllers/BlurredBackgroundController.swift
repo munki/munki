@@ -2,7 +2,7 @@
 //  BlurredBackgroundController.swift
 //
 //  Heavily based on code by Bart Reardon in CocoaDialog
-//
+//  Copyright © 2024-2026 The Munki Project
 
 import Foundation
 import Cocoa

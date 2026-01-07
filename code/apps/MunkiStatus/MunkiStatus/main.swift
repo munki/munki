@@ -3,7 +3,7 @@
 //  MunkiStatus
 //
 //  Created by Greg Neagle on 8/27/19.
-//  Copyright © 2019-2025 The Munki Project. All rights reserved.
+//  Copyright © 2019-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa

@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/16/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 
@@ -302,7 +314,26 @@ func lookForUpdatesForName(_ manifestname: String,
 }
 
 /// Attempts to find the best match in itemDict for version
-func bestVersionMatch(version _: String, itemDict _: [String: [String]]) -> String? {
+func bestVersionMatch(version: String, itemDict: [String: [String]]) -> String? {
+    let versionComponents = version.components(separatedBy: ".")
+    var precision = 1
+    while precision <= versionComponents.count {
+        let testVersion = versionComponents[0 ..< precision].joined(separator: ".")
+        var matchNames = [String]()
+        for (item, versions) in itemDict {
+            for itemVersion in versions {
+                if itemVersion.hasPrefix(testVersion),
+                   !matchNames.contains(item)
+                {
+                    matchNames.append(item)
+                }
+            }
+        }
+        if matchNames.count == 1 {
+            return matchNames[0]
+        }
+        precision += 1
+    }
     return nil
 }
 

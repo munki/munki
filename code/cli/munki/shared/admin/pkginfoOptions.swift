@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/7/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -173,7 +172,8 @@ struct ApplePackageOptions: ParsableArguments {
     @Option(name: [.customShort("U"),
                    .long,
                    .customLong("uninstallerdmg"),
-                   .customLong("uninstallerpkg")],
+                   .customLong("uninstallerpkg"),
+                   .customLong("uninstallpkg")],
             help: "<uninstalleritem> is a path to an uninstall package or a disk image containing an uninstall package.")
     var uninstalleritem: String? = nil
 
