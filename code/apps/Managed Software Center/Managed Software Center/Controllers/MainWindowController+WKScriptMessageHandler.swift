@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by admin on 6/28/25.
-//  Copyright © 2025 The Munki Project. All rights reserved.
+//  Copyright © 2025-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa

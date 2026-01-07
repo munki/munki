@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/30/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -81,7 +80,7 @@ class DisplayAndLog: MunkiLogger {
             Report.shared.add(string: errorMsg, to: "Errors")
         }
         // let the superclass handle logging to the main log
-        super.error(errorMsg)
+        super.error(message)
     }
 
     /// Prints warning message to stderr and the log
@@ -96,7 +95,7 @@ class DisplayAndLog: MunkiLogger {
             Report.shared.add(string: warningMsg, to: "Warnings")
         }
         // let the superclass handle logging to the main log
-        super.warning(warningMsg)
+        super.warning(message)
     }
 
     /// Displays major status messages, formatting as needed

@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/12/25.
-//  Copyright © 2025 The Munki Project. All rights reserved.
+//  Copyright © 2025-2026 The Munki Project. All rights reserved.
 //
 
 import Foundation

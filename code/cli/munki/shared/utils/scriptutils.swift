@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/5/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 
@@ -28,7 +40,6 @@ func createExecutableFile(
 class ScriptRunner: AsyncProcessRunner {
     private var remainingOutput = ""
     private var remainingError = ""
-    var combinedOutput = ""
 
     func linesAndRemainderOf(_ str: String) -> ([String], String) {
         var lines = str.trailingNewlineTrimmed.split(
@@ -46,7 +57,6 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processOutput(_ str: String) {
         super.processOutput(str)
-        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingOutput + str)
         remainingOutput = remainder
         for line in lines {
@@ -56,7 +66,6 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processError(_ str: String) {
         super.processError(str)
-        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingError + str)
         remainingError = remainder
         for line in lines {
@@ -82,12 +91,27 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     let result = proc.results
 
     if result.exitcode != 0, !suppressError {
-        display.error("Running \(scriptName) for \(itemName) failed.")
-        display.error(String(repeating: "-", count: 78))
-        for line in proc.combinedOutput.components(separatedBy: .newlines) {
-            display.error("    " + line)
+        display.error("Running \(scriptName) for \(itemName) failed with exitcode \(result.exitcode)")
+        if proc.results.error.isEmpty {
+            display.error("<no stderr output>")
+        } else {
+            display.error("stderr:")
+            display.error(String(repeating: "-", count: 78))
+            for line in proc.results.error.components(separatedBy: .newlines) {
+                display.error("    " + line)
+            }
+            display.error(String(repeating: "-", count: 78))
         }
-        display.error(String(repeating: "-", count: 78))
+        if proc.results.output.isEmpty {
+            display.error("<no stdout output>")
+        } else {
+            display.error("stdout:")
+            display.error(String(repeating: "-", count: 78))
+            for line in proc.results.output.components(separatedBy: .newlines) {
+                display.error("    " + line)
+            }
+            display.error(String(repeating: "-", count: 78))
+        }
     } else if !suppressError {
         munkiLog("Running \(scriptName) for \(itemName) was successful.")
     }

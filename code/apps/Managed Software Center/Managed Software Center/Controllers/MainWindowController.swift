@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2025 The Munki Project. All rights reserved.
+//  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -485,7 +485,10 @@ class MainWindowController: NSWindowController {
                 loadUpdatesPage(self)
                 displayUpdateCount()
             } else {
-                loadAllSoftwarePage(self)
+                // load the page for the first sidebar item
+                let item = sidebar_items[0]
+                loadSidebarItemPage(item.page)
+
             }
         } else {
             updatesOnlyWindowMode()
