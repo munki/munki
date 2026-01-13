@@ -246,6 +246,8 @@ class MSCBlockingAppsController: NSObject {
 		blockingScrollView.hasHorizontalScroller = false
 		blockingScrollView.autohidesScrollers = true
 		blockingScrollView.borderType = .lineBorder
+		blockingScrollView.automaticallyAdjustsContentInsets = false
+		blockingScrollView.contentInsets = NSEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
 		blockingScrollView.wantsLayer = true
 		blockingScrollView.layer?.cornerRadius = 6
 		blockingScrollView.layer?.masksToBounds = true
@@ -435,6 +437,8 @@ class MSCBlockingAppsController: NSObject {
 		closedScrollView.hasHorizontalScroller = false
 		closedScrollView.autohidesScrollers = true
 		closedScrollView.borderType = .lineBorder
+		closedScrollView.automaticallyAdjustsContentInsets = false
+		closedScrollView.contentInsets = NSEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
 		closedScrollView.wantsLayer = true
 		closedScrollView.layer?.cornerRadius = 6
 		closedScrollView.layer?.masksToBounds = true
