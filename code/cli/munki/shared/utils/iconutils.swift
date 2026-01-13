@@ -104,7 +104,7 @@ func convertIconToPNG(iconPath: String,
 
 /// Finds the icon file for app_path. Returns a path or nil
 func findIconForApp(_ appPath: String) -> String? {
-    guard pathIsDirectory(appPath) else { return nil }
+    guard pathIsDirectory(appPath, followSymlinks: true) else { return nil }
     let infoPlistPath = (appPath as NSString).appendingPathComponent("Contents/Info.plist")
     guard let info = try? readPlist(fromFile: infoPlistPath) as? PlistDict else { return nil }
     let appName = (appPath as NSString).lastPathComponent
