@@ -8,6 +8,12 @@
 
 import Cocoa
 
+/// A flipped NSClipView that positions content from top to bottom.
+/// Used in scroll views to ensure content aligns to the top rather than the bottom.
+private class FlippedClipView: NSClipView {
+	override var isFlipped: Bool { true }
+}
+
 /// Controller that manages the blocking apps sheet UI.
 /// Presents a sheet listing running applications that must be quit before updates can proceed.
 class MSCBlockingAppsController: NSObject {
@@ -235,6 +241,7 @@ class MSCBlockingAppsController: NSObject {
 		// Create scroll view for blocking apps
 		let blockingScrollView = NSScrollView()
 		blockingScrollView.translatesAutoresizingMaskIntoConstraints = false
+		blockingScrollView.contentView = FlippedClipView()
 		blockingScrollView.hasVerticalScroller = true
 		blockingScrollView.hasHorizontalScroller = false
 		blockingScrollView.autohidesScrollers = true
@@ -423,6 +430,7 @@ class MSCBlockingAppsController: NSObject {
 		// Scroll view for closed apps
 		let closedScrollView = NSScrollView()
 		closedScrollView.translatesAutoresizingMaskIntoConstraints = false
+		closedScrollView.contentView = FlippedClipView()
 		closedScrollView.hasVerticalScroller = true
 		closedScrollView.hasHorizontalScroller = false
 		closedScrollView.autohidesScrollers = true
