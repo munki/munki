@@ -115,7 +115,8 @@ func pref(_ prefName: String) -> Any? {
         "InstallRequiresLogout": false,
         "CheckResultsCacheSeconds": DEFAULT_GUI_CACHE_AGE_SECS,
         "LogFile": "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log",
-		"AutoQuitAppsOnUpdates": false
+		"AutoQuitAppsOnUpdate": false,
+		"AutoForceQuitAppsOnUpdate": false,
     ]
 
     var value: Any?
