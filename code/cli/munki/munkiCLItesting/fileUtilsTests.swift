@@ -18,15 +18,30 @@
 
 import Testing
 
-struct fileUtilsTests {
-    @Test func pathIsDirectoryTests() throws {
-        // setup
-        let testDirectoryPath = try #require(TempDir.shared.path, "Can't get temp directory path")
+struct pathIsDirectoryTests {
+    @Test func directoryReturnsTrue() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        #expect(pathIsDirectory(testDirectoryPath))
+    }
+
+    @Test func fileReturnsFalse() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
         try #require(
             FileManager.default.createFile(
                 atPath: testDirectoryPath + "/test.txt", contents: nil, attributes: nil
             ) != false,
             "Can't create test file"
+        )
+        #expect(!pathIsDirectory(testDirectoryPath + "/test.txt"))
+    }
+
+    @Test func absoluteSymlinkToDirectoryTests() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
         )
         try #require(
             try? FileManager.default.createSymbolicLink(
@@ -35,6 +50,21 @@ struct fileUtilsTests {
             ),
             "Can't create test symlink"
         )
+        #expect(
+            !pathIsDirectory(testDirectoryPath + "/symlink_with_absolute_path")
+        )
+        #expect(
+            pathIsDirectory(
+                testDirectoryPath + "/symlink_with_absolute_path",
+                followSymlinks: true
+            )
+        )
+    }
+
+    @Test func relativeSymlinkToDirectoryTests() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
         try #require(
             try? FileManager.default.createSymbolicLink(
                 atPath: testDirectoryPath + "/symlink_with_relative_path",
@@ -42,19 +72,60 @@ struct fileUtilsTests {
             ),
             "Can't create test symlink"
         )
+        #expect(
+            !pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path")
+        )
+        #expect(
+            pathIsDirectory(
+                testDirectoryPath + "/symlink_with_relative_path",
+                followSymlinks: true
+            )
+        )
+    }
+
+    @Test func relativeSymlinkToFileReturnsFalse() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        try #require(
+            FileManager.default.createFile(
+                atPath: testDirectoryPath + "/test2.txt", contents: nil, attributes: nil
+            ) != false,
+            "Can't create test file"
+        )
         try #require(
             try? FileManager.default.createSymbolicLink(
                 atPath: testDirectoryPath + "/symlink_with_relative_path_pointing_to_file",
-                withDestinationPath: "test.txt"
+                withDestinationPath: "test2.txt"
             ),
             "Can't create test symlink"
         )
-        #expect(pathIsDirectory(testDirectoryPath))
-        #expect(!pathIsDirectory(testDirectoryPath + "/test.txt"))
-        #expect(!pathIsDirectory(testDirectoryPath + "/symlink_with_absolute_path"))
-        #expect(pathIsDirectory(testDirectoryPath + "/symlink_with_absolute_path", followSymlinks: true))
-        #expect(!pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path"))
-        #expect(pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path", followSymlinks: true))
-        #expect(!pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path_pointing_to_file"))
+        #expect(
+            !pathIsDirectory(
+                testDirectoryPath + "/symlink_with_relative_path_pointing_to_file",
+                followSymlinks: true
+            )
+        )
+    }
+
+    @Test func nonExistentPathReturnsFalse() {
+        #expect(!pathIsDirectory("/this/path/does/not/exist"))
+    }
+
+    @Test func symlinkWithNonExistentTargetReturnsFalse() throws {
+        let testDirectoryPath = try #require(TempDir.shared.path, "Can't get temp directory path")
+        try #require(
+            try? FileManager.default.createSymbolicLink(
+                atPath: testDirectoryPath + "/symlink_with_non_existent_target",
+                withDestinationPath: "./does_not_exist"
+            ),
+            "Can't create test symlink"
+        )
+        #expect(
+            !pathIsDirectory(
+                testDirectoryPath + "/symlink_with_non_existent_target",
+                followSymlinks: true
+            )
+        )
     }
 }
