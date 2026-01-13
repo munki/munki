@@ -30,14 +30,31 @@ struct fileUtilsTests {
         )
         try #require(
             try? FileManager.default.createSymbolicLink(
-                atPath: testDirectoryPath + "/symlink",
+                atPath: testDirectoryPath + "/symlink_with_absolute_path",
                 withDestinationPath: testDirectoryPath
+            ),
+            "Can't create test symlink"
+        )
+        try #require(
+            try? FileManager.default.createSymbolicLink(
+                atPath: testDirectoryPath + "/symlink_with_relative_path",
+                withDestinationPath: ".."
+            ),
+            "Can't create test symlink"
+        )
+        try #require(
+            try? FileManager.default.createSymbolicLink(
+                atPath: testDirectoryPath + "/symlink_with_relative_path_pointing_to_file",
+                withDestinationPath: "test.txt"
             ),
             "Can't create test symlink"
         )
         #expect(pathIsDirectory(testDirectoryPath))
         #expect(!pathIsDirectory(testDirectoryPath + "/test.txt"))
-        #expect(!pathIsDirectory(testDirectoryPath + "/symlink"))
-        #expect(pathIsDirectory(testDirectoryPath + "/symlink", followSymlinks: true))
+        #expect(!pathIsDirectory(testDirectoryPath + "/symlink_with_absolute_path"))
+        #expect(pathIsDirectory(testDirectoryPath + "/symlink_with_absolute_path", followSymlinks: true))
+        #expect(!pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path"))
+        #expect(pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path", followSymlinks: true))
+        #expect(!pathIsDirectory(testDirectoryPath + "/symlink_with_relative_path_pointing_to_file"))
     }
 }
