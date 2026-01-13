@@ -338,15 +338,7 @@ class MSCBlockingAppsController: NSObject {
 
 			if isManualQuit {
 				// Show "Manual quit required" label for apps that can't be auto-quit
-				let manualQuitLabel = NSTextField(labelWithString: NSLocalizedString(
-					"Manual quit required",
-					comment: "Manual quit required label"))
-				manualQuitLabel.translatesAutoresizingMaskIntoConstraints = false
-				manualQuitLabel.font = NSFont.systemFont(ofSize: 10)
-				manualQuitLabel.textColor = .systemOrange
-				manualQuitLabel.alignment = .right
-
-				rowView.addSubview(manualQuitLabel)
+				let manualQuitLabel = showManualQuitLabel(for: app.path, in: rowView)
 
 				NSLayoutConstraint.activate([
 					rowView.heightAnchor.constraint(equalToConstant: rowHeight),
@@ -360,9 +352,6 @@ class MSCBlockingAppsController: NSObject {
 					nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
 					nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: manualQuitLabel.leadingAnchor, constant: -8),
 					nameLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-
-					manualQuitLabel.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -4),
-					manualQuitLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
 				])
 			} else {
 				// Progress spinner (hidden by default) for apps that can be auto-quit
@@ -669,6 +658,14 @@ class MSCBlockingAppsController: NSObject {
 		spinner.stopAnimation(nil)
 		spinner.isHidden = true
 
+		// Check if AutoForceQuitAppsOnUpdates is disabled
+		let autoForceQuitEnabled = pythonishBool(pref("AutoForceQuitAppsOnUpdate"))
+		if !autoForceQuitEnabled {
+			// Show "Manual quit required" label instead of Force Quit button
+			showManualQuitLabel(for: appPath, in: rowView)
+			return
+		}
+
 		// Create the Force Quit button
 		let forceQuitButton = NSButton(title: NSLocalizedString("Force Quit", comment: "Force Quit button title"), target: self, action: #selector(forceQuitButtonClicked(_:)))
 		forceQuitButton.translatesAutoresizingMaskIntoConstraints = false
@@ -689,6 +686,28 @@ class MSCBlockingAppsController: NSObject {
 		forceQuitButtons[appPath] = forceQuitButton
 
 		msc_debug_log("Showing Force Quit button for: \(appPath)")
+	}
+
+	@discardableResult
+	private func showManualQuitLabel(for appPath: String, in rowView: NSView) -> NSTextField {
+		let manualQuitLabel = NSTextField(labelWithString: NSLocalizedString(
+			"Manual quit required",
+			comment: "Manual quit required label"))
+		manualQuitLabel.translatesAutoresizingMaskIntoConstraints = false
+		manualQuitLabel.font = NSFont.systemFont(ofSize: 10)
+		manualQuitLabel.textColor = .systemOrange
+		manualQuitLabel.alignment = .right
+
+		rowView.addSubview(manualQuitLabel)
+
+		NSLayoutConstraint.activate([
+			manualQuitLabel.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -4),
+			manualQuitLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
+		])
+
+		msc_debug_log("Showing Manual quit required label for: \(appPath)")
+
+		return manualQuitLabel
 	}
 
 	@objc private func forceQuitButtonClicked(_ sender: NSButton) {
