@@ -238,7 +238,12 @@ class MSCBlockingAppsController: NSObject {
 		blockingScrollView.hasVerticalScroller = true
 		blockingScrollView.hasHorizontalScroller = false
 		blockingScrollView.autohidesScrollers = true
-		blockingScrollView.borderType = .bezelBorder
+		blockingScrollView.borderType = .lineBorder
+		blockingScrollView.wantsLayer = true
+		blockingScrollView.layer?.cornerRadius = 6
+		blockingScrollView.layer?.masksToBounds = true
+		blockingScrollView.layer?.borderWidth = 1
+		blockingScrollView.layer?.borderColor = NSColor.separatorColor.cgColor
 		blockingScrollView.documentView = blockingStackView
 		contentView.addSubview(blockingScrollView)
 
@@ -421,7 +426,12 @@ class MSCBlockingAppsController: NSObject {
 		closedScrollView.hasVerticalScroller = true
 		closedScrollView.hasHorizontalScroller = false
 		closedScrollView.autohidesScrollers = true
-		closedScrollView.borderType = .bezelBorder
+		closedScrollView.borderType = .lineBorder
+		closedScrollView.wantsLayer = true
+		closedScrollView.layer?.cornerRadius = 6
+		closedScrollView.layer?.masksToBounds = true
+		closedScrollView.layer?.borderWidth = 1
+		closedScrollView.layer?.borderColor = NSColor.separatorColor.cgColor
 		closedScrollView.documentView = closedStackView
 		containerView.addSubview(closedScrollView)
 
