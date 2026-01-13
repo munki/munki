@@ -380,6 +380,7 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
+			"prevent_auto_quit_on_update",
         ]
 
         if isOptionalInstall {
@@ -758,6 +759,7 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
+		"prevent_auto_quit_on_update",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]

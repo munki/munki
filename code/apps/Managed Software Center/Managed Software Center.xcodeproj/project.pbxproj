@@ -43,6 +43,7 @@
 		C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */; };
 		C0546BD820FDAD82003FE5A6 /* power.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD720FDAD82003FE5A6 /* power.swift */; };
 		C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */; };
+		AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00002E2412600012345A /* MSCBlockingAppsController.swift */; };
 		C05F87932105587A000DB8D8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C05F87952105587A000DB8D8 /* Localizable.strings */; };
 		C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C094C26B28B7E17800CFB0D8 /* osinstaller.swift */; };
 		C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */; };
@@ -122,6 +123,7 @@
 		C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCAlertController.swift; sourceTree = "<group>"; };
 		C0546BD720FDAD82003FE5A6 /* power.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = power.swift; sourceTree = "<group>"; };
 		C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCPasswordAlertController.swift; sourceTree = "<group>"; };
+		AABB00002E2412600012345A /* MSCBlockingAppsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCBlockingAppsController.swift; sourceTree = "<group>"; };
 		C05F878D210556C9000DB8D8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C05F879621055BFE000DB8D8 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F879721055DAA000DB8D8 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -294,6 +296,7 @@
 				C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */,
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
 				C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */,
+				AABB00002E2412600012345A /* MSCBlockingAppsController.swift */,
 				C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */,
 				8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */,
 				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
@@ -504,6 +507,7 @@
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
+				AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

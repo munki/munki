@@ -876,11 +876,20 @@ class MainWindowController: NSWindowController {
             }
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
-        } else {
-            if alert_controller.alertedToBlockingAppsRunning() {
-                loadUpdatesPage(self)
-                return
-            }
+		} else {
+			if pythonishBool(pref("AutoQuitForAppUpdates")) {
+				//auto quit enabled, lets do some magic
+				if alert_controller.autoQuitAlertedToBlockingAppsRunning() {
+					loadUpdatesPage(self)
+					return
+				}
+			} else {
+				// Fallback to existing logic if auto qutting isn't enabled
+				if alert_controller.alertedToBlockingAppsRunning() {
+					loadUpdatesPage(self)
+					return
+				}
+			}
             if alert_controller.alertedToRunningOnBatteryAndCancelled() {
                 loadUpdatesPage(self)
                 return

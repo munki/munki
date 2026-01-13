@@ -11,11 +11,12 @@ import Cocoa
 class MSCAlertController: NSObject {
     // An object that handles some of our alerts, if for no other reason
     // than to move a giant bunch of ugly code out of the WindowController
-    
+
     var window: NSWindow? // our parent window
     var timers: [Timer] = []
     var quitButton: NSButton?
     var haveOpenedSysPrefsSUPane = false
+    var blockingAppsController: MSCBlockingAppsController? // controller for blocking apps sheet
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -509,7 +510,25 @@ class MSCAlertController: NSObject {
         })
         return true
     }
-    
+
+	/// Presents an interactive sheet listing blocking applications so the user can close them.
+	///
+	/// - Returns: `true` if blocking apps are running and user cancelled; `false` if no blocking apps or all were closed.
+	///
+	/// The sheet is dismissed automatically when all apps are closed or when the user cancels/ignores it.
+	/// This method blocks further progress until the user has handled the apps or dismissed the sheet.
+	func autoQuitAlertedToBlockingAppsRunning() -> Bool {
+		guard let mainWindow = window else {
+			msc_debug_log("Could not get main window in autoQuitAlertedToBlockingAppsRunning")
+			return false
+		}
+
+		blockingAppsController = MSCBlockingAppsController(parentWindow: mainWindow)
+		let result = blockingAppsController?.presentBlockingAppsSheet() ?? false
+		blockingAppsController = nil
+		return result
+	}
+
     func getFirmwareAlertInfo() -> [[String: String]] {
         // Get detail about a firmware update
         var info = [[String: String]]()
