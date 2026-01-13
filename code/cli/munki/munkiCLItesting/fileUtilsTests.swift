@@ -18,6 +18,46 @@
 
 import Testing
 
+struct pathExistsTests {
+    @Test func nonExistentPathReturnsFalse() {
+        #expect(!pathExists("/non/existent/path"))
+    }
+
+    @Test func existingPathReturnsTrue() {
+        #expect(pathExists("/"))
+    }
+}
+
+struct fileTypeTests {
+    @Test func nonExistentPathReturnsNil() {
+        #expect(fileType("/non/existent/path") == nil)
+    }
+
+    @Test func directoryReturnsExpected() {
+        #expect(fileType("/") == FileAttributeType.typeDirectory.rawValue)
+    }
+
+    @Test func regularFileReturnsExpected() {
+        #expect(fileType(#file) == FileAttributeType.typeRegular.rawValue)
+    }
+
+    @Test func symlinkReturnsExpected() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        try #require(
+            try? FileManager.default.createSymbolicLink(
+                atPath: testDirectoryPath + "/symlink_test",
+                withDestinationPath: testDirectoryPath
+            ),
+            "Can't create test symlink"
+        )
+        #expect(
+            fileType(testDirectoryPath + "/symlink_test") == FileAttributeType.typeSymbolicLink.rawValue
+        )
+    }
+}
+
 struct pathIsDirectoryTests {
     @Test func directoryReturnsTrue() throws {
         let testDirectoryPath = try #require(
@@ -32,11 +72,11 @@ struct pathIsDirectoryTests {
         )
         try #require(
             FileManager.default.createFile(
-                atPath: testDirectoryPath + "/test.txt", contents: nil, attributes: nil
+                atPath: testDirectoryPath + "/test1.txt", contents: nil, attributes: nil
             ) != false,
             "Can't create test file"
         )
-        #expect(!pathIsDirectory(testDirectoryPath + "/test.txt"))
+        #expect(!pathIsDirectory(testDirectoryPath + "/test1.txt"))
     }
 
     @Test func absoluteSymlinkToDirectoryTests() throws {
@@ -127,5 +167,96 @@ struct pathIsDirectoryTests {
                 followSymlinks: true
             )
         )
+    }
+}
+
+struct pathIsRegularFileTests {
+    @Test func nonExistantPathReturnsFalse() {
+        #expect(!pathIsRegularFile("/this/path/does/not/exist"))
+    }
+
+    @Test func directoryReturnsFalse() throws {
+        #expect(!pathIsRegularFile("/"))
+    }
+
+    @Test func regularFileReturnsTrue() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        try #require(
+            FileManager.default.createFile(
+                atPath: testDirectoryPath + "/test3.txt", contents: nil, attributes: nil
+            ) != false,
+            "Can't create test file"
+        )
+        #expect(pathIsRegularFile(testDirectoryPath + "/test3.txt"))
+    }
+
+    @Test func symlinkReturnsFalse() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        try #require(
+            FileManager.default.createFile(
+                atPath: testDirectoryPath + "/test4.txt", contents: nil, attributes: nil
+            ) != false,
+            "Can't create test file"
+        )
+        try #require(
+            try? FileManager.default.createSymbolicLink(
+                atPath: testDirectoryPath + "/symlink_pointing_to_file",
+                withDestinationPath: "test4.txt"
+            ),
+            "Can't create test symlink"
+        )
+        #expect(!pathIsRegularFile(testDirectoryPath + "/symlink_pointing_to_file"))
+    }
+}
+
+struct baseNameTests {
+    @Test func absolutePathReturnsExpected() {
+        #expect(baseName("/tmp/foo") == "foo")
+    }
+
+    @Test func relativePathReturnsExpected() {
+        #expect(baseName("tmp/foo") == "foo")
+    }
+
+    @Test func urlReturnsExpected() {
+        #expect(baseName("https://example.com/bar") == "bar")
+    }
+
+    @Test func rootReturnsExpected() {
+        #expect(baseName("/") == "/")
+    }
+}
+
+struct dirNameTests {
+    @Test func absolutePathReturnsExpected() {
+        #expect(dirName("/tmp/foo") == "/tmp")
+    }
+
+    @Test func relativePathReturnsExpected() {
+        #expect(dirName("tmp/foo") == "tmp")
+    }
+
+    @Test func rootReturnsExpected() {
+        #expect(dirName("/") == "/")
+    }
+
+    @Test func noDirectoryReturnsEmpty() {
+        #expect(dirName("foo") == "")
+    }
+}
+
+struct verifyPathOwnershipAndPermissionsTests {
+    // / is owned by root, has group wheel, and is not world-writable
+    @Test func filesystemRootIsTrue() {
+        #expect(verifyPathOwnershipAndPermissions("/") == true)
+    }
+
+    // /private/tmp is world-writable
+    @Test func tmpDirIsFalse() {
+        #expect(verifyPathOwnershipAndPermissions("/private/tmp") == false)
     }
 }
