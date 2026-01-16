@@ -269,9 +269,14 @@ func getURL(
         } else if session.bytesReceived != storedBytesReceived {
             // if we don't have percent done info, log bytes received
             storedBytesReceived = session.bytesReceived
-            display.detail("Bytes received: \(storedBytesReceived)")
+            displayBytesReceived(storedBytesReceived)
         }
         if done {
+            if storedBytesReceived > 0 {
+                // displayBytesReceived leaves the cursor at the end of the line
+                // so just print a newline
+                print()
+            }
             break
         }
     }

@@ -29,6 +29,15 @@ struct DisplayOptions {
     private init() {} // prevents assigning an instance to another variable
 }
 
+/// Displays bytes received, for downloads where we don't have an expected filesize
+/// Displayed only at the command-line. No logging or MunkStatus output.
+/// Note that there's no way to know we're done (unlike with percent-done, where 100% is done)
+/// So the terminal cursor will always be left right after the number printed
+func displayBytesReceived(_ bytes: Int) {
+    print("\r\tBytes received: \(bytes)", terminator: "")
+    fflush(stdout)
+}
+
 /// Displays percent-done info, both at the command-line, and via MunkiStatus
 /// Not displayed at the command-line if verbose is 0 (-q/--quiet)
 func displayPercentDone(current: Int, maximum: Int) {
