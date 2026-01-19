@@ -214,7 +214,8 @@ func activeDisplaySleepAssertion() -> Bool {
 ///     force: bool, default false, forcefully notify user regardless
 ///     of LastNotifiedDate.
 func notifyUserOfUpdates(force: Bool = false) {
-    if getConsoleUser() == "loginwindow" {
+    let consoleUser = getConsoleUser()
+    if consoleUser == "loginwindow" || consoleUser.isEmpty {
         // someone is logged in, but we're sitting at the loginwindow
         // due to to fast user switching so do nothing
         munkiLog("Skipping user notification because we are at the loginwindow.")
