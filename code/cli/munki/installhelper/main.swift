@@ -305,9 +305,10 @@ private func getConsoleUser() -> String {
 
 /// Reload Munki loginwindow agents if needed
 func reloadMunkiLoginwindowLaunchAgents() {
-    if getConsoleUser() != "loginwindow" {
+    let consoleUser = getConsoleUser()
+    if consoleUser != "loginwindow", consoleUser != "" {
         // we're not at the loginwindow, so nothing to do
-        log("Skipping loginwindow launchd reload, we're not at the loginwindow")
+        log("Skipping loginwindow launchd reload, we're not at the loginwindow (current user is \(consoleUser))")
         return
     }
     log("Processing Munki loginwindow launchd jobs...")
