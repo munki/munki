@@ -857,11 +857,14 @@ class MSCBlockingAppsController: NSObject {
 	/// Call this method after the update has completed.
 	/// Clears the list of apps to reopen after attempting to open them.
 	func reopenApps() {
+		let config = NSWorkspace.OpenConfiguration()
+		config.activates = false  // Open apps in background without bringing to foreground
+
 		for appPath in appsToReopenAfterUpdate {
-			msc_debug_log("Reopening app: \(appPath)")
+			msc_debug_log("Reopening app in background: \(appPath)")
 			NSWorkspace.shared.openApplication(
 				at: URL(fileURLWithPath: appPath),
-				configuration: NSWorkspace.OpenConfiguration()
+				configuration: config
 			) { _, error in
 				if let error = error {
 					msc_debug_log("Failed to reopen app at \(appPath): \(error.localizedDescription)")
