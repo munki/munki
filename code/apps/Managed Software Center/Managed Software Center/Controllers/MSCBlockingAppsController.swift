@@ -47,6 +47,10 @@ class MSCBlockingAppsController: NSObject {
 	private var manualQuitAppNames: Set<String> = [] // app names that require manual quit
 	private var manualQuitAppPaths: Set<String> = [] // app paths that require manual quit
 
+	// Reopen apps after update
+	private var reopenCheckbox: NSButton?
+	private(set) var appsToReopenAfterUpdate: [String] = []
+
 	// Layout constants
 	private let sheetWidth: CGFloat = 400
 	private let rowHeight: CGFloat = 36
@@ -180,6 +184,13 @@ class MSCBlockingAppsController: NSObject {
 		NSApp.runModal(for: sheetWindow)
 		monitorTimer?.invalidate()
 
+		// Save apps to reopen if checkbox is checked and user didn't cancel
+		if !userCancelled && reopenCheckbox?.state == .on {
+			appsToReopenAfterUpdate = Array(closedApps)
+		} else {
+			appsToReopenAfterUpdate = []
+		}
+
 		// Cleanup
 		cleanup()
 
@@ -206,7 +217,7 @@ class MSCBlockingAppsController: NSObject {
 
 	private func createSheet(for apps: [(displayName: String, path: String)]) -> NSWindow {
 		let visibleHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * rowHeight
-		let sheetHeight: CGFloat = visibleHeight + 140
+		let sheetHeight: CGFloat = visibleHeight + 170  // Extra height for checkbox
 
 		let sheetWindow = NSPanel(
 			contentRect: NSRect(x: 0, y: 0, width: sheetWidth, height: sheetHeight),
@@ -262,6 +273,15 @@ class MSCBlockingAppsController: NSObject {
 		closedSection.isHidden = true
 		contentView.addSubview(closedSection)
 
+		// Reopen apps checkbox
+		let checkbox = NSButton(checkboxWithTitle: NSLocalizedString(
+			"Reopen applications after update",
+			comment: "Reopen apps after update checkbox"), target: nil, action: nil)
+		checkbox.translatesAutoresizingMaskIntoConstraints = false
+		checkbox.state = .on
+		contentView.addSubview(checkbox)
+		reopenCheckbox = checkbox
+
 		// Quit Apps button
 		let quitButton = NSButton(title: NSLocalizedString("Quit Apps", comment: "Quit Apps button title"), target: self, action: #selector(quitApps(_:)))
 		quitButton.translatesAutoresizingMaskIntoConstraints = false
@@ -300,11 +320,14 @@ class MSCBlockingAppsController: NSObject {
 			closedSection.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
 			closedSection.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
 
-			quitButton.topAnchor.constraint(equalTo: closedSection.bottomAnchor, constant: 16),
+			checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, constant: 12),
+			checkbox.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+
+			quitButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
 			quitButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
 			quitButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
 
-			cancelButton.topAnchor.constraint(equalTo: closedSection.bottomAnchor, constant: 16),
+			cancelButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
 			cancelButton.trailingAnchor.constraint(equalTo: quitButton.leadingAnchor, constant: -12),
 		])
 
@@ -810,6 +833,34 @@ class MSCBlockingAppsController: NSObject {
 		forceQuitButtons = [:]
 		manualQuitAppNames = []
 		manualQuitAppPaths = []
+		reopenCheckbox = nil
+		// Note: appsToReopenAfterUpdate is intentionally NOT cleared here
+		// so the caller can access it after the sheet is dismissed
+	}
+
+	// MARK: - Public Methods for Reopening Apps
+
+	/// Reopens all applications that were closed during the blocking apps sheet.
+	/// Call this method after the update has completed.
+	/// Clears the list of apps to reopen after attempting to open them.
+	func reopenApps() {
+		for appPath in appsToReopenAfterUpdate {
+			msc_debug_log("Reopening app: \(appPath)")
+			NSWorkspace.shared.openApplication(
+				at: URL(fileURLWithPath: appPath),
+				configuration: NSWorkspace.OpenConfiguration()
+			) { _, error in
+				if let error = error {
+					msc_debug_log("Failed to reopen app at \(appPath): \(error.localizedDescription)")
+				}
+			}
+		}
+		appsToReopenAfterUpdate = []
+	}
+
+	/// Clears the list of apps to reopen without reopening them.
+	func clearAppsToReopen() {
+		appsToReopenAfterUpdate = []
 	}
 
 	// MARK: - Actions

@@ -528,7 +528,7 @@ class MainWindowController: NSWindowController {
         let tasktype = managedsoftwareupdate_task
         managedsoftwareupdate_task = ""
         _update_in_progress = false
-        
+
         // The managedsoftwareupdate run will have changed state preferences
         // in ManagedInstalls.plist. Load the new values.
         reloadPrefs()
@@ -546,6 +546,10 @@ class MainWindowController: NSWindowController {
                 msc_log("MSC", "cant_update", msg: "Install session failed")
                 alertMessageText = NSLocalizedString(
                     "Install session failed", comment: "Install Session Failed title")
+                // Clear the blocking apps controller since install failed
+                if alert_controller.blockingAppsController != nil {
+                    alert_controller.clearBlockingAppsController()
+                }
             }
             if sessionResult == -1 {
                 // connection was dropped unexpectedly
@@ -607,10 +611,16 @@ class MainWindowController: NSWindowController {
             updateNow()
             return
         }
-        
+
+        // Install session completed successfully - reopen any apps that were closed
+        // (only if AutoQuitAppsOnUpdate was enabled and the blocking apps controller was used)
+        if tasktype == "installwithnologout" && alert_controller.blockingAppsController != nil {
+            alert_controller.reopenAppsAfterUpdate()
+        }
+
         // all done checking and/or installing: display results
         resetAndReload()
-        
+
         if updateCheckNeeded() {
             // more stuff pending? Let's do it...
             updateNow()
