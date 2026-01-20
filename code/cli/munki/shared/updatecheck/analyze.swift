@@ -1000,6 +1000,7 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
+		"prevent_auto_quit_on_update",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]
