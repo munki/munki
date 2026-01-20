@@ -50,6 +50,10 @@ class MSCBlockingAppsController: NSObject {
 	// Custom quit script tracking - maps app names to their quit scripts
 	private var appQuitScripts: [String: String] = [:] // keyed by app name (e.g. "Safari.app")
 
+	// Removal tracking - apps being removed shouldn't be reopened
+	private var appsBeingRemovedNames: Set<String> = [] // app names being removed
+	private var appsBeingRemovedPaths: Set<String> = [] // app paths being removed
+
 	// Reopen apps after update
 	private var reopenCheckbox: NSButton?
 	private(set) var appsToReopenAfterUpdate: [String] = []
@@ -85,8 +89,10 @@ class MSCBlockingAppsController: NSObject {
 		appsToCheck = []
 		manualQuitAppNames = []
 		appQuitScripts = [:]
+		appsBeingRemovedNames = []
 		for update_item in getUpdateList() {
 			let preventAutoQuit = update_item["prevent_auto_quit_on_update"] as? Bool ?? false
+			let isBeingRemoved = update_item["status"] as? String == "will-be-removed"
 			var itemBlockingApps = [String]()
 
 			if let blocking_apps = update_item["blocking_applications"] as? [String] {
@@ -104,6 +110,14 @@ class MSCBlockingAppsController: NSObject {
 			if preventAutoQuit {
 				for appName in itemBlockingApps {
 					manualQuitAppNames.insert(appName)
+				}
+			}
+
+			// Track apps that are being removed (shouldn't be reopened)
+			if isBeingRemoved {
+				for appName in itemBlockingApps {
+					appsBeingRemovedNames.insert(appName)
+					msc_debug_log("App is being removed, won't reopen: \(appName)")
 				}
 			}
 
@@ -143,6 +157,7 @@ class MSCBlockingAppsController: NSObject {
 		var uniqueApps = [(displayName: String, path: String)]()
 		var seenNames = Set<String>()
 		manualQuitAppPaths = []
+		appsBeingRemovedPaths = []
 		for app in my_apps {
 			let displayName = app["display_name"] ?? ""
 			if !displayName.isEmpty && !seenNames.contains(displayName) {
@@ -155,12 +170,16 @@ class MSCBlockingAppsController: NSObject {
 				}
 				uniqueApps.append((displayName: displayName, path: appPath))
 
-				// Check if this app requires manual quit
+				// Check if this app requires manual quit or is being removed
 				if !appPath.isEmpty {
 					let appFileName = (appPath as NSString).lastPathComponent
 					if manualQuitAppNames.contains(appFileName) {
 						manualQuitAppPaths.insert(appPath)
 						msc_debug_log("App requires manual quit: \(displayName) at \(appPath)")
+					}
+					if appsBeingRemovedNames.contains(appFileName) {
+						appsBeingRemovedPaths.insert(appPath)
+						msc_debug_log("App is being removed: \(displayName) at \(appPath)")
 					}
 				}
 			}
@@ -197,8 +216,9 @@ class MSCBlockingAppsController: NSObject {
 		monitorTimer?.invalidate()
 
 		// Save apps to reopen if checkbox is checked and user didn't cancel
+		// Exclude apps that are being removed as they won't exist after the update
 		if !userCancelled && reopenCheckbox?.state == .on {
-			appsToReopenAfterUpdate = Array(closedApps)
+			appsToReopenAfterUpdate = closedApps.filter { !appsBeingRemovedPaths.contains($0) }
 		} else {
 			appsToReopenAfterUpdate = []
 		}
@@ -846,6 +866,8 @@ class MSCBlockingAppsController: NSObject {
 		manualQuitAppNames = []
 		manualQuitAppPaths = []
 		appQuitScripts = [:]
+		appsBeingRemovedNames = []
+		appsBeingRemovedPaths = []
 		reopenCheckbox = nil
 		// Note: appsToReopenAfterUpdate is intentionally NOT cleared here
 		// so the caller can access it after the sheet is dismissed
