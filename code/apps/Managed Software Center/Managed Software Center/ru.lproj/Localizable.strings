@@ -310,6 +310,30 @@
 /* Quit button title */
 "Quit" = "Завершить";
 
+/* Quit Apps button title */
+"Quit Apps" = "Закрыть приложения";
+
+/* Force Quit button title */
+"Force Quit" = "Принудительное завершение работы";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Принудительно завершить работу приложения?";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Вы уверены, что хотите принудительно завершить работу \"%@\"? Все несохраненные изменения могут быть потеряны.";
+
+/* Closed Applications section title */
+"Closed Applications" = "Закрытые приложения";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Перезапустить приложения после обновления.";
+
+/* Manual quit required label */
+"Manual quit required" = "Требуется ручное завершение работы.";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "Для продолжения обновления закройте следующие приложения:";
+
 /* Removal Error status text */
 "Removal Error" = "Ошибка Удаления";
 
