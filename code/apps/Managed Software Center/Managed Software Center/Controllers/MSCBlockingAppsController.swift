@@ -47,6 +47,9 @@ class MSCBlockingAppsController: NSObject {
 	private var manualQuitAppNames: Set<String> = [] // app names that require manual quit
 	private var manualQuitAppPaths: Set<String> = [] // app paths that require manual quit
 
+	// Custom quit script tracking - maps app names to their quit scripts
+	private var appQuitScripts: [String: String] = [:] // keyed by app name (e.g. "Safari.app")
+
 	// Reopen apps after update
 	private var reopenCheckbox: NSButton?
 	private(set) var appsToReopenAfterUpdate: [String] = []
@@ -81,6 +84,7 @@ class MSCBlockingAppsController: NSObject {
 		// Gather apps to check from update list
 		appsToCheck = []
 		manualQuitAppNames = []
+		appQuitScripts = [:]
 		for update_item in getUpdateList() {
 			let preventAutoQuit = update_item["prevent_auto_quit_on_update"] as? Bool ?? false
 			var itemBlockingApps = [String]()
@@ -100,6 +104,14 @@ class MSCBlockingAppsController: NSObject {
 			if preventAutoQuit {
 				for appName in itemBlockingApps {
 					manualQuitAppNames.insert(appName)
+				}
+			}
+
+			// Track custom quit scripts for blocking apps
+			if let quitScript = update_item["application_quit_script"] as? String {
+				for appName in itemBlockingApps {
+					appQuitScripts[appName] = quitScript
+					msc_debug_log("Found application_quit_script for \(appName)")
 				}
 			}
 		}
@@ -833,6 +845,7 @@ class MSCBlockingAppsController: NSObject {
 		forceQuitButtons = [:]
 		manualQuitAppNames = []
 		manualQuitAppPaths = []
+		appQuitScripts = [:]
 		reopenCheckbox = nil
 		// Note: appsToReopenAfterUpdate is intentionally NOT cleared here
 		// so the caller can access it after the sheet is dismissed
@@ -895,23 +908,41 @@ class MSCBlockingAppsController: NSObject {
 				// Record quit initiation time for force quit tracking
 				quitInitiatedTimes[app.path] = Date()
 
-				// Find the running application by its bundle URL and terminate it
-				let bundleURL = URL(fileURLWithPath: app.path)
-				let bundlePrefix = app.path + "/"
+				// Check for custom quit script
+				let appFileName = (app.path as NSString).lastPathComponent
+				if let quitScript = appQuitScripts[appFileName] {
+					// Run the custom quit script instead of default termination
+					msc_debug_log("Running application_quit_script for \(app.displayName)")
+					DispatchQueue.global(qos: .userInitiated).async {
+						let result = runEmbeddedScript(quitScript, scriptName: "application_quit_script")
+						DispatchQueue.main.async {
+							if result.exitcode != 0 {
+								msc_debug_log("application_quit_script for \(app.displayName) failed with exit code \(result.exitcode)")
+							} else {
+								msc_debug_log("application_quit_script for \(app.displayName) completed successfully")
+							}
+						}
+					}
+				} else {
+					// Use default termination logic
+					// Find the running application by its bundle URL and terminate it
+					let bundleURL = URL(fileURLWithPath: app.path)
+					let bundlePrefix = app.path + "/"
 
-				// Find all running apps that match this bundle or are nested inside it
-				// This handles apps like Docker that contain nested .app bundles
-				let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
-					guard let runningBundleURL = runningApp.bundleURL else { return false }
-					let runningPath = runningBundleURL.path
-					return runningBundleURL == bundleURL ||
-						   runningPath.hasPrefix(bundlePrefix)
-				}
+					// Find all running apps that match this bundle or are nested inside it
+					// This handles apps like Docker that contain nested .app bundles
+					let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
+						guard let runningBundleURL = runningApp.bundleURL else { return false }
+						let runningPath = runningBundleURL.path
+						return runningBundleURL == bundleURL ||
+							   runningPath.hasPrefix(bundlePrefix)
+					}
 
-				msc_debug_log("Terminating \(runningApps.count) app(s) for bundle: \(app.path)")
-				for runningApp in runningApps {
-					msc_debug_log("  - Terminating: \(runningApp.bundleURL?.path ?? "unknown")")
-					_ = runningApp.terminate()
+					msc_debug_log("Terminating \(runningApps.count) app(s) for bundle: \(app.path)")
+					for runningApp in runningApps {
+						msc_debug_log("  - Terminating: \(runningApp.bundleURL?.path ?? "unknown")")
+						_ = runningApp.terminate()
+					}
 				}
 			}
 		}
