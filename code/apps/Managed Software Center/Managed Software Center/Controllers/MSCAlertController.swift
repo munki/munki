@@ -11,11 +11,12 @@ import Cocoa
 class MSCAlertController: NSObject {
     // An object that handles some of our alerts, if for no other reason
     // than to move a giant bunch of ugly code out of the WindowController
-    
+
     var window: NSWindow? // our parent window
     var timers: [Timer] = []
     var quitButton: NSButton?
     var haveOpenedSysPrefsSUPane = false
+    var blockingAppsController: MSCBlockingAppsController? // controller for blocking apps sheet
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -509,7 +510,41 @@ class MSCAlertController: NSObject {
         })
         return true
     }
-    
+
+	/// Presents an interactive sheet listing blocking applications so the user can close them.
+	///
+	/// - Returns: `true` if blocking apps are running and user cancelled; `false` if no blocking apps or all were closed.
+	///
+	/// The sheet is dismissed automatically when all apps are closed or when the user cancels/ignores it.
+	/// This method blocks further progress until the user has handled the apps or dismissed the sheet.
+	/// Note: The `blockingAppsController` is kept alive after this method returns so that
+	/// `reopenAppsAfterUpdate()` can be called later. Call `clearBlockingAppsController()` when done.
+	func autoQuitAlertedToBlockingAppsRunning() -> Bool {
+		guard let mainWindow = window else {
+			msc_debug_log("Could not get main window in autoQuitAlertedToBlockingAppsRunning")
+			return false
+		}
+
+		blockingAppsController = MSCBlockingAppsController(parentWindow: mainWindow)
+		let result = blockingAppsController?.presentBlockingAppsSheet() ?? false
+		// Don't nil out blockingAppsController here - we need it for reopenAppsAfterUpdate()
+		return result
+	}
+
+	/// Reopens any applications that were closed during the blocking apps sheet,
+	/// if the user had the "Reopen applications after update" checkbox enabled.
+	func reopenAppsAfterUpdate() {
+		blockingAppsController?.reopenApps()
+		blockingAppsController = nil
+	}
+
+	/// Clears the blocking apps controller without reopening apps.
+	/// Call this if the update was cancelled or failed.
+	func clearBlockingAppsController() {
+		blockingAppsController?.clearAppsToReopen()
+		blockingAppsController = nil
+	}
+
     func getFirmwareAlertInfo() -> [[String: String]] {
         // Get detail about a firmware update
         var info = [[String: String]]()

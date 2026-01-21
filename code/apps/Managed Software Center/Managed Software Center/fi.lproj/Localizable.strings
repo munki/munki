@@ -310,6 +310,30 @@
 /* Quit button title */
 "Quit" = "Lopeta";
 
+/* Quit Apps button title */
+"Quit Apps" = "Lopeta Apps";
+
+/* Force Quit button title */
+"Force Quit" = "Pakota lopettamaan";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Pakota sovellus lopettamaan?";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Oletko varma, että haluat pakottaa \"%@\" lopettamaan? Tallentamattomat muutokset saattavat kadota.";
+
+/* Closed Applications section title */
+"Closed Applications" = "Suljetut sovellukset";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Avaa sovellukset uudelleen päivityksen jälkeen";
+
+/* Manual quit required label */
+"Manual quit required" = "Manuaalinen lopetus vaaditaan";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "Sulje seuraavat sovellukset päivityksen jatkamiseksi:";
+
 /* Removal Error status text */
 "Removal Error" = "Virhe poistettaessa";
 

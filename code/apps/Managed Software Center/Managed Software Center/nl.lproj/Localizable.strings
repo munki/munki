@@ -310,6 +310,30 @@
 /* Quit button title */
 "Quit" = "Afsluiten";
 
+/* Quit Apps button title */
+"Quit Apps" = "Apps afsluiten";
+
+/* Force Quit button title */
+"Force Quit" = "Geforceerd afsluiten";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Applicatie geforceerd afsluiten?";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet u zeker dat u \"%@\" geforceerd wilt afsluiten? Niet-opgeslagen wijzigingen kunnen verloren gaan.";
+
+/* Closed Applications section title */
+"Closed Applications" = "Gesloten aanvragen";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Applicaties opnieuw openen na de update.";
+
+/* Manual quit required label */
+"Manual quit required" = "Handmatig afsluiten is vereist.";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "Sluit de volgende toepassingen af om door te gaan met de update:";
+
 /* Removal Error status text */
 "Removal Error" = "Verwijderfout";
 

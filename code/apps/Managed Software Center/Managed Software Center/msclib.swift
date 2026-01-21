@@ -40,23 +40,64 @@ func runProcess(_ command: String, args: [String] = []) -> (exitcode: Int, stdou
     let proc = Process()
     let stdout_pipe = Pipe()
     let stderr_pipe = Pipe()
-    
+
     msc_debug_log("Running process \(command) with args \(args)")
     proc.launchPath = command
     proc.arguments = args
     proc.standardOutput = stdout_pipe
     proc.standardError = stderr_pipe
-    
+
     proc.launch()
     proc.waitUntilExit()
-    
+
     let stdout = stdout_pipe.fileHandleForReading.readDataToEndOfFile()
     let stderr = stderr_pipe.fileHandleForReading.readDataToEndOfFile()
     let exitcode = proc.terminationStatus
-    
+
     return (Int(exitcode),
             String(data: stdout, encoding: String.Encoding.utf8)!,
             String(data: stderr, encoding: String.Encoding.utf8)!)
+}
+
+func runEmbeddedScript(_ scriptText: String, scriptName: String = "script") -> (exitcode: Int, stdout: String, stderr: String) {
+    // Run an embedded script by writing it to a temp file and executing it.
+    // Returns a tuple of (exitcode, stdout, stderr)
+    let tempDir = NSTemporaryDirectory()
+    let scriptPath = (tempDir as NSString).appendingPathComponent(
+        "\(scriptName)_\(UUID().uuidString)")
+
+    // Write script to temp file
+    do {
+        try scriptText.write(toFile: scriptPath, atomically: true, encoding: .utf8)
+    } catch {
+        msc_debug_log("Failed to write script to \(scriptPath): \(error)")
+        return (-1, "", "Failed to write script: \(error)")
+    }
+
+    // Make it executable (0o700)
+    do {
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: scriptPath)
+    } catch {
+        msc_debug_log("Failed to set permissions on \(scriptPath): \(error)")
+        try? FileManager.default.removeItem(atPath: scriptPath)
+        return (-1, "", "Failed to set script permissions: \(error)")
+    }
+
+    msc_debug_log("Running embedded script: \(scriptName)")
+    let result = runProcess(scriptPath)
+
+    // Clean up temp file
+    try? FileManager.default.removeItem(atPath: scriptPath)
+
+    if result.exitcode != 0 {
+        msc_debug_log("Script \(scriptName) exited with code \(result.exitcode)")
+        if !result.stderr.isEmpty {
+            msc_debug_log("Script stderr: \(result.stderr)")
+        }
+    }
+
+    return result
 }
 
 enum ZipExtractError: Error {

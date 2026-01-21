@@ -310,6 +310,30 @@
 /* Quit button title */
 "Quit" = "Beenden";
 
+/* Quit Apps button title */
+"Quit Apps" = "Apps beenden";
+
+/* Force Quit button title */
+"Force Quit" = "Beenden erzwingen";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Anwendung zwangsweise beenden?";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Sind Sie sicher, dass Sie \"%@\" zwangsweise beenden möchten? ? Alle nicht gespeicherten Änderungen gehen möglicherweise verloren.";
+
+/* Closed Applications section title */
+"Closed Applications" = "Geschlossene Anwendungen";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Anwendungen nach dem Update erneut öffnen.";
+
+/* Manual quit required label */
+"Manual quit required" = "Manuelles Beenden erforderlich";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "Bitte beenden Sie die folgenden Anwendungen, um mit dem Update fortzufahren:";
+
 /* Removal Error status text */
 "Removal Error" = "Fehler beim Entfernen";
 

@@ -310,6 +310,30 @@
 /* Quit button title */
 "Quit" = "Slut";
 
+/* Quit Apps button title */
+"Quit Apps" = "Afslut Apps";
+
+/* Force Quit button title */
+"Force Quit" = "Tvinge op";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tving afslutning af applikation?";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
+
+/* Closed Applications section title */
+"Closed Applications" = "Lukkede applikationer";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Genåbn applikationer efter opdatering";
+
+/* Manual quit required label */
+"Manual quit required" = "Manuel afslutning påkrævet";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "Luk venligst følgende programmer for at fortsætte med opdateringen:";
+
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
 

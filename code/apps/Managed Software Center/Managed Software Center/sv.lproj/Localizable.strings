@@ -310,6 +310,30 @@
 /* Quit button title */
 "Quit" = "Avsluta";
 
+/* Quit Apps button title */
+"Quit Apps" = "Avsluta Apps";
+
+/* Force Quit button title */
+"Force Quit" = "Tvinga avslut";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tvångsavsluta applikation?";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Är du säker på att du vill tvångsavsluta \"%@\"? Alla osparade ändringar kan gå förlorade.";
+
+/* Closed Applications section title */
+"Closed Applications" = "Stängda applikationer";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Öppna applikationer igen efter uppdatering";
+
+/* Manual quit required label */
+"Manual quit required" = "Manuell avslutning krävs";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "Avsluta följande program för att fortsätta med uppdateringen:";
+
 /* Removal Error status text */
 "Removal Error" = "Borttagning misslyckades";
 

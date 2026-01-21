@@ -307,6 +307,30 @@
 /* Quit button title */
 "Quit" = "終了";
 
+/* Quit Apps button title */
+"Quit Apps" = "アプリを終了する";
+
+/* Force Quit button title */
+"Force Quit" = "強制終了";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "アプリケーションを強制終了しますか？";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "強制終了してもよろしいですか \"%@\"? 保存されていない変更内容は失われる可能性があります。";
+
+/* Closed Applications section title */
+"Closed Applications" = "クローズドアプリケーション";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "アップデート後にアプリケーションを再起動してください。";
+
+/* Manual quit required label */
+"Manual quit required" = "手動での終了が必要です";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"Please quit the following applications to continue with the update:" = "アップデートを続行するには、以下のアプリケーションを終了してください。";
+
 /* Removal Error status text */
 "Removal Error" = "削除エラー";
 
