@@ -108,6 +108,7 @@
 		C0276DC52E8C0A6A00D443C3 /* cliutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07A6FD92C2CF19600090743 /* cliutils.swift */; };
 		C0276DC62E8C0A9D00D443C3 /* stderrout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C008A0552D25B20E0073ADBA /* stderrout.swift */; };
 		C0276DC72E8C0AB300D443C3 /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
+		C028DB2A2F1EC65D00290CBF /* fileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9B52C3DF6D0007F0B34 /* fileutils.swift */; };
 		C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9902C39C135007F0B34 /* munkihash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A98E2C39C135007F0B34 /* munkihash.swift */; };
 		C030A9982C3A2E18007F0B34 /* makepkginfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C030A9972C3A2E18007F0B34 /* makepkginfo.swift */; };
@@ -2002,6 +2003,7 @@
 				C0684E342DC0409C0091E774 /* prefs.swift in Sources */,
 				C0684E352DC040A30091E774 /* constants.swift in Sources */,
 				C0684E362DC040B20091E774 /* munkilog.swift in Sources */,
+				C028DB2A2F1EC65D00290CBF /* fileutils.swift in Sources */,
 				C0684E372DC040EB0091E774 /* stderrout.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
