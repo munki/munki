@@ -316,7 +316,10 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     /// Does an Apple update check if appropriate
     private func doAppleUpdateCheckIfAppropriate(appleUpdatesOnly: Bool) -> Int {
         if shouldDoAppleUpdates(appleUpdatesOnly: appleUpdatesOnly) {
-            return findAndRecordAvailableAppleUpdates()
+            let filterMajorOSUpdates = !(boolPref("AppleSoftwareUpdatesIncludeMajorOSUpdates") ?? false)
+            return findAndRecordAvailableAppleUpdates(
+                shouldFilterMajorOSUpdates: filterMajorOSUpdates
+            )
         }
         //
         return 0

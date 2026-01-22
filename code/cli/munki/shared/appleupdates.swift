@@ -214,9 +214,8 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
 /// Gets available Apple updates.
 /// Writes a file used by the MSC GUI to display available updates.
 /// Returns count of available Apple updates
-func findAndRecordAvailableAppleUpdates() -> Int {
+func findAndRecordAvailableAppleUpdates(shouldFilterMajorOSUpdates: Bool = false) -> Int {
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
-    let shouldFilterMajorOSUpdates = !(boolPref("AppleSoftwareUpdatesIncludeMajorOSUpdates") ?? false)
     let appleUpdates = getAppleUpdatesList(
         shouldFilterMajorOSUpdates: shouldFilterMajorOSUpdates)
     if appleUpdates.isEmpty {
