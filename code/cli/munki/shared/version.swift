@@ -18,7 +18,7 @@
 //  limitations under the License.
 
 /// one single place to define a version for CLI tools
-let CLI_TOOLS_VERSION = "7.0.6"
+let CLI_TOOLS_VERSION = "7.0.7"
 let BUILD = "<BUILD_GOES_HERE>"
 
 /// Returns version of Munki tools
