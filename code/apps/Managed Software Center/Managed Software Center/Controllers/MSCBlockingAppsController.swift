@@ -963,8 +963,10 @@ class MSCBlockingAppsController: NSObject {
                 } else {
                     // Use default termination logic
                     // Find the running application by its bundle URL and terminate it
-                    let bundleURL = URL(fileURLWithPath: app.path)
                     let bundlePrefix = app.path + "/"
+                    // NSRunningApplication.bundleURL.papth always ends with a /
+                    // so build our comparison URL with a path ending with a /
+                    let bundleURL = URL(fileURLWithPath: bundlePrefix)
 
                     // Find all running apps that match this bundle or are nested inside it
                     // This handles apps like Docker that contain nested .app bundles
