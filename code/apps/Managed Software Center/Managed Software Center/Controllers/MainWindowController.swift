@@ -1205,9 +1205,10 @@ class MainWindowController: NSWindowController {
             NSLog("munki-notifier path: %@", munkiNotifierPath as String)
             // now make sure it's not already running
             let executablePath = munkiNotifierPath + "/Contents/MacOS/munki-notifier"
-            let procs = getRunningProcessesWithUsers()
+            let ourUID = getuid()
+            let procs = UNIXProcessListWithPaths()
             for proc in procs {
-                if proc["pathname"] == executablePath && proc["user"] == NSUserName() {
+                if proc.path == executablePath && proc.uid == ourUID {
                     // munki-notifier is already running as this user
                     return
                 }

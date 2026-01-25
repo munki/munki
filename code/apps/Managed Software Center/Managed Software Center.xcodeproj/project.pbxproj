@@ -31,6 +31,9 @@
 		C019632221050C910009F51A /* MSCDockTilePlugin.docktileplugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = C0196317210507DB0009F51A /* MSCDockTilePlugin.docktileplugin */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C03107C320C8B65E007FE337 /* msclib.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C220C8B65E007FE337 /* msclib.swift */; };
 		C03107C520C8F220007FE337 /* msclog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03107C420C8F220007FE337 /* msclog.swift */; };
+		C03628302F254A8400209A29 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C036282F2F254A8400209A29 /* UNIXProcessInfo.swift */; };
+		C03628312F254A8400209A29 /* processes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C036282E2F254A8400209A29 /* processes.swift */; };
+		C03628322F254A8400209A29 /* BlockingApplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C036282D2F254A8400209A29 /* BlockingApplications.swift */; };
 		C04CA61A20E682AE00711461 /* passwdutil.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04CA61920E682AE00711461 /* passwdutil.swift */; };
 		C04CA61C20E68B1800711461 /* authrestart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04CA61B20E68B1800711461 /* authrestart.swift */; };
 		C04CA61E20E6ADA100711461 /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04CA61D20E6ADA100711461 /* MainWindowController.swift */; };
@@ -109,6 +112,9 @@
 		C019631E2105080B0009F51A /* MSCDockTilePlugIn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSCDockTilePlugIn.h; sourceTree = "<group>"; };
 		C03107C220C8B65E007FE337 /* msclib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msclib.swift; sourceTree = "<group>"; };
 		C03107C420C8F220007FE337 /* msclog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = msclog.swift; sourceTree = "<group>"; };
+		C036282D2F254A8400209A29 /* BlockingApplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplications.swift; sourceTree = "<group>"; };
+		C036282E2F254A8400209A29 /* processes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processes.swift; sourceTree = "<group>"; };
+		C036282F2F254A8400209A29 /* UNIXProcessInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNIXProcessInfo.swift; sourceTree = "<group>"; };
 		C04CA61920E682AE00711461 /* passwdutil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = passwdutil.swift; sourceTree = "<group>"; };
 		C04CA61B20E68B1800711461 /* authrestart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = authrestart.swift; sourceTree = "<group>"; };
 		C04CA61D20E6ADA100711461 /* MainWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
@@ -239,6 +245,9 @@
 		C04F827D20BB319B00F9C57D /* Managed Software Center */ = {
 			isa = PBXGroup;
 			children = (
+				C036282D2F254A8400209A29 /* BlockingApplications.swift */,
+				C036282E2F254A8400209A29 /* processes.swift */,
+				C036282F2F254A8400209A29 /* UNIXProcessInfo.swift */,
 				8428C7F12E0DB23200D83D41 /* XIBs */,
 				C0E2599D210AD8CD00C3A3D9 /* Socket.swift */,
 				C0F8E3DF2105622F00718259 /* Info.plist */,
@@ -507,6 +516,9 @@
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
+				C03628302F254A8400209A29 /* UNIXProcessInfo.swift in Sources */,
+				C03628312F254A8400209A29 /* processes.swift in Sources */,
+				C03628322F254A8400209A29 /* BlockingApplications.swift in Sources */,
 				AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
