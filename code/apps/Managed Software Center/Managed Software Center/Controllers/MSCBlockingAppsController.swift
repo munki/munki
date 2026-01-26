@@ -30,12 +30,14 @@ class MSCBlockingAppsController: NSObject {
 
     // UI elements for dynamic updates
     private var blockingAppsStackView: NSStackView?
-    private var closedAppsStackView: NSStackView?
-    private var closedAppsSectionView: NSView?
+    //private var closedAppsStackView: NSStackView?
+    //private var closedAppsSectionView: NSView?
     private var appRowViews: [String: NSView] = [:] // keyed by app path
     private var closedApps: Set<String> = [] // paths of closed apps
     private var sheetHeightConstraint: NSLayoutConstraint?
-    private var closedScrollHeightConstraint: NSLayoutConstraint?
+    //private var closedScrollHeightConstraint: NSLayoutConstraint?
+    
+    private var repoIcons: [String: String] = [:] // keyed by app name
 
     // Force quit tracking
     private var quitInitiatedTimes: [String: Date] = [:] // keyed by app path
@@ -59,8 +61,9 @@ class MSCBlockingAppsController: NSObject {
 
     // Layout constants
     private let sheetWidth: CGFloat = 400
-    private let rowHeight: CGFloat = 36
-    private let iconSize: CGFloat = 32
+    private let rowHeight: CGFloat = 24
+    private let stackViewSpacing: CGFloat = 4
+    private let iconSize: CGFloat = 24
     private let maxVisibleRows = 6
 
     // MARK: - Initialization
@@ -99,6 +102,12 @@ class MSCBlockingAppsController: NSObject {
             } else if let installs_items = update_item["installs"] as? [PlistDict] {
                 itemBlockingApps = installs_items.filter { ($0["type"] as? String ?? "" == "application" &&
                         !($0["path"] as? String ?? "").isEmpty) }.map { ($0["path"] as? NSString ?? "").lastPathComponent }
+            }
+            
+            if itemBlockingApps.count == 1 {
+                // track the repo icons by app name in case we need them
+                let appName = itemBlockingApps.first!
+                repoIcons[appName] = update_item["icon"] as? String
             }
 
             appsToCheck += itemBlockingApps
@@ -248,7 +257,7 @@ class MSCBlockingAppsController: NSObject {
     }
 
     private func createSheet(for apps: [(displayName: String, path: String)]) -> NSWindow {
-        let visibleHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * rowHeight
+        let visibleHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
         let sheetHeight: CGFloat = visibleHeight + 170 // Extra height for checkbox
 
         let sheetWindow = NSPanel(
@@ -287,10 +296,17 @@ class MSCBlockingAppsController: NSObject {
         let blockingScrollView = NSScrollView()
         blockingScrollView.translatesAutoresizingMaskIntoConstraints = false
         blockingScrollView.contentView = FlippedClipView()
-        blockingScrollView.hasVerticalScroller = true
+        blockingScrollView.hasVerticalScroller = (apps.count > maxVisibleRows)
+        if apps.count > maxVisibleRows {
+            blockingScrollView.hasVerticalScroller = true
+            blockingScrollView.borderType = .lineBorder
+            blockingScrollView.autohidesScrollers = true
+        } else {
+            blockingScrollView.hasVerticalScroller = false
+            blockingScrollView.verticalScrollElasticity = .none
+            blockingScrollView.borderType = .noBorder
+        }
         blockingScrollView.hasHorizontalScroller = false
-        blockingScrollView.autohidesScrollers = true
-        blockingScrollView.borderType = .lineBorder
         blockingScrollView.automaticallyAdjustsContentInsets = false
         blockingScrollView.contentInsets = NSEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
         blockingScrollView.wantsLayer = true
@@ -301,12 +317,14 @@ class MSCBlockingAppsController: NSObject {
         blockingScrollView.documentView = blockingStackView
         contentView.addSubview(blockingScrollView)
 
+        /*
         // Create closed apps section (initially hidden)
         let closedSection = createClosedAppsSection()
         closedAppsSectionView = closedSection
         closedSection.isHidden = true
         contentView.addSubview(closedSection)
-
+        */
+        
         // Reopen apps checkbox
         let checkbox = NSButton(checkboxWithTitle: NSLocalizedString(
             "Reopen applications after update",
@@ -350,12 +368,13 @@ class MSCBlockingAppsController: NSObject {
             blockingStackView.topAnchor.constraint(equalTo: blockingScrollView.contentView.topAnchor),
             blockingStackView.leadingAnchor.constraint(equalTo: blockingScrollView.contentView.leadingAnchor, constant: 4),
             blockingStackView.trailingAnchor.constraint(equalTo: blockingScrollView.contentView.trailingAnchor, constant: -4),
-
+            /*
             closedSection.topAnchor.constraint(equalTo: blockingScrollView.bottomAnchor, constant: 12),
             closedSection.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             closedSection.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-
-            checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, constant: 12),
+             */
+            //checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, // constant: 12),
+            checkbox.topAnchor.constraint(equalTo: blockingScrollView.bottomAnchor, constant: 12),
             checkbox.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
 
             quitButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
@@ -374,7 +393,7 @@ class MSCBlockingAppsController: NSObject {
         let stackView = NSStackView()
         stackView.orientation = .vertical
         stackView.alignment = .leading
-        stackView.spacing = 4
+        stackView.spacing = stackViewSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
         let spinnerSize: CGFloat = 16
@@ -390,8 +409,20 @@ class MSCBlockingAppsController: NSObject {
             iconView.translatesAutoresizingMaskIntoConstraints = false
             iconView.imageScaling = .scaleProportionallyUpOrDown
             if !app.path.isEmpty {
-                iconView.image = NSWorkspace.shared.icon(forFile: app.path)
-            } else {
+                // grab icon from app bundle if possible
+                if FileManager.default.fileExists(atPath: app.path) {
+                    iconView.image = NSWorkspace.shared.icon(forFile: app.path)
+                } else {
+                    // use the icon from the repo
+                    let appName = (app.path as NSString).lastPathComponent
+                    if let iconPath = repoIcons[appName] {
+                        let fullIconPath = NSString.path(withComponents: [html_dir(), iconPath])
+                        iconView.image = NSImage(contentsOf: URL(fileURLWithPath: fullIconPath))
+                    }
+                }
+            }
+            // if no icon, use generic app icon
+            if iconView.image == nil {
                 iconView.image = NSImage(named: NSImage.applicationIconName)
             }
 
@@ -466,6 +497,7 @@ class MSCBlockingAppsController: NSObject {
         return stackView
     }
 
+    /*
     private func createClosedAppsSection() -> NSView {
         let containerView = NSView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -479,7 +511,7 @@ class MSCBlockingAppsController: NSObject {
         closedLabel.textColor = .secondaryLabelColor
         closedLabel.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(closedLabel)
-
+        
         // Stack view for closed apps
         let closedStackView = NSStackView()
         closedStackView.orientation = .vertical
@@ -591,7 +623,7 @@ class MSCBlockingAppsController: NSObject {
 
         return rowView
     }
-
+    
     private func moveAppToClosedSection(path: String) {
         guard !closedApps.contains(path),
               let rowView = appRowViews[path],
@@ -636,7 +668,7 @@ class MSCBlockingAppsController: NSObject {
                 sheetWindow.setFrame(frame, display: true, animate: true)
             }
         }
-
+        
         // Update the closed scroll view height based on number of closed apps
         let closedCount = closedApps.count
         let newHeight = min(CGFloat(closedCount), CGFloat(maxVisibleRows)) * rowHeight + 8
@@ -653,7 +685,24 @@ class MSCBlockingAppsController: NSObject {
             }
         }
     }
+    */
+    
+    private func moveAppToClosedSection(path: String) {
+        guard !closedApps.contains(path),
+              let rowView = appRowViews[path],
+              let blockingStack = blockingAppsStackView
+        else {
+            return
+        }
 
+        // Mark as closed
+        closedApps.insert(path)
+        
+        // Remove from blocking apps stack view
+        blockingStack.removeArrangedSubview(rowView)
+        rowView.removeFromSuperview()
+    }
+    
     private func startMonitoring(mainWindow: NSWindow, userCancelled _: inout Bool) {
         let appsToCheckCopy = appsToCheck
         let currentUserCopy = currentUser
@@ -866,12 +915,12 @@ class MSCBlockingAppsController: NSObject {
         monitorTimer = nil
         appsToCheck = []
         blockingAppsStackView = nil
-        closedAppsStackView = nil
-        closedAppsSectionView = nil
+        //closedAppsStackView = nil
+        //closedAppsSectionView = nil
         appRowViews = [:]
         closedApps = []
         sheetHeightConstraint = nil
-        closedScrollHeightConstraint = nil
+        //closedScrollHeightConstraint = nil
         quitInitiatedTimes = [:]
         forceQuitButtons = [:]
         manualQuitAppNames = []
