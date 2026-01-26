@@ -371,15 +371,15 @@ func getHTTPfileIfChangedAtomically(
 
     var numTries = 1
     if let downloadRetriesPref = pref("DownloadRetries") as? Int {
-        if downloadRetriesPref >= 1 && downloadRetriesPref <= 10 {
+        if downloadRetriesPref >= 1, downloadRetriesPref <= 10 {
             numTries = downloadRetriesPref + 1
         } else if downloadRetriesPref != 0 {
             DisplayAndLog.main.warning("Ignoring invalid DownloadRetries pref: \(downloadRetriesPref)")
         }
     }
-    var retrySleepSeconds:UInt32 = 10
+    var retrySleepSeconds: UInt32 = 10
     if let retrySleepSecondsPref = pref("DownloadRetrySleepSeconds") as? Int {
-        if retrySleepSecondsPref >= 1 && retrySleepSecondsPref <= 30 {
+        if retrySleepSecondsPref >= 1, retrySleepSecondsPref <= 30 {
             retrySleepSeconds = UInt32(retrySleepSecondsPref)
         } else {
             DisplayAndLog.main.warning("Ignoring invalid DownloadRetrySleepSeconds pref: \(retrySleepSecondsPref)")
@@ -415,7 +415,7 @@ func getHTTPfileIfChangedAtomically(
                 // just rethrow it
                 throw err
             case let .http(errorCode, description):
-                if triesLeft > 0 && retryHTTPCodes.contains(errorCode) {
+                if triesLeft > 0, retryHTTPCodes.contains(errorCode) {
                     DisplayAndLog.main.info("Retrying HTTP error \(errorCode): \(description)")
                     continue
                 }
