@@ -378,11 +378,11 @@ func getHTTPfileIfChangedAtomically(
         }
     }
     var retrySleepSeconds:UInt32 = 10
-    if let retrySleepSecondsPref = pref("RetrySleepSeconds") as? Int {
+    if let retrySleepSecondsPref = pref("DownloadRetrySleepSeconds") as? Int {
         if retrySleepSecondsPref >= 1 && retrySleepSecondsPref <= 30 {
             retrySleepSeconds = UInt32(retrySleepSecondsPref)
         } else {
-            DisplayAndLog.main.warning("Ignoring invalid RetrySleepSeconds pref: \(retrySleepSecondsPref)")
+            DisplayAndLog.main.warning("Ignoring invalid DownloadRetrySleepSeconds pref: \(retrySleepSecondsPref)")
         }
     }
     var triesLeft = numTries
