@@ -6,18 +6,18 @@
 //  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //
 
-import Foundation
 import AppKit
+import Foundation
 import SystemConfiguration
 
 func logFilePref() -> String {
     /* Returns Munki's LogFile preference. Since this uses CFPreferencesCopyAppValue,
-       preferences can be defined several places. Precedence is:
-        - MCX/configuration profile
-        - ~/Library/Preferences/ManagedInstalls.plist
-        - /Library/Preferences/ManagedInstalls.plist
-        - default_pref defined here.
-    */
+        preferences can be defined several places. Precedence is:
+         - MCX/configuration profile
+         - ~/Library/Preferences/ManagedInstalls.plist
+         - /Library/Preferences/ManagedInstalls.plist
+         - default_pref defined here.
+     */
     let value = CFPreferencesCopyAppValue("LogFile" as CFString, "ManagedInstalls" as CFString)
     if value == nil {
         return "/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log"
@@ -83,6 +83,3 @@ func checkForElCapPolicyBanner() -> Bool {
 let haveElCapPolicyBanner = checkForElCapPolicyBanner()
 let backdropWindowLevel = haveElCapPolicyBanner ? NSWindow.Level.screenSaver : NSWindow.Level(998)
 let statusWindowLevel = haveElCapPolicyBanner ? NSWindow.Level.screenSaver : NSWindow.Level(999)
-
-
-

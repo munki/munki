@@ -9,13 +9,12 @@
 import Cocoa
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    @IBOutlet var window: NSWindow!
+    @IBOutlet var logWindow: NSWindow!
 
-    @IBOutlet weak var window: NSWindow!
-    @IBOutlet weak var logWindow: NSWindow!
-    
     var blurredBackground: BackgroundBlurrer?
-    
-    func applicationWillFinishLaunching(_ aNotification: Notification) {
+
+    func applicationWillFinishLaunching(_: Notification) {
         if atLoginWindow() {
             // don't show menu bar
             NSMenu.setMenuBarVisible(false)
@@ -24,13 +23,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         // draw our loginwindow masking windows if needed
         if atLoginWindow() {
             blurBackground()
         }
         // If bootstrapping, and on AC or battery over 50% (Intel) 30% (Apple Silicon) assert NoDisplaySleep
-        if isBootstrapping() && atLoginWindow() {
+        if isBootstrapping(), atLoginWindow() {
             createNoDisplaySleepAssertion()
         }
         // Prevent automatic relaunching at login on Lion+
@@ -39,13 +38,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationWillTerminate(_ aNotification: Notification) {
+    func applicationWillTerminate(_: Notification) {
         // Release display sleep assertion if it exists
         releaseDisplaySleepAssertion()
     }
-    
+
     func blurBackground() {
         blurredBackground = BackgroundBlurrer()
     }
 }
-

@@ -9,21 +9,20 @@
 import Cocoa
 
 class MunkiStatusViewController: NSViewController {
+    @IBOutlet var messageField: NSTextField!
+    @IBOutlet var detailField: NSTextField!
+    @IBOutlet var progressBar: NSProgressIndicator!
+    @IBOutlet var stopButton: NSButton!
 
-    @IBOutlet weak var messageField: NSTextField!
-    @IBOutlet weak var detailField: NSTextField!
-    @IBOutlet weak var progressBar: NSProgressIndicator!
-    @IBOutlet weak var stopButton: NSButton!
-    
     var receivingNotifications = false
     var restartAlertDismissed = false
     var gotStatusUpdate = false
     var timeoutCounter = 6
     var sawProcess = false
     var timer: Timer? = nil
-    
+
     let STOP_REQUEST_FLAG = "/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested"
-    
+
     override func viewDidLoad() {
         if #available(OSX 10.10, *) {
             super.viewDidLoad()
@@ -44,19 +43,19 @@ class MunkiStatusViewController: NSViewController {
         view.window?.orderFrontRegardless()
         timer = Timer.scheduledTimer(timeInterval: 5.0,
                                      target: self,
-                                     selector: #selector(self.checkProcess),
+                                     selector: #selector(checkProcess),
                                      userInfo: nil,
                                      repeats: true)
     }
-    
-    @IBAction func stopButtonClicked(_ sender: Any) {
+
+    @IBAction func stopButtonClicked(_: Any) {
         // Deactivate the Stop button and write a flag file
         // to tell managedsoftwareupdate to stop
         stopButton.state = NSControl.StateValue.on
         stopButton.isEnabled = false
         FileManager.default.createFile(atPath: STOP_REQUEST_FLAG, contents: nil, attributes: nil)
     }
-    
+
     func cleanUpStatusSession() {
         // Clean up before we exit
         unregisterForNotifications()
@@ -65,27 +64,26 @@ class MunkiStatusViewController: NSViewController {
             timer = nil
         }
     }
-    
+
     func statusSessionFailed(_ sessionResult: String) {
         print("status session failed: \(sessionResult)")
         cleanUpStatusSession()
         NSApp.terminate(self)
     }
-    
-   
+
     @objc func checkProcess() {
         // Monitors managedsoftwareupdate process for failure to start
         // or unexpected exit, so we're not waiting around forever if
         // managedsoftwareupdate isn't running.
-        
+
         print("checkProcess timer fired")
-        
-        if (haveElCapPolicyBanner && atLoginWindow()) {
+
+        if haveElCapPolicyBanner, atLoginWindow() {
             // we're at the loginwindow, there is a PolicyBanner, and we're
             // running under 10.11+. Make sure we're in the front.
             NSApp.activate(ignoringOtherApps: true)
         }
-        
+
         if gotStatusUpdate {
             // we got a status update since we last checked; no need to
             // check the process table
@@ -109,7 +107,7 @@ class MunkiStatusViewController: NSViewController {
             }
         }
     }
-    
+
     func setPercentageDone(_ percentish: Any?) {
         // Set progress indicator to display percent done
         var percent = -1.0
@@ -140,21 +138,22 @@ class MunkiStatusViewController: NSViewController {
         a.messageText = NSLocalizedString("Restart Required", comment: "")
         a.informativeText = NSLocalizedString(
             "Software installed or removed requires a restart. You will have a chance to save open documents.",
-            comment: "")
+            comment: ""
+        )
         a.addButton(withTitle: NSLocalizedString("Restart", comment: ""))
-        
-        a.beginSheetModal(for: self.view.window!, completionHandler: { (modalResponse) -> Void in
+
+        a.beginSheetModal(for: view.window!, completionHandler: { modalResponse in
             if modalResponse == .alertFirstButtonReturn {
                 self.restartAlertDismissed = true
-                //munkiRestartNow()
+                // munkiRestartNow()
             }
         })
     }
-    
+
     func getLocalizedText(_ text: String) -> String {
         return Bundle.main.localizedString(forKey: text, value: text, table: nil)
     }
-    
+
     @objc func updateStatus(_ notification: Notification) {
         // Called when we get a
         // com.googlecode.munki.managedsoftwareupdate.statusUpdate notification;
@@ -164,33 +163,33 @@ class MunkiStatusViewController: NSViewController {
         if info == nil {
             return
         }
-        
-        if (info!.keys.contains("message")) {
+
+        if info!.keys.contains("message") {
             if let message = info!["message"] as? String {
                 messageField.stringValue = getLocalizedText(message)
             }
         }
-        if (info!.keys.contains("detail")) {
+        if info!.keys.contains("detail") {
             if let detail = info!["detail"] as? String {
                 detailField.stringValue = getLocalizedText(detail)
             }
         }
-        if (info!.keys.contains("percent")) {
+        if info!.keys.contains("percent") {
             setPercentageDone(info!["percent"])
         }
         if stopButton.state == NSControl.StateValue.off {
-            if (info!.keys.contains("stop_button_visible")) {
+            if info!.keys.contains("stop_button_visible") {
                 if let visible = info!["stop_button_visible"] as? Bool {
-                    stopButton.isHidden = !(visible)
+                    stopButton.isHidden = !visible
                 }
             }
-            if (info!.keys.contains("stop_button_enabled")) {
+            if info!.keys.contains("stop_button_enabled") {
                 if let enabled = info!["stop_button_enabled"] as? Bool {
                     stopButton.isEnabled = enabled
                 }
             }
         }
-        if (info!.keys.contains("command")) {
+        if info!.keys.contains("command") {
             if let command = info!["command"] as? String {
                 if command == "activate" {
                     NSApp.activate(ignoringOtherApps: true)
@@ -209,20 +208,21 @@ class MunkiStatusViewController: NSViewController {
             }
         }
     }
-    
+
     func registerForNotifications() {
         // Register for notification messages
         let dnc = DistributedNotificationCenter.default()
         dnc.addObserver(
             self,
-            selector: #selector(self.updateStatus(_:)),
+            selector: #selector(updateStatus(_:)),
             name: NSNotification.Name(rawValue: "com.googlecode.munki.managedsoftwareupdate.statusUpdate"),
             object: nil,
-            suspensionBehavior: .deliverImmediately)
-        
+            suspensionBehavior: .deliverImmediately
+        )
+
         receivingNotifications = true
     }
-    
+
     func unregisterForNotifications() {
         // Tell the DistributedNotificationCenter to stop sending us notifications
         DistributedNotificationCenter.default.removeObserver(self)
@@ -230,5 +230,4 @@ class MunkiStatusViewController: NSViewController {
         // thread will exit
         receivingNotifications = false
     }
-    
 }
