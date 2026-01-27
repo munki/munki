@@ -11,6 +11,8 @@
 		51899AA12DCE820900A3C95C /* DisplayAssertion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51899AA02DCE820200A3C95C /* DisplayAssertion.swift */; };
 		9B28B78821E3B88F002C58D2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B28B78A21E3B88F002C58D2 /* InfoPlist.strings */; };
 		C0168E9020B1E1D80027BD78 /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0168E8F20B1E1D80027BD78 /* LogViewController.swift */; };
+		C03628352F296C4800209A29 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03628342F296C4800209A29 /* UNIXProcessInfo.swift */; };
+		C03628362F296C4800209A29 /* processes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03628332F296C4800209A29 /* processes.swift */; };
 		C04F824E20BB157800F9C57D /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C04F825020BB157800F9C57D /* Localizable.strings */; };
 		C04F825D20BB15F500F9C57D /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04F825C20BB15F500F9C57D /* Localization.swift */; };
 		C0544D4C20AF0EDA00DC86F6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0544D4B20AF0EDA00DC86F6 /* AppDelegate.swift */; };
@@ -43,6 +45,8 @@
 		9B28B79821E3B8B2002C58D2 /* en-GB */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en-GB"; path = "en-GB.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C0168E8F20B1E1D80027BD78 /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		C0168E9120B2939B0027BD78 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		C03628332F296C4800209A29 /* processes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = processes.swift; sourceTree = "<group>"; };
+		C03628342F296C4800209A29 /* UNIXProcessInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UNIXProcessInfo.swift; sourceTree = "<group>"; };
 		C04F823F20BA8E9000F9C57D /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C04F824020BA8F7200F9C57D /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C04F824120BA8FF400F9C57D /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/MainMenu.strings; sourceTree = "<group>"; };
@@ -114,6 +118,8 @@
 		C0544D4A20AF0EDA00DC86F6 /* MunkiStatus */ = {
 			isa = PBXGroup;
 			children = (
+				C03628332F296C4800209A29 /* processes.swift */,
+				C03628342F296C4800209A29 /* UNIXProcessInfo.swift */,
 				51899AA02DCE820200A3C95C /* DisplayAssertion.swift */,
 				51899A9E2DCE7FB200A3C95C /* Power.swift */,
 				C04F825C20BB15F500F9C57D /* Localization.swift */,
@@ -250,6 +256,8 @@
 				C04F825D20BB15F500F9C57D /* Localization.swift in Sources */,
 				C0787F7B2315C6210054D130 /* main.swift in Sources */,
 				51899A9F2DCE7FBD00A3C95C /* Power.swift in Sources */,
+				C03628352F296C4800209A29 /* UNIXProcessInfo.swift in Sources */,
+				C03628362F296C4800209A29 /* processes.swift in Sources */,
 				C0F4B7B52C24F9EE00B421D9 /* BlurredBackgroundController.swift in Sources */,
 				C0544D4C20AF0EDA00DC86F6 /* AppDelegate.swift in Sources */,
 				C0A7937E20AFAE0300F56DD5 /* MunkiStatusViewController.swift in Sources */,
