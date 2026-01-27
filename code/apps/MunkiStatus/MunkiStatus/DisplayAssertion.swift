@@ -15,7 +15,7 @@ func createNoDisplaySleepAssertion() {
     if onACPower() || getBatteryPercentage() >= threshold {
         var assertionID: IOPMAssertionID = 0
         let reasonForActivity = "Prevent display sleep during Munki bootstrapping" as CFString
-        
+
         let result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep as CFString,
                                                  IOPMAssertionLevel(kIOPMAssertionLevelOn),
                                                  reasonForActivity,
