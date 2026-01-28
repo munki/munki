@@ -34,8 +34,10 @@ struct DisplayOptions {
 /// Note that there's no way to know we're done (unlike with percent-done, where 100% is done)
 /// So the terminal cursor will always be left right after the number printed
 func displayBytesReceived(_ bytes: Int) {
-    print("\r\tBytes received: \(bytes)", terminator: "")
-    fflush(stdout)
+    if DisplayOptions.verbose > 0 {
+        print("\r\tBytes received: \(bytes)", terminator: "")
+        fflush(stdout)
+    }
 }
 
 /// Displays percent-done info, both at the command-line, and via MunkiStatus

@@ -272,7 +272,7 @@ func getURL(
             displayBytesReceived(storedBytesReceived)
         }
         if done {
-            if storedBytesReceived > 0 {
+            if storedBytesReceived > 0, DisplayOptions.verbose > 0 {
                 // displayBytesReceived leaves the cursor at the end of the line
                 // so just print a newline
                 print()
