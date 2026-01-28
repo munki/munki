@@ -826,8 +826,10 @@ class MSCBlockingAppsController: NSObject {
     }
 
     private func performForceQuit(for appPath: String) {
-        let bundleURL = URL(fileURLWithPath: appPath)
         let bundlePrefix = appPath + "/"
+        // NSRunningApplication.bundleURL.path always ends with a /
+        // so build our comparison URL with a path ending with a /
+        let bundleURL = URL(fileURLWithPath: bundlePrefix)
 
         // Find all running apps that match this bundle or are nested inside it
         let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
@@ -964,7 +966,7 @@ class MSCBlockingAppsController: NSObject {
                     // Use default termination logic
                     // Find the running application by its bundle URL and terminate it
                     let bundlePrefix = app.path + "/"
-                    // NSRunningApplication.bundleURL.papth always ends with a /
+                    // NSRunningApplication.bundleURL.path always ends with a /
                     // so build our comparison URL with a path ending with a /
                     let bundleURL = URL(fileURLWithPath: bundlePrefix)
 
