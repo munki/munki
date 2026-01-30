@@ -987,10 +987,5 @@ class MSCBlockingAppsController: NSObject {
                 }
             }
         }
-
-        // Re-enable the button after a delay in case some apps don't quit
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
-            self?.quitAppsButton?.isEnabled = true
-        }
     }
 }
