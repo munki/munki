@@ -486,6 +486,48 @@ func justUpdate() throws {
     }
 }
 
+/// Returns true if a Python script matching scriptName is running
+func pythonScriptRunning(_ scriptName: String) -> Bool {
+    let output = exec("/bin/ps", args: ["-eo", "command="])
+    let lines = output.components(separatedBy: "\n")
+    for line in lines {
+        let part = line.components(separatedBy: " ")
+        if (part[0].contains("/MacOS/Python") || part[0].contains("python")) {
+            if part.count > 1 {
+                if (part[1] as NSString).lastPathComponent == scriptName {
+                    return true
+                }
+            }
+        }
+    }
+    return false
+}
+
+/// Returns true if there is a running executable exactly matching the name
+func executableRunning(_ name: String) -> Bool {
+    let result = exec("/usr/bin/pgrep", args: ["-x", name])
+    return !result.isEmpty
+}
+
+/// Returns true if managedsoftwareupdate is running
+func managedsoftwareupdateInstanceRunning() -> Bool {
+    // A Python version of managedsoftwareupdate might be running,
+    // or a compiled version
+    if executableRunning("managedsoftwareupdate") {
+        return true
+    }
+    if pythonScriptRunning(".managedsoftwareupdate.py") {
+        return true
+    }
+    if pythonScriptRunning("managedsoftwareupdate.py") {
+        return true
+    }
+    if pythonScriptRunning("managedsoftwareupdate") {
+        return true
+    }
+    return false
+}
+
 func getRunningProcessesWithUsers() -> [[String:String]] {
     // Returns a list of usernames and paths of running processes
     var proc_list = [[String:String]]()
