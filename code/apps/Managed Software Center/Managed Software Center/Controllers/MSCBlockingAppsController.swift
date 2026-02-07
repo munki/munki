@@ -74,13 +74,13 @@ class MSCBlockingAppsController: NSObject {
 
     /// Presents an interactive sheet listing blocking applications so the user can close them.
     ///
-    /// - Returns: `true` if blocking apps are running and user cancelled; `false` if no blocking apps or all were closed.
+    /// - Returns: `false` if blocking apps are running and user cancelled; `true` if no blocking apps or all were closed.
     ///
     /// The sheet is dismissed automatically when all apps are closed or when the user cancels/ignores it.
     /// This method blocks further progress until the user has handled the apps or dismissed the sheet.
-    func presentBlockingAppsSheet() -> Bool {
+    func canContinueAfterPresentingBlockingAppsSheet() -> Bool {
         guard let mainWindow = parentWindow else {
-            msc_debug_log("Could not get main window in presentBlockingAppsSheet")
+            msc_debug_log("Could not get main window in canContinueAfterPresentingBlockingAppsSheet")
             return false
         }
 
@@ -130,7 +130,7 @@ class MSCBlockingAppsController: NSObject {
         let running_apps = getRunningBlockingApps(appsToCheck)
 
         if running_apps.isEmpty {
-            return false
+            return true
         }
 
         guard let user = getconsoleuser() else {
@@ -144,7 +144,7 @@ class MSCBlockingAppsController: NSObject {
 
         if !other_users_apps.isEmpty {
             showOtherUsersAlert(apps: other_users_apps, in: mainWindow)
-            return true
+            return false
         }
 
         // Get apps for current user only
@@ -192,18 +192,18 @@ class MSCBlockingAppsController: NSObject {
         sheet = sheetWindow
 
         // Track result
-        var userCancelled = true
+        var canContinue = false
 
         // Start monitoring for app closures
-        startMonitoring(mainWindow: mainWindow, userCancelled: &userCancelled)
+        startMonitoring(mainWindow: mainWindow)
 
         // Show the sheet and wait for it to complete
         mainWindow.beginSheet(sheetWindow) { [weak self] response in
             self?.monitorTimer?.invalidate()
             if response == .cancel {
-                userCancelled = true
+                canContinue = false
             } else if response == .OK {
-                userCancelled = false
+                canContinue = true
             }
             NSApp.stopModal()
         }
@@ -214,7 +214,7 @@ class MSCBlockingAppsController: NSObject {
 
         // Save apps to reopen if checkbox is checked and user didn't cancel
         // Exclude apps that are being removed as they won't exist after the update
-        if !userCancelled, reopenCheckbox?.state == .on {
+        if canContinue, reopenCheckbox?.state == .on {
             appsToReopenAfterUpdate = closedApps.filter { !appsBeingRemovedPaths.contains($0) }
         } else {
             appsToReopenAfterUpdate = []
@@ -223,7 +223,7 @@ class MSCBlockingAppsController: NSObject {
         // Cleanup
         cleanup()
 
-        return userCancelled
+        return canContinue
     }
 
     // MARK: - Private Methods
@@ -654,7 +654,7 @@ class MSCBlockingAppsController: NSObject {
         }
     }
 
-    private func startMonitoring(mainWindow: NSWindow, userCancelled _: inout Bool) {
+    private func startMonitoring(mainWindow: NSWindow) {
         let appsToCheckCopy = appsToCheck
         let currentUserCopy = currentUser
 
@@ -742,9 +742,9 @@ class MSCBlockingAppsController: NSObject {
         spinner.stopAnimation(nil)
         spinner.isHidden = true
 
-        // Check if AutoForceQuitAppsOnUpdates is disabled
-        let autoForceQuitEnabled = pythonishBool(pref("AutoForceQuitAppsOnUpdate"))
-        if !autoForceQuitEnabled {
+        // Check if OfferToForceQuitBlockingAppss is enabled
+        let offerToForceQuitEnabled = pythonishBool(pref("OfferToForceQuitBlockingApps"))
+        if !offerToForceQuitEnabled {
             // Show "Manual quit required" label instead of Force Quit button
             showManualQuitLabel(for: appPath, in: rowView)
             return
