@@ -568,11 +568,17 @@ func getRunningProcessesWithUsers() -> [[String:String]] {
     return proc_list
 }
 
-func getRunningBlockingApps(_ appnames: [String]) -> [[String:String]] {
-    // Given a list of app names, return a list of dictionaries for apps in the list
-    // that are running. Each dictionary contains username, pathname, display_name
+struct BlockingAppInfo {
+    var user = ""
+    var pathname = ""
+    var display_name = ""
+}
+
+func getRunningBlockingApps(_ appnames: [String]) -> [BlockingAppInfo] {
+    // Given a list of app names, return a list of BlockingAppInfo for apps i
+    // the list that are running.
     let proc_list = getRunningProcessesWithUsers()
-    var running_apps = [[String:String]]()
+    var running_apps = [BlockingAppInfo]()
     let filemanager = FileManager.default
     for appname in appnames {
         var matching_items = [[String:String]]()
@@ -604,9 +610,42 @@ func getRunningBlockingApps(_ appnames: [String]) -> [[String:String]] {
                 // ask NSFileManager for localized name since end-users
                 // will see this name
                 matching_items[index]["display_name"] = filemanager.displayName(atPath: path)
-                running_apps.append(matching_items[index])
+                running_apps.append(
+                    BlockingAppInfo(
+                        user: matching_items[index]["user"] ?? "",
+                        pathname: path,
+                        display_name: filemanager.displayName(atPath: path)
+                    )
+                )
             }
         }
     }
     return running_apps
 }
+
+/// returns a list of blocking_applications for pkginfo item
+func blockingApplicationsForItem(_ pkginfo: PlistDict) -> [String] {
+    if let blockingApplications = pkginfo["blocking_applications"] as? [String] {
+        return blockingApplications
+    } else {
+        // if no blocking_applications specified, get appnames
+        // from 'installs' list if it exists
+        if let installs = pkginfo["installs"] as? [PlistDict] {
+            let apps = installs.filter {
+                $0["type"] as? String ?? "" == "application"
+            }
+            let appNames = apps.map {
+                ($0["path"] as? NSString)?.lastPathComponent ?? ""
+            }.filter { !$0.isEmpty }
+            return appNames
+        }
+    }
+    return []
+}
+
+/// Returns a list of blocking_applications for the pkginfo item that are running
+func blockingApplicationsRunning(_ pkginfo: PlistDict) -> [BlockingAppInfo] {
+    let appNames = blockingApplicationsForItem(pkginfo)
+    return getRunningBlockingApps(appNames)
+}
+

@@ -78,7 +78,9 @@ class MSCBlockingAppsController: NSObject {
 
     /// Presents an interactive sheet listing blocking applications so the user can close them.
     ///
-    /// - Returns: `false` if blocking apps are running and user cancelled; `true` if no blocking apps or all were closed.
+    /// - Returns: `false` if blocking apps are running and user cancelled;
+    ///            `true` if no blocking apps or all were closed,
+    ///            `true` if user clicks "Update others"
     ///
     /// The sheet is dismissed automatically when all apps are closed or when the user cancels/ignores it.
     /// This method blocks further progress until the user has handled the apps or dismissed the sheet.
@@ -96,15 +98,7 @@ class MSCBlockingAppsController: NSObject {
         for update_item in getUpdateList() {
             let preventAutoQuit = update_item["prevent_auto_quit_on_update"] as? Bool ?? false
             let isBeingRemoved = update_item["status"] as? String == "will-be-removed"
-            var itemBlockingApps = [String]()
-
-            if let blocking_apps = update_item["blocking_applications"] as? [String] {
-                itemBlockingApps = blocking_apps
-            } else if let installs_items = update_item["installs"] as? [PlistDict] {
-                itemBlockingApps = installs_items.filter { ($0["type"] as? String ?? "" == "application" &&
-                        !($0["path"] as? String ?? "").isEmpty) }.map { ($0["path"] as? NSString ?? "").lastPathComponent }
-            }
-
+            let itemBlockingApps = blockingApplicationsForItem(update_item.my)
             if itemBlockingApps.count == 1 {
                 // track the repo icons by app name in case we need them
                 let appName = itemBlockingApps.first!
@@ -149,8 +143,8 @@ class MSCBlockingAppsController: NSObject {
         currentUser = user
 
         let other_users_apps = running_apps
-            .filter { $0["user"] ?? "" != currentUser }
-            .map { $0["display_name"] ?? "" }
+            .filter { $0.user != currentUser }
+            .map { $0.display_name }
 
         if !other_users_apps.isEmpty {
             showOtherUsersAlert(apps: other_users_apps, in: mainWindow)
@@ -158,7 +152,7 @@ class MSCBlockingAppsController: NSObject {
         }
 
         // Get apps for current user only
-        let my_apps = running_apps.filter { $0["user"] ?? "" == currentUser }
+        let my_apps = running_apps.filter { $0.user == currentUser }
 
         // Build a set of unique apps with their paths for icon lookup
         var uniqueApps = [(displayName: String, path: String)]()
@@ -166,10 +160,10 @@ class MSCBlockingAppsController: NSObject {
         manualQuitAppPaths = []
         appsBeingRemovedPaths = []
         for app in my_apps {
-            let displayName = app["display_name"] ?? ""
+            let displayName = app.display_name
             if !displayName.isEmpty, !seenNames.contains(displayName) {
                 seenNames.insert(displayName)
-                var appPath = app["pathname"] ?? ""
+                var appPath = app.pathname
                 if !appPath.isEmpty {
                     while !appPath.isEmpty, !appPath.hasSuffix(".app") {
                         appPath = (appPath as NSString).deletingLastPathComponent
@@ -336,7 +330,10 @@ class MSCBlockingAppsController: NSObject {
         reopenCheckbox = checkbox
 
         // Quit Apps button
-        let quitButton = NSButton(title: NSLocalizedString("Quit Apps", comment: "Quit Apps button title"), target: self, action: #selector(quitApps(_:)))
+        let quitButton = NSButton(
+            title: NSLocalizedString("Quit Apps", comment: "Quit Apps button title"),
+            target: self, action: #selector(quitApps(_:))
+        )
         quitButton.translatesAutoresizingMaskIntoConstraints = false
         quitButton.bezelStyle = .rounded
         quitButton.keyEquivalent = "\r"
@@ -344,11 +341,23 @@ class MSCBlockingAppsController: NSObject {
         quitAppsButton = quitButton
 
         // Cancel button
-        let cancelButton = NSButton(title: NSLocalizedString("Cancel", comment: "Cancel button title/short action text"), target: self, action: #selector(cancelSheet(_:)))
+        let cancelButton = NSButton(
+            title: NSLocalizedString("Cancel", comment: "Cancel button title/short action text"),
+            target: self, action: #selector(cancelSheet(_:))
+        )
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.bezelStyle = .rounded
         cancelButton.keyEquivalent = "\u{1B}"
         contentView.addSubview(cancelButton)
+        
+        // Update others button
+        let updateOthersButton = NSButton(
+            title: NSLocalizedString("Update others", comment: "Update others button title"),
+            target: self, action: #selector(updateOthers(_:))
+        )
+        updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
+        updateOthersButton.bezelStyle = .rounded
+        contentView.addSubview(updateOthersButton)
 
         // Layout constraints
         NSLayoutConstraint.activate([
@@ -383,6 +392,9 @@ class MSCBlockingAppsController: NSObject {
 
             cancelButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
             cancelButton.trailingAnchor.constraint(equalTo: quitButton.leadingAnchor, constant: -12),
+            
+            updateOthersButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
+            updateOthersButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin)
         ])
 
         sheetWindow.contentView = contentView
@@ -717,12 +729,12 @@ class MSCBlockingAppsController: NSObject {
             }
 
             let stillRunning = getRunningBlockingApps(appsToCheckCopy)
-            let myStillRunning = stillRunning.filter { $0["user"] ?? "" == currentUserCopy }
+            let myStillRunning = stillRunning.filter { $0.user == currentUserCopy }
 
             // Get the paths of still-running apps (extract the executable paths)
             var stillRunningPaths = Set<String>()
             for app in myStillRunning {
-                let appPath = app["pathname"] ?? ""
+                let appPath = app.pathname
                 if !appPath.isEmpty {
                     stillRunningPaths.insert(appPath)
                 }
@@ -967,6 +979,15 @@ class MSCBlockingAppsController: NSObject {
     }
 
     // MARK: - Actions
+    
+    @objc private func updateOthers(_: Any?) {
+        guard let sheetWindow = sheet,
+              let mainWindow = parentWindow
+        else {
+            return
+        }
+        mainWindow.endSheet(sheetWindow, returnCode: .OK)
+    }
 
     @objc private func cancelSheet(_: Any?) {
         guard let sheetWindow = sheet,

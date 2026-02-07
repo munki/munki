@@ -475,12 +475,12 @@ class MSCAlertController: NSObject {
             return false
         }
         let other_users_apps = Array(Set(running_apps
-                .filter { $0["user"] ?? "" != currentUser }
-                .map { $0["display_name"] ?? "" }
+            .filter { $0.user != currentUser }
+            .map { $0.display_name }
                 )).sorted { $0 < $1 }
         let my_apps = Array(Set(running_apps
-                .filter { $0["user"] ?? "" == currentUser }
-                .map { $0["display_name"] ?? "" }
+            .filter { $0.user == currentUser }
+            .map { $0.display_name }
                 )).sorted { $0 < $1 }
         //  msc_log("MSC", "conflicting_apps", ','.join(other_users_apps + my_apps))
         let alert = NSAlert()
