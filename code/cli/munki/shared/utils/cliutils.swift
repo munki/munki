@@ -42,6 +42,8 @@ struct CLIResults {
 class ProcessRunner {
     let task = Process()
     var results = CLIResults()
+    var stdoutData = Data()
+    var stderrData = Data()
     // var delegate: ProcessDelegate?
 
     init(_ tool: String,
@@ -66,7 +68,12 @@ class ProcessRunner {
                 fh.readabilityHandler = nil
                 try? fh.close()
             } else {
-                self.processOutput(String(data: data, encoding: .utf8)!)
+                self.stdoutData.append(data)
+                // try to decode the data we've received as a string
+                if let outputString = String(data: self.stdoutData, encoding: .utf8) {
+                    self.processOutput(outputString)
+                    self.stdoutData.removeAll(keepingCapacity: false)
+                }
             }
         }
         let errorPipe = Pipe()
@@ -76,7 +83,12 @@ class ProcessRunner {
                 fh.readabilityHandler = nil
                 try? fh.close()
             } else {
-                self.processError(String(data: data, encoding: .utf8)!)
+                self.stderrData.append(data)
+                // try to decode the data we've received as a string
+                if let errorString = String(data: self.stderrData, encoding: .utf8) {
+                    self.processError(errorString)
+                    self.stderrData.removeAll(keepingCapacity: false)
+                }
             }
         }
         let inputPipe = Pipe()
@@ -387,7 +399,7 @@ class AsyncProcessRunner {
             } else {
                 self.stderrData.append(data)
                 // try to decode the data we've received as a string
-                if let errorString = String(data: self.stdoutData, encoding: .utf8) {
+                if let errorString = String(data: self.stderrData, encoding: .utf8) {
                     self.processError(errorString)
                     self.stderrData.removeAll(keepingCapacity: false)
                 }
