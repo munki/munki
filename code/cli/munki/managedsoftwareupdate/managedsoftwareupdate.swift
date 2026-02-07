@@ -334,6 +334,13 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             commonOptions.installOnly = false
             otherOptions.auto = true
         }
+        if runtype == "installwithnologout" {
+            // we should also switch to 'auto' behavior here
+            // so that we don't attempt to install items with running
+            // blocking_applications
+            commonOptions.installOnly = false
+            otherOptions.auto = true
+        }
         if runtype == "checkandinstallatstartup",
            munkiUpdateCount == 0
         {
