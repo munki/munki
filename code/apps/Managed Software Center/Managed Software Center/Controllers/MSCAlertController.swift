@@ -474,12 +474,14 @@ class MSCAlertController: NSObject {
         guard let currentUser = getconsoleuser() else {
             return false
         }
-        let other_users_apps = running_apps.filter(
-            { $0["user"] ?? "" != currentUser }).map(
-                { $0["display_name"] ?? "" })
-        let my_apps = running_apps.filter(
-            { $0["user"] ?? "" == currentUser }).map(
-                { $0["display_name"] ?? "" })
+        let other_users_apps = Array(Set(running_apps
+                .filter { $0["user"] ?? "" != currentUser }
+                .map { $0["display_name"] ?? "" }
+                )).sorted { $0 < $1 }
+        let my_apps = Array(Set(running_apps
+                .filter { $0["user"] ?? "" == currentUser }
+                .map { $0["display_name"] ?? "" }
+                )).sorted { $0 < $1 }
         //  msc_log("MSC", "conflicting_apps", ','.join(other_users_apps + my_apps))
         let alert = NSAlert()
         if !other_users_apps.isEmpty {
@@ -492,7 +494,7 @@ class MSCAlertController: NSObject {
                 "in use:\n\n%@",
                 comment: "Other Users Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, Array(Set(other_users_apps)).joined(separator: "\n"))
+                format: formatString, other_users_apps.joined(separator: "\n"))
         } else {
             alert.messageText = NSLocalizedString(
                 "Conflicting applications running",
@@ -502,7 +504,7 @@ class MSCAlertController: NSObject {
                 "proceeding with installation or removal:\n\n%@",
                 comment: "Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, Array(Set(my_apps)).joined(separator: "\n"))
+                format: formatString, my_apps.joined(separator: "\n"))
         }
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in

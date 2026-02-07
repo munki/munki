@@ -396,8 +396,12 @@ class MSCBlockingAppsController: NSObject {
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
         let spinnerSize: CGFloat = 16
+        
+        let sortedApps = apps.sorted {
+            $0.displayName.lowercased() < $1.displayName.lowercased()
+        }
 
-        for app in apps {
+        for app in sortedApps {
             let rowView = NSView()
             rowView.translatesAutoresizingMaskIntoConstraints = false
 
