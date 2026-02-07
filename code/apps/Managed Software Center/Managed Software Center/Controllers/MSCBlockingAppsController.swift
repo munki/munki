@@ -65,6 +65,7 @@ class MSCBlockingAppsController: NSObject {
     private let stackViewSpacing: CGFloat = 4
     private let iconSize: CGFloat = 32
     private let maxVisibleRows = 6
+    private let sheetMargin: CGFloat = 24
 
     // MARK: - Initialization
 
@@ -351,17 +352,17 @@ class MSCBlockingAppsController: NSObject {
 
         // Layout constraints
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: sheetMargin),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
 
             messageLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            messageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            messageLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            messageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            messageLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
 
             blockingScrollView.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 12),
-            blockingScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            blockingScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            blockingScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            blockingScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
             blockingScrollView.heightAnchor.constraint(equalToConstant: visibleHeight + 8),
 
             blockingStackView.topAnchor.constraint(equalTo: blockingScrollView.contentView.topAnchor),
@@ -374,11 +375,11 @@ class MSCBlockingAppsController: NSObject {
                  */
             // checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, // constant: 12),
             checkbox.topAnchor.constraint(equalTo: blockingScrollView.bottomAnchor, constant: 12),
-            checkbox.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            checkbox.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
 
             quitButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
-            quitButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            quitButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
+            quitButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+            quitButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -sheetMargin),
 
             cancelButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
             cancelButton.trailingAnchor.constraint(equalTo: quitButton.leadingAnchor, constant: -12),
@@ -400,7 +401,6 @@ class MSCBlockingAppsController: NSObject {
         let sortedApps = apps.sorted {
             $0.displayName.lowercased() < $1.displayName.lowercased()
         }
-
         for app in sortedApps {
             let rowView = NSView()
             rowView.translatesAutoresizingMaskIntoConstraints = false
