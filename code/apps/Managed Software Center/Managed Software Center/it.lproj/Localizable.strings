@@ -331,9 +331,6 @@
 /* Manual quit required label */
 "Manual quit required" = "È necessario uscire manualmente dall'applicazione.";
 
-/* Blocking Apps Running detail for auto-quit sheet */
-"Please quit the following applications to continue with the update:" = "Per procedere con l'aggiornamento, chiudere le seguenti applicazioni:";
-
 /* Removal Error status text */
 "Removal Error" = "Errore di rimozione";
 
@@ -536,7 +533,10 @@
 "You must install these updates using Software Update in System Preferences." = "Installa questi aggiornamenti usando Aggiornamento Software nelle Preferenze di Sistema.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:\n\n%@";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Per installare questo elemento bisogna aggiornare il sistema a Mac OS %@";

@@ -331,9 +331,6 @@
 /* Manual quit required label */
 "Manual quit required" = "Manuel afslutning påkrævet";
 
-/* Blocking Apps Running detail for auto-quit sheet */
-"Please quit the following applications to continue with the update:" = "Luk venligst følgende programmer for at fortsætte med opdateringen:";
-
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
 
@@ -536,7 +533,10 @@
 "You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";

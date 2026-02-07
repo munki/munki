@@ -61,9 +61,9 @@ class MSCBlockingAppsController: NSObject {
 
     // Layout constants
     private let sheetWidth: CGFloat = 400
-    private let rowHeight: CGFloat = 24
+    private let rowHeight: CGFloat = 36
     private let stackViewSpacing: CGFloat = 4
-    private let iconSize: CGFloat = 24
+    private let iconSize: CGFloat = 32
     private let maxVisibleRows = 6
 
     // MARK: - Initialization
@@ -274,16 +274,15 @@ class MSCBlockingAppsController: NSObject {
             "Conflicting applications running",
             comment: "Blocking Apps Running title"
         ))
-        titleLabel.font = NSFont.boldSystemFont(ofSize: 13)
+        titleLabel.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
 
         // Message label
-        let messageLabel = NSTextField(wrappingLabelWithString: NSLocalizedString(
-            "Please quit the following applications to continue with the update:",
+        let messageLabel = NSTextField(wrappingLabelWithString: NSLocalizedString("You must quit these applications before proceeding with installation or removal:",
             comment: "Blocking Apps Running detail for auto-quit sheet"
         ))
-        messageLabel.font = NSFont.systemFont(ofSize: 11)
+        messageLabel.font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
         messageLabel.textColor = .secondaryLabelColor
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(messageLabel)

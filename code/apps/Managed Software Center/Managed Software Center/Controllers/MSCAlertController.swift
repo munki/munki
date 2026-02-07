@@ -498,7 +498,7 @@ class MSCAlertController: NSObject {
                 "Conflicting applications running",
                 comment: "Blocking Apps Running title")
             let formatString = NSLocalizedString(
-                "You must quit the following applications before " +
+                "You must quit these applications before " +
                 "proceeding with installation or removal:\n\n%@",
                 comment: "Blocking Apps Running detail")
             alert.informativeText = String(
