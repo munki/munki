@@ -30,7 +30,7 @@ struct MSUCommonOptions: ParsableArguments {
     var checkOnly = false
 
     @Flag(name: .customLong("installonly"),
-          help: "Skip checking and install all pending updates. No safety checks.")
+          help: "Skip checking and install all pending updates.")
     var installOnly = false
 
     @Flag(name: .customLong("applesuspkgsonly"),
@@ -40,6 +40,10 @@ struct MSUCommonOptions: ParsableArguments {
     @Flag(name: .customLong("munkipkgsonly"),
           help: "Only check/install Munki packages, skip Apple software updates.")
     var munkiPkgsOnly = false
+    
+    @Flag(name: .customLong("force"),
+          help: "Skip checking for blocking applications and just installs or removes the updates.")
+    var force = false
 }
 
 struct MSUConfigOptions: ParsableArguments {
