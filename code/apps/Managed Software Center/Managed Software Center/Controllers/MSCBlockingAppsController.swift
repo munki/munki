@@ -371,7 +371,7 @@ class MSCBlockingAppsController: NSObject {
         )
         updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
         updateOthersButton.bezelStyle = .rounded
-        updateOthersButton.isHidden = !nonBlockedItemsPending
+        updateOthersButton.isHidden = !nonBlockedItemsPending || !pythonishBool(pref("OfferToUpdateOthers"))
         contentView.addSubview(updateOthersButton)
         updateOtherItemsButton = updateOthersButton
 
@@ -782,7 +782,9 @@ class MSCBlockingAppsController: NSObject {
                     if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
                         msc_debug_log("Moving app to closed section: \(app.displayName) at \(app.path)")
                         self.moveAppToClosedSection(path: app.path)
-                        if let updateOthersButton = self.updateOtherItemsButton {
+                        if pythonishBool(pref("OfferToUpdateOthers")),
+                           let updateOthersButton = self.updateOtherItemsButton
+                        {
                             updateOthersButton.isHidden = false
                         }
                     }
