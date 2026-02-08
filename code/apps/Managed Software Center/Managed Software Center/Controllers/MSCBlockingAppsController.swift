@@ -23,7 +23,9 @@ class MSCBlockingAppsController: NSObject {
     private var sheet: NSWindow?
     private var spinners: [String: NSProgressIndicator] = [:]
     private var appsToQuit: [(displayName: String, path: String)] = []
+    private var nonBlockedItemsPending = false
     private var quitAppsButton: NSButton?
+    private var updateOtherItemsButton: NSButton?
     private var monitorTimer: Timer?
     private var appsToCheck: [String] = []
     private var currentUser: String = ""
@@ -95,6 +97,8 @@ class MSCBlockingAppsController: NSObject {
         manualQuitAppNames = []
         appQuitScripts = [:]
         appsBeingRemovedNames = []
+
+        var running_apps: [BlockingAppInfo] = []
         for update_item in getUpdateList() {
             let preventAutoQuit = update_item["prevent_auto_quit_on_update"] as? Bool ?? false
             let isBeingRemoved = update_item["status"] as? String == "will-be-removed"
@@ -106,6 +110,13 @@ class MSCBlockingAppsController: NSObject {
             }
 
             appsToCheck += itemBlockingApps
+            let runningBlockingApps = getRunningBlockingApps(itemBlockingApps)
+            if runningBlockingApps.isEmpty {
+                // this item has no blocking apps or none are running
+                nonBlockedItemsPending = true
+            } else {
+                running_apps += runningBlockingApps
+            }
 
             // Track apps that require manual quit
             if preventAutoQuit {
@@ -131,8 +142,6 @@ class MSCBlockingAppsController: NSObject {
             }
         }
 
-        let running_apps = getRunningBlockingApps(appsToCheck)
-
         if running_apps.isEmpty {
             return true
         }
@@ -144,7 +153,7 @@ class MSCBlockingAppsController: NSObject {
 
         let other_users_apps = running_apps
             .filter { $0.user != currentUser }
-            .map { $0.display_name }
+            .map(\.display_name)
 
         if !other_users_apps.isEmpty {
             showOtherUsersAlert(apps: other_users_apps, in: mainWindow)
@@ -265,18 +274,23 @@ class MSCBlockingAppsController: NSObject {
         let contentView = NSView(frame: NSRect(x: 0, y: 0, width: sheetWidth, height: sheetHeight))
 
         // Title label
-        let titleLabel = NSTextField(labelWithString: NSLocalizedString(
-            "Conflicting applications running",
-            comment: "Blocking Apps Running title"
-        ))
+        let titleLabel = NSTextField(
+            labelWithString: NSLocalizedString(
+                "Conflicting applications running",
+                comment: "Blocking Apps Running title"
+            )
+        )
         titleLabel.font = NSFont.boldSystemFont(ofSize: NSFont.systemFontSize)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
 
         // Message label
-        let messageLabel = NSTextField(wrappingLabelWithString: NSLocalizedString("You must quit these applications before proceeding with installation or removal:",
-            comment: "Blocking Apps Running detail for auto-quit sheet"
-        ))
+        let messageLabel = NSTextField(
+            wrappingLabelWithString: NSLocalizedString(
+                "You must quit these applications before proceeding with installation or removal:",
+                comment: "Blocking Apps Running detail for auto-quit sheet"
+            )
+        )
         messageLabel.font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
         messageLabel.textColor = .secondaryLabelColor
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -349,7 +363,7 @@ class MSCBlockingAppsController: NSObject {
         cancelButton.bezelStyle = .rounded
         cancelButton.keyEquivalent = "\u{1B}"
         contentView.addSubview(cancelButton)
-        
+
         // Update others button
         let updateOthersButton = NSButton(
             title: NSLocalizedString("Update others", comment: "Update others button title"),
@@ -357,7 +371,9 @@ class MSCBlockingAppsController: NSObject {
         )
         updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
         updateOthersButton.bezelStyle = .rounded
+        updateOthersButton.isHidden = !nonBlockedItemsPending
         contentView.addSubview(updateOthersButton)
+        updateOtherItemsButton = updateOthersButton
 
         // Layout constraints
         NSLayoutConstraint.activate([
@@ -392,9 +408,9 @@ class MSCBlockingAppsController: NSObject {
 
             cancelButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
             cancelButton.trailingAnchor.constraint(equalTo: quitButton.leadingAnchor, constant: -12),
-            
+
             updateOthersButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
-            updateOthersButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin)
+            updateOthersButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
         ])
 
         sheetWindow.contentView = contentView
@@ -409,7 +425,7 @@ class MSCBlockingAppsController: NSObject {
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
         let spinnerSize: CGFloat = 16
-        
+
         let sortedApps = apps.sorted {
             $0.displayName.lowercased() < $1.displayName.lowercased()
         }
@@ -766,6 +782,9 @@ class MSCBlockingAppsController: NSObject {
                     if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
                         msc_debug_log("Moving app to closed section: \(app.displayName) at \(app.path)")
                         self.moveAppToClosedSection(path: app.path)
+                        if let updateOthersButton = self.updateOtherItemsButton {
+                            updateOthersButton.isHidden = false
+                        }
                     }
 
                     // Check if app has exceeded force quit delay and is still running
@@ -979,7 +998,7 @@ class MSCBlockingAppsController: NSObject {
     }
 
     // MARK: - Actions
-    
+
     @objc private func updateOthers(_: Any?) {
         guard let sheetWindow = sheet,
               let mainWindow = parentWindow
