@@ -310,7 +310,7 @@ func installWithInstallInfo(
             if onlyUnattended {
                 skipActionText = "skipped"
             }
-            display.detail("Skipping unattended install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
+            display.detail("Skipping install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
             continue
         }
 
