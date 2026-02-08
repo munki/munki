@@ -40,7 +40,7 @@ struct MSUCommonOptions: ParsableArguments {
     @Flag(name: .customLong("munkipkgsonly"),
           help: "Only check/install Munki packages, skip Apple software updates.")
     var munkiPkgsOnly = false
-    
+
     @Flag(name: .customLong("force"),
           help: "Skip checking for blocking applications and just installs or removes the updates.")
     var force = false
