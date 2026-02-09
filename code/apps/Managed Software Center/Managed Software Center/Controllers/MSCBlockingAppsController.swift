@@ -100,7 +100,7 @@ class MSCBlockingAppsController: NSObject {
 
         var running_apps: [BlockingAppInfo] = []
         for update_item in getUpdateList() {
-            let preventAutoQuit = update_item["prevent_auto_quit_on_update"] as? Bool ?? false
+            let manualQuit = update_item["blocking_applications_manual_quit_only"] as? Bool ?? false
             let isBeingRemoved = update_item["status"] as? String == "will-be-removed"
             let itemBlockingApps = blockingApplicationsForItem(update_item.my)
             if itemBlockingApps.count == 1 {
@@ -119,7 +119,7 @@ class MSCBlockingAppsController: NSObject {
             }
 
             // Track apps that require manual quit
-            if preventAutoQuit {
+            if manualQuit {
                 for appName in itemBlockingApps {
                     manualQuitAppNames.insert(appName)
                 }

@@ -380,7 +380,7 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
-            "prevent_auto_quit_on_update",
+            "blocking_applications_manual_quit_only",
             "blocking_applications_quit_script",
         ]
 
@@ -760,7 +760,7 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
-        "prevent_auto_quit_on_update",
+        "blocking_applications_manual_quit_only",
         "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
@@ -1002,7 +1002,7 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
-        "prevent_auto_quit_on_update",
+        "blocking_applications_manual_quit_only",
         "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
