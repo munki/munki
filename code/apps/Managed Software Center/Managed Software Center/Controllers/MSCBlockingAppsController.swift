@@ -46,7 +46,7 @@ class MSCBlockingAppsController: NSObject {
     private var forceQuitButtons: [String: NSButton] = [:] // keyed by app path
     private let forceQuitDelay: TimeInterval = 5.0
 
-    // Manual quit tracking - apps that cannot be auto-quit
+    // Manual quit tracking - apps that cannot/should not be quit by us
     private var manualQuitAppNames: Set<String> = [] // app names that require manual quit
     private var manualQuitAppPaths: Set<String> = [] // app paths that require manual quit
 
@@ -134,10 +134,10 @@ class MSCBlockingAppsController: NSObject {
             }
 
             // Track custom quit scripts for blocking apps
-            if let quitScript = update_item["application_quit_script"] as? String {
+            if let quitScript = update_item["blocking_applications_quit_script"] as? String {
                 for appName in itemBlockingApps {
                     appQuitScripts[appName] = quitScript
-                    msc_debug_log("Found application_quit_script for \(appName)")
+                    msc_debug_log("Found blocking_applications_quit_script for \(appName)")
                 }
             }
         }
@@ -241,6 +241,8 @@ class MSCBlockingAppsController: NSObject {
 
     // MARK: - Private Methods
 
+    /// Shows an alert informing the user that there are blocking processes running as other users
+    /// (which might include root)
     private func showOtherUsersAlert(apps: [String], in window: NSWindow) {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
@@ -260,6 +262,7 @@ class MSCBlockingAppsController: NSObject {
         alert.beginSheetModal(for: window, completionHandler: { _ in })
     }
 
+    /// Creates a sheet that lists blocking applications, and allows users to quit them
     private func createSheet(for apps: [(displayName: String, path: String)]) -> NSWindow {
         let visibleHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
         let sheetHeight: CGFloat = visibleHeight + 170 // Extra height for checkbox
@@ -371,7 +374,7 @@ class MSCBlockingAppsController: NSObject {
         )
         updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
         updateOthersButton.bezelStyle = .rounded
-        updateOthersButton.isHidden = !nonBlockedItemsPending || !pythonishBool(pref("OfferToUpdateOthers"))
+        updateOthersButton.isHidden = !nonBlockedItemsPending || !pythonishBool(pref("MSCOfferToUpdateOthers"))
         contentView.addSubview(updateOthersButton)
         updateOtherItemsButton = updateOthersButton
 
@@ -417,6 +420,7 @@ class MSCBlockingAppsController: NSObject {
         return sheetWindow
     }
 
+    /// Create the list of blocking apps
     private func createBlockingAppsStackView(apps: [(displayName: String, path: String)]) -> NSStackView {
         let stackView = NSStackView()
         stackView.orientation = .vertical
@@ -471,7 +475,7 @@ class MSCBlockingAppsController: NSObject {
             }
 
             if isManualQuit {
-                // Show "Manual quit required" label for apps that can't be auto-quit
+                // Show "Manual quit required" label for apps that can't be quit by us
                 let manualQuitLabel = showManualQuitLabel(for: app.path, in: rowView)
 
                 NSLayoutConstraint.activate([
@@ -488,7 +492,7 @@ class MSCBlockingAppsController: NSObject {
                     nameLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
                 ])
             } else {
-                // Progress spinner (hidden by default) for apps that can be auto-quit
+                // Progress spinner (hidden by default) for apps that can be quit by us
                 let spinner = NSProgressIndicator()
                 spinner.translatesAutoresizingMaskIntoConstraints = false
                 spinner.style = .spinning
@@ -718,6 +722,7 @@ class MSCBlockingAppsController: NSObject {
      }
      */
 
+    /// Removes a closed app from the list of blocking apps and adds it to a list of closed apps
     private func moveAppToClosedSection(path: String) {
         guard !closedApps.contains(path),
               let rowView = appRowViews[path],
@@ -780,9 +785,9 @@ class MSCBlockingAppsController: NSObject {
 
                 for app in self.appsToQuit {
                     if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
-                        msc_debug_log("Moving app to closed section: \(app.displayName) at \(app.path)")
+                        msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
                         self.moveAppToClosedSection(path: app.path)
-                        if pythonishBool(pref("OfferToUpdateOthers")),
+                        if pythonishBool(pref("MSCOfferToUpdateOthers")),
                            let updateOthersButton = self.updateOtherItemsButton
                         {
                             updateOthersButton.isHidden = false
@@ -827,8 +832,8 @@ class MSCBlockingAppsController: NSObject {
         spinner.stopAnimation(nil)
         spinner.isHidden = true
 
-        // Check if OfferToForceQuitBlockingAppss is enabled
-        let offerToForceQuitEnabled = pythonishBool(pref("OfferToForceQuitBlockingApps"))
+        // Check if MSCOfferToForceQuitBlockingAppss is enabled
+        let offerToForceQuitEnabled = pythonishBool(pref("MSCOfferToForceQuitBlockingApps"))
         if !offerToForceQuitEnabled {
             // Show "Manual quit required" label instead of Force Quit button
             showManualQuitLabel(for: appPath, in: rowView)
@@ -1001,6 +1006,8 @@ class MSCBlockingAppsController: NSObject {
 
     // MARK: - Actions
 
+    /// Action when clicking the Update others button;
+    /// closes the sheet and allows update to continue
     @objc private func updateOthers(_: Any?) {
         guard let sheetWindow = sheet,
               let mainWindow = parentWindow
@@ -1010,6 +1017,8 @@ class MSCBlockingAppsController: NSObject {
         mainWindow.endSheet(sheetWindow, returnCode: .OK)
     }
 
+    /// Action when clicking Cancel button;
+    /// closes the sheet and does not allow the update to continue
     @objc private func cancelSheet(_: Any?) {
         guard let sheetWindow = sheet,
               let mainWindow = parentWindow
@@ -1019,6 +1028,8 @@ class MSCBlockingAppsController: NSObject {
         mainWindow.endSheet(sheetWindow, returnCode: .cancel)
     }
 
+    /// Action when clicking Quit Apps button;
+    /// Begins attempts to quit the blocking apps
     @objc private func quitApps(_: Any?) {
         quitAppsButton?.isEnabled = false
 
@@ -1027,7 +1038,7 @@ class MSCBlockingAppsController: NSObject {
 
             // Skip apps that require manual quit
             if manualQuitAppPaths.contains(app.path) {
-                msc_debug_log("Skipping auto-quit for manual quit app: \(app.displayName)")
+                msc_debug_log("Skipping quit attempt for manual quit app: \(app.displayName)")
                 continue
             }
 
@@ -1045,14 +1056,14 @@ class MSCBlockingAppsController: NSObject {
                 let appFileName = (app.path as NSString).lastPathComponent
                 if let quitScript = appQuitScripts[appFileName] {
                     // Run the custom quit script instead of default termination
-                    msc_debug_log("Running application_quit_script for \(app.displayName)")
+                    msc_debug_log("Running blocking_applications_quit_script for \(app.displayName)")
                     DispatchQueue.global(qos: .userInitiated).async {
-                        let result = runEmbeddedScript(quitScript, scriptName: "application_quit_script")
+                        let result = runEmbeddedScript(quitScript, scriptName: "blocking_applications_quit_script")
                         DispatchQueue.main.async {
                             if result.exitcode != 0 {
-                                msc_debug_log("application_quit_script for \(app.displayName) failed with exit code \(result.exitcode)")
+                                msc_debug_log("blocking_applications_quit_script for \(app.displayName) failed with exit code \(result.exitcode)")
                             } else {
-                                msc_debug_log("application_quit_script for \(app.displayName) completed successfully")
+                                msc_debug_log("blocking_applications_quit_script for \(app.displayName) completed successfully")
                             }
                         }
                     }

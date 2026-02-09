@@ -381,7 +381,7 @@ func processInstall(
             "description_staged",
             "installed_size_staged",
             "prevent_auto_quit_on_update",
-            "application_quit_script",
+            "blocking_applications_quit_script",
         ]
 
         if isOptionalInstall {
@@ -761,7 +761,7 @@ func processOptionalInstall(
         "update_available",
         "localized_strings",
         "prevent_auto_quit_on_update",
-        "application_quit_script",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]
@@ -1003,7 +1003,7 @@ func processRemoval(
         "icon_name",
         "PayloadIdentifier",
         "prevent_auto_quit_on_update",
-        "application_quit_script",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]

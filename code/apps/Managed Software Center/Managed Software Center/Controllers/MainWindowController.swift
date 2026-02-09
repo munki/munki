@@ -613,7 +613,7 @@ class MainWindowController: NSWindowController {
         }
 
         // Install session completed successfully - reopen any apps that were closed
-        // (only if OfferToQuitBlockingApps was enabled and the blocking apps controller was used)
+        // (only if MSCOfferToQuitBlockingApps was enabled and the blocking apps controller was used)
         if tasktype == "installwithnologout" && alert_controller.blockingAppsController != nil {
             alert_controller.reopenAppsAfterUpdate()
         }
@@ -887,7 +887,7 @@ class MainWindowController: NSWindowController {
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
 		} else {
-			if pythonishBool(pref("OfferToQuitBlockingApps")) {
+			if pythonishBool(pref("MSCOfferToQuitBlockingApps")) {
 				// offer to quit enabled, lets do some magic
 				if !alert_controller.canContinueAfterHandlingBlockingApps() {
 					loadUpdatesPage(self)
