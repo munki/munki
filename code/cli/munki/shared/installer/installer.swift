@@ -260,6 +260,17 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
 }
 
 /// Uses the installInfo installs list to install items in the correct order and with additional options
+///
+/// There are three install 'modes':
+///   1) Install everything in the list, ignoring 'unattended' state, blocking applications, and any need to logout or restart
+///       - This would be when we're at the loginwindow or when called with the --force option
+///   2) Install things in the list, but skip those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when Managed Software Center triggers an install without logging out, and when the `--installonly` flag is given (without `--force`)
+///   3) Install things in the list, skipping those where unattended_install is false, those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when `managedsoftwareupdate` is called with `--auto`
+///
+///   These modes are controlled by `onlyUnattended` and `considerBlockingApps`, but
+///   in the future perhaps this should be refactored.
 func installWithInstallInfo(
     installList: [PlistDict],
     onlyUnattended: Bool = false,
@@ -293,10 +304,16 @@ func installWithInstallInfo(
                 continue
             }
         }
-        if considerBlockingApps {
+        if onlyUnattended || considerBlockingApps {
             if blockingApplicationsRunning(item) {
                 skippedInstalls.append(item)
                 display.info("Skipping install of \(itemName) because blocking applications are running.")
+                continue
+            }
+            let restartAction = item["RestartAction"] as? String ?? "None"
+            if restartAction != "None" {
+                skippedInstalls.append(item)
+                display.warning("Skipping install of \(itemName) because RestartAction is \(restartAction).")
                 continue
             }
         }
@@ -534,6 +551,17 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
 }
 
 /// Processes removals from the removal list
+///
+/// There are three removal 'modes':
+///   1) Remove everything in the list, ignoring 'unattended' state, blocking applications, and any need to logout or restart
+///       - This would be when we're at the loginwindow or when called with the --force option
+///   2) Remove things in the list, but skip those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when Managed Software Center triggers an install without logging out, and when the `--installonly` flag is given (without `--force`)
+///   3) Remove things in the list, skipping those where unattended_install is false, those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when `managedsoftwareupdate` is called with `--auto`
+///
+///   These modes are controlled by `onlyUnattended` and `considerBlockingApps`, but
+///   in the future perhaps this should be refactored.
 func processRemovals(
     _ removalList: [PlistDict],
     onlyUnattended: Bool = false,
@@ -560,6 +588,12 @@ func processRemovals(
             if blockingApplicationsRunning(item) {
                 skippedRemovals.append(item)
                 display.info("Skipping removal of \(itemName) because blocking applications are running.")
+                continue
+            }
+            let restartAction = item["RestartAction"] as? String ?? "None"
+            if restartAction != "None" {
+                skippedRemovals.append(item)
+                display.warning("Skipping removal of \(itemName) because RestartAction is \(restartAction).")
                 continue
             }
         }
