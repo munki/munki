@@ -533,16 +533,18 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
         itemIndex += 1
         let pathToRemove = "/" + item
         // Check existence without following symlinks
-        if fileType(pathToRemove) == nil {
-            display.debug("\(pathToRemove) is already removed")
+        guard let filetype = fileType(pathToRemove) else {
+            display.debug("\(pathToRemove) does not exist")
             continue
         }
-        if pathIsRegularFile(pathToRemove) || pathIsSymlink(pathToRemove) {
+        if filetype == FileAttributeType.typeRegular.rawValue ||
+            filetype == FileAttributeType.typeSymbolicLink.rawValue
+        {
             display.detail("Removing: \(pathToRemove)")
             removeItemOrRecordError(pathToRemove)
             continue
         }
-        if !pathIsDirectory(pathToRemove) {
+        if filetype != FileAttributeType.typeDirectory.rawValue {
             // filetype we don't know how to handle
             let msg = "Couldn't remove item \(item): unsupported filesystem type"
             display.error(msg)
