@@ -537,14 +537,12 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
             display.debug("\(pathToRemove) does not exist")
             continue
         }
-        if filetype == FileAttributeType.typeRegular.rawValue ||
-            filetype == FileAttributeType.typeSymbolicLink.rawValue
-        {
+        if filetype == .typeRegular || filetype == .typeSymbolicLink {
             display.detail("Removing: \(pathToRemove)")
             removeItemOrRecordError(pathToRemove)
             continue
         }
-        if filetype != FileAttributeType.typeDirectory.rawValue {
+        if filetype != .typeDirectory {
             // filetype we don't know how to handle
             let msg = "Couldn't remove item \(item): unsupported filesystem type"
             display.error(msg)
