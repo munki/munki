@@ -532,7 +532,8 @@ func removeFilesystemItems(pathsToRemove: [String], forceDeleteBundles: Bool) {
     for item in pathsToRemove.sorted().reversed() {
         itemIndex += 1
         let pathToRemove = "/" + item
-        if !pathExists(pathToRemove) {
+        // Check existence without following symlinks
+        if fileType(pathToRemove) == nil {
             display.debug("\(pathToRemove) is already removed")
             continue
         }
