@@ -200,8 +200,14 @@ class MSCBlockingAppsController: NSObject {
         appRowViews = [:]
         closedApps = []
 
+        // Check if all blocking apps are being removed (uninstalled)
+        // If so, we shouldn't offer to reopen them
+        let allAppsBeingRemoved = !uniqueApps.isEmpty && uniqueApps.allSatisfy { app in
+            !app.path.isEmpty && appsBeingRemovedPaths.contains(app.path)
+        }
+
         // Create and configure the sheet
-        let sheetWindow = createSheet(for: uniqueApps)
+        let sheetWindow = createSheet(for: uniqueApps, hideReopenCheckbox: allAppsBeingRemoved)
         sheet = sheetWindow
 
         // Track result
@@ -225,9 +231,9 @@ class MSCBlockingAppsController: NSObject {
         NSApp.runModal(for: sheetWindow)
         monitorTimer?.invalidate()
 
-        // Save apps to reopen if checkbox is checked and user didn't cancel
+        // Save apps to reopen if checkbox is checked, visible, and user didn't cancel
         // Exclude apps that are being removed as they won't exist after the update
-        if canContinue, reopenCheckbox?.state == .on {
+        if canContinue, reopenCheckbox?.state == .on, reopenCheckbox?.isHidden == false {
             appsToReopenAfterUpdate = closedApps.filter { !appsBeingRemovedPaths.contains($0) }
         } else {
             appsToReopenAfterUpdate = []
@@ -263,9 +269,11 @@ class MSCBlockingAppsController: NSObject {
     }
 
     /// Creates a sheet that lists blocking applications, and allows users to quit them
-    private func createSheet(for apps: [(displayName: String, path: String)]) -> NSWindow {
+    private func createSheet(for apps: [(displayName: String, path: String)], hideReopenCheckbox: Bool = false) -> NSWindow {
         let visibleHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
-        let sheetHeight: CGFloat = visibleHeight + 170 // Extra height for checkbox
+        // Adjust height based on whether checkbox is shown
+        let checkboxHeight: CGFloat = hideReopenCheckbox ? 0 : 28 // checkbox height + spacing
+        let sheetHeight: CGFloat = visibleHeight + 142 + checkboxHeight // Extra height for UI elements
 
         let sheetWindow = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: sheetWidth, height: sheetHeight),
@@ -336,13 +344,14 @@ class MSCBlockingAppsController: NSObject {
          contentView.addSubview(closedSection)
          */
 
-        // Reopen apps checkbox
+        // Reopen apps checkbox (hidden if all apps are being removed)
         let checkbox = NSButton(checkboxWithTitle: NSLocalizedString(
             "Reopen applications after update",
             comment: "Reopen apps after update checkbox"
         ), target: nil, action: nil)
         checkbox.translatesAutoresizingMaskIntoConstraints = false
         checkbox.state = .on
+        checkbox.isHidden = hideReopenCheckbox
         contentView.addSubview(checkbox)
         reopenCheckbox = checkbox
 
@@ -379,6 +388,10 @@ class MSCBlockingAppsController: NSObject {
         updateOtherItemsButton = updateOthersButton
 
         // Layout constraints
+        // When checkbox is hidden, position buttons relative to blockingScrollView instead
+        let buttonsTopAnchor = hideReopenCheckbox ? blockingScrollView.bottomAnchor : checkbox.bottomAnchor
+        let buttonsTopConstant: CGFloat = hideReopenCheckbox ? 16 : 16
+
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: sheetMargin),
             titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
@@ -405,14 +418,14 @@ class MSCBlockingAppsController: NSObject {
             checkbox.topAnchor.constraint(equalTo: blockingScrollView.bottomAnchor, constant: 12),
             checkbox.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
 
-            quitButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
+            quitButton.topAnchor.constraint(equalTo: buttonsTopAnchor, constant: buttonsTopConstant),
             quitButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
             quitButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -sheetMargin),
 
-            cancelButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
+            cancelButton.topAnchor.constraint(equalTo: buttonsTopAnchor, constant: buttonsTopConstant),
             cancelButton.trailingAnchor.constraint(equalTo: quitButton.leadingAnchor, constant: -12),
 
-            updateOthersButton.topAnchor.constraint(equalTo: checkbox.bottomAnchor, constant: 16),
+            updateOthersButton.topAnchor.constraint(equalTo: buttonsTopAnchor, constant: buttonsTopConstant),
             updateOthersButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
         ])
 
@@ -779,39 +792,38 @@ class MSCBlockingAppsController: NSObject {
             }
 
             // Check for newly closed apps and move them to the closed section
-            // Must be done on main thread for UI updates
-            DispatchQueue.main.async {
-                let now = Date()
+            // Timer is already on main RunLoop with .common mode, so we're on the main thread
+            let now = Date()
 
-                for app in self.appsToQuit {
-                    if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
-                        msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
-                        self.moveAppToClosedSection(path: app.path)
-                        if pythonishBool(pref("MSCOfferToUpdateOthers")),
-                           let updateOthersButton = self.updateOtherItemsButton
-                        {
-                            updateOthersButton.isHidden = false
-                        }
-                    }
-
-                    // Check if app has exceeded force quit delay and is still running
-                    if let quitTime = self.quitInitiatedTimes[app.path],
-                       now.timeIntervalSince(quitTime) >= self.forceQuitDelay,
-                       isAppStillRunning(app.path),
-                       !self.closedApps.contains(app.path),
-                       self.forceQuitButtons[app.path] == nil
+            for app in self.appsToQuit {
+                msc_debug_log("Checking app: \(app.displayName) path=\(app.path) isEmpty=\(app.path.isEmpty) isStillRunning=\(isAppStillRunning(app.path)) inClosedList=\(self.closedApps.contains(app.path))")
+                if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
+                    msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
+                    self.moveAppToClosedSection(path: app.path)
+                    if pythonishBool(pref("MSCOfferToUpdateOthers")),
+                       let updateOthersButton = self.updateOtherItemsButton
                     {
-                        // Show force quit button for this app
-                        self.showForceQuitButton(for: app.path)
+                        updateOthersButton.isHidden = false
                     }
                 }
 
-                if myStillRunning.isEmpty {
-                    // All apps have been closed
-                    timer.invalidate()
-                    if let sheetWindow = self.sheet {
-                        mainWindow.endSheet(sheetWindow, returnCode: .OK)
-                    }
+                // Check if app has exceeded force quit delay and is still running
+                if let quitTime = self.quitInitiatedTimes[app.path],
+                   now.timeIntervalSince(quitTime) >= self.forceQuitDelay,
+                   isAppStillRunning(app.path),
+                   !self.closedApps.contains(app.path),
+                   self.forceQuitButtons[app.path] == nil
+                {
+                    // Show force quit button for this app
+                    self.showForceQuitButton(for: app.path)
+                }
+            }
+
+            if myStillRunning.isEmpty {
+                // All apps have been closed
+                timer.invalidate()
+                if let sheetWindow = self.sheet {
+                    mainWindow.endSheet(sheetWindow, returnCode: .OK)
                 }
             }
         }
