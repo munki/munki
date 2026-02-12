@@ -151,9 +151,9 @@ func processInstall(
 
     // have we processed this already?
     if let processedInstalls = installInfo["processed_installs"] as? [String],
-       processedInstalls.contains(manifestItemName)
+       processedInstalls.contains(manifestItemName) || processedInstalls.contains(manifestItemNameWithoutVersion)
     {
-        display.debug1("\(manifestItemName) has already been processed for install.")
+        display.debug1("\(manifestItemNameWithoutVersion) has already been processed for install.")
         return true
     }
     if let processedUninstalls = installInfo["processed_uninstalls"] as? [String],
@@ -521,7 +521,7 @@ func processInstall(
     if !isManagedUpdate {
         display.debug2("Adding \(manifestItemName) to the list of processed installs")
         var processedInstalls = installInfo["processed_installs"] as? [String] ?? []
-        processedInstalls.append(manifestItemName)
+        processedInstalls.append(manifestItemNameWithoutVersion)
         installInfo["processed_installs"] = processedInstalls
     }
     return true
