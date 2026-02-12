@@ -20,6 +20,8 @@
 import Darwin
 import Foundation
 
+private let display = DisplayAndLog.main
+
 /// List extended attributes for path
 /// A simple implementation sufficient for Munki's needs
 /// Inspired by https://github.com/okla/swift-xattr/blob/master/xattr.swift
@@ -32,7 +34,7 @@ func listXattrs(atPath path: String) throws -> [String] {
     }
 
     let buf = UnsafeMutablePointer<Int8>.allocate(capacity: bufLength)
-    guard listxattr(path, buf, bufLength, 0) != -1 else {
+    guard listxattr(path, buf, bufLength, XATTR_NOFOLLOW) != -1 else {
         let errString = String(utf8String: strerror(errno)) ?? String(errno)
         throw MunkiError("Could not get list of xattrs for \(path): \(errString)")
     }
@@ -67,7 +69,7 @@ func setXattr(named name: String, data: Data, atPath path: String) throws {
 func getXattr(named name: String, atPath path: String) throws -> Data {
     let bufLength = getxattr(path, name, nil, 0, 0, 0)
 
-    guard bufLength != -1, let buf = malloc(bufLength), getxattr(path, name, buf, bufLength, 0, 0) != -1 else {
+    guard bufLength != -1, let buf = malloc(bufLength), getxattr(path, name, buf, bufLength, 0, XATTR_NOFOLLOW) != -1 else {
         let errString = String(utf8String: strerror(errno)) ?? String(errno)
         throw MunkiError("Failed to get xattr \(name) at \(path): \(errString)")
     }
@@ -75,21 +77,26 @@ func getXattr(named name: String, atPath path: String) throws -> Data {
 }
 
 /// Removes com.apple.quarantine xattr from a path
-func removeQuarantineXattrFromItem(_ path: String) throws {
-    let xattrs = try listXattrs(atPath: path)
-    if xattrs.contains("com.apple.quarantine") {
-        try removeXattr("com.apple.quarantine", atPath: path)
+func removeQuarantineXattrFromItem(_ path: String) {
+    do {
+        let xattrs = try listXattrs(atPath: path)
+        if xattrs.contains("com.apple.quarantine") {
+                try removeXattr("com.apple.quarantine", atPath: path)
+        }
+    } catch let error {
+        display.warning(
+            "Failed to remove quarantine xattr for \(path): \(error.localizedDescription)")
     }
 }
 
 /// Removes com.apple.quarantine xattr from a path, recursively if needed
-func removeQuarantineXattrsRecursively(_ path: String) throws {
-    try removeQuarantineXattrFromItem(path)
+func removeQuarantineXattrsRecursively(_ path: String) {
+    removeQuarantineXattrFromItem(path)
     if pathIsDirectory(path) {
         let dirEnum = FileManager.default.enumerator(atPath: path)
         while let item = dirEnum?.nextObject() as? String {
             let itempath = (path as NSString).appendingPathComponent(item)
-            try removeQuarantineXattrFromItem(itempath)
+            removeQuarantineXattrFromItem(itempath)
         }
     }
 }
