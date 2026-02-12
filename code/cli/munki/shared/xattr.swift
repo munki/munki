@@ -81,9 +81,9 @@ func removeQuarantineXattrFromItem(_ path: String) {
     do {
         let xattrs = try listXattrs(atPath: path)
         if xattrs.contains("com.apple.quarantine") {
-                try removeXattr("com.apple.quarantine", atPath: path)
+            try removeXattr("com.apple.quarantine", atPath: path)
         }
-    } catch let error {
+    } catch {
         display.warning(
             "Failed to remove quarantine xattr for \(path): \(error.localizedDescription)")
     }
