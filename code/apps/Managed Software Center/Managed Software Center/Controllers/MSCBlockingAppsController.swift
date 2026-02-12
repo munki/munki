@@ -792,39 +792,38 @@ class MSCBlockingAppsController: NSObject {
             }
 
             // Check for newly closed apps and move them to the closed section
-            // Must be done on main thread for UI updates
-            DispatchQueue.main.async {
-                let now = Date()
+            // Timer is already on main RunLoop with .common mode, so we're on the main thread
+            let now = Date()
 
-                for app in self.appsToQuit {
-                    if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
-                        msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
-                        self.moveAppToClosedSection(path: app.path)
-                        if pythonishBool(pref("MSCOfferToUpdateOthers")),
-                           let updateOthersButton = self.updateOtherItemsButton
-                        {
-                            updateOthersButton.isHidden = false
-                        }
-                    }
-
-                    // Check if app has exceeded force quit delay and is still running
-                    if let quitTime = self.quitInitiatedTimes[app.path],
-                       now.timeIntervalSince(quitTime) >= self.forceQuitDelay,
-                       isAppStillRunning(app.path),
-                       !self.closedApps.contains(app.path),
-                       self.forceQuitButtons[app.path] == nil
+            for app in self.appsToQuit {
+                msc_debug_log("Checking app: \(app.displayName) path=\(app.path) isEmpty=\(app.path.isEmpty) isStillRunning=\(isAppStillRunning(app.path)) inClosedList=\(self.closedApps.contains(app.path))")
+                if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
+                    msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
+                    self.moveAppToClosedSection(path: app.path)
+                    if pythonishBool(pref("MSCOfferToUpdateOthers")),
+                       let updateOthersButton = self.updateOtherItemsButton
                     {
-                        // Show force quit button for this app
-                        self.showForceQuitButton(for: app.path)
+                        updateOthersButton.isHidden = false
                     }
                 }
 
-                if myStillRunning.isEmpty {
-                    // All apps have been closed
-                    timer.invalidate()
-                    if let sheetWindow = self.sheet {
-                        mainWindow.endSheet(sheetWindow, returnCode: .OK)
-                    }
+                // Check if app has exceeded force quit delay and is still running
+                if let quitTime = self.quitInitiatedTimes[app.path],
+                   now.timeIntervalSince(quitTime) >= self.forceQuitDelay,
+                   isAppStillRunning(app.path),
+                   !self.closedApps.contains(app.path),
+                   self.forceQuitButtons[app.path] == nil
+                {
+                    // Show force quit button for this app
+                    self.showForceQuitButton(for: app.path)
+                }
+            }
+
+            if myStillRunning.isEmpty {
+                // All apps have been closed
+                timer.invalidate()
+                if let sheetWindow = self.sheet {
+                    mainWindow.endSheet(sheetWindow, returnCode: .OK)
                 }
             }
         }
