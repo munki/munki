@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -389,6 +389,42 @@
 		C09616C72DEE6DE200281B6B /* munkilog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074DB2C33AE5F00B86310 /* munkilog.swift */; };
 		C09616C82DEE6DF400281B6B /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
 		C09616C92DEE6E1300281B6B /* tempfileutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C058EF282DCD11E1002775E0 /* tempfileutils.swift */; };
+		C0AD96022F3E58C50029A293 /* manifestutil.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95F82F3E58C50029A293 /* manifestutil.swift */; };
+		C0AD96032F3E58C50029A293 /* MUcatalogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95F92F3E58C50029A293 /* MUcatalogs.swift */; };
+		C0AD96042F3E58C50029A293 /* MUdisplayManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95FA2F3E58C50029A293 /* MUdisplayManifest.swift */; };
+		C0AD96052F3E58C50029A293 /* MUfind.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95FB2F3E58C50029A293 /* MUfind.swift */; };
+		C0AD96062F3E58C50029A293 /* MUlistManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95FC2F3E58C50029A293 /* MUlistManifests.swift */; };
+		C0AD96072F3E58C50029A293 /* MUmanifestEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95FD2F3E58C50029A293 /* MUmanifestEditing.swift */; };
+		C0AD96082F3E58C50029A293 /* MUmanifestFileOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95FE2F3E58C50029A293 /* MUmanifestFileOperations.swift */; };
+		C0AD96092F3E58C50029A293 /* MUrunInteractive.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD95FF2F3E58C50029A293 /* MUrunInteractive.swift */; };
+		C0AD960A2F3E58C50029A293 /* tokenize.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96002F3E58C50029A293 /* tokenize.swift */; };
+		C0AD960D2F3E58C90029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD960B2F3E58C90029A293 /* main.swift */; };
+		C0AD96102F3E58CD0029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD960E2F3E58CD0029A293 /* main.swift */; };
+		C0AD96132F3E58D10029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96112F3E58D10029A293 /* main.swift */; };
+		C0AD962C2F3E58D80029A293 /* munki_client.pem in Resources */ = {isa = PBXBuildFile; fileRef = C0AD96142F3E58D80029A293 /* munki_client.pem */; };
+		C0AD962D2F3E58D80029A293 /* test_info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C0AD96152F3E58D80029A293 /* test_info.plist */; };
+		C0AD962E2F3E58D80029A293 /* test_manifest.plist in Resources */ = {isa = PBXBuildFile; fileRef = C0AD96162F3E58D80029A293 /* test_manifest.plist */; };
+		C0AD962F2F3E58D80029A293 /* analyzeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96182F3E58D80029A293 /* analyzeTests.swift */; };
+		C0AD96302F3E58D80029A293 /* appleupdatesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96192F3E58D80029A293 /* appleupdatesTests.swift */; };
+		C0AD96312F3E58D80029A293 /* cliutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961A2F3E58D80029A293 /* cliutilsTests.swift */; };
+		C0AD96322F3E58D80029A293 /* compareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961B2F3E58D80029A293 /* compareTests.swift */; };
+		C0AD96332F3E58D80029A293 /* downloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961C2F3E58D80029A293 /* downloadTests.swift */; };
+		C0AD96342F3E58D80029A293 /* factsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961D2F3E58D80029A293 /* factsTests.swift */; };
+		C0AD96352F3E58D80029A293 /* fetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961E2F3E58D80029A293 /* fetchTests.swift */; };
+		C0AD96362F3E58D80029A293 /* fileUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961F2F3E58D80029A293 /* fileUtilsTests.swift */; };
+		C0AD96372F3E58D80029A293 /* installationstateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96202F3E58D80029A293 /* installationstateTests.swift */; };
+		C0AD96382F3E58D80029A293 /* keychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96212F3E58D80029A293 /* keychainTests.swift */; };
+		C0AD96392F3E58D80029A293 /* makepkginfolibTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96222F3E58D80029A293 /* makepkginfolibTests.swift */; };
+		C0AD963A2F3E58D80029A293 /* manifestsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96232F3E58D80029A293 /* manifestsTests.swift */; };
+		C0AD963B2F3E58D80029A293 /* pkgutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96242F3E58D80029A293 /* pkgutilsTests.swift */; };
+		C0AD963C2F3E58D80029A293 /* plistutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96252F3E58D80029A293 /* plistutilsTests.swift */; };
+		C0AD963D2F3E58D80029A293 /* scriptutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96262F3E58D80029A293 /* scriptutilsTests.swift */; };
+		C0AD963E2F3E58D80029A293 /* TestingResources.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96272F3E58D80029A293 /* TestingResources.swift */; };
+		C0AD963F2F3E58D80029A293 /* urlsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96282F3E58D80029A293 /* urlsTests.swift */; };
+		C0AD96402F3E58D80029A293 /* versionutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96292F3E58D80029A293 /* versionutilsTests.swift */; };
+		C0AD96412F3E58D80029A293 /* xattrTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD962A2F3E58D80029A293 /* xattrTests.swift */; };
+		C0AD96452F3E58F90029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96422F3E58F90029A293 /* main.swift */; };
+		C0AD96482F3E590E0029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96462F3E590E0029A293 /* main.swift */; };
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
@@ -776,6 +812,44 @@
 		C0848D172C94D1840008B463 /* iconimporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = iconimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0848D192C94D1840008B463 /* iconimporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconimporter.swift; sourceTree = "<group>"; };
 		C09616BD2DED335500281B6B /* readline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = readline.h; sourceTree = "<group>"; };
+		C0AD95F72F3E58C50029A293 /* manifestutil.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = manifestutil.entitlements; sourceTree = "<group>"; };
+		C0AD95F82F3E58C50029A293 /* manifestutil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifestutil.swift; sourceTree = "<group>"; };
+		C0AD95F92F3E58C50029A293 /* MUcatalogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUcatalogs.swift; sourceTree = "<group>"; };
+		C0AD95FA2F3E58C50029A293 /* MUdisplayManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUdisplayManifest.swift; sourceTree = "<group>"; };
+		C0AD95FB2F3E58C50029A293 /* MUfind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUfind.swift; sourceTree = "<group>"; };
+		C0AD95FC2F3E58C50029A293 /* MUlistManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUlistManifests.swift; sourceTree = "<group>"; };
+		C0AD95FD2F3E58C50029A293 /* MUmanifestEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUmanifestEditing.swift; sourceTree = "<group>"; };
+		C0AD95FE2F3E58C50029A293 /* MUmanifestFileOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUmanifestFileOperations.swift; sourceTree = "<group>"; };
+		C0AD95FF2F3E58C50029A293 /* MUrunInteractive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MUrunInteractive.swift; sourceTree = "<group>"; };
+		C0AD96002F3E58C50029A293 /* tokenize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tokenize.swift; sourceTree = "<group>"; };
+		C0AD960B2F3E58C90029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C0AD960E2F3E58CD0029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C0AD96112F3E58D10029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C0AD96142F3E58D80029A293 /* munki_client.pem */ = {isa = PBXFileReference; lastKnownFileType = text; path = munki_client.pem; sourceTree = "<group>"; };
+		C0AD96152F3E58D80029A293 /* test_info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = test_info.plist; sourceTree = "<group>"; };
+		C0AD96162F3E58D80029A293 /* test_manifest.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = test_manifest.plist; sourceTree = "<group>"; };
+		C0AD96182F3E58D80029A293 /* analyzeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = analyzeTests.swift; sourceTree = "<group>"; };
+		C0AD96192F3E58D80029A293 /* appleupdatesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appleupdatesTests.swift; sourceTree = "<group>"; };
+		C0AD961A2F3E58D80029A293 /* cliutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cliutilsTests.swift; sourceTree = "<group>"; };
+		C0AD961B2F3E58D80029A293 /* compareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = compareTests.swift; sourceTree = "<group>"; };
+		C0AD961C2F3E58D80029A293 /* downloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = downloadTests.swift; sourceTree = "<group>"; };
+		C0AD961D2F3E58D80029A293 /* factsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = factsTests.swift; sourceTree = "<group>"; };
+		C0AD961E2F3E58D80029A293 /* fetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fetchTests.swift; sourceTree = "<group>"; };
+		C0AD961F2F3E58D80029A293 /* fileUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileUtilsTests.swift; sourceTree = "<group>"; };
+		C0AD96202F3E58D80029A293 /* installationstateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installationstateTests.swift; sourceTree = "<group>"; };
+		C0AD96212F3E58D80029A293 /* keychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keychainTests.swift; sourceTree = "<group>"; };
+		C0AD96222F3E58D80029A293 /* makepkginfolibTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfolibTests.swift; sourceTree = "<group>"; };
+		C0AD96232F3E58D80029A293 /* manifestsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifestsTests.swift; sourceTree = "<group>"; };
+		C0AD96242F3E58D80029A293 /* pkgutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkgutilsTests.swift; sourceTree = "<group>"; };
+		C0AD96252F3E58D80029A293 /* plistutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = plistutilsTests.swift; sourceTree = "<group>"; };
+		C0AD96262F3E58D80029A293 /* scriptutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = scriptutilsTests.swift; sourceTree = "<group>"; };
+		C0AD96272F3E58D80029A293 /* TestingResources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingResources.swift; sourceTree = "<group>"; };
+		C0AD96282F3E58D80029A293 /* urlsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = urlsTests.swift; sourceTree = "<group>"; };
+		C0AD96292F3E58D80029A293 /* versionutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = versionutilsTests.swift; sourceTree = "<group>"; };
+		C0AD962A2F3E58D80029A293 /* xattrTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = xattrTests.swift; sourceTree = "<group>"; };
+		C0AD96422F3E58F90029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C0AD96432F3E58F90029A293 /* precache_agent.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = precache_agent.entitlements; sourceTree = "<group>"; };
+		C0AD96462F3E590E0029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = unusedsoftware.swift; sourceTree = "<group>"; };
 		C0B7FA002D288C2700CC14F0 /* authrestart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = authrestart.swift; sourceTree = "<group>"; };
 		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -809,16 +883,6 @@
 		C0EC07482EF4AE620051894F /* stringutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stringutils.swift; sourceTree = "<group>"; };
 		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		C00519A22D2A5B850060DDB6 /* authrestartd */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = authrestartd; sourceTree = "<group>"; };
-		C0276DB22E8C070500D443C3 /* repocheck */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = repocheck; sourceTree = "<group>"; };
-		C05DB2032DAC53150081FACD /* manifestutil */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = manifestutil; sourceTree = "<group>"; };
-		C0684DD22DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = precache_agent; sourceTree = "<group>"; };
-		C0684E2E2DC040450091E774 /* installhelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = installhelper; sourceTree = "<group>"; };
-		C0684E5D2DC736EE0091E774 /* munkiCLItesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = munkiCLItesting; sourceTree = "<group>"; };
-		C0D66AC02D2CA1DE009EF807 /* logouthelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = logouthelper; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		C005199E2D2A5B850060DDB6 /* Frameworks */ = {
@@ -971,10 +1035,10 @@
 			isa = PBXGroup;
 			children = (
 				C0011CAF2C7A990B0004ED70 /* managedsoftwareupdate-Bridging-Header.h */,
-				C0011CAE2C7A98280004ED70 /* Predicates.h */,
+				C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */,
 				C030A9EF2C43505B007F0B34 /* munkiimport-Bridging-Header.h */,
 				C030A9EE2C43505B007F0B34 /* munkitester-Bridging-Header.h */,
-				C05DB2122DAC67760081FACD /* manifestutil-Bridging-Header.h */,
+				C0011CAE2C7A98280004ED70 /* Predicates.h */,
 				C09616BD2DED335500281B6B /* readline.h */,
 			);
 			path = headers;
@@ -983,14 +1047,14 @@
 		C013643A2C2DC50E008DB215 /* admin */ = {
 			isa = PBXGroup;
 			children = (
-				C013643B2C2DC529008DB215 /* makecatalogslib.swift */,
 				C013643E2C2DCA5C008DB215 /* admincommon.swift */,
-				C07074E12C3489FA00B86310 /* pkginfolib.swift */,
-				C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */,
+				C01CE24A2CA7ADD400542FA1 /* configure.swift */,
+				C013643B2C2DC529008DB215 /* makecatalogslib.swift */,
 				C030A9BA2C3F4CF4007F0B34 /* munkiimportlib.swift */,
 				C030A9C62C41F32E007F0B34 /* munkiimportOptions.swift */,
+				C07074E12C3489FA00B86310 /* pkginfolib.swift */,
+				C030A99E2C3B4F04007F0B34 /* pkginfoOptions.swift */,
 				C030A9F52C435183007F0B34 /* readline.swift */,
-				C01CE24A2CA7ADD400542FA1 /* configure.swift */,
 			);
 			path = admin;
 			sourceTree = "<group>";
@@ -1001,8 +1065,8 @@
 				C07A6FD52C2B7F2100090743 /* FileRepo.swift */,
 				C01364482C2F8EFE008DB215 /* GitFileRepo.swift */,
 				C013644C2C30F5D8008DB215 /* RepoFactory.swift */,
-				C0D00FA72C45814F0021DA9C /* repoutils.swift */,
 				C058EF1D2DCD041A002775E0 /* RepoProtocol.swift */,
+				C0D00FA72C45814F0021DA9C /* repoutils.swift */,
 			);
 			path = munkirepo;
 			sourceTree = "<group>";
@@ -1044,10 +1108,10 @@
 		C043ED212C483ED40047C025 /* installer */ = {
 			isa = PBXGroup;
 			children = (
-				C043ED222C483EEE0047C025 /* rmpkgs.swift */,
-				C0D9C2932C5F08CA0019A067 /* pkg.swift */,
 				C0D9C2962C6012C80019A067 /* dmg.swift */,
 				C0D9C29C2C6151350019A067 /* installer.swift */,
+				C0D9C2932C5F08CA0019A067 /* pkg.swift */,
+				C043ED222C483EEE0047C025 /* rmpkgs.swift */,
 			);
 			path = installer;
 			sourceTree = "<group>";
@@ -1055,8 +1119,8 @@
 		C058EF7A2DCF9F6E002775E0 /* middleware */ = {
 			isa = PBXGroup;
 			children = (
-				C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */,
 				C058EF992DCFA4B2002775E0 /* MiddlewareFactory.swift */,
+				C058EF7B2DCF9FB0002775E0 /* MiddlewareProtocol.swift */,
 			);
 			path = middleware;
 			sourceTree = "<group>";
@@ -1073,27 +1137,27 @@
 		C07A6F9C2C2A82B400090743 = {
 			isa = PBXGroup;
 			children = (
-				C07A6FD02C2B631800090743 /* shared */,
-				C07A6FA72C2A82B400090743 /* managedsoftwareupdate */,
-				C07A6FB82C2B5ADE00090743 /* munkitester */,
-				C07A6FC52C2B5C0700090743 /* makecatalogs */,
-				C030A9962C3A2E18007F0B34 /* makepkginfo */,
-				C030A9CE2C41F798007F0B34 /* munkiimport */,
-				C0E993F62C5BEDAB006FDF44 /* removepackages */,
 				C0D9C24C2C5C5C920019A067 /* app_usage_monitor */,
 				C0D9C28B2C5EDFAE0019A067 /* appusaged */,
-				C0209B902C63E3B7007664A0 /* launchapp */,
-				C0848D182C94D1840008B463 /* iconimporter */,
-				C0BF62CE2CEC00E90030885D /* repoclean */,
-				C00519A22D2A5B850060DDB6 /* authrestartd */,
-				C0D66AC02D2CA1DE009EF807 /* logouthelper */,
-				C05DB2032DAC53150081FACD /* manifestutil */,
-				C0684DD22DBFDBD20091E774 /* precache_agent */,
-				C0684E2E2DC040450091E774 /* installhelper */,
-				C0684E5D2DC736EE0091E774 /* munkiCLItesting */,
-				C0276DB22E8C070500D443C3 /* repocheck */,
-				C07A6FA62C2A82B400090743 /* Products */,
+				C0AD960F2F3E58CD0029A293 /* authrestartd */,
 				C01364502C311DFA008DB215 /* Frameworks */,
+				C0848D182C94D1840008B463 /* iconimporter */,
+				C0AD960C2F3E58C90029A293 /* installhelper */,
+				C0209B902C63E3B7007664A0 /* launchapp */,
+				C0AD96122F3E58D10029A293 /* logouthelper */,
+				C07A6FC52C2B5C0700090743 /* makecatalogs */,
+				C030A9962C3A2E18007F0B34 /* makepkginfo */,
+				C07A6FA72C2A82B400090743 /* managedsoftwareupdate */,
+				C0AD96012F3E58C50029A293 /* manifestutil */,
+				C0AD962B2F3E58D80029A293 /* munkiCLItesting */,
+				C030A9CE2C41F798007F0B34 /* munkiimport */,
+				C07A6FB82C2B5ADE00090743 /* munkitester */,
+				C0AD96442F3E58F90029A293 /* precache_agent */,
+				C07A6FA62C2A82B400090743 /* Products */,
+				C0E993F62C5BEDAB006FDF44 /* removepackages */,
+				C0AD96472F3E590E0029A293 /* repocheck */,
+				C0BF62CE2CEC00E90030885D /* repoclean */,
+				C07A6FD02C2B631800090743 /* shared */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1126,10 +1190,10 @@
 			isa = PBXGroup;
 			children = (
 				C05764AB2DD57C4800FEF66A /* managedsoftwareupdate.entitlements */,
-				C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */,
-				C0011CB42C7EC5B60004ED70 /* msuutils.swift */,
 				C0011CB72C7F86480004ED70 /* distributednotifications.swift */,
+				C07A6FA82C2A82B400090743 /* managedsoftwareupdate.swift */,
 				C07A9D9C2C86CB3A00D5D4B2 /* msuoptions.swift */,
+				C0011CB42C7EC5B60004ED70 /* msuutils.swift */,
 			);
 			path = managedsoftwareupdate;
 			sourceTree = "<group>";
@@ -1155,46 +1219,46 @@
 		C07A6FD02C2B631800090743 /* shared */ = {
 			isa = PBXGroup;
 			children = (
-				C0C4091C2D86548800704005 /* keychain.swift */,
-				C008A0502D18BB780073ADBA /* launchd.swift */,
-				C0011CB02C7A99D00004ED70 /* headers */,
-				C07AED6D2C67DF4F00DE6119 /* network */,
-				C07AED692C66F54800DE6119 /* updatecheck */,
-				C07AED682C66D1AE00DE6119 /* utils */,
-				C0D9C27E2C5EA22D0019A067 /* socket */,
-				C043ED212C483ED40047C025 /* installer */,
-				C01364472C2F8EC0008DB215 /* munkirepo */,
 				C013643A2C2DC50E008DB215 /* admin */,
-				C07A6FAF2C2B22A400090743 /* prefs.swift */,
-				C07A6FB12C2B22D300090743 /* constants.swift */,
-				C01364572C3265D6008DB215 /* display.swift */,
-				C07074DB2C33AE5F00B86310 /* munkilog.swift */,
-				C07074DE2C33B9A000B86310 /* reports.swift */,
-				C0684E462DC586250091E774 /* osinstaller */,
-				C030A98E2C39C135007F0B34 /* munkihash.swift */,
-				C0D00FAF2C458EAA0021DA9C /* version.swift */,
-				C0D00FB52C45BCB90021DA9C /* errors.swift */,
-				C043ED1E2C4822C70047C025 /* sqlite3.swift */,
-				C0D9C2562C5D391C0019A067 /* LaunchdJob.swift */,
-				C0D9C2582C5D4E570019A067 /* appusage.swift */,
-				C0D9C2992C607D390019A067 /* xattr.swift */,
-				C0D9C29F2C6175A10019A067 /* processes.swift */,
-				C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */,
-				C0D9C2A52C62C12E0019A067 /* munkistatus.swift */,
-				C0D9C2AF2C62D4120019A067 /* powermanager.swift */,
-				C0209B852C63C9FD007664A0 /* stoprequested.swift */,
-				C0209B882C63DDF1007664A0 /* info.swift */,
 				C07AED622C66CFBD00DE6119 /* appinventory.swift */,
-				C07AED652C66D0A000DE6119 /* facts.swift */,
-				C0011CAB2C7A64F30004ED70 /* Predicates.m */,
-				C07A9D992C83DDD000D5D4B2 /* installinfo.swift */,
-				C06C21332C8793720023E9D9 /* bootstrapping.swift */,
-				C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */,
-				C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */,
 				C06C21442C8F8C390023E9D9 /* appleupdates.swift */,
+				C0D9C2582C5D4E570019A067 /* appusage.swift */,
 				C0B7FA002D288C2700CC14F0 /* authrestart.swift */,
 				C005199A2D2A28510060DDB6 /* authrestartclient.swift */,
+				C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */,
+				C06C21332C8793720023E9D9 /* bootstrapping.swift */,
+				C07A6FB12C2B22D300090743 /* constants.swift */,
+				C01364572C3265D6008DB215 /* display.swift */,
+				C0D00FB52C45BCB90021DA9C /* errors.swift */,
+				C07AED652C66D0A000DE6119 /* facts.swift */,
+				C0011CB02C7A99D00004ED70 /* headers */,
+				C0209B882C63DDF1007664A0 /* info.swift */,
+				C043ED212C483ED40047C025 /* installer */,
+				C07A9D992C83DDD000D5D4B2 /* installinfo.swift */,
+				C0C4091C2D86548800704005 /* keychain.swift */,
+				C008A0502D18BB780073ADBA /* launchd.swift */,
+				C0D9C2562C5D391C0019A067 /* LaunchdJob.swift */,
+				C030A98E2C39C135007F0B34 /* munkihash.swift */,
+				C07074DB2C33AE5F00B86310 /* munkilog.swift */,
+				C01364472C2F8EC0008DB215 /* munkirepo */,
+				C0D9C2A52C62C12E0019A067 /* munkistatus.swift */,
+				C07AED6D2C67DF4F00DE6119 /* network */,
+				C0684E462DC586250091E774 /* osinstaller */,
 				C0C7F1A32E37A31B0073E790 /* PosixSpawn.swift */,
+				C0D9C2AF2C62D4120019A067 /* powermanager.swift */,
+				C0011CAB2C7A64F30004ED70 /* Predicates.m */,
+				C07A6FAF2C2B22A400090743 /* prefs.swift */,
+				C0D9C29F2C6175A10019A067 /* processes.swift */,
+				C07074DE2C33B9A000B86310 /* reports.swift */,
+				C06C213C2C88CACE0023E9D9 /* SignalHandler.swift */,
+				C0D9C27E2C5EA22D0019A067 /* socket */,
+				C043ED1E2C4822C70047C025 /* sqlite3.swift */,
+				C0209B852C63C9FD007664A0 /* stoprequested.swift */,
+				C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */,
+				C07AED692C66F54800DE6119 /* updatecheck */,
+				C07AED682C66D1AE00DE6119 /* utils */,
+				C0D00FAF2C458EAA0021DA9C /* version.swift */,
+				C0D9C2992C607D390019A067 /* xattr.swift */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -1202,20 +1266,20 @@
 		C07AED682C66D1AE00DE6119 /* utils */ = {
 			isa = PBXGroup;
 			children = (
-				C058EF282DCD11E1002775E0 /* tempfileutils.swift */,
-				C008A0552D25B20E0073ADBA /* stderrout.swift */,
 				C07A6FD92C2CF19600090743 /* cliutils.swift */,
+				C0D66AD32D2DBBED009EF807 /* dateutils.swift */,
 				C01364532C321FE7008DB215 /* dmgutils.swift */,
 				C030A9B52C3DF6D0007F0B34 /* fileutils.swift */,
 				C030A9BE2C409738007F0B34 /* iconutils.swift */,
+				C06C213F2C8E1FF50023E9D9 /* ODutils.swift */,
 				C07074E42C34910F00B86310 /* osutils.swift */,
 				C07074E72C34932400B86310 /* pkgutils.swift */,
 				C01364422C2DD1BA008DB215 /* plistutils.swift */,
 				C0D9C2A22C61939E0019A067 /* scriptutils.swift */,
-				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
-				C06C213F2C8E1FF50023E9D9 /* ODutils.swift */,
-				C0D66AD32D2DBBED009EF807 /* dateutils.swift */,
+				C008A0552D25B20E0073ADBA /* stderrout.swift */,
 				C0EC07482EF4AE620051894F /* stringutils.swift */,
+				C058EF282DCD11E1002775E0 /* tempfileutils.swift */,
+				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1223,17 +1287,17 @@
 		C07AED692C66F54800DE6119 /* updatecheck */ = {
 			isa = PBXGroup;
 			children = (
-				C07AED6A2C66F56C00DE6119 /* manifests.swift */,
-				C01792D52C6E58D1008CBC22 /* download.swift */,
-				C01792DB2C6FFAC6008CBC22 /* catalogs.swift */,
 				C01792DE2C73B1D3008CBC22 /* analyze.swift */,
-				C01792E12C73B590008CBC22 /* compare.swift */,
-				C01792E42C73FFD4008CBC22 /* installationstate.swift */,
-				C01792E72C74F989008CBC22 /* selfservice.swift */,
-				C01792EA2C75089F008CBC22 /* licensing.swift */,
 				C01792ED2C75187E008CBC22 /* autoconfig.swift */,
-				C0011CB12C7CDEC40004ED70 /* updatecheck.swift */,
+				C01792DB2C6FFAC6008CBC22 /* catalogs.swift */,
+				C01792E12C73B590008CBC22 /* compare.swift */,
+				C01792D52C6E58D1008CBC22 /* download.swift */,
+				C01792E42C73FFD4008CBC22 /* installationstate.swift */,
+				C01792EA2C75089F008CBC22 /* licensing.swift */,
+				C07AED6A2C66F56C00DE6119 /* manifests.swift */,
+				C01792E72C74F989008CBC22 /* selfservice.swift */,
 				C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */,
+				C0011CB12C7CDEC40004ED70 /* updatecheck.swift */,
 			);
 			path = updatecheck;
 			sourceTree = "<group>";
@@ -1241,12 +1305,12 @@
 		C07AED6D2C67DF4F00DE6119 /* network */ = {
 			isa = PBXGroup;
 			children = (
-				C058EF7A2DCF9F6E002775E0 /* middleware */,
-				C07AED6E2C67DF6B00DE6119 /* gurl.swift */,
-				C07AED712C67F77000DE6119 /* sslerrors.swift */,
-				C01792D22C6BC81B008CBC22 /* fetch.swift */,
-				C01792D82C6EC09C008CBC22 /* urls.swift */,
 				C0EEC9A62DA7335900F92942 /* clientcerts.swift */,
+				C01792D22C6BC81B008CBC22 /* fetch.swift */,
+				C07AED6E2C67DF6B00DE6119 /* gurl.swift */,
+				C058EF7A2DCF9F6E002775E0 /* middleware */,
+				C07AED712C67F77000DE6119 /* sslerrors.swift */,
+				C01792D82C6EC09C008CBC22 /* urls.swift */,
 			);
 			path = network;
 			sourceTree = "<group>";
@@ -1258,6 +1322,101 @@
 				C0848D192C94D1840008B463 /* iconimporter.swift */,
 			);
 			path = iconimporter;
+			sourceTree = "<group>";
+		};
+		C0AD96012F3E58C50029A293 /* manifestutil */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD95F72F3E58C50029A293 /* manifestutil.entitlements */,
+				C0AD95F82F3E58C50029A293 /* manifestutil.swift */,
+				C0AD95F92F3E58C50029A293 /* MUcatalogs.swift */,
+				C0AD95FA2F3E58C50029A293 /* MUdisplayManifest.swift */,
+				C0AD95FB2F3E58C50029A293 /* MUfind.swift */,
+				C0AD95FC2F3E58C50029A293 /* MUlistManifests.swift */,
+				C0AD95FD2F3E58C50029A293 /* MUmanifestEditing.swift */,
+				C0AD95FE2F3E58C50029A293 /* MUmanifestFileOperations.swift */,
+				C0AD95FF2F3E58C50029A293 /* MUrunInteractive.swift */,
+				C0AD96002F3E58C50029A293 /* tokenize.swift */,
+			);
+			path = manifestutil;
+			sourceTree = "<group>";
+		};
+		C0AD960C2F3E58C90029A293 /* installhelper */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD960B2F3E58C90029A293 /* main.swift */,
+			);
+			path = installhelper;
+			sourceTree = "<group>";
+		};
+		C0AD960F2F3E58CD0029A293 /* authrestartd */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD960E2F3E58CD0029A293 /* main.swift */,
+			);
+			path = authrestartd;
+			sourceTree = "<group>";
+		};
+		C0AD96122F3E58D10029A293 /* logouthelper */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD96112F3E58D10029A293 /* main.swift */,
+			);
+			path = logouthelper;
+			sourceTree = "<group>";
+		};
+		C0AD96172F3E58D80029A293 /* fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD96142F3E58D80029A293 /* munki_client.pem */,
+				C0AD96152F3E58D80029A293 /* test_info.plist */,
+				C0AD96162F3E58D80029A293 /* test_manifest.plist */,
+			);
+			path = fixtures;
+			sourceTree = "<group>";
+		};
+		C0AD962B2F3E58D80029A293 /* munkiCLItesting */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD96182F3E58D80029A293 /* analyzeTests.swift */,
+				C0AD96192F3E58D80029A293 /* appleupdatesTests.swift */,
+				C0AD961A2F3E58D80029A293 /* cliutilsTests.swift */,
+				C0AD961B2F3E58D80029A293 /* compareTests.swift */,
+				C0AD961C2F3E58D80029A293 /* downloadTests.swift */,
+				C0AD961D2F3E58D80029A293 /* factsTests.swift */,
+				C0AD961E2F3E58D80029A293 /* fetchTests.swift */,
+				C0AD961F2F3E58D80029A293 /* fileUtilsTests.swift */,
+				C0AD96202F3E58D80029A293 /* installationstateTests.swift */,
+				C0AD96212F3E58D80029A293 /* keychainTests.swift */,
+				C0AD96222F3E58D80029A293 /* makepkginfolibTests.swift */,
+				C0AD96232F3E58D80029A293 /* manifestsTests.swift */,
+				C0AD96242F3E58D80029A293 /* pkgutilsTests.swift */,
+				C0AD96252F3E58D80029A293 /* plistutilsTests.swift */,
+				C0AD96262F3E58D80029A293 /* scriptutilsTests.swift */,
+				C0AD96272F3E58D80029A293 /* TestingResources.swift */,
+				C0AD96282F3E58D80029A293 /* urlsTests.swift */,
+				C0AD96292F3E58D80029A293 /* versionutilsTests.swift */,
+				C0AD962A2F3E58D80029A293 /* xattrTests.swift */,
+				C0AD96172F3E58D80029A293 /* fixtures */,
+			);
+			path = munkiCLItesting;
+			sourceTree = "<group>";
+		};
+		C0AD96442F3E58F90029A293 /* precache_agent */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD96432F3E58F90029A293 /* precache_agent.entitlements */,
+				C0AD96422F3E58F90029A293 /* main.swift */,
+			);
+			path = precache_agent;
+			sourceTree = "<group>";
+		};
+		C0AD96472F3E590E0029A293 /* repocheck */ = {
+			isa = PBXGroup;
+			children = (
+				C0AD96462F3E590E0029A293 /* main.swift */,
+			);
+			path = repocheck;
 			sourceTree = "<group>";
 		};
 		C0BF62CE2CEC00E90030885D /* repoclean */ = {
@@ -1281,8 +1440,8 @@
 			isa = PBXGroup;
 			children = (
 				C0D9C2452C5C5B370019A067 /* client.swift */,
-				C0D9C27C2C5EA2200019A067 /* server.swift */,
 				C0D9C2812C5EA2A00019A067 /* common.swift */,
+				C0D9C27C2C5EA2200019A067 /* server.swift */,
 			);
 			path = socket;
 			sourceTree = "<group>";
@@ -1317,9 +1476,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C00519A22D2A5B850060DDB6 /* authrestartd */,
 			);
 			name = authrestartd;
 			packageProductDependencies = (
@@ -1356,9 +1512,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C0276DB22E8C070500D443C3 /* repocheck */,
 			);
 			name = repocheck;
 			packageProductDependencies = (
@@ -1419,9 +1572,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				C05DB2032DAC53150081FACD /* manifestutil */,
-			);
 			name = manifestutil;
 			packageProductDependencies = (
 				C05DB20B2DAC62530081FACD /* ArgumentParser */,
@@ -1441,9 +1591,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C0684DD22DBFDBD20091E774 /* precache_agent */,
 			);
 			name = precache_agent;
 			packageProductDependencies = (
@@ -1465,9 +1612,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				C0684E2E2DC040450091E774 /* installhelper */,
-			);
 			name = installhelper;
 			packageProductDependencies = (
 			);
@@ -1486,9 +1630,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C0684E5D2DC736EE0091E774 /* munkiCLItesting */,
 			);
 			name = munkiCLItesting;
 			packageProductDependencies = (
@@ -1612,9 +1753,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C0D66AC02D2CA1DE009EF807 /* logouthelper */,
 			);
 			name = logouthelper;
 			packageProductDependencies = (
@@ -1790,6 +1928,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0AD962C2F3E58D80029A293 /* munki_client.pem in Resources */,
+				C0AD962D2F3E58D80029A293 /* test_info.plist in Resources */,
+				C0AD962E2F3E58D80029A293 /* test_manifest.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1808,6 +1949,7 @@
 				C00519AA2D2A5C370060DDB6 /* authrestart.swift in Sources */,
 				C0684EB02DC9BD160091E774 /* munkilog.swift in Sources */,
 				C00519AC2D2ADF530060DDB6 /* server.swift in Sources */,
+				C0AD96102F3E58CD0029A293 /* main.swift in Sources */,
 				C00519B32D2B65FA0060DDB6 /* plistutils.swift in Sources */,
 				C00519AB2D2ADF470060DDB6 /* errors.swift in Sources */,
 				C0D66AB42D2C82CF009EF807 /* prefs.swift in Sources */,
@@ -1838,6 +1980,7 @@
 				C0276DC42E8C08F900D443C3 /* plistutils.swift in Sources */,
 				C0276DC62E8C0A9D00D443C3 /* stderrout.swift in Sources */,
 				C0276DBE2E8C07F500D443C3 /* RepoFactory.swift in Sources */,
+				C0AD96482F3E590E0029A293 /* main.swift in Sources */,
 				C0276DBC2E8C07E300D443C3 /* FileRepo.swift in Sources */,
 				C0276DC72E8C0AB300D443C3 /* fileutils.swift in Sources */,
 				C0276DC52E8C0A6A00D443C3 /* cliutils.swift in Sources */,
@@ -1930,6 +2073,15 @@
 				C09616C72DEE6DE200281B6B /* munkilog.swift in Sources */,
 				C05DB20F2DAC66F00081FACD /* admincommon.swift in Sources */,
 				C05DB2222DAC98970081FACD /* fileutils.swift in Sources */,
+				C0AD96022F3E58C50029A293 /* manifestutil.swift in Sources */,
+				C0AD96032F3E58C50029A293 /* MUcatalogs.swift in Sources */,
+				C0AD96042F3E58C50029A293 /* MUdisplayManifest.swift in Sources */,
+				C0AD96052F3E58C50029A293 /* MUfind.swift in Sources */,
+				C0AD96062F3E58C50029A293 /* MUlistManifests.swift in Sources */,
+				C0AD96072F3E58C50029A293 /* MUmanifestEditing.swift in Sources */,
+				C0AD96082F3E58C50029A293 /* MUmanifestFileOperations.swift in Sources */,
+				C0AD96092F3E58C50029A293 /* MUrunInteractive.swift in Sources */,
+				C0AD960A2F3E58C50029A293 /* tokenize.swift in Sources */,
 				C05DB2112DAC671C0081FACD /* constants.swift in Sources */,
 				C05DB2212DAC98840081FACD /* plistutils.swift in Sources */,
 				C05DB2192DAC835D0081FACD /* stderrout.swift in Sources */,
@@ -1985,6 +2137,7 @@
 				C0684DD92DBFDC300091E774 /* display.swift in Sources */,
 				C0684DDA2DBFDC3C0091E774 /* munkilog.swift in Sources */,
 				C0684DED2DBFDF5C0091E774 /* keychain.swift in Sources */,
+				C0AD96452F3E58F90029A293 /* main.swift in Sources */,
 				C0684DDE2DBFDD190091E774 /* constants.swift in Sources */,
 				C058EF302DCD18D3002775E0 /* tempfileutils.swift in Sources */,
 				C058EF7E2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
@@ -2002,6 +2155,7 @@
 				C0684E3B2DC131750091E774 /* UNIXProcessInfo.swift in Sources */,
 				C0684E342DC0409C0091E774 /* prefs.swift in Sources */,
 				C0684E352DC040A30091E774 /* constants.swift in Sources */,
+				C0AD960D2F3E58C90029A293 /* main.swift in Sources */,
 				C0684E362DC040B20091E774 /* munkilog.swift in Sources */,
 				C028DB2A2F1EC65D00290CBF /* fileutils.swift in Sources */,
 				C0684E372DC040EB0091E774 /* stderrout.swift in Sources */,
@@ -2033,6 +2187,25 @@
 				C0684E9A2DC7E5520091E774 /* selfservice.swift in Sources */,
 				C0684E7C2DC7BFAD0091E774 /* appinventory.swift in Sources */,
 				C0684E6B2DC73C0B0091E774 /* fileutils.swift in Sources */,
+				C0AD962F2F3E58D80029A293 /* analyzeTests.swift in Sources */,
+				C0AD96302F3E58D80029A293 /* appleupdatesTests.swift in Sources */,
+				C0AD96312F3E58D80029A293 /* cliutilsTests.swift in Sources */,
+				C0AD96322F3E58D80029A293 /* compareTests.swift in Sources */,
+				C0AD96332F3E58D80029A293 /* downloadTests.swift in Sources */,
+				C0AD96342F3E58D80029A293 /* factsTests.swift in Sources */,
+				C0AD96352F3E58D80029A293 /* fetchTests.swift in Sources */,
+				C0AD96362F3E58D80029A293 /* fileUtilsTests.swift in Sources */,
+				C0AD96372F3E58D80029A293 /* installationstateTests.swift in Sources */,
+				C0AD96382F3E58D80029A293 /* keychainTests.swift in Sources */,
+				C0AD96392F3E58D80029A293 /* makepkginfolibTests.swift in Sources */,
+				C0AD963A2F3E58D80029A293 /* manifestsTests.swift in Sources */,
+				C0AD963B2F3E58D80029A293 /* pkgutilsTests.swift in Sources */,
+				C0AD963C2F3E58D80029A293 /* plistutilsTests.swift in Sources */,
+				C0AD963D2F3E58D80029A293 /* scriptutilsTests.swift in Sources */,
+				C0AD963E2F3E58D80029A293 /* TestingResources.swift in Sources */,
+				C0AD963F2F3E58D80029A293 /* urlsTests.swift in Sources */,
+				C0AD96402F3E58D80029A293 /* versionutilsTests.swift in Sources */,
+				C0AD96412F3E58D80029A293 /* xattrTests.swift in Sources */,
 				C0684E6E2DC73C590091E774 /* stderrout.swift in Sources */,
 				C0684E8D2DC7E2AB0091E774 /* version.swift in Sources */,
 				C0684E902DC7E30F0091E774 /* keychain.swift in Sources */,
@@ -2348,6 +2521,7 @@
 				C0D66ACE2D2DBB1B009EF807 /* cliutils.swift in Sources */,
 				C0D66ACC2D2CEDC8009EF807 /* fileutils.swift in Sources */,
 				C0D66AC72D2CA307009EF807 /* prefs.swift in Sources */,
+				C0AD96132F3E58D10029A293 /* main.swift in Sources */,
 				C0D66AD02D2DBB51009EF807 /* munkistatus.swift in Sources */,
 				C0D66AC92D2CA675009EF807 /* constants.swift in Sources */,
 				C0D66AD22D2DBB80009EF807 /* reports.swift in Sources */,
