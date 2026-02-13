@@ -311,25 +311,28 @@
 "Quit" = "Avsluta";
 
 /* Quit Apps button title */
-"Quit Apps" = "Avsluta Apps";
+"Quit Apps" = "Avsluta program";
 
 /* Force Quit button title */
-"Force Quit" = "Tvinga avslut";
+"Force Quit" = "Tvångsavsluta";
 
 /* Force Quit confirmation title */
-"Force Quit Application?" = "Tvångsavsluta applikation?";
+"Force Quit Application?" = "Tvångsavsluta program?";
 
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Är du säker på att du vill tvångsavsluta \"%@\"? Alla osparade ändringar kan gå förlorade.";
 
 /* Closed Applications section title */
-"Closed Applications" = "Stängda applikationer";
+"Closed Applications" = "Stängda program";
 
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Öppna applikationer igen efter uppdatering";
+"Reopen applications after update" = "Öppna program igen efter uppdatering";
 
 /* Manual quit required label */
-"Manual quit required" = "Manuell avslutning krävs";
+"Manual quit required" = "Måste avslutas manuellt";
+
+/* Update others button title */
+"Update others" = "Uppdatera övriga"
 
 /* Removal Error status text */
 "Removal Error" = "Borttagning misslyckades";
