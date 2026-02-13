@@ -129,7 +129,8 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
             localOnlyManifest[key] = nil
         }
     }
-    for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs"] {
+    for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "default_installs", "featured_items"] {
+        display.info("Processing \(key) in \(localOnlyManifestName)")
         _ = try await processManifest(
             localOnlyManifest,
             forKey: key,
