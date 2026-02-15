@@ -32,8 +32,6 @@ class MSCBlockingAppsController: NSObject {
 
     // UI elements for dynamic updates
     private var blockingAppsStackView: NSStackView?
-    // private var closedAppsStackView: NSStackView?
-    // private var closedAppsSectionView: NSView?
     private var appRowViews: [String: NSView] = [:] // keyed by app path
     private var closedApps: Set<String> = [] // paths of closed apps
     private var sheetHeightConstraint: NSLayoutConstraint?
@@ -63,7 +61,7 @@ class MSCBlockingAppsController: NSObject {
 
     // Layout constants
     private let sheetWidth: CGFloat = 400
-    private let rowHeight: CGFloat = 36
+    private let rowHeight: CGFloat = 32
     private let stackViewSpacing: CGFloat = 4
     private let iconSize: CGFloat = 32
     private let maxVisibleRows = 6
@@ -169,7 +167,7 @@ class MSCBlockingAppsController: NSObject {
         manualQuitAppPaths = []
         appsBeingRemovedPaths = []
         for app in my_apps {
-            let displayName = app.display_name
+            let displayName = (app.display_name as NSString).deletingPathExtension
             if !displayName.isEmpty, !seenNames.contains(displayName) {
                 seenNames.insert(displayName)
                 var appPath = app.pathname
@@ -269,11 +267,14 @@ class MSCBlockingAppsController: NSObject {
     }
 
     /// Creates a sheet that lists blocking applications, and allows users to quit them
-    private func createSheet(for apps: [(displayName: String, path: String)], hideReopenCheckbox: Bool = false) -> NSWindow {
-        let visibleHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
+    private func createSheet(
+        for apps: [(displayName: String, path: String)],
+        hideReopenCheckbox: Bool = false) -> NSWindow
+    {
+        let stackViewHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
         // Adjust height based on whether checkbox is shown
         let checkboxHeight: CGFloat = hideReopenCheckbox ? 0 : 28 // checkbox height + spacing
-        let sheetHeight: CGFloat = visibleHeight + 142 + checkboxHeight // Extra height for UI elements
+        let sheetHeight: CGFloat = stackViewHeight + 232 + checkboxHeight // Extra height for UI elements
 
         let sheetWindow = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: sheetWidth, height: sheetHeight),
@@ -357,11 +358,14 @@ class MSCBlockingAppsController: NSObject {
 
         // Quit Apps button
         let quitButton = NSButton(
-            title: NSLocalizedString("Quit Apps", comment: "Quit Apps button title"),
+            title: NSLocalizedString("Quit Apps and Update", comment: "Quit Apps button title"),
             target: self, action: #selector(quitApps(_:))
         )
         quitButton.translatesAutoresizingMaskIntoConstraints = false
         quitButton.bezelStyle = .rounded
+        if #available(macOS 11.0, *) {
+            quitButton.controlSize = .large
+        }
         quitButton.keyEquivalent = "\r"
         contentView.addSubview(quitButton)
         quitAppsButton = quitButton
@@ -373,17 +377,23 @@ class MSCBlockingAppsController: NSObject {
         )
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.bezelStyle = .rounded
+        if #available(macOS 11.0, *) {
+            cancelButton.controlSize = .large
+        }
         cancelButton.keyEquivalent = "\u{1B}"
         contentView.addSubview(cancelButton)
 
         // Update others button
         let updateOthersButton = NSButton(
-            title: NSLocalizedString("Update others", comment: "Update others button title"),
+            title: NSLocalizedString("Skip and Update Others", comment: "Update others button title"),
             target: self, action: #selector(updateOthers(_:))
         )
         updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
         updateOthersButton.bezelStyle = .rounded
-        updateOthersButton.isHidden = !nonBlockedItemsPending || !pythonishBool(pref("MSCOfferToUpdateOthers"))
+        if #available(macOS 11.0, *) {
+            updateOthersButton.controlSize = .large
+        }
+        updateOthersButton.isEnabled = nonBlockedItemsPending && pythonishBool(pref("MSCOfferToUpdateOthers"))
         contentView.addSubview(updateOthersButton)
         updateOtherItemsButton = updateOthersButton
 
@@ -393,40 +403,60 @@ class MSCBlockingAppsController: NSObject {
         let buttonsTopConstant: CGFloat = hideReopenCheckbox ? 16 : 16
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: sheetMargin),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+            titleLabel.topAnchor.constraint(
+                equalTo: contentView.topAnchor, constant: sheetMargin),
+            titleLabel.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            titleLabel.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor, constant: -sheetMargin),
 
-            messageLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            messageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
-            messageLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+            messageLabel.topAnchor.constraint(
+                equalTo: titleLabel.bottomAnchor, constant: 8),
+            messageLabel.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            messageLabel.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor, constant: -sheetMargin),
 
-            blockingScrollView.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 12),
-            blockingScrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
-            blockingScrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
-            blockingScrollView.heightAnchor.constraint(equalToConstant: visibleHeight + 8),
+            blockingScrollView.topAnchor.constraint(
+                equalTo: messageLabel.bottomAnchor, constant: 12),
+            blockingScrollView.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            blockingScrollView.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+            blockingScrollView.heightAnchor.constraint(
+                equalToConstant: stackViewHeight + 8),
 
-            blockingStackView.topAnchor.constraint(equalTo: blockingScrollView.contentView.topAnchor),
-            blockingStackView.leadingAnchor.constraint(equalTo: blockingScrollView.contentView.leadingAnchor, constant: 4),
-            blockingStackView.trailingAnchor.constraint(equalTo: blockingScrollView.contentView.trailingAnchor, constant: -4),
-            /*
-                closedSection.topAnchor.constraint(equalTo: blockingScrollView.bottomAnchor, constant: 12),
-                closedSection.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-                closedSection.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-                 */
+            blockingStackView.topAnchor.constraint(
+                equalTo: blockingScrollView.contentView.topAnchor),
+            blockingStackView.leadingAnchor.constraint(
+                equalTo: blockingScrollView.contentView.leadingAnchor, constant: 4),
+            blockingStackView.trailingAnchor.constraint(
+                equalTo: blockingScrollView.contentView.trailingAnchor, constant: -4),
+
             // checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, // constant: 12),
-            checkbox.topAnchor.constraint(equalTo: blockingScrollView.bottomAnchor, constant: 12),
-            checkbox.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            checkbox.topAnchor.constraint(
+                equalTo: blockingScrollView.bottomAnchor, constant: 12),
+            checkbox.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+            
+            cancelButton.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor, constant: -16),
+            cancelButton.centerXAnchor.constraint(
+                equalTo: contentView.centerXAnchor),
+            cancelButton.widthAnchor.constraint(
+                equalTo: contentView.widthAnchor, constant: -30),
+            
+            updateOthersButton.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -6),
+            updateOthersButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            updateOthersButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, constant: -30),
 
-            quitButton.topAnchor.constraint(equalTo: buttonsTopAnchor, constant: buttonsTopConstant),
-            quitButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -sheetMargin),
-            quitButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -sheetMargin),
+            quitButton.bottomAnchor.constraint(
+                equalTo: updateOthersButton.topAnchor, constant: -6),
+            quitButton.centerXAnchor.constraint(
+                equalTo: contentView.centerXAnchor),
+            quitButton.widthAnchor.constraint(
+                equalTo: contentView.widthAnchor, constant: -30 ),
 
-            cancelButton.topAnchor.constraint(equalTo: buttonsTopAnchor, constant: buttonsTopConstant),
-            cancelButton.trailingAnchor.constraint(equalTo: quitButton.leadingAnchor, constant: -12),
-
-            updateOthersButton.topAnchor.constraint(equalTo: buttonsTopAnchor, constant: buttonsTopConstant),
-            updateOthersButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: sheetMargin),
         ])
 
         sheetWindow.contentView = contentView
@@ -434,7 +464,10 @@ class MSCBlockingAppsController: NSObject {
     }
 
     /// Create the list of blocking apps
-    private func createBlockingAppsStackView(apps: [(displayName: String, path: String)]) -> NSStackView {
+    private func createBlockingAppsStackView(
+        apps: [(displayName: String, path: String)]
+    ) -> NSStackView
+    {
         let stackView = NSStackView()
         stackView.orientation = .vertical
         stackView.alignment = .leading
@@ -477,7 +510,7 @@ class MSCBlockingAppsController: NSObject {
             // App name label
             let nameLabel = NSTextField(labelWithString: app.displayName)
             nameLabel.translatesAutoresizingMaskIntoConstraints = false
-            nameLabel.font = NSFont.systemFont(ofSize: 13)
+            nameLabel.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
             nameLabel.lineBreakMode = .byTruncatingTail
 
             rowView.addSubview(iconView)
@@ -544,196 +577,6 @@ class MSCBlockingAppsController: NSObject {
 
         return stackView
     }
-
-    /*
-     private func createClosedAppsSection() -> NSView {
-         let containerView = NSView()
-         containerView.translatesAutoresizingMaskIntoConstraints = false
-
-         // "Closed Applications" label
-         let closedLabel = NSTextField(labelWithString: NSLocalizedString(
-             "Closed Applications",
-             comment: "Closed Applications section title"
-         ))
-         closedLabel.font = NSFont.boldSystemFont(ofSize: 11)
-         closedLabel.textColor = .secondaryLabelColor
-         closedLabel.translatesAutoresizingMaskIntoConstraints = false
-         containerView.addSubview(closedLabel)
-
-         // Stack view for closed apps
-         let closedStackView = NSStackView()
-         closedStackView.orientation = .vertical
-         closedStackView.alignment = .leading
-         closedStackView.spacing = 4
-         closedStackView.translatesAutoresizingMaskIntoConstraints = false
-         closedAppsStackView = closedStackView
-
-         // Scroll view for closed apps
-         let closedScrollView = NSScrollView()
-         closedScrollView.translatesAutoresizingMaskIntoConstraints = false
-         closedScrollView.contentView = FlippedClipView()
-         closedScrollView.hasVerticalScroller = true
-         closedScrollView.hasHorizontalScroller = false
-         closedScrollView.autohidesScrollers = true
-         closedScrollView.borderType = .lineBorder
-         closedScrollView.automaticallyAdjustsContentInsets = false
-         closedScrollView.contentInsets = NSEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
-         closedScrollView.wantsLayer = true
-         closedScrollView.layer?.cornerRadius = 6
-         closedScrollView.layer?.masksToBounds = true
-         closedScrollView.layer?.borderWidth = 1
-         closedScrollView.layer?.borderColor = NSColor.separatorColor.cgColor
-         closedScrollView.documentView = closedStackView
-         containerView.addSubview(closedScrollView)
-
-         // Initial height constraint (will be updated as apps are added)
-         let scrollHeightConstraint = closedScrollView.heightAnchor.constraint(equalToConstant: rowHeight + 8)
-         closedScrollHeightConstraint = scrollHeightConstraint
-
-         NSLayoutConstraint.activate([
-             closedLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-             closedLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-             closedLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-
-             closedScrollView.topAnchor.constraint(equalTo: closedLabel.bottomAnchor, constant: 6),
-             closedScrollView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-             closedScrollView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-             closedScrollView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-             scrollHeightConstraint,
-
-             closedStackView.topAnchor.constraint(equalTo: closedScrollView.contentView.topAnchor),
-             closedStackView.leadingAnchor.constraint(equalTo: closedScrollView.contentView.leadingAnchor, constant: 4),
-             closedStackView.trailingAnchor.constraint(equalTo: closedScrollView.contentView.trailingAnchor, constant: -4),
-         ])
-
-         return containerView
-     }
-
-     private func createClosedAppRow(displayName: String, path: String) -> NSView {
-         let rowView = NSView()
-         rowView.translatesAutoresizingMaskIntoConstraints = false
-
-         // App icon
-         let iconView = NSImageView()
-         iconView.translatesAutoresizingMaskIntoConstraints = false
-         iconView.imageScaling = .scaleProportionallyUpOrDown
-         if !path.isEmpty {
-             iconView.image = NSWorkspace.shared.icon(forFile: path)
-         } else {
-             iconView.image = NSImage(named: NSImage.applicationIconName)
-         }
-
-         // App name label
-         let nameLabel = NSTextField(labelWithString: displayName)
-         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-         nameLabel.font = NSFont.systemFont(ofSize: 13)
-         nameLabel.textColor = .secondaryLabelColor
-         nameLabel.lineBreakMode = .byTruncatingTail
-
-         // Checkmark image
-         let checkmarkView = NSImageView()
-         checkmarkView.translatesAutoresizingMaskIntoConstraints = false
-         checkmarkView.imageScaling = .scaleProportionallyUpOrDown
-         if #available(macOS 11.0, *) {
-             if let checkmarkImage = NSImage(systemSymbolName: "checkmark.circle.fill", accessibilityDescription: "Closed") {
-                 checkmarkView.image = checkmarkImage
-                 checkmarkView.contentTintColor = .systemGreen
-             }
-         } else {
-             // Fallback for older macOS versions
-             checkmarkView.image = NSImage(named: NSImage.statusAvailableName)
-         }
-
-         rowView.addSubview(iconView)
-         rowView.addSubview(nameLabel)
-         rowView.addSubview(checkmarkView)
-
-         let checkmarkSize: CGFloat = 16
-
-         NSLayoutConstraint.activate([
-             rowView.heightAnchor.constraint(equalToConstant: rowHeight),
-             rowView.widthAnchor.constraint(equalToConstant: sheetWidth - 40),
-
-             iconView.leadingAnchor.constraint(equalTo: rowView.leadingAnchor, constant: 4),
-             iconView.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-             iconView.widthAnchor.constraint(equalToConstant: iconSize),
-             iconView.heightAnchor.constraint(equalToConstant: iconSize),
-
-             nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
-             nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: checkmarkView.leadingAnchor, constant: -8),
-             nameLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-
-             checkmarkView.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -4),
-             checkmarkView.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-             checkmarkView.widthAnchor.constraint(equalToConstant: checkmarkSize),
-             checkmarkView.heightAnchor.constraint(equalToConstant: checkmarkSize),
-         ])
-
-         return rowView
-     }
-
-     private func moveAppToClosedSection(path: String) {
-         guard !closedApps.contains(path),
-               let rowView = appRowViews[path],
-               let blockingStack = blockingAppsStackView,
-               let closedStack = closedAppsStackView
-         else {
-             return
-         }
-
-         // Find the app info
-         guard let appInfo = appsToQuit.first(where: { $0.path == path }) else {
-             return
-         }
-
-         // Mark as closed
-         closedApps.insert(path)
-
-         // Stop and hide the spinner
-         if let spinner = spinners[path] {
-             spinner.stopAnimation(nil)
-             spinner.isHidden = true
-         }
-
-         // Remove from blocking apps stack view
-         blockingStack.removeArrangedSubview(rowView)
-         rowView.removeFromSuperview()
-
-         // Create a new row for the closed apps section with checkmark
-         let closedRow = createClosedAppRow(displayName: appInfo.displayName, path: path)
-         closedStack.addArrangedSubview(closedRow)
-
-         // Show the closed apps section if this is the first closed app
-         if closedAppsSectionView?.isHidden == true {
-             closedAppsSectionView?.isHidden = false
-
-             // Animate the sheet height change
-             if let sheetWindow = sheet {
-                 var frame = sheetWindow.frame
-                 let additionalHeight: CGFloat = rowHeight + 40 // section title + scroll view + padding
-                 frame.size.height += additionalHeight
-                 frame.origin.y -= additionalHeight
-                 sheetWindow.setFrame(frame, display: true, animate: true)
-             }
-         }
-
-         // Update the closed scroll view height based on number of closed apps
-         let closedCount = closedApps.count
-         let newHeight = min(CGFloat(closedCount), CGFloat(maxVisibleRows)) * rowHeight + 8
-         if let heightConstraint = closedScrollHeightConstraint, heightConstraint.constant != newHeight {
-             let heightDiff = newHeight - heightConstraint.constant
-             heightConstraint.constant = newHeight
-
-             // Adjust sheet height if needed
-             if closedCount > 1, let sheetWindow = sheet {
-                 var frame = sheetWindow.frame
-                 frame.size.height += heightDiff
-                 frame.origin.y -= heightDiff
-                 sheetWindow.setFrame(frame, display: true, animate: true)
-             }
-         }
-     }
-     */
 
     /// Removes a closed app from the list of blocking apps and adds it to a list of closed apps
     private func moveAppToClosedSection(path: String) {
