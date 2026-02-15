@@ -731,7 +731,8 @@ class MSCBlockingAppsController: NSObject {
         rowView.addSubview(manualQuitLabel)
 
         NSLayoutConstraint.activate([
-            manualQuitLabel.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -4),
+            manualQuitLabel.leadingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -manualQuitLabel.intrinsicContentSize.width),
+            manualQuitLabel.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: 0),
             manualQuitLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
         ])
 
