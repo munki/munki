@@ -38,7 +38,7 @@
 "All items" = "Alle emner";
 
 /* Forced Logout warning detail */
-"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende opdateringer bliver installeret. Alle ændringer, der ikke er gemt, vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
 
 /* Allow button text */
 "Allow" = "Tillad";
@@ -53,7 +53,7 @@
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En ældre version er installeret. Du skal opgradere til macOS version %@ eller nyere for at installere denne opdatering.";
 
 /* Other Users Blocking Apps Running title */
-"Applications in use by others" = "Programmer i brug af andre";
+"Applications in use by others" = "Apps der bruges af andre";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Vær opmærksom";
@@ -101,7 +101,7 @@
 "Checking for updates..." = "Søger efter opdateringer...";
 
 /* Blocking Apps Running title */
-"Conflicting applications running" = "Der er åbne programmer, som giver konflikt med installeringen";
+"Conflicting applications running" = "Der er åbne apps, som skaber konflikt";
 
 /* Continue button text */
 "Continue" = "Fortsæt";
@@ -284,7 +284,7 @@
 "Other users logged in" = "Andre brugere er logget ind";
 
 /* managedsoftwareupdate message */
-"Package removal complete." = "Fjernelse af software er gennemført.";
+"Package removal complete." = "Færdig med at fjerne software.";
 
 /* Password label */
 "Password:" = "Adgangskode:";
@@ -311,25 +311,25 @@
 "Quit" = "Slut";
 
 /* Quit Apps button title */
-"Quit Apps" = "Afslut Apps";
+"Quit Apps" = "Slut apps";
 
 /* Force Quit button title */
-"Force Quit" = "Tvinge op";
+"Force Quit" = "Afbryd";
 
 /* Force Quit confirmation title */
-"Force Quit Application?" = "Tving afslutning af applikation?";
+"Force Quit Application?" = "Afbryd app?";
 
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil afbryde \"%@\"? Alle ændringer, der ikke er gemt, kan gå tabt.";
 
 /* Closed Applications section title */
-"Closed Applications" = "Lukkede applikationer";
+"Closed Applications" = "Lukkede apps";
 
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Genåbn applikationer efter opdatering";
+"Reopen applications after update" = "Åbn apps igen efter opdatering";
 
 /* Manual quit required label */
-"Manual quit required" = "Manuel afslutning påkrævet";
+"Manual quit required" = "Skal sluttes manuelt";
 
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
@@ -533,10 +533,10 @@
 "You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
 
 /* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Slut disse apps før du fortsætter med installering eller fjernelse:\n\n%@";
 
 /* Blocking Apps Running detail for auto-quit sheet */
-"You must quit these applications before proceeding with installation or removal:" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:";
+"You must quit these applications before proceeding with installation or removal:" = "Slut disse apps før du fortsætter med installering eller fjernelse:";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";
