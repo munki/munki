@@ -55,6 +55,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer i brug af andre";
 
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Vær opmærksom";
 
@@ -148,6 +151,12 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør slutte computeren til strømforsyningen før installeringen. Er du sikker på, at du vil forsætte opdateringen?";
 
+/* Force Quit button title */
+"Force Quit" = "Tvinge op";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tving afslutning af applikation?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvungen log ud for obligatorisk installering";
 
@@ -225,6 +234,9 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
+
+/* Manual quit required label */
+"Manual quit required" = "Manuel afslutning påkrævet";
 
 /* More link text */
 "More" = "Mere";
@@ -310,26 +322,8 @@
 /* Quit button title */
 "Quit" = "Slut";
 
-/* Quit Apps button title */
-"Quit Apps" = "Afslut Apps";
-
-/* Force Quit button title */
-"Force Quit" = "Tvinge op";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "Tving afslutning af applikation?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Lukkede applikationer";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Genåbn applikationer efter opdatering";
-
-/* Manual quit required label */
-"Manual quit required" = "Manuel afslutning påkrævet";
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Afslut Apps og Opdater";
 
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
@@ -345,6 +339,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Genåbn applikationer efter opdatering";
 
 /* Install Required action text */
 "Required" = "Påkrævet";
@@ -378,6 +375,9 @@
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Spring over";
+
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Skip and Update Others";
 
 /* Software label */
 "Software" = "Software";
