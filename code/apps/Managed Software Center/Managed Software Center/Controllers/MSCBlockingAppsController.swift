@@ -365,7 +365,7 @@ class MSCBlockingAppsController: NSObject {
 
         // Quit Apps button
         let quitButton = NSButton(
-            title: NSLocalizedString("Quit Apps and Update", comment: "Quit Apps button title"),
+            title: NSLocalizedString("Quit Apps and Update", comment: "Quit Apps and Update button title"),
             target: self, action: #selector(quitApps(_:))
         )
         quitButton.translatesAutoresizingMaskIntoConstraints = false
@@ -392,7 +392,7 @@ class MSCBlockingAppsController: NSObject {
 
         // Update others button
         let updateOthersButton = NSButton(
-            title: NSLocalizedString("Skip and Update Others", comment: "Update others button title"),
+            title: NSLocalizedString("Skip and Update Others", comment: "Skip and Update Others button title"),
             target: self, action: #selector(updateOthers(_:))
         )
         updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
