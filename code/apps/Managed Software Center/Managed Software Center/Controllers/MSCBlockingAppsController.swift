@@ -66,7 +66,7 @@ class MSCBlockingAppsController: NSObject {
     private(set) var appsToReopenAfterUpdate: [String] = []
 
     // Layout constants
-    private var sheetWidth: CGFloat = 320 // can be adjusted
+    private var sheetWidth: CGFloat = 320 // can grow
     private let rowHeight: CGFloat = 32
     private let stackViewSpacing: CGFloat = 4
     private let iconSize: CGFloat = 32
@@ -286,11 +286,22 @@ class MSCBlockingAppsController: NSObject {
         for apps: [(displayName: String, path: String)],
         hideReopenCheckbox: Bool = false
     ) -> NSWindow {
-        let stackViewHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
+        let buttonCount = CGFloat(pythonishBool(pref("MSCOfferToUpdateOthers")) ? 3 : 2)
+        // calculate height of action button stack
+        let buttonStackHeight = buttonCount * 28 + (buttonCount - 1) * 8
+        // calculate height of app list
+        let appStackViewHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
         // Adjust height based on whether checkbox is shown
-        let checkboxHeight: CGFloat = hideReopenCheckbox ? 0 : 28 // checkbox height + spacing
-        let sheetHeight: CGFloat = stackViewHeight + 232 + checkboxHeight // Extra height for UI elements
-
+        let checkboxHeight: CGFloat = hideReopenCheckbox ? 0 : 40 // checkbox height + spacing
+        let sheetHeight: CGFloat = (
+            sheetMargin
+                + 24 // 16.0 high title field + 8.0 spacing
+                + 40 // Two lines of 14.0 high message field + 12.0 spacing
+                + appStackViewHeight + 16
+                + checkboxHeight
+                + buttonStackHeight
+                + sheetMargin
+        )
         let sheetWindow = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: sheetWidth, height: sheetHeight),
             styleMask: [.titled, .docModalWindow],
@@ -333,12 +344,12 @@ class MSCBlockingAppsController: NSObject {
         checkbox.isHidden = hideReopenCheckbox
         contentView.addSubview(checkbox)
         reopenCheckbox = checkbox
-        
+
         // create a stack view for our action buttons
         let buttonStackView = NSStackView()
         buttonStackView.orientation = .vertical
         buttonStackView.alignment = .centerX
-        //buttonStackView.spacing = stackViewSpacing
+        // buttonStackView.spacing = stackViewSpacing
         buttonStackView.translatesAutoresizingMaskIntoConstraints = false
 
         // Quit Apps button
@@ -352,10 +363,9 @@ class MSCBlockingAppsController: NSObject {
             quitButton.controlSize = .large
         }
         quitButton.keyEquivalent = "\r"
-        //contentView.addSubview(quitButton)
         buttonStackView.addArrangedSubview(quitButton)
         quitAppsButton = quitButton
-        
+
         // Update others button
         if pythonishBool(pref("MSCOfferToUpdateOthers")) {
             let updateOthersButton = NSButton(
@@ -368,7 +378,6 @@ class MSCBlockingAppsController: NSObject {
                 updateOthersButton.controlSize = .large
             }
             updateOthersButton.isEnabled = nonBlockedItemsPending
-            //contentView.addSubview(updateOthersButton)
             buttonStackView.addArrangedSubview(updateOthersButton)
             NSLayoutConstraint.activate([
                 updateOthersButton.widthAnchor.constraint(
@@ -376,7 +385,7 @@ class MSCBlockingAppsController: NSObject {
             ])
             updateOtherItemsButton = updateOthersButton
         }
-        
+
         // Cancel button
         let cancelButton = NSButton(
             title: NSLocalizedString("Cancel", comment: "Cancel button title/short action text"),
@@ -388,16 +397,15 @@ class MSCBlockingAppsController: NSObject {
             cancelButton.controlSize = .large
         }
         cancelButton.keyEquivalent = "\u{1B}"
-        //contentView.addSubview(cancelButton)
         buttonStackView.addArrangedSubview(cancelButton)
-        
+
         NSLayoutConstraint.activate([
             cancelButton.widthAnchor.constraint(
                 equalTo: buttonStackView.widthAnchor),
             quitButton.widthAnchor.constraint(
                 equalTo: buttonStackView.widthAnchor),
         ])
-        
+
         contentView.addSubview(buttonStackView)
 
         let actionButtonWidth = if let updateOtherItemsButton {
@@ -412,21 +420,21 @@ class MSCBlockingAppsController: NSObject {
                 228
             )
         }
-        
+
         let adjustedSheetWidth = max(
             sheetWidth,
             actionButtonWidth + 2 * sheetMargin,
             titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
             checkbox.intrinsicContentSize.width + 2 * sheetMargin
         )
-        
+
         if adjustedSheetWidth > sheetWidth {
             var frame = sheetWindow.frame
             frame.size.width = adjustedSheetWidth
-            sheetWindow.setFrame(frame,  display: true)
+            sheetWindow.setFrame(frame, display: true)
             sheetWidth = adjustedSheetWidth
         }
-        
+
         // Create stack view for blocking app rows
         let blockingStackView = createBlockingAppsStackView(apps: apps)
         blockingAppsStackView = blockingStackView
@@ -455,7 +463,27 @@ class MSCBlockingAppsController: NSObject {
         blockingScrollView.layer?.borderColor = NSColor.separatorColor.cgColor
         blockingScrollView.documentView = blockingStackView
         contentView.addSubview(blockingScrollView)
-        
+
+        // calculate an adjusted height for the sheet
+        let adjustedButtonStackHeight = buttonCount * quitButton.intrinsicContentSize.height + (buttonCount - 1) * 8
+        // will the detail message wrap?
+        let messageLabelLineCount = CGFloat(messageLabel.intrinsicContentSize.width > sheetWidth - 2 * sheetMargin ? 2 : 1)
+        let adjustedMessageLabelHeight = messageLabelLineCount * messageLabel.intrinsicContentSize.height
+        let adjustedSheetHeight = (
+            sheetMargin
+                + titleLabel.intrinsicContentSize.height + 8
+                + adjustedMessageLabelHeight + 12
+                + appStackViewHeight + 16
+                + checkboxHeight
+                + adjustedButtonStackHeight
+                + sheetMargin
+        )
+        if adjustedSheetHeight > sheetHeight {
+            var frame = sheetWindow.frame
+            frame.size.height = adjustedSheetHeight
+            sheetWindow.setFrame(frame, display: true)
+        }
+
         // Layout constraints
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
@@ -488,7 +516,7 @@ class MSCBlockingAppsController: NSObject {
                 equalTo: contentView.trailingAnchor, constant: -sheetMargin
             ),
             blockingScrollView.heightAnchor.constraint(
-                equalToConstant: stackViewHeight + 8),
+                equalToConstant: appStackViewHeight + 8),
 
             blockingStackView.topAnchor.constraint(
                 equalTo: blockingScrollView.contentView.topAnchor),
@@ -510,7 +538,7 @@ class MSCBlockingAppsController: NSObject {
                 equalTo: contentView.centerXAnchor),
             buttonStackView.widthAnchor.constraint(equalToConstant: actionButtonWidth),
             buttonStackView.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor, constant: -24
+                equalTo: contentView.bottomAnchor, constant: -sheetMargin
             ),
         ])
 
