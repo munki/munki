@@ -236,7 +236,7 @@
 "Mandatory Updates Pending" = "Actualizaciones requeridas pendientes";
 
 /* Manual quit required label */
-"Manual quit required" = "Se requiere la salida manual.";
+"Manual quit required" = "Se requiere la salida manual";
 
 /* More link text */
 "More" = "Más";
@@ -341,7 +341,7 @@
 "Removing receipt info" = "Quitando la información del recibo";
 
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Vuelva a abrir las aplicaciones después de la actualización.";
+"Reopen applications after update" = "Vuelva a abrir las aplicaciones después de la actualización";
 
 /* Install Required action text */
 "Required" = "Requerida";
