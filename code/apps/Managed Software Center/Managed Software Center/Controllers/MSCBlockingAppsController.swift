@@ -14,6 +14,16 @@ private class FlippedClipView: NSClipView {
     override var isFlipped: Bool { true }
 }
 
+private struct BlockingAppRowData {
+    var displayName: String
+    var rowView: NSView?
+    var spinner: NSProgressIndicator?
+    var manualQuitField: NSTextField?
+    var forceQuitButton: NSButton?
+    var forceQuitButtonWidthConstraint: NSLayoutConstraint?
+    var quitInitiatedTime: Date?
+}
+
 /// Controller that manages the blocking apps sheet UI.
 /// Presents a sheet listing running applications that must be quit before updates can proceed.
 class MSCBlockingAppsController: NSObject {
@@ -21,7 +31,6 @@ class MSCBlockingAppsController: NSObject {
 
     private weak var parentWindow: NSWindow?
     private var sheet: NSWindow?
-    private var spinners: [String: NSProgressIndicator] = [:]
     private var appsToQuit: [(displayName: String, path: String)] = []
     private var nonBlockedItemsPending = false
     private var quitAppsButton: NSButton?
@@ -32,16 +41,12 @@ class MSCBlockingAppsController: NSObject {
 
     // UI elements for dynamic updates
     private var blockingAppsStackView: NSStackView?
-    private var appRowViews: [String: NSView] = [:] // keyed by app path
     private var closedApps: Set<String> = [] // paths of closed apps
-    private var sheetHeightConstraint: NSLayoutConstraint?
-    // private var closedScrollHeightConstraint: NSLayoutConstraint?
-
+    private var appRowDataForPath: [String: BlockingAppRowData] = [:]
+    
     private var repoIcons: [String: String] = [:] // keyed by app name
 
     // Force quit tracking
-    private var quitInitiatedTimes: [String: Date] = [:] // keyed by app path
-    private var forceQuitButtons: [String: NSButton] = [:] // keyed by app path
     private let forceQuitDelay: TimeInterval = 5.0
 
     // Manual quit tracking - apps that cannot/should not be quit by us
@@ -60,7 +65,7 @@ class MSCBlockingAppsController: NSObject {
     private(set) var appsToReopenAfterUpdate: [String] = []
 
     // Layout constants
-    private let sheetWidth: CGFloat = 400
+    private let sheetWidth: CGFloat = 320
     private let rowHeight: CGFloat = 32
     private let stackViewSpacing: CGFloat = 4
     private let iconSize: CGFloat = 32
@@ -194,9 +199,8 @@ class MSCBlockingAppsController: NSObject {
         }
 
         appsToQuit = uniqueApps
-        spinners = [:]
-        appRowViews = [:]
         closedApps = []
+        appRowDataForPath = [:]
 
         // Check if all blocking apps are being removed (uninstalled)
         // If so, we shouldn't offer to reopen them
@@ -206,6 +210,14 @@ class MSCBlockingAppsController: NSObject {
 
         // Create and configure the sheet
         let sheetWindow = createSheet(for: uniqueApps, hideReopenCheckbox: allAppsBeingRemoved)
+        /*
+        let sheetWindow = createSheet(
+            for: [
+                (displayName: "Adobe Photoshop 2026", path: "/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app"),
+                (displayName: "Geführte Softwareaktualisierung", path: "/Applications/Managed Software Center.app"),
+                (displayName: "Workspace ONE Intelligent Hub", path: "/Applications/Workspace ONE Intelligent Hub.app"),
+            ])
+        */
         sheet = sheetWindow
 
         // Track result
@@ -337,14 +349,6 @@ class MSCBlockingAppsController: NSObject {
         blockingScrollView.documentView = blockingStackView
         contentView.addSubview(blockingScrollView)
 
-        /*
-         // Create closed apps section (initially hidden)
-         let closedSection = createClosedAppsSection()
-         closedAppsSectionView = closedSection
-         closedSection.isHidden = true
-         contentView.addSubview(closedSection)
-         */
-
         // Reopen apps checkbox (hidden if all apps are being removed)
         let checkbox = NSButton(checkboxWithTitle: NSLocalizedString(
             "Reopen applications after update",
@@ -443,19 +447,22 @@ class MSCBlockingAppsController: NSObject {
                 equalTo: contentView.bottomAnchor, constant: -16),
             cancelButton.centerXAnchor.constraint(
                 equalTo: contentView.centerXAnchor),
-            cancelButton.widthAnchor.constraint(
-                equalTo: contentView.widthAnchor, constant: -30),
+            //cancelButton.widthAnchor.constraint(
+            //    equalTo: contentView.widthAnchor, constant: -30),
+            cancelButton.widthAnchor.constraint(equalToConstant: 228),
             
             updateOthersButton.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -6),
             updateOthersButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            updateOthersButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, constant: -30),
+            //updateOthersButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, constant: -30),
+            updateOthersButton.widthAnchor.constraint(equalToConstant: 228),
 
             quitButton.bottomAnchor.constraint(
                 equalTo: updateOthersButton.topAnchor, constant: -6),
             quitButton.centerXAnchor.constraint(
                 equalTo: contentView.centerXAnchor),
-            quitButton.widthAnchor.constraint(
-                equalTo: contentView.widthAnchor, constant: -30 ),
+            //quitButton.widthAnchor.constraint(
+            //    equalTo: contentView.widthAnchor, constant: -30 ),
+            quitButton.widthAnchor.constraint(equalToConstant: 228),
 
         ])
 
@@ -468,6 +475,7 @@ class MSCBlockingAppsController: NSObject {
         apps: [(displayName: String, path: String)]
     ) -> NSStackView
     {
+        appRowDataForPath.removeAll()
         let stackView = NSStackView()
         stackView.orientation = .vertical
         stackView.alignment = .leading
@@ -515,62 +523,79 @@ class MSCBlockingAppsController: NSObject {
 
             rowView.addSubview(iconView)
             rowView.addSubview(nameLabel)
-
-            if !app.path.isEmpty {
-                appRowViews[app.path] = rowView
-            }
+            
+            let manualQuitLabel = createManualQuitLabel(for: app.path)
+            rowView.addSubview(manualQuitLabel)
 
             if isManualQuit {
                 // Show "Manual quit required" label for apps that can't be quit by us
-                let manualQuitLabel = showManualQuitLabel(for: app.path, in: rowView)
-
-                NSLayoutConstraint.activate([
-                    rowView.heightAnchor.constraint(equalToConstant: rowHeight),
-                    rowView.widthAnchor.constraint(equalToConstant: sheetWidth - 40),
-
-                    iconView.leadingAnchor.constraint(equalTo: rowView.leadingAnchor, constant: 4),
-                    iconView.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-                    iconView.widthAnchor.constraint(equalToConstant: iconSize),
-                    iconView.heightAnchor.constraint(equalToConstant: iconSize),
-
-                    nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
-                    nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: manualQuitLabel.leadingAnchor, constant: -8),
-                    nameLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-                ])
-            } else {
-                // Progress spinner (hidden by default) for apps that can be quit by us
-                let spinner = NSProgressIndicator()
-                spinner.translatesAutoresizingMaskIntoConstraints = false
-                spinner.style = .spinning
-                spinner.controlSize = .small
-                spinner.isHidden = true
-                spinner.isDisplayedWhenStopped = false
-
-                if !app.path.isEmpty {
-                    spinners[app.path] = spinner
-                }
-
-                rowView.addSubview(spinner)
-
-                NSLayoutConstraint.activate([
-                    rowView.heightAnchor.constraint(equalToConstant: rowHeight),
-                    rowView.widthAnchor.constraint(equalToConstant: sheetWidth - 40),
-
-                    iconView.leadingAnchor.constraint(equalTo: rowView.leadingAnchor, constant: 4),
-                    iconView.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-                    iconView.widthAnchor.constraint(equalToConstant: iconSize),
-                    iconView.heightAnchor.constraint(equalToConstant: iconSize),
-
-                    nameLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 8),
-                    nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: spinner.leadingAnchor, constant: -8),
-                    nameLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-
-                    spinner.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -4),
-                    spinner.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-                    spinner.widthAnchor.constraint(equalToConstant: spinnerSize),
-                    spinner.heightAnchor.constraint(equalToConstant: spinnerSize),
-                ])
+                manualQuitLabel.isHidden = false
             }
+            
+            let forceQuitButton = createForceQuitButton(for: app.path)
+            rowView.addSubview(forceQuitButton)
+            let forceQuitButtonWidthConstraint = forceQuitButton.widthAnchor.constraint(
+                equalToConstant: 0)
+
+            // Progress spinner (hidden by default) for apps that can be quit by us
+            let spinner = NSProgressIndicator()
+            spinner.translatesAutoresizingMaskIntoConstraints = false
+            spinner.style = .spinning
+            spinner.controlSize = .small
+            spinner.isHidden = true
+            spinner.isDisplayedWhenStopped = false
+            rowView.addSubview(spinner)
+
+            // record things for later use
+            if !app.path.isEmpty {
+                appRowDataForPath[app.path] = BlockingAppRowData(
+                    displayName: app.displayName,
+                    rowView: rowView,
+                    spinner: spinner,
+                    manualQuitField: manualQuitLabel,
+                    forceQuitButton: forceQuitButton,
+                    forceQuitButtonWidthConstraint: forceQuitButtonWidthConstraint
+                )
+            }
+            
+            NSLayoutConstraint.activate([
+                rowView.heightAnchor.constraint(equalToConstant: rowHeight),
+                rowView.widthAnchor.constraint(equalToConstant: sheetWidth - 40),
+
+                iconView.leadingAnchor.constraint(
+                    equalTo: rowView.leadingAnchor, constant: 4),
+                iconView.centerYAnchor.constraint(
+                    equalTo: rowView.centerYAnchor),
+                iconView.widthAnchor.constraint(equalToConstant: iconSize),
+                iconView.heightAnchor.constraint(equalToConstant: iconSize),
+
+                nameLabel.leadingAnchor.constraint(
+                    equalTo: iconView.trailingAnchor, constant: 8),
+                nameLabel.trailingAnchor.constraint(
+                    lessThanOrEqualTo: forceQuitButton.leadingAnchor,
+                    constant: -8),
+                nameLabel.centerYAnchor.constraint(
+                    equalTo: rowView.centerYAnchor),
+                
+                manualQuitLabel.leadingAnchor.constraint(
+                    equalTo: iconView.trailingAnchor, constant: 8),
+                manualQuitLabel.trailingAnchor.constraint(
+                    lessThanOrEqualTo: spinner.leadingAnchor, constant: -8),
+                manualQuitLabel.topAnchor.constraint(
+                    equalTo: nameLabel.bottomAnchor),
+                
+                forceQuitButton.trailingAnchor.constraint(
+                    equalTo: rowView.trailingAnchor, constant: -4),
+                forceQuitButton.centerYAnchor.constraint(
+                    equalTo: rowView.centerYAnchor),
+                forceQuitButtonWidthConstraint,
+
+                spinner.trailingAnchor.constraint(
+                    equalTo: rowView.trailingAnchor, constant: -4),
+                spinner.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
+                spinner.widthAnchor.constraint(equalToConstant: spinnerSize),
+                spinner.heightAnchor.constraint(equalToConstant: spinnerSize),
+            ])
 
             stackView.addArrangedSubview(rowView)
         }
@@ -581,7 +606,7 @@ class MSCBlockingAppsController: NSObject {
     /// Removes a closed app from the list of blocking apps and adds it to a list of closed apps
     private func moveAppToClosedSection(path: String) {
         guard !closedApps.contains(path),
-              let rowView = appRowViews[path],
+              let rowView = appRowDataForPath[path]?.rowView,
               let blockingStack = blockingAppsStackView
         else {
             return
@@ -598,7 +623,7 @@ class MSCBlockingAppsController: NSObject {
     private func startMonitoring(mainWindow: NSWindow) {
         let appsToCheckCopy = appsToCheck
         let currentUserCopy = currentUser
-
+        
         let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self, weak mainWindow] timer in
             guard let self, let mainWindow else {
                 timer.invalidate()
@@ -651,11 +676,10 @@ class MSCBlockingAppsController: NSObject {
                 }
 
                 // Check if app has exceeded force quit delay and is still running
-                if let quitTime = self.quitInitiatedTimes[app.path],
+                if let quitTime = self.appRowDataForPath[app.path]?.quitInitiatedTime,
                    now.timeIntervalSince(quitTime) >= self.forceQuitDelay,
                    isAppStillRunning(app.path),
-                   !self.closedApps.contains(app.path),
-                   self.forceQuitButtons[app.path] == nil
+                   !self.closedApps.contains(app.path)
                 {
                     // Show force quit button for this app
                     self.showForceQuitButton(for: app.path)
@@ -676,49 +700,7 @@ class MSCBlockingAppsController: NSObject {
         monitorTimer = timer
     }
 
-    private func showForceQuitButton(for appPath: String) {
-        guard let rowView = appRowViews[appPath],
-              let spinner = spinners[appPath]
-        else {
-            return
-        }
-
-        // Hide and stop the spinner
-        spinner.stopAnimation(nil)
-        spinner.isHidden = true
-
-        // Check if MSCOfferToForceQuitBlockingAppss is enabled
-        let offerToForceQuitEnabled = pythonishBool(pref("MSCOfferToForceQuitBlockingApps"))
-        if !offerToForceQuitEnabled {
-            // Show "Manual quit required" label instead of Force Quit button
-            showManualQuitLabel(for: appPath, in: rowView)
-            return
-        }
-
-        // Create the Force Quit button
-        let forceQuitButton = NSButton(title: NSLocalizedString("Force Quit", comment: "Force Quit button title"), target: self, action: #selector(forceQuitButtonClicked(_:)))
-        forceQuitButton.translatesAutoresizingMaskIntoConstraints = false
-        forceQuitButton.bezelStyle = .rounded
-        forceQuitButton.controlSize = .small
-        forceQuitButton.font = NSFont.systemFont(ofSize: 10)
-
-        // Store the app path in the button's identifier for later retrieval
-        forceQuitButton.identifier = NSUserInterfaceItemIdentifier(appPath)
-
-        rowView.addSubview(forceQuitButton)
-
-        NSLayoutConstraint.activate([
-            forceQuitButton.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -4),
-            forceQuitButton.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-        ])
-
-        forceQuitButtons[appPath] = forceQuitButton
-
-        msc_debug_log("Showing Force Quit button for: \(appPath)")
-    }
-
-    @discardableResult
-    private func showManualQuitLabel(for appPath: String, in rowView: NSView) -> NSTextField {
+    private func createManualQuitLabel(for appPath: String) -> NSTextField {
         let manualQuitLabel = NSTextField(labelWithString: NSLocalizedString(
             "Manual quit required",
             comment: "Manual quit required label"
@@ -727,18 +709,64 @@ class MSCBlockingAppsController: NSObject {
         manualQuitLabel.font = NSFont.systemFont(ofSize: 10)
         manualQuitLabel.textColor = .systemOrange
         manualQuitLabel.alignment = .right
-
-        rowView.addSubview(manualQuitLabel)
-
-        NSLayoutConstraint.activate([
-            manualQuitLabel.leadingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: -manualQuitLabel.intrinsicContentSize.width),
-            manualQuitLabel.trailingAnchor.constraint(equalTo: rowView.trailingAnchor, constant: 0),
-            manualQuitLabel.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
-        ])
-
-        msc_debug_log("Showing Manual quit required label for: \(appPath)")
-
+        manualQuitLabel.isHidden = true
+        
         return manualQuitLabel
+    }
+
+    private func showManualQuitLabel(for appPath: String) {
+        guard let manualQuitLabel = appRowDataForPath[appPath]?.manualQuitField
+        else {
+            return
+        }
+        manualQuitLabel.isHidden = false
+    }
+
+    private func createForceQuitButton(for appPath: String) -> NSButton {
+        // Create the Force Quit button
+        let forceQuitButton = NSButton(
+            title: NSLocalizedString(
+                "Force Quit", comment: "Force Quit button title"),
+            target: self,
+            action: #selector(forceQuitButtonClicked(_:))
+        )
+        forceQuitButton.translatesAutoresizingMaskIntoConstraints = false
+        forceQuitButton.bezelStyle = .rounded
+        forceQuitButton.controlSize = .small
+        forceQuitButton.font = NSFont.systemFont(ofSize: 10)
+        forceQuitButton.isHidden = true
+
+        // Store the app path in the button's identifier for later retrieval
+        forceQuitButton.identifier = NSUserInterfaceItemIdentifier(appPath)
+
+        return forceQuitButton
+    }
+
+    private func showForceQuitButton(for appPath: String) {
+        guard let appRowData = appRowDataForPath[appPath],
+              let spinner = appRowData.spinner,
+              let forceQuitButton = appRowData.forceQuitButton,
+              let widthConstraint = appRowData.forceQuitButtonWidthConstraint
+        else {
+            return
+        }
+        // Hide and stop the spinner
+        spinner.stopAnimation(nil)
+        spinner.isHidden = true
+        
+        // Check if MSCOfferToForceQuitBlockingApps is enabled
+        let offerToForceQuitEnabled = pythonishBool(pref("MSCOfferToForceQuitBlockingApps"))
+        if !offerToForceQuitEnabled {
+            // Show "Manual quit required" label instead of Force Quit button
+            showManualQuitLabel(for: appPath)
+            return
+        }
+        forceQuitButton.isHidden = false
+        NSLayoutConstraint.deactivate([widthConstraint])
+        NSLayoutConstraint.activate([
+            forceQuitButton.widthAnchor.constraint(
+                equalToConstant: forceQuitButton.intrinsicContentSize.width)
+        ])
     }
 
     @objc private func forceQuitButtonClicked(_ sender: NSButton) {
@@ -791,37 +819,29 @@ class MSCBlockingAppsController: NSObject {
             _ = runningApp.forceTerminate()
         }
 
-        // Remove the force quit button and show spinner while we wait for it to close
-        if let button = forceQuitButtons[appPath] {
-            button.removeFromSuperview()
-            forceQuitButtons.removeValue(forKey: appPath)
-        }
-
-        if let spinner = spinners[appPath] {
+        // Hide the force quit button and show spinner while we wait for it to close
+        if var appRowData = appRowDataForPath[appPath],
+           let button = appRowData.forceQuitButton,
+           let spinner = appRowData.spinner
+        {
+            button.isHidden = true
             spinner.isHidden = false
             spinner.startAnimation(nil)
+            // Reset the quit initiation time so we don't immediately show the force quit button again
+            appRowData.quitInitiatedTime = Date()
+            appRowDataForPath[appPath] = appRowData
         }
-
-        // Reset the quit initiation time so we don't immediately show the force quit button again
-        quitInitiatedTimes[appPath] = Date()
     }
 
     private func cleanup() {
         sheet = nil
-        spinners = [:]
+        appRowDataForPath = [:]
         appsToQuit = []
         quitAppsButton = nil
         monitorTimer = nil
         appsToCheck = []
         blockingAppsStackView = nil
-        // closedAppsStackView = nil
-        // closedAppsSectionView = nil
-        appRowViews = [:]
         closedApps = []
-        sheetHeightConstraint = nil
-        // closedScrollHeightConstraint = nil
-        quitInitiatedTimes = [:]
-        forceQuitButtons = [:]
         manualQuitAppNames = []
         manualQuitAppPaths = []
         appQuitScripts = [:]
@@ -900,13 +920,16 @@ class MSCBlockingAppsController: NSObject {
 
             // Only show spinner for apps that haven't been closed yet
             if !closedApps.contains(app.path) {
-                if let spinner = spinners[app.path] {
+                if let spinner = appRowDataForPath[app.path]?.spinner {
                     spinner.isHidden = false
                     spinner.startAnimation(nil)
                 }
 
                 // Record quit initiation time for force quit tracking
-                quitInitiatedTimes[app.path] = Date()
+                if var appRowData = appRowDataForPath[app.path] {
+                    appRowData.quitInitiatedTime = Date()
+                    appRowDataForPath[app.path] = appRowData
+                }
 
                 // Check for custom quit script
                 let appFileName = (app.path as NSString).lastPathComponent
