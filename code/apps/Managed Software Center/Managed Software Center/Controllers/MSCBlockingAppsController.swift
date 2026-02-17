@@ -14,6 +14,7 @@ private class FlippedClipView: NSClipView {
     override var isFlipped: Bool { true }
 }
 
+/// A struct to track UI elements that correspond to blockind apps
 private struct BlockingAppRowData {
     var displayName: String
     var rowView: NSView?
@@ -43,7 +44,7 @@ class MSCBlockingAppsController: NSObject {
     private var blockingAppsStackView: NSStackView?
     private var closedApps: Set<String> = [] // paths of closed apps
     private var appRowDataForPath: [String: BlockingAppRowData] = [:]
-    
+
     private var repoIcons: [String: String] = [:] // keyed by app name
 
     // Force quit tracking
@@ -210,14 +211,16 @@ class MSCBlockingAppsController: NSObject {
 
         // Create and configure the sheet
         let sheetWindow = createSheet(for: uniqueApps, hideReopenCheckbox: allAppsBeingRemoved)
+
         /*
-        let sheetWindow = createSheet(
-            for: [
-                (displayName: "Adobe Photoshop 2026", path: "/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app"),
-                (displayName: "Geführte Softwareaktualisierung", path: "/Applications/Managed Software Center.app"),
-                (displayName: "Workspace ONE Intelligent Hub", path: "/Applications/Workspace ONE Intelligent Hub.app"),
-            ])
-        */
+         let sheetWindow = createSheet(
+             for: [
+                 (displayName: "Adobe Photoshop 2026", path: "/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app"),
+                 (displayName: "Geführte Softwareaktualisierung", path: "/Applications/Managed Software Center.app"),
+                 (displayName: "Workspace ONE Intelligent Hub", path: "/Applications/Workspace ONE Intelligent Hub.app"),
+             ])
+         */
+
         sheet = sheetWindow
 
         // Track result
@@ -275,14 +278,14 @@ class MSCBlockingAppsController: NSObject {
             format: formatString, Array(Set(apps)).joined(separator: "\n")
         )
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
-        alert.beginSheetModal(for: window, completionHandler: { _ in })
+        alert.beginSheetModal(for: window)
     }
 
     /// Creates a sheet that lists blocking applications, and allows users to quit them
     private func createSheet(
         for apps: [(displayName: String, path: String)],
-        hideReopenCheckbox: Bool = false) -> NSWindow
-    {
+        hideReopenCheckbox: Bool = false
+    ) -> NSWindow {
         let stackViewHeight = min(CGFloat(apps.count), CGFloat(maxVisibleRows)) * (rowHeight + stackViewSpacing)
         // Adjust height based on whether checkbox is shown
         let checkboxHeight: CGFloat = hideReopenCheckbox ? 0 : 28 // checkbox height + spacing
@@ -402,66 +405,72 @@ class MSCBlockingAppsController: NSObject {
         updateOtherItemsButton = updateOthersButton
 
         // Layout constraints
-        // When checkbox is hidden, position buttons relative to blockingScrollView instead
-        let buttonsTopAnchor = hideReopenCheckbox ? blockingScrollView.bottomAnchor : checkbox.bottomAnchor
-        let buttonsTopConstant: CGFloat = hideReopenCheckbox ? 16 : 16
-
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
-                equalTo: contentView.topAnchor, constant: sheetMargin),
+                equalTo: contentView.topAnchor, constant: sheetMargin
+            ),
             titleLabel.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+                equalTo: contentView.leadingAnchor, constant: sheetMargin
+            ),
             titleLabel.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+                equalTo: contentView.trailingAnchor, constant: -sheetMargin
+            ),
 
             messageLabel.topAnchor.constraint(
-                equalTo: titleLabel.bottomAnchor, constant: 8),
+                equalTo: titleLabel.bottomAnchor, constant: 8
+            ),
             messageLabel.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+                equalTo: contentView.leadingAnchor, constant: sheetMargin
+            ),
             messageLabel.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+                equalTo: contentView.trailingAnchor, constant: -sheetMargin
+            ),
 
             blockingScrollView.topAnchor.constraint(
-                equalTo: messageLabel.bottomAnchor, constant: 12),
+                equalTo: messageLabel.bottomAnchor, constant: 12
+            ),
             blockingScrollView.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor, constant: sheetMargin),
+                equalTo: contentView.leadingAnchor, constant: sheetMargin
+            ),
             blockingScrollView.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor, constant: -sheetMargin),
+                equalTo: contentView.trailingAnchor, constant: -sheetMargin
+            ),
             blockingScrollView.heightAnchor.constraint(
                 equalToConstant: stackViewHeight + 8),
 
             blockingStackView.topAnchor.constraint(
                 equalTo: blockingScrollView.contentView.topAnchor),
             blockingStackView.leadingAnchor.constraint(
-                equalTo: blockingScrollView.contentView.leadingAnchor, constant: 4),
+                equalTo: blockingScrollView.contentView.leadingAnchor, constant: 4
+            ),
             blockingStackView.trailingAnchor.constraint(
-                equalTo: blockingScrollView.contentView.trailingAnchor, constant: -4),
+                equalTo: blockingScrollView.contentView.trailingAnchor, constant: -4
+            ),
 
             // checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, // constant: 12),
             checkbox.topAnchor.constraint(
-                equalTo: blockingScrollView.bottomAnchor, constant: 12),
+                equalTo: blockingScrollView.bottomAnchor, constant: 12
+            ),
             checkbox.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor, constant: sheetMargin),
-            
+                equalTo: contentView.leadingAnchor, constant: sheetMargin
+            ),
+
             cancelButton.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor, constant: -16),
+                equalTo: contentView.bottomAnchor, constant: -16
+            ),
             cancelButton.centerXAnchor.constraint(
                 equalTo: contentView.centerXAnchor),
-            //cancelButton.widthAnchor.constraint(
-            //    equalTo: contentView.widthAnchor, constant: -30),
             cancelButton.widthAnchor.constraint(equalToConstant: 228),
-            
+
             updateOthersButton.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -6),
             updateOthersButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            //updateOthersButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, constant: -30),
             updateOthersButton.widthAnchor.constraint(equalToConstant: 228),
 
             quitButton.bottomAnchor.constraint(
-                equalTo: updateOthersButton.topAnchor, constant: -6),
+                equalTo: updateOthersButton.topAnchor, constant: -6
+            ),
             quitButton.centerXAnchor.constraint(
                 equalTo: contentView.centerXAnchor),
-            //quitButton.widthAnchor.constraint(
-            //    equalTo: contentView.widthAnchor, constant: -30 ),
             quitButton.widthAnchor.constraint(equalToConstant: 228),
 
         ])
@@ -473,8 +482,7 @@ class MSCBlockingAppsController: NSObject {
     /// Create the list of blocking apps
     private func createBlockingAppsStackView(
         apps: [(displayName: String, path: String)]
-    ) -> NSStackView
-    {
+    ) -> NSStackView {
         appRowDataForPath.removeAll()
         let stackView = NSStackView()
         stackView.orientation = .vertical
@@ -523,7 +531,7 @@ class MSCBlockingAppsController: NSObject {
 
             rowView.addSubview(iconView)
             rowView.addSubview(nameLabel)
-            
+
             let manualQuitLabel = createManualQuitLabel(for: app.path)
             rowView.addSubview(manualQuitLabel)
 
@@ -531,7 +539,7 @@ class MSCBlockingAppsController: NSObject {
                 // Show "Manual quit required" label for apps that can't be quit by us
                 manualQuitLabel.isHidden = false
             }
-            
+
             let forceQuitButton = createForceQuitButton(for: app.path)
             rowView.addSubview(forceQuitButton)
             let forceQuitButtonWidthConstraint = forceQuitButton.widthAnchor.constraint(
@@ -557,41 +565,58 @@ class MSCBlockingAppsController: NSObject {
                     forceQuitButtonWidthConstraint: forceQuitButtonWidthConstraint
                 )
             }
-            
+
+            // Layout constraints
             NSLayoutConstraint.activate([
+                // row
                 rowView.heightAnchor.constraint(equalToConstant: rowHeight),
                 rowView.widthAnchor.constraint(equalToConstant: sheetWidth - 40),
 
+                // icon
                 iconView.leadingAnchor.constraint(
-                    equalTo: rowView.leadingAnchor, constant: 4),
+                    equalTo: rowView.leadingAnchor, constant: 4
+                ),
                 iconView.centerYAnchor.constraint(
-                    equalTo: rowView.centerYAnchor),
+                    equalTo: rowView.centerYAnchor
+                ),
                 iconView.widthAnchor.constraint(equalToConstant: iconSize),
                 iconView.heightAnchor.constraint(equalToConstant: iconSize),
 
+                // name
                 nameLabel.leadingAnchor.constraint(
-                    equalTo: iconView.trailingAnchor, constant: 8),
+                    equalTo: iconView.trailingAnchor, constant: 8
+                ),
                 nameLabel.trailingAnchor.constraint(
                     lessThanOrEqualTo: forceQuitButton.leadingAnchor,
-                    constant: -8),
+                    constant: -8
+                ),
                 nameLabel.centerYAnchor.constraint(
-                    equalTo: rowView.centerYAnchor),
-                
+                    equalTo: rowView.centerYAnchor
+                ),
+
+                // manual quit text
                 manualQuitLabel.leadingAnchor.constraint(
-                    equalTo: iconView.trailingAnchor, constant: 8),
+                    equalTo: iconView.trailingAnchor, constant: 8
+                ),
                 manualQuitLabel.trailingAnchor.constraint(
-                    lessThanOrEqualTo: spinner.leadingAnchor, constant: -8),
+                    lessThanOrEqualTo: spinner.leadingAnchor, constant: -8
+                ),
                 manualQuitLabel.topAnchor.constraint(
                     equalTo: nameLabel.bottomAnchor),
-                
+
+                // force quit button
                 forceQuitButton.trailingAnchor.constraint(
-                    equalTo: rowView.trailingAnchor, constant: -4),
+                    equalTo: rowView.trailingAnchor, constant: -4
+                ),
                 forceQuitButton.centerYAnchor.constraint(
-                    equalTo: rowView.centerYAnchor),
+                    equalTo: rowView.centerYAnchor
+                ),
                 forceQuitButtonWidthConstraint,
 
+                // progress spinner
                 spinner.trailingAnchor.constraint(
-                    equalTo: rowView.trailingAnchor, constant: -4),
+                    equalTo: rowView.trailingAnchor, constant: -4
+                ),
                 spinner.centerYAnchor.constraint(equalTo: rowView.centerYAnchor),
                 spinner.widthAnchor.constraint(equalToConstant: spinnerSize),
                 spinner.heightAnchor.constraint(equalToConstant: spinnerSize),
@@ -604,7 +629,7 @@ class MSCBlockingAppsController: NSObject {
     }
 
     /// Removes a closed app from the list of blocking apps and adds it to a list of closed apps
-    private func moveAppToClosedSection(path: String) {
+    private func moveAppToClosedApps(path: String) {
         guard !closedApps.contains(path),
               let rowView = appRowDataForPath[path]?.rowView,
               let blockingStack = blockingAppsStackView
@@ -623,7 +648,7 @@ class MSCBlockingAppsController: NSObject {
     private func startMonitoring(mainWindow: NSWindow) {
         let appsToCheckCopy = appsToCheck
         let currentUserCopy = currentUser
-        
+
         let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self, weak mainWindow] timer in
             guard let self, let mainWindow else {
                 timer.invalidate()
@@ -663,33 +688,33 @@ class MSCBlockingAppsController: NSObject {
             // Timer is already on main RunLoop with .common mode, so we're on the main thread
             let now = Date()
 
-            for app in self.appsToQuit {
-                msc_debug_log("Checking app: \(app.displayName) path=\(app.path) isEmpty=\(app.path.isEmpty) isStillRunning=\(isAppStillRunning(app.path)) inClosedList=\(self.closedApps.contains(app.path))")
-                if !app.path.isEmpty, !isAppStillRunning(app.path), !self.closedApps.contains(app.path) {
+            for app in appsToQuit {
+                msc_debug_log("Checking app: \(app.displayName) path=\(app.path) isEmpty=\(app.path.isEmpty) isStillRunning=\(isAppStillRunning(app.path)) inClosedList=\(closedApps.contains(app.path))")
+                if !app.path.isEmpty, !isAppStillRunning(app.path), !closedApps.contains(app.path) {
                     msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
-                    self.moveAppToClosedSection(path: app.path)
+                    moveAppToClosedApps(path: app.path)
                     if pythonishBool(pref("MSCOfferToUpdateOthers")),
-                       let updateOthersButton = self.updateOtherItemsButton
+                       let updateOthersButton = updateOtherItemsButton
                     {
                         updateOthersButton.isHidden = false
                     }
                 }
 
                 // Check if app has exceeded force quit delay and is still running
-                if let quitTime = self.appRowDataForPath[app.path]?.quitInitiatedTime,
+                if let quitTime = appRowDataForPath[app.path]?.quitInitiatedTime,
                    now.timeIntervalSince(quitTime) >= self.forceQuitDelay,
                    isAppStillRunning(app.path),
                    !self.closedApps.contains(app.path)
                 {
                     // Show force quit button for this app
-                    self.showForceQuitButton(for: app.path)
+                    showForceQuitButton(for: app.path)
                 }
             }
 
             if myStillRunning.isEmpty {
                 // All apps have been closed
                 timer.invalidate()
-                if let sheetWindow = self.sheet {
+                if let sheetWindow = sheet {
                     mainWindow.endSheet(sheetWindow, returnCode: .OK)
                 }
             }
@@ -700,7 +725,7 @@ class MSCBlockingAppsController: NSObject {
         monitorTimer = timer
     }
 
-    private func createManualQuitLabel(for appPath: String) -> NSTextField {
+    private func createManualQuitLabel(for _: String) -> NSTextField {
         let manualQuitLabel = NSTextField(labelWithString: NSLocalizedString(
             "Manual quit required",
             comment: "Manual quit required label"
@@ -710,7 +735,7 @@ class MSCBlockingAppsController: NSObject {
         manualQuitLabel.textColor = .systemOrange
         manualQuitLabel.alignment = .right
         manualQuitLabel.isHidden = true
-        
+
         return manualQuitLabel
     }
 
@@ -726,7 +751,8 @@ class MSCBlockingAppsController: NSObject {
         // Create the Force Quit button
         let forceQuitButton = NSButton(
             title: NSLocalizedString(
-                "Force Quit", comment: "Force Quit button title"),
+                "Force Quit", comment: "Force Quit button title"
+            ),
             target: self,
             action: #selector(forceQuitButtonClicked(_:))
         )
@@ -753,7 +779,7 @@ class MSCBlockingAppsController: NSObject {
         // Hide and stop the spinner
         spinner.stopAnimation(nil)
         spinner.isHidden = true
-        
+
         // Check if MSCOfferToForceQuitBlockingApps is enabled
         let offerToForceQuitEnabled = pythonishBool(pref("MSCOfferToForceQuitBlockingApps"))
         if !offerToForceQuitEnabled {
@@ -765,7 +791,7 @@ class MSCBlockingAppsController: NSObject {
         NSLayoutConstraint.deactivate([widthConstraint])
         NSLayoutConstraint.activate([
             forceQuitButton.widthAnchor.constraint(
-                equalToConstant: forceQuitButton.intrinsicContentSize.width)
+                equalToConstant: forceQuitButton.intrinsicContentSize.width),
         ])
     }
 
