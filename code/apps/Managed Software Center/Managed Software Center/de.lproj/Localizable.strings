@@ -311,7 +311,7 @@
 "Quit" = "Beenden";
 
 /* Quit Apps button title */
-"Quit Apps" = "Apps beenden";
+"Quit Apps and Update" = "Anwendungen beenden und aktualisieren";
 
 /* Force Quit button title */
 "Force Quit" = "Beenden erzwingen";
@@ -326,7 +326,7 @@
 "Closed Applications" = "Geschlossene Anwendungen";
 
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Anwendungen nach dem Update erneut öffnen.";
+"Reopen applications after update" = "Anwendungen nach dem Update erneut öffnen";
 
 /* Manual quit required label */
 "Manual quit required" = "Manuelles Beenden erforderlich";
@@ -378,6 +378,9 @@
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Updates überspringen";
+
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Überspringen und Anderen Aktualisieren";
 
 /* Software label */
 "Software" = "Software";
