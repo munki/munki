@@ -66,7 +66,7 @@ class MSCBlockingAppsController: NSObject {
     private(set) var appsToReopenAfterUpdate: [String] = []
 
     // Layout constants
-    private let sheetWidth: CGFloat = 320
+    private var sheetWidth: CGFloat = 320 // can be adjusted
     private let rowHeight: CGFloat = 32
     private let stackViewSpacing: CGFloat = 4
     private let iconSize: CGFloat = 32
@@ -323,6 +323,110 @@ class MSCBlockingAppsController: NSObject {
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(messageLabel)
 
+        // Reopen apps checkbox (hidden if all apps are being removed)
+        let checkbox = NSButton(checkboxWithTitle: NSLocalizedString(
+            "Reopen applications after update",
+            comment: "Reopen apps after update checkbox"
+        ), target: nil, action: nil)
+        checkbox.translatesAutoresizingMaskIntoConstraints = false
+        checkbox.state = .on
+        checkbox.isHidden = hideReopenCheckbox
+        contentView.addSubview(checkbox)
+        reopenCheckbox = checkbox
+        
+        // create a stack view for our action buttons
+        let buttonStackView = NSStackView()
+        buttonStackView.orientation = .vertical
+        buttonStackView.alignment = .centerX
+        //buttonStackView.spacing = stackViewSpacing
+        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Quit Apps button
+        let quitButton = NSButton(
+            title: NSLocalizedString("Quit Apps and Update", comment: "Quit Apps and Update button title"),
+            target: self, action: #selector(quitApps(_:))
+        )
+        quitButton.translatesAutoresizingMaskIntoConstraints = false
+        quitButton.bezelStyle = .rounded
+        if #available(macOS 11.0, *) {
+            quitButton.controlSize = .large
+        }
+        quitButton.keyEquivalent = "\r"
+        //contentView.addSubview(quitButton)
+        buttonStackView.addArrangedSubview(quitButton)
+        quitAppsButton = quitButton
+        
+        // Update others button
+        if pythonishBool(pref("MSCOfferToUpdateOthers")) {
+            let updateOthersButton = NSButton(
+                title: NSLocalizedString("Skip and Update Others", comment: "Skip and Update Others button title"),
+                target: self, action: #selector(updateOthers(_:))
+            )
+            updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
+            updateOthersButton.bezelStyle = .rounded
+            if #available(macOS 11.0, *) {
+                updateOthersButton.controlSize = .large
+            }
+            updateOthersButton.isEnabled = nonBlockedItemsPending
+            //contentView.addSubview(updateOthersButton)
+            buttonStackView.addArrangedSubview(updateOthersButton)
+            NSLayoutConstraint.activate([
+                updateOthersButton.widthAnchor.constraint(
+                    equalTo: buttonStackView.widthAnchor),
+            ])
+            updateOtherItemsButton = updateOthersButton
+        }
+        
+        // Cancel button
+        let cancelButton = NSButton(
+            title: NSLocalizedString("Cancel", comment: "Cancel button title/short action text"),
+            target: self, action: #selector(cancelSheet(_:))
+        )
+        cancelButton.translatesAutoresizingMaskIntoConstraints = false
+        cancelButton.bezelStyle = .rounded
+        if #available(macOS 11.0, *) {
+            cancelButton.controlSize = .large
+        }
+        cancelButton.keyEquivalent = "\u{1B}"
+        //contentView.addSubview(cancelButton)
+        buttonStackView.addArrangedSubview(cancelButton)
+        
+        NSLayoutConstraint.activate([
+            cancelButton.widthAnchor.constraint(
+                equalTo: buttonStackView.widthAnchor),
+            quitButton.widthAnchor.constraint(
+                equalTo: buttonStackView.widthAnchor),
+        ])
+        
+        contentView.addSubview(buttonStackView)
+
+        let actionButtonWidth = if let updateOtherItemsButton {
+            max(
+                quitButton.intrinsicContentSize.width,
+                updateOtherItemsButton.intrinsicContentSize.width,
+                228
+            )
+        } else {
+            max(
+                quitButton.intrinsicContentSize.width,
+                228
+            )
+        }
+        
+        let adjustedSheetWidth = max(
+            sheetWidth,
+            actionButtonWidth + 2 * sheetMargin,
+            titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
+            checkbox.intrinsicContentSize.width + 2 * sheetMargin
+        )
+        
+        if adjustedSheetWidth > sheetWidth {
+            var frame = sheetWindow.frame
+            frame.size.width = adjustedSheetWidth
+            sheetWindow.setFrame(frame,  display: true)
+            sheetWidth = adjustedSheetWidth
+        }
+        
         // Create stack view for blocking app rows
         let blockingStackView = createBlockingAppsStackView(apps: apps)
         blockingAppsStackView = blockingStackView
@@ -351,59 +455,7 @@ class MSCBlockingAppsController: NSObject {
         blockingScrollView.layer?.borderColor = NSColor.separatorColor.cgColor
         blockingScrollView.documentView = blockingStackView
         contentView.addSubview(blockingScrollView)
-
-        // Reopen apps checkbox (hidden if all apps are being removed)
-        let checkbox = NSButton(checkboxWithTitle: NSLocalizedString(
-            "Reopen applications after update",
-            comment: "Reopen apps after update checkbox"
-        ), target: nil, action: nil)
-        checkbox.translatesAutoresizingMaskIntoConstraints = false
-        checkbox.state = .on
-        checkbox.isHidden = hideReopenCheckbox
-        contentView.addSubview(checkbox)
-        reopenCheckbox = checkbox
-
-        // Quit Apps button
-        let quitButton = NSButton(
-            title: NSLocalizedString("Quit Apps and Update", comment: "Quit Apps and Update button title"),
-            target: self, action: #selector(quitApps(_:))
-        )
-        quitButton.translatesAutoresizingMaskIntoConstraints = false
-        quitButton.bezelStyle = .rounded
-        if #available(macOS 11.0, *) {
-            quitButton.controlSize = .large
-        }
-        quitButton.keyEquivalent = "\r"
-        contentView.addSubview(quitButton)
-        quitAppsButton = quitButton
-
-        // Cancel button
-        let cancelButton = NSButton(
-            title: NSLocalizedString("Cancel", comment: "Cancel button title/short action text"),
-            target: self, action: #selector(cancelSheet(_:))
-        )
-        cancelButton.translatesAutoresizingMaskIntoConstraints = false
-        cancelButton.bezelStyle = .rounded
-        if #available(macOS 11.0, *) {
-            cancelButton.controlSize = .large
-        }
-        cancelButton.keyEquivalent = "\u{1B}"
-        contentView.addSubview(cancelButton)
-
-        // Update others button
-        let updateOthersButton = NSButton(
-            title: NSLocalizedString("Skip and Update Others", comment: "Skip and Update Others button title"),
-            target: self, action: #selector(updateOthers(_:))
-        )
-        updateOthersButton.translatesAutoresizingMaskIntoConstraints = false
-        updateOthersButton.bezelStyle = .rounded
-        if #available(macOS 11.0, *) {
-            updateOthersButton.controlSize = .large
-        }
-        updateOthersButton.isEnabled = nonBlockedItemsPending && pythonishBool(pref("MSCOfferToUpdateOthers"))
-        contentView.addSubview(updateOthersButton)
-        updateOtherItemsButton = updateOthersButton
-
+        
         // Layout constraints
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
@@ -447,7 +499,6 @@ class MSCBlockingAppsController: NSObject {
                 equalTo: blockingScrollView.contentView.trailingAnchor, constant: -4
             ),
 
-            // checkbox.topAnchor.constraint(equalTo: closedSection.bottomAnchor, // constant: 12),
             checkbox.topAnchor.constraint(
                 equalTo: blockingScrollView.bottomAnchor, constant: 12
             ),
@@ -455,24 +506,12 @@ class MSCBlockingAppsController: NSObject {
                 equalTo: contentView.leadingAnchor, constant: sheetMargin
             ),
 
-            cancelButton.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor, constant: -16
-            ),
-            cancelButton.centerXAnchor.constraint(
+            buttonStackView.centerXAnchor.constraint(
                 equalTo: contentView.centerXAnchor),
-            cancelButton.widthAnchor.constraint(equalToConstant: 228),
-
-            updateOthersButton.bottomAnchor.constraint(equalTo: cancelButton.topAnchor, constant: -6),
-            updateOthersButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            updateOthersButton.widthAnchor.constraint(equalToConstant: 228),
-
-            quitButton.bottomAnchor.constraint(
-                equalTo: updateOthersButton.topAnchor, constant: -6
+            buttonStackView.widthAnchor.constraint(equalToConstant: actionButtonWidth),
+            buttonStackView.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor, constant: -24
             ),
-            quitButton.centerXAnchor.constraint(
-                equalTo: contentView.centerXAnchor),
-            quitButton.widthAnchor.constraint(equalToConstant: 228),
-
         ])
 
         sheetWindow.contentView = contentView
