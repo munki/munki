@@ -442,7 +442,6 @@ class MSCBlockingAppsController: NSObject {
         blockingScrollView.translatesAutoresizingMaskIntoConstraints = false
         blockingScrollView.contentView = FlippedClipView()
         blockingScrollView.hasVerticalScroller = (apps.count > maxVisibleRows)
-        blockingScrollView.horizontalScrollElasticity = .none
         if apps.count > maxVisibleRows {
             blockingScrollView.hasVerticalScroller = true
             blockingScrollView.borderType = .lineBorder
@@ -453,6 +452,7 @@ class MSCBlockingAppsController: NSObject {
             blockingScrollView.borderType = .noBorder
         }
         blockingScrollView.hasHorizontalScroller = false
+        blockingScrollView.horizontalScrollElasticity = .none
         blockingScrollView.automaticallyAdjustsContentInsets = false
         blockingScrollView.contentInsets = NSEdgeInsets(top: 4, left: 0, bottom: 4, right: 0)
         blockingScrollView.wantsLayer = true
@@ -481,13 +481,9 @@ class MSCBlockingAppsController: NSObject {
         }
         sheetWindow.contentView = contentView
 
-        // adjust window height to match current content
-        let adjustedSheetHeight = mainStackView.intrinsicContentSize.height + 2 * sheetMargin
-        if adjustedSheetHeight != sheetHeight {
-            var frame = sheetWindow.frame
-            frame.size.height = adjustedSheetHeight
-            sheetWindow.setFrame(frame, display: true)
-        }
+        // adjust window size to match current content
+        sheetWindow.setContentSize(mainStackView.intrinsicContentSize)
+
         return sheetWindow
     }
 
