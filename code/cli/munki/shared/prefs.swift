@@ -83,6 +83,8 @@ let CONFIG_KEY_NAMES = [
     "ClientResourcesFilename",
     "ClientResourceURL",
     "DaysBetweenNotifications",
+    "DownloadRetries",
+    "DownloadRetrySleepSeconds",
     "EmulateProfileSupport",
     "FollowHTTPRedirects",
     "HelpURL",
