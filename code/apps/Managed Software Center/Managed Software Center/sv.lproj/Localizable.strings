@@ -310,8 +310,11 @@
 /* Quit button title */
 "Quit" = "Avsluta";
 
-/* Quit Apps button title */
-"Quit Apps" = "Avsluta program";
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Avsluta program och uppdatera";
+
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Hoppa över och uppdatera övriga";
 
 /* Force Quit button title */
 "Force Quit" = "Tvångsavsluta";
