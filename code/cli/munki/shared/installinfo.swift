@@ -68,7 +68,8 @@ func oldestPendingUpdateInDays() -> Double {
     guard let pendingUpdates = try? readPlist(fromFile: updateTrackingFile) as? PlistDict else {
         return 0
     }
-    var oldestDate = Date()
+    let now = Date()
+    var oldestDate = now
     // each key has an a dict as a value.
     // In this dict, a key is an update name,
     // and its value is the date it was first seen
@@ -83,7 +84,10 @@ func oldestPendingUpdateInDays() -> Double {
             }
         }
     }
-    return Date().timeIntervalSince(oldestDate) / (24 * 60 * 60)
+    if oldestDate < now {
+        return Date().timeIntervalSince(oldestDate) / (24 * 60 * 60)
+    }
+    return 0
 }
 
 struct PendingUpdateInfo {
