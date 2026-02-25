@@ -561,4 +561,4 @@
 "Your software is up to date." = "Softwaren er opdateret.";
 
 /* Not volume owner detail */
-"Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";
