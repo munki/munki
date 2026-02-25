@@ -55,6 +55,9 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Andra användare på datorn har programmet öppet";
 
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Är du säker på att du vill tvångsavsluta \"%@\"? Alla osparade ändringar kan gå förlorade.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Observera";
 
@@ -148,6 +151,12 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bör ansluta datorn till en strömkälla innan du uppdaterar. Är du säker på att du vill fortsätta?";
 
+/* Force Quit button title */
+"Force Quit" = "Tvångsavsluta";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tvångsavsluta program?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvingad utloggning för en obligatorisk installation";
 
@@ -225,6 +234,9 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriska uppdateringar väntar";
+
+/* Manual quit required label */
+"Manual quit required" = "Måste avslutas manuellt";
 
 /* More link text */
 "More" = "Mer";
@@ -313,30 +325,6 @@
 /* Quit Apps and Update button title */
 "Quit Apps and Update" = "Avsluta program och uppdatera";
 
-/* Skip and Update Others button title */
-"Skip and Update Others" = "Hoppa över och uppdatera övriga";
-
-/* Force Quit button title */
-"Force Quit" = "Tvångsavsluta";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "Tvångsavsluta program?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Är du säker på att du vill tvångsavsluta \"%@\"? Alla osparade ändringar kan gå förlorade.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Stängda program";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Öppna program igen efter uppdatering";
-
-/* Manual quit required label */
-"Manual quit required" = "Måste avslutas manuellt";
-
-/* Update others button title */
-"Update others" = "Uppdatera övriga";
-
 /* Removal Error status text */
 "Removal Error" = "Borttagning misslyckades";
 
@@ -351,6 +339,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Tar bort kvittot";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Öppna program igen efter uppdatering";
 
 /* Install Required action text */
 "Required" = "Krävs";
@@ -381,6 +372,9 @@
 
 /* Sidebar Size label */
 "Size:" = "Storlek:";
+
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Hoppa över och uppdatera övriga";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Hoppa över";

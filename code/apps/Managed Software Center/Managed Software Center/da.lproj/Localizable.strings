@@ -55,6 +55,7 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer i brug af andre";
 
+/* TODO: verify translation */
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
 
@@ -151,9 +152,11 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør slutte computeren til strømforsyningen før installeringen. Er du sikker på, at du vil forsætte opdateringen?";
 
+/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Tvinge op";
 
+/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "Tving afslutning af applikation?";
 
@@ -235,6 +238,7 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
 
+/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Manuel afslutning påkrævet";
 
@@ -322,6 +326,7 @@
 /* Quit button title */
 "Quit" = "Slut";
 
+/* TODO: verify translation */
 /* Quit Apps and Update button title */
 "Quit Apps and Update" = "Afslut Apps og Opdater";
 
@@ -340,6 +345,7 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
 
+/* TODO: verify translation */
 /* Reopen apps after update checkbox */
 "Reopen applications after update" = "Genåbn applikationer efter opdatering";
 
@@ -376,6 +382,7 @@
 /* Skip Apple updates button title */
 "Skip these updates" = "Spring over";
 
+/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
 

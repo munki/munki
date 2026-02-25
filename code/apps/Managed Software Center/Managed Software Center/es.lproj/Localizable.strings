@@ -55,6 +55,7 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaciones en uso por otros";
 
+/* TODO: verify translation */
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "¿Estás seguro de que quieres forzar el cierre de \"%@\"? Es posible que se pierdan los cambios no guardados.";
 
@@ -151,9 +152,11 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Para mejores resultados se recomienda que conectes el equipo a una fuente de alimentación antes de iniciar la instalación. ¿Seguro que quieres continuar con la actualización?";
 
+/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Forzar salida";
 
+/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "¿Forzar el cierre de la aplicación?";
 
@@ -235,6 +238,7 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Actualizaciones requeridas pendientes";
 
+/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Se requiere la salida manual";
 
@@ -322,6 +326,7 @@
 /* Quit button title */
 "Quit" = "Salir";
 
+/* TODO: verify translation */
 /* Quit Apps and Update button title */
 "Quit Apps and Update" = "Salir de las aplicaciones y actualizar";
 
@@ -340,6 +345,7 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Quitando la información del recibo";
 
+/* TODO: verify translation */
 /* Reopen apps after update checkbox */
 "Reopen applications after update" = "Vuelva a abrir las aplicaciones después de la actualización";
 
@@ -376,6 +382,7 @@
 /* Skip Apple updates button title */
 "Skip these updates" = "Saltar actualizaciones de Apple";
 
+/* TODO: verify translation */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Saltar y actualizar a otros";
 

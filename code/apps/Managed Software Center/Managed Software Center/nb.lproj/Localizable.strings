@@ -55,6 +55,10 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer som er i bruk av andre";
 
+/* TODO: verify translation */
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på at du vil tvinge frem avslutning av \"%@\"? Eventuelle ulagrede endringer kan gå tapt.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Merk følgende";
 
@@ -148,6 +152,14 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør koble datamaskinen til en strømforsyning før du oppdaterer. Er du sikker på at du vil forsette med oppdateringen?";
 
+/* TODO: verify translation */
+/* Force Quit button title */
+"Force Quit" = "Tving avslutning";
+
+/* TODO: verify translation */
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tving avslutning av applikasjon?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvungen utlogging for obligatorisk installasjon";
 
@@ -225,6 +237,10 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Påkrevde oppdateringer venter";
+
+/* TODO: verify translation */
+/* Manual quit required label */
+"Manual quit required" = "Manuell avslutning kreves";
 
 /* More link text */
 "More" = "Mer";
@@ -310,26 +326,9 @@
 /* Quit button title */
 "Quit" = "Avslutt";
 
-/* Quit Apps button title */
-"Quit Apps" = "Avslutt Apps";
-
-/* Force Quit button title */
-"Force Quit" = "Tving avslutning";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "Tving avslutning av applikasjon?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på at du vil tvinge frem avslutning av \"%@\"? Eventuelle ulagrede endringer kan gå tapt.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Lukkede applikasjoner";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Åpne applikasjoner på nytt etter oppdatering";
-
-/* Manual quit required label */
-"Manual quit required" = "Manuell avslutning kreves";
+/* TODO: TRANSLATE */
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Quit Apps and Update";
 
 /* Removal Error status text */
 "Removal Error" = "Feil ved avinstallasjon";
@@ -345,6 +344,10 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner opplysninger om kvittering";
+
+/* TODO: verify translation */
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Åpne applikasjoner på nytt etter oppdatering";
 
 /* Install Required action text */
 "Required" = "Påkrevd";
@@ -378,6 +381,10 @@
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Hopp over oppdateringer";
+
+/* TODO: TRANSLATE */
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Skip and Update Others";
 
 /* Software label */
 "Software" = "Programvare";

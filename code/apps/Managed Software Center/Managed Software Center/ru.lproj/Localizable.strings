@@ -55,6 +55,10 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Приложения, которые используются другими";
 
+/* TODO: verify translation */
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Вы уверены, что хотите принудительно завершить работу \"%@\"? Все несохраненные изменения могут быть потеряны.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Внимание";
 
@@ -148,6 +152,14 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Для продолжения установки рекомендуется подключить компьютер к постоянному источнику питания. Вы действительно хотите продолжить установку обновлений?";
 
+/* TODO: verify translation */
+/* Force Quit button title */
+"Force Quit" = "Принудительное завершение работы";
+
+/* TODO: verify translation */
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Принудительно завершить работу приложения?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Принудительное завершение работы для установки Обязательного Обновления";
 
@@ -225,6 +237,10 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Отложенные обязательные обновления";
+
+/* TODO: verify translation */
+/* Manual quit required label */
+"Manual quit required" = "Требуется ручное завершение работы.";
 
 /* More link text */
 "More" = "Дополнительно";
@@ -310,26 +326,9 @@
 /* Quit button title */
 "Quit" = "Завершить";
 
-/* Quit Apps button title */
-"Quit Apps" = "Закрыть приложения";
-
-/* Force Quit button title */
-"Force Quit" = "Принудительное завершение работы";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "Принудительно завершить работу приложения?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Вы уверены, что хотите принудительно завершить работу \"%@\"? Все несохраненные изменения могут быть потеряны.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Закрытые приложения";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Перезапустить приложения после обновления.";
-
-/* Manual quit required label */
-"Manual quit required" = "Требуется ручное завершение работы.";
+/* TODO: TRANSLATE */
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Quit Apps and Update";
 
 /* Removal Error status text */
 "Removal Error" = "Ошибка Удаления";
@@ -345,6 +344,10 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Удаление квитанции";
+
+/* TODO: verify translation */
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Перезапустить приложения после обновления.";
 
 /* Install Required action text */
 "Required" = "Обязательное";
@@ -378,6 +381,10 @@
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Пропустить эти обновления";
+
+/* TODO: TRANSLATE */
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Skip and Update Others";
 
 /* Software label */
 "Software" = "Программы";

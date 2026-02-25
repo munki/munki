@@ -55,6 +55,10 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaties in gebruik door anderen";
 
+/* TODO: verify translation */
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet u zeker dat u \"%@\" geforceerd wilt afsluiten? Niet-opgeslagen wijzigingen kunnen verloren gaan.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Attentie";
 
@@ -148,6 +152,14 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden Uw computer aan te sluiten op de netvoeding. Weet U zeker dat U wilt doorgaan met bijwerken?";
 
+/* TODO: verify translation */
+/* Force Quit button title */
+"Force Quit" = "Geforceerd afsluiten";
+
+/* TODO: verify translation */
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Applicatie geforceerd afsluiten?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Gedwongen uitloggen voor verplichte installatie";
 
@@ -225,6 +237,10 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Verplichte Updates Wachtend";
+
+/* TODO: verify translation */
+/* Manual quit required label */
+"Manual quit required" = "Handmatig afsluiten is vereist.";
 
 /* More link text */
 "More" = "Meer";
@@ -310,26 +326,9 @@
 /* Quit button title */
 "Quit" = "Afsluiten";
 
-/* Quit Apps button title */
-"Quit Apps" = "Apps afsluiten";
-
-/* Force Quit button title */
-"Force Quit" = "Geforceerd afsluiten";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "Applicatie geforceerd afsluiten?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet u zeker dat u \"%@\" geforceerd wilt afsluiten? Niet-opgeslagen wijzigingen kunnen verloren gaan.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Gesloten aanvragen";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Applicaties opnieuw openen na de update.";
-
-/* Manual quit required label */
-"Manual quit required" = "Handmatig afsluiten is vereist.";
+/* TODO: TRANSLATE */
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Quit Apps and Update";
 
 /* Removal Error status text */
 "Removal Error" = "Verwijderfout";
@@ -345,6 +344,10 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Receipt informatie verwijderen";
+
+/* TODO: verify translation */
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Applicaties opnieuw openen na de update.";
 
 /* Install Required action text */
 "Required" = "Benodigd";
@@ -378,6 +381,10 @@
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Sla Apple updates over";
+
+/* TODO: TRANSLATE */
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Skip and Update Others";
 
 /* Software label */
 "Software" = "Software";
