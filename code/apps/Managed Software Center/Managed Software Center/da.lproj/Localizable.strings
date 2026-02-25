@@ -379,12 +379,12 @@
 /* Sidebar Size label */
 "Size:" = "Str.:";
 
-/* Skip Apple updates button title */
-"Skip these updates" = "Spring over";
-
 /* TODO: TRANSLATE */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
+
+/* Skip Apple updates button title */
+"Skip these updates" = "Spring over";
 
 /* Software label */
 "Software" = "Software";
@@ -539,11 +539,11 @@
 /* Apple Software Updates Pending detail */
 "You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
 
-/* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
-
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:";
+
+/* Blocking Apps Running detail */
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";

@@ -379,12 +379,12 @@
 /* Sidebar Size label */
 "Size:" = "Größe:";
 
-/* Skip Apple updates button title */
-"Skip these updates" = "Updates überspringen";
-
 /* TODO: verify translation */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Überspringen und Anderen Aktualisieren";
+
+/* Skip Apple updates button title */
+"Skip these updates" = "Updates überspringen";
 
 /* Software label */
 "Software" = "Software";
@@ -539,11 +539,11 @@
 /* Apple Software Updates Pending detail */
 "You must install these updates using Software Update in System Preferences." = "Installieren Sie diese Updates mithilfe der Softwareupdate-Funktion in den Systemeinstellungen .";
 
-/* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:\n\n%@";
-
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:";
+
+/* Blocking Apps Running detail */
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Sie müssen auf macOS version %@ oder höher aktualisieren, um dieses Update installieren zu können.";

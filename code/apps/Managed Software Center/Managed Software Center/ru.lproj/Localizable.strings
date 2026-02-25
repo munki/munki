@@ -379,12 +379,12 @@
 /* Sidebar Size label */
 "Size:" = "Размер:";
 
-/* Skip Apple updates button title */
-"Skip these updates" = "Пропустить эти обновления";
-
 /* TODO: TRANSLATE */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
+
+/* Skip Apple updates button title */
+"Skip these updates" = "Пропустить эти обновления";
 
 /* Software label */
 "Software" = "Программы";
@@ -539,11 +539,11 @@
 /* No Installed Software primary text */
 "You have no selected software." = "У вас нет выбранного ПО.";
 
-/* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%@";
-
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Вы должны закрыть следующие приложения перед установкой или удалением:";
+
+/* Blocking Apps Running detail */
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Вы должны перейти на версию macOS %@  чтобы иметь возможность установить этот элемент.";

@@ -379,12 +379,12 @@
 /* Sidebar Size label */
 "Size:" = "Koko:";
 
-/* Skip Apple updates button title */
-"Skip these updates" = "Ohita nämä päivitykset";
-
 /* TODO: TRANSLATE */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
+
+/* Skip Apple updates button title */
+"Skip these updates" = "Ohita nämä päivitykset";
 
 /* Software label */
 "Software" = "Ohjelmistot";
@@ -539,11 +539,11 @@
 /* Apple Software Updates Pending detail */
 "You must install these updates using Software Update in System Preferences." = "Päivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
 
-/* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%@";
-
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:";
+
+/* Blocking Apps Running detail */
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Päivityksen asentamiseen tarvitaan macOS %@.";
