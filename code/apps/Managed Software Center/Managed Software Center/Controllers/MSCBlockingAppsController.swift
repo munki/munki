@@ -305,7 +305,7 @@ class MSCBlockingAppsController: NSObject {
 
         // Title label
         let titleLabel = NSTextField(
-            labelWithString: NSLocalizedString(
+            wrappingLabelWithString: NSLocalizedString(
                 "Conflicting applications running",
                 comment: "Blocking Apps Running title"
             )
@@ -419,7 +419,7 @@ class MSCBlockingAppsController: NSObject {
         let adjustedSheetWidth = max(
             sheetWidth,
             actionButtonWidth + 2 * sheetMargin,
-            titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
+            //titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
             checkboxWidth + 2 * sheetMargin
         )
 
