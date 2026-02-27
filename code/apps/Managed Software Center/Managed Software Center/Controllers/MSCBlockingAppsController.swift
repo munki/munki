@@ -419,7 +419,7 @@ class MSCBlockingAppsController: NSObject {
         let adjustedSheetWidth = max(
             sheetWidth,
             actionButtonWidth + 2 * sheetMargin,
-            //titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
+            // titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
             checkboxWidth + 2 * sheetMargin
         )
 
@@ -652,6 +652,11 @@ class MSCBlockingAppsController: NSObject {
         // Remove from blocking apps stack view
         blockingStack.removeArrangedSubview(rowView)
         rowView.removeFromSuperview()
+
+        // we now have at least one item we can update
+        if let updateOtherItemsButton {
+            updateOtherItemsButton.isEnabled = true
+        }
     }
 
     private func startMonitoring(mainWindow: NSWindow) {
