@@ -55,9 +55,8 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Application utilisée par d'autres";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Êtes-vous sûr de vouloir forcer la fermeture \"%@\"? Toutes les modifications non enregistrées risquent d'être perdues.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Êtes-vous sûr de vouloir forcer la fermeture de \"%@\"? Toutes les modifications non enregistrées risquent d'être perdues.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Attention";
@@ -75,7 +74,7 @@
 "Cancel update" = "Annuler la mise à jour";
 
 /* Item Not Found message */
-"Cannot display the requested item." = "Ne peut afficher l'article demandé.";
+"Cannot display the requested item." = "Article demandé indisponible.";
 
 /* Not volume owner title */
 "Cannot upgrade macOS" = "Impossible de mettre à jour macOS";
@@ -114,7 +113,7 @@
 "Critical Update" = "Mise à jour critique";
 
 /* Unavailable long action text */
-"Currently Unavailable" = "Actuellement non disponible";
+"Currently Unavailable" = "Actuellement indisponible";
 
 /* Deny button text */
 "Deny" = "Refuser";
@@ -152,11 +151,9 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Pour un meilleur résultat, vous devriez brancher votre ordinateur à une alimentation externe avant de mettre à jour. Êtes-vous certain de vouloir poursuivre la mise à jour ?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Forcer la fermeture";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "Forcer la fermeture de l'application ?";
 
@@ -238,7 +235,6 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Mises à jour obligatoires en attente";
 
-/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Une fermeture manuelle est nécessaire.";
 
@@ -326,9 +322,8 @@
 /* Quit button title */
 "Quit" = "Quitter";
 
-/* TODO: TRANSLATE */
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Quit Apps and Update";
+"Quit Apps and Update" = "Quitter les applications et effectuer la mise à jour";
 
 /* Removal Error status text */
 "Removal Error" = "Erreur de suppression";
@@ -345,12 +340,11 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Suppression de l'information du reçu";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Rouvrir les applications après la mise à jour.";
+"Reopen applications after update" = "Rouvrir les applications après la mise à jour";
 
 /* Install Required action text */
-"Required" = "obligatoire";
+"Required" = "Obligatoire";
 
 /* Restart button title */
 "Restart" = "Redémarrer";
@@ -379,9 +373,8 @@
 /* Sidebar Size label */
 "Size:" = "Taille:";
 
-/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Skip and Update Others";
+"Skip and Update Others" = "Ignorer et mettre à jour le reste";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Ignorer ces mises à jour";
@@ -546,7 +539,7 @@
 "You must quit these applications before proceeding with installation or removal:\n\n%@" = "Vous devez quitter les logiciels suivants avant de les installer ou de les supprimer:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %@ to be able to install this item." = "Vous devez mettre à jour vers une version macOS %@ pour pouvoir installer cet élément.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Vous devez mettre à jour vers macOS version %@ pour pouvoir installer cet élément.";
 
 /* Apple Software Updates Unable detail */
 "Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Votre administrateur a restreint l'installation de ces mises à jour. Contactez votre administrateur pour de l'assistance.";
