@@ -55,6 +55,10 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps der bruges af andre";
 
+/* TODO: verify translation */
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Vær opmærksom";
 
@@ -148,6 +152,14 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør slutte computeren til strømforsyningen før installeringen. Er du sikker på, at du vil forsætte opdateringen?";
 
+/* TODO: verify translation */
+/* Force Quit button title */
+"Force Quit" = "Tvinge op";
+
+/* TODO: verify translation */
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tving afslutning af applikation?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvungen log ud for obligatorisk installering";
 
@@ -225,6 +237,10 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
+
+/* TODO: verify translation */
+/* Manual quit required label */
+"Manual quit required" = "Manuel afslutning påkrævet";
 
 /* More link text */
 "More" = "Mere";
@@ -310,26 +326,9 @@
 /* Quit button title */
 "Quit" = "Slut";
 
-/* Quit Apps button title */
-"Quit Apps" = "Slut apps";
-
-/* Force Quit button title */
-"Force Quit" = "Afbryd";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "Afbryd app?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil afbryde \"%@\"? Alle ændringer, der ikke er gemt, kan gå tabt.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Lukkede apps";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Åbn apps igen efter opdatering";
-
-/* Manual quit required label */
-"Manual quit required" = "Skal sluttes manuelt";
+/* TODO: verify translation */
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Afslut Apps og Opdater";
 
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
@@ -345,6 +344,10 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
+
+/* TODO: verify translation */
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Genåbn applikationer efter opdatering";
 
 /* Install Required action text */
 "Required" = "Påkrævet";
@@ -375,6 +378,10 @@
 
 /* Sidebar Size label */
 "Size:" = "Str.:";
+
+/* TODO: TRANSLATE */
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Skip and Update Others";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Spring over";
@@ -532,11 +539,11 @@
 /* Apple Software Updates Pending detail */
 "You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
 
-/* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Slut disse apps før du fortsætter med installering eller fjernelse:\n\n%@";
-
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Slut disse apps før du fortsætter med installering eller fjernelse:";
+
+/* Blocking Apps Running detail */
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";
@@ -554,4 +561,4 @@
 "Your software is up to date." = "Softwaren er opdateret.";
 
 /* Not volume owner detail */
-"Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";

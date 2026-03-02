@@ -55,6 +55,10 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaciones en uso por otros";
 
+/* TODO: verify translation */
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "¿Estás seguro de que quieres forzar el cierre de \"%@\"? Es posible que se pierdan los cambios no guardados.";
+
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Atención";
 
@@ -148,6 +152,14 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Para mejores resultados se recomienda que conectes el equipo a una fuente de alimentación antes de iniciar la instalación. ¿Seguro que quieres continuar con la actualización?";
 
+/* TODO: verify translation */
+/* Force Quit button title */
+"Force Quit" = "Forzar salida";
+
+/* TODO: verify translation */
+/* Force Quit confirmation title */
+"Force Quit Application?" = "¿Forzar el cierre de la aplicación?";
+
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Cierre de sesión forzado para una instalación requerida";
 
@@ -225,6 +237,10 @@
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Actualizaciones requeridas pendientes";
+
+/* TODO: verify translation */
+/* Manual quit required label */
+"Manual quit required" = "Se requiere la salida manual";
 
 /* More link text */
 "More" = "Más";
@@ -310,26 +326,9 @@
 /* Quit button title */
 "Quit" = "Salir";
 
-/* Quit Apps button title */
-"Quit Apps" = "Salir de las aplicaciones";
-
-/* Force Quit button title */
-"Force Quit" = "Forzar salida";
-
-/* Force Quit confirmation title */
-"Force Quit Application?" = "¿Forzar el cierre de la aplicación?";
-
-/* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "¿Estás seguro de que quieres forzar el cierre de \"%@\"? Es posible que se pierdan los cambios no guardados.";
-
-/* Closed Applications section title */
-"Closed Applications" = "Aplicaciones cerradas";
-
-/* Reopen apps after update checkbox */
-"Reopen applications after update" = "Vuelva a abrir las aplicaciones después de la actualización.";
-
-/* Manual quit required label */
-"Manual quit required" = "Se requiere la salida manual.";
+/* TODO: verify translation */
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Salir de las aplicaciones y actualizar";
 
 /* Removal Error status text */
 "Removal Error" = "Error al desinstalar";
@@ -345,6 +344,10 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Quitando la información del recibo";
+
+/* TODO: verify translation */
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Vuelva a abrir las aplicaciones después de la actualización";
 
 /* Install Required action text */
 "Required" = "Requerida";
@@ -375,6 +378,10 @@
 
 /* Sidebar Size label */
 "Size:" = "Tamaño:";
+
+/* TODO: verify translation */
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Saltar y actualizar a otros";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Saltar actualizaciones de Apple";
@@ -532,11 +539,11 @@
 /* Apple Software Updates Pending detail */
 "You must install these updates using Software Update in System Preferences." = "Debes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
 
-/* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:\n\n%@";
-
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:";
+
+/* Blocking Apps Running detail */
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Tienes que actualizar a macOS %@ o superior para poder instalar esta actualización.";
