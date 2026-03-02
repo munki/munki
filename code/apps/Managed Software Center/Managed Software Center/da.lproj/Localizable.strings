@@ -57,7 +57,7 @@
 
 /* TODO: verify translation */
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil tvinge \"%@\" til at afslutte ? Eventuelle ikke-gemte ændringer kan gå tabt.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil afbryde \"%@\"? Alle ændringer, der ikke er gemt, kan gå tabt.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Vær opmærksom";
@@ -154,11 +154,11 @@
 
 /* TODO: verify translation */
 /* Force Quit button title */
-"Force Quit" = "Tvinge op";
+"Force Quit" = "Afbryd";
 
 /* TODO: verify translation */
 /* Force Quit confirmation title */
-"Force Quit Application?" = "Tving afslutning af applikation?";
+"Force Quit Application?" = "Afbryd app?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvungen log ud for obligatorisk installering";
@@ -240,7 +240,7 @@
 
 /* TODO: verify translation */
 /* Manual quit required label */
-"Manual quit required" = "Manuel afslutning påkrævet";
+"Manual quit required" = "Skal sluttes manuelt";
 
 /* More link text */
 "More" = "Mere";
@@ -347,7 +347,7 @@
 
 /* TODO: verify translation */
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Genåbn applikationer efter opdatering";
+"Reopen applications after update" = "Åbn apps igen efter opdatering";
 
 /* Install Required action text */
 "Required" = "Påkrævet";
@@ -543,7 +543,7 @@
 "You must quit these applications before proceeding with installation or removal:" = "Slut disse apps før du fortsætter med installering eller fjernelse:";
 
 /* Blocking Apps Running detail */
-"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Slut disse apps før du fortsætter med installering eller fjernelse:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";
