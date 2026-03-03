@@ -344,6 +344,11 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict? {
             if let version = versionAttr.stringValue {
                 pkginfo["version"] = version
             }
+            if let minOSVersionAttr = element.attribute(forName: "minimumSystemVersion"),
+               let minOSVersion = minOSVersionAttr.stringValue
+            {
+                pkginfo["minimum_os_version"] = minOSVersion
+            }
             if let payloads = try? element.nodes(forXPath: "child::payload") {
                 if payloads.isEmpty { continue }
                 guard let payload = payloads[0] as? XMLElement else { continue }
@@ -511,6 +516,16 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
     }
     if !productVersion.isEmpty {
         info["product_version"] = productVersion
+    }
+    if minimumOSVersion.isEmpty {
+        // look through receipts for minimum_os_version
+        for receipt in receiptarray {
+            if let minosversion = receipt["minimum_os_version"] as? String {
+                if MunkiVersion(minosversion) > MunkiVersion(minimumOSVersion) {
+                    minimumOSVersion = minosversion
+                }
+            }
+        }
     }
     if !minimumOSVersion.isEmpty {
         info["minimum_os_version"] = minimumOSVersion
