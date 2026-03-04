@@ -55,7 +55,6 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Oletko varma, että haluat pakottaa \"%@\" lopettamaan? Tallentamattomat muutokset saattavat kadota.";
 
@@ -152,11 +151,9 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Tietokone tulisi varmuuden vuoksi liittää virtalähteeseen ennen päivittämistä. Oletko varma että haluat jatkaa?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Pakota lopettamaan";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "Pakota sovellus lopettamaan?";
 
@@ -238,7 +235,6 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Pakollisia päivityksiä odottamassa";
 
-/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Manuaalinen lopetus vaaditaan";
 
@@ -326,9 +322,8 @@
 /* Quit button title */
 "Quit" = "Lopeta";
 
-/* TODO: TRANSLATE */
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Quit Apps and Update";
+"Quit Apps and Update" = "Lopeta apit ja päivitä";
 
 /* Removal Error status text */
 "Removal Error" = "Virhe poistettaessa";
@@ -345,11 +340,10 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Poistetaan kuitteja";
 
-/* TODO: verify translation */
-//* Reopen apps after update checkbox */
+/* Reopen apps after update checkbox */
 "Reopen applications after update" = "Avaa sovellukset uudelleen päivityksen jälkeen";
 
-* Install Required action text */
+/* Install Required action text */
 "Required" = "Pakollinen";
 
 /* Restart button title */
@@ -379,9 +373,8 @@
 /* Sidebar Size label */
 "Size:" = "Koko:";
 
-/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Skip and Update Others";
+"Skip and Update Others" = "Ohita ja päivitä muut";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Ohita nämä päivitykset";
