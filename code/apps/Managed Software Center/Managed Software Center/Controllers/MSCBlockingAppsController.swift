@@ -897,22 +897,39 @@ class MSCBlockingAppsController: NSObject {
     /// Reopens all applications that were closed during the blocking apps sheet.
     /// Call this method after the update has completed.
     /// Clears the list of apps to reopen after attempting to open them.
+    ///
+    /// Apps are launched with staggered delays to allow the system to settle
+    /// after package installations by `managedsoftwareupdate`.
     func reopenApps() {
+        guard !appsToReopenAfterUpdate.isEmpty else { return }
+
+        let apps = appsToReopenAfterUpdate
+        appsToReopenAfterUpdate = []
+
         let config = NSWorkspace.OpenConfiguration()
         config.activates = false // Open apps in background without bringing to foreground
 
-        for appPath in appsToReopenAfterUpdate {
-            msc_debug_log("Reopening app in background: \(appPath)")
-            NSWorkspace.shared.openApplication(
-                at: URL(fileURLWithPath: appPath),
-                configuration: config
-            ) { _, error in
-                if let error {
-                    msc_debug_log("Failed to reopen app at \(appPath): \(error.localizedDescription)")
+        // Stagger app launches to give the system time to settle
+        // after package installations.
+        let initialDelay: TimeInterval = 2.0
+        let staggerDelay: TimeInterval = 1.0
+
+        for (index, appPath) in apps.enumerated() {
+            let delay = initialDelay + (Double(index) * staggerDelay)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                msc_debug_log("Reopening app in background: \(appPath)")
+                NSWorkspace.shared.openApplication(
+                    at: URL(fileURLWithPath: appPath),
+                    configuration: config
+                ) { _, error in
+                    if let error {
+                        msc_debug_log(
+                            "Failed to reopen app at \(appPath): \(error.localizedDescription)"
+                        )
+                    }
                 }
             }
         }
-        appsToReopenAfterUpdate = []
     }
 
     /// Clears the list of apps to reopen without reopening them.
