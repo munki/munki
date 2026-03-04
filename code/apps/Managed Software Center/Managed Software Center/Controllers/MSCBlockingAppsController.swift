@@ -7,7 +7,6 @@
 //
 
 import Cocoa
-import Security
 
 /// A flipped NSClipView that positions content from top to bottom.
 /// Used in scroll views to ensure content aligns to the top rather than the bottom.
@@ -899,30 +898,19 @@ class MSCBlockingAppsController: NSObject {
     /// Call this method after the update has completed.
     /// Clears the list of apps to reopen after attempting to open them.
     ///
-    /// Before reopening, checks that the user's login keychain is accessible.
-    /// Package installations running as root can occasionally disrupt the
-    /// security session's connection to the login keychain. If the keychain
-    /// is inaccessible, the user is advised to reboot instead.
-    ///
-    /// Apps are launched via `/usr/bin/open -g` (through LaunchServices) with
-    /// staggered delays to allow the security session to settle after installs.
+    /// Apps are launched with staggered delays to allow the system to settle
+    /// after package installations by `managedsoftwareupdate`.
     func reopenApps() {
         guard !appsToReopenAfterUpdate.isEmpty else { return }
-
-        // Check keychain accessibility before reopening apps
-        if !isKeychainAccessible() {
-            msc_debug_log("Keychain is not accessible after update - advising reboot")
-            showKeychainInaccessibleAlert()
-            appsToReopenAfterUpdate = []
-            return
-        }
 
         let apps = appsToReopenAfterUpdate
         appsToReopenAfterUpdate = []
 
-        // Stagger app launches to give the security session time to settle
-        // after package installations. Launch via /usr/bin/open which goes
-        // through LaunchServices for proper session inheritance.
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = false // Open apps in background without bringing to foreground
+
+        // Stagger app launches to give the system time to settle
+        // after package installations.
         let initialDelay: TimeInterval = 2.0
         let staggerDelay: TimeInterval = 1.0
 
@@ -930,15 +918,15 @@ class MSCBlockingAppsController: NSObject {
             let delay = initialDelay + (Double(index) * staggerDelay)
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 msc_debug_log("Reopening app in background: \(appPath)")
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-                process.arguments = ["-g", appPath]
-                do {
-                    try process.run()
-                } catch {
-                    msc_debug_log(
-                        "Failed to reopen app at \(appPath): \(error.localizedDescription)"
-                    )
+                NSWorkspace.shared.openApplication(
+                    at: URL(fileURLWithPath: appPath),
+                    configuration: config
+                ) { _, error in
+                    if let error {
+                        msc_debug_log(
+                            "Failed to reopen app at \(appPath): \(error.localizedDescription)"
+                        )
+                    }
                 }
             }
         }
@@ -947,64 +935,6 @@ class MSCBlockingAppsController: NSObject {
     /// Clears the list of apps to reopen without reopening them.
     func clearAppsToReopen() {
         appsToReopenAfterUpdate = []
-    }
-
-    // MARK: - Keychain Accessibility
-
-    /// Checks whether the user's default (login) keychain is unlocked and writable.
-    ///
-    /// Package installations running as root via `managedsoftwareupdate` can
-    /// occasionally disrupt the security session's association with the login
-    /// keychain. When this happens, newly launched apps cannot read or store
-    /// keychain items, leading to errors like "A keychain cannot be found to
-    /// store <key>". Only a reboot restores the session.
-    ///
-    /// Uses the legacy SecKeychain API (deprecated in macOS 12 with no replacement).
-    private func isKeychainAccessible() -> Bool {
-        var keychain: SecKeychain?
-        var status = SecKeychainStatus()
-
-        let copyResult = SecKeychainCopyDefault(&keychain)
-        guard copyResult == errSecSuccess, let keychain else {
-            msc_debug_log("Failed to get default keychain: OSStatus \(copyResult)")
-            return false
-        }
-
-        let statusResult = SecKeychainGetStatus(keychain, &status)
-        if statusResult != errSecSuccess {
-            msc_debug_log("Failed to get keychain status: OSStatus \(statusResult)")
-            return false
-        }
-
-        let isUnlocked = (status & UInt32(kSecUnlockStateStatus)) != 0
-        let isReadable = (status & UInt32(kSecReadPermStatus)) != 0
-        let isWritable = (status & UInt32(kSecWritePermStatus)) != 0
-
-        msc_debug_log(
-            "Keychain status - unlocked: \(isUnlocked), readable: \(isReadable), writable: \(isWritable)"
-        )
-
-        return isUnlocked && isReadable && isWritable
-    }
-
-    /// Shows an alert advising the user to reboot because the keychain is inaccessible.
-    private func showKeychainInaccessibleAlert() {
-        guard let window = parentWindow else { return }
-
-        let alert = NSAlert()
-        alert.messageText = NSLocalizedString(
-            "Restart required",
-            comment: "Keychain inaccessible after update alert title"
-        )
-        alert.informativeText = NSLocalizedString(
-            "The update was installed successfully, but a restart is needed "
-                + "before previously open applications can be safely reopened. "
-                + "Please save your work and restart your Mac.",
-            comment: "Keychain inaccessible after update alert detail"
-        )
-        alert.alertStyle = .warning
-        alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
-        alert.beginSheetModal(for: window)
     }
 
     // MARK: - Actions
