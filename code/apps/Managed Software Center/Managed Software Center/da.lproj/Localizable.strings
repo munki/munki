@@ -326,7 +326,6 @@
 /* Quit button title */
 "Quit" = "Slut";
 
-/* TODO: verify translation */
 /* Quit Apps and Update button title */
 "Quit Apps and Update" = "Slut apps og opdater";
 
@@ -379,7 +378,6 @@
 /* Sidebar Size label */
 "Size:" = "Str.:";
 
-/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Spring over og opdater andre";
 
