@@ -72,7 +72,7 @@
 "Cancel removal" = "Annuller fjernelse";
 
 /* Cancel Update long action text */
-"Cancel update" = "Annuler opdatering";
+"Cancel update" = "Annuller opdatering";
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan ikke vise det ønskede emne.";
@@ -328,7 +328,7 @@
 
 /* TODO: verify translation */
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Afslut Apps og Opdater";
+"Quit Apps and Update" = "Slut apps og opdater";
 
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
@@ -381,7 +381,7 @@
 
 /* TODO: TRANSLATE */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Skip and Update Others";
+"Skip and Update Others" = "Spring over og opdater andre";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Spring over";
