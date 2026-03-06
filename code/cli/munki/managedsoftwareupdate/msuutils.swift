@@ -350,12 +350,6 @@ func doInstallTasks(
     onlyUnattended: Bool = false,
     considerBlockingApps: Bool = true
 ) async -> PostAction {
-    if !onlyUnattended {
-        // first, clear the last notified date so we can get notified of new
-        // changes after this round of installs
-        clearLastNotifiedDate()
-    }
-
     var munkiItemsRestartAction = PostAction.none
 
     if munkiUpdatesAvailable() > 0 {
