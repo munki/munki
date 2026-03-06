@@ -21,9 +21,41 @@
             <div id="content">
                 <div id="updates" class="main">
                     <div id="os-and-app-updates"
-                         class="lockup-container installations updates">
+                         class="lockup-container installations updates ${hide_pending_updates}">
                         <div class="title">
                             <h2>${UpdatesLabel}</h2>
+                        </div>
+                        <div id="apple-updates" class="${hide_apple_updates}">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th colspan="3">
+                                            <div class="non-scan-progress">
+                                                <span id="apple-update-count-string">${apple_update_count}</span>
+                                                &nbsp;
+                                                <span class="warning" id="apple-update-update-warning-text">
+                                                    ${apple_update_warning_text}
+                                                </span>
+                                                <div class="msc-button install-updates in-header">
+                                                    <button class="button-area uppercase"
+                                                            onClick="window.webkit.messageHandlers.showButtonClicked.postMessage('');">
+                                                        <div class="msc-button-inner install-updates ${install_all_button_classes}"
+                                                             id='install-all-button-text'>
+                                                            Show
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                               </thead>
+                               <tbody></tbody>
+                            </table>
+                            <div id="os-updates" class="lockup-container content" data-columns-current=1">
+                                <div class="content-and-controls updates-page" id="apple-updates-table">
+                                    ${apple_update_rows}
+                                </div>
+                            </div>
                         </div>
                         <table>
                             <thead>
@@ -60,7 +92,7 @@
                            </thead>
                            <tbody></tbody>
                         </table>
-                        <div id="os-updates" class="lockup-container content" data-columns-current="1">
+                        <div id="app-updates" class="lockup-container content" data-columns-current="1">
                             <div class="content-and-controls updates-page" id="updates-to-install-table">
                                 ${update_rows}
                             </div>

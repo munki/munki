@@ -283,13 +283,13 @@ class MainWindowController: NSWindowController {
             // no pending updates
             return .terminateNow
         }
-        if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
+        if !haveAlertedToAppleUpdates() {
             if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
                 alert_controller.alertToAppleUpdates()
-                setFilterAppleUpdates(true)
+                setAlertedToAppleUpdates(true)
                 return .terminateCancel
             }
         }
@@ -685,6 +685,7 @@ class MainWindowController: NSWindowController {
         // define messages JavaScript can send us
         wkContentController.add(self, name: "openExternalLink")
         wkContentController.add(self, name: "installButtonClicked")
+        wkContentController.add(self, name: "showButtonClicked")
         wkContentController.add(self, name: "myItemsButtonClicked")
         wkContentController.add(self, name: "actionButtonClicked")
         wkContentController.add(self, name: "changeSelectedCategory")
@@ -907,14 +908,14 @@ class MainWindowController: NSWindowController {
             if alert_controller.alertedToNotVolumeOwner() {
                 clearMunkiItemsCache()
                 setFilterStagedOSUpdate(true)
-                setFilterAppleUpdates(false)
+                setAlertedToAppleUpdates(false)
                 loadUpdatesPage(self)
                 return
             }
             if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
                 clearMunkiItemsCache()
                 setFilterStagedOSUpdate(true)
-                setFilterAppleUpdates(false)
+                setAlertedToAppleUpdates(false)
                 loadUpdatesPage(self)
                 return
             }
@@ -1054,7 +1055,7 @@ class MainWindowController: NSWindowController {
         if _update_in_progress {
             return 0
         }
-        return getEffectiveUpdateList().count
+        return getEffectiveUpdateList().count + getAppleUpdates().count
     }
     
     func updatesSidebarItemView() -> MSCTableCellView? {
@@ -1230,6 +1231,10 @@ class MainWindowController: NSWindowController {
             return
         }
         var filename = unquote(host)
+        if filename == "appleupdates" {
+            openSoftwareUpdatePrefsPane()
+            return
+        }
         // append ".html" if absent
         if !(filename.hasSuffix(".html")) {
             filename += ".html"
@@ -1441,7 +1446,7 @@ class MainWindowController: NSWindowController {
         // update the updates-to-install header to reflect the new list of
         // updates to install
         setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
-        setInnerText(getWarningText(shouldFilterAppleUpdates()), elementID: "update-warning-text")
+        setInnerText(getWarningText(), elementID: "update-warning-text")
     
         // update text of Install All button
         setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
@@ -1572,7 +1577,7 @@ class MainWindowController: NSWindowController {
     @IBAction func reloadPage(_ sender: Any) {
         // User selected Reload page menu item. Reload the page and kick off an updatecheck
         msc_log("user", "reload_page_menu_item_selected")
-        setFilterAppleUpdates(false)
+        setAlertedToAppleUpdates(false)
         setFilterStagedOSUpdate(false)
         checkForUpdates()
         URLCache.shared.removeAllCachedResponses()

@@ -10,14 +10,29 @@ import Foundation
 
 var _msclib_html_dir = "" // TO-DO: eliminate this global var
 
-func updateCountMessage(_ count: Int) -> String {
+func appleUpdateCountMessage(_ count: Int) -> String {
+    // Return a localized message describing the count of Apple updates to install
+    if count == 0 {
+        return NSLocalizedString("Apple software is up to date", comment: "No Apple updates message") as String
+    } else if count == 1 {
+        return NSLocalizedString("1 available Apple update", comment: "One Apple update message") as String
+    } else {
+        let formatString = NSLocalizedString("%@ available Apple updates", comment: "Multiple Apple updates message")
+        return NSString(format: (formatString as NSString), String(count)) as String
+    }
+}
+
+func updateCountMessage(_ count: Int, appleUpdateCount: Int = 0) -> String {
     // Return a localized message describing the count of updates to install
     if count == 0 {
-        return NSLocalizedString("No pending updates", comment: "No Updates message") as String
+        if appleUpdateCount == 0 {
+            return NSLocalizedString("No pending updates", comment: "No Updates message") as String
+        }
+        return NSLocalizedString("Managed software is up to date", comment: "No managed updates message") as String
     } else if count == 1 {
-        return NSLocalizedString("1 pending update", comment: "One Update message") as String
+        return NSLocalizedString("1 pending managed update", comment: "One managed updates message") as String
     } else {
-        let formatString = NSLocalizedString("%@ pending updates", comment: "Multiple Updates message")
+        let formatString = NSLocalizedString("%@ pending managed updates", comment: "Multiple managed updates message")
         return NSString(format: (formatString as NSString), String(count)) as String
     }
 }

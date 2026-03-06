@@ -35,7 +35,7 @@ func convertIconToPNG(_ app_name: String,
     } catch {
         info = [String: Any]()
     }
-    info["CFBundleIconFile"] = "AppIcon.icns"
+    //info["CFBundleIconFile"] = "AppIcon.icns"
     let icon_filename = info["CFBundleIconFile"] as? String ?? app_name
     var icon_path = NSString.path(
         withComponents: [app_path, "Contents/Resources", icon_filename])

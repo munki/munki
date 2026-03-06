@@ -1,0 +1,16 @@
+<div class="lockup small detailed update ${added_class}" id="${name_escaped}_update_item">
+    <div class="row1">
+        <a href="munki://appleupdates" class="artwork-link">
+            <div class="artwork">
+                <img width="64" height="64" alt="System Settings icon" class="artwork" src="static/SoftwareUpdate.png" />
+            </div>
+        </a>
+        <ul class="list items">
+            <li class="name" title="${display_name_escaped}">
+                <a href="munki://appleupdates">${display_name_escaped}</a>
+            </li>
+            <li class="version_and_size">${version_label} ${display_version_escaped_and_size}</li>
+            <li class="warning">${restart_action_text}</li>
+        </ul>
+    </div>
+</div>

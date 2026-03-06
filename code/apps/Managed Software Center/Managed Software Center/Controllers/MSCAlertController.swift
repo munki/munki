@@ -205,7 +205,7 @@ class MSCAlertController: NSObject {
             // cancelled
             msc_log("user", "deferred_apple_updates")
             alert.window.orderOut(self)
-            setFilterAppleUpdates(true)
+            setAlertedToAppleUpdates(true)
             clearMunkiItemsCache()
             if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
                 mainWindowController.load_page("updates.html")
@@ -219,13 +219,6 @@ class MSCAlertController: NSObject {
     
     @objc func openSoftwareUpdate() {
         // object method to call openSoftwareUpdatePrefsPane function
-        if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController,
-           let blurredBackground = mainWindowController.blurredBackground
-        {
-            // lower the level of our blur windows so the Software Update
-            // pane can appear in front
-            blurredBackground.lowerWindowLevels()
-        }
         openSoftwareUpdatePrefsPane()
         self.haveOpenedSysPrefsSUPane = true
     }

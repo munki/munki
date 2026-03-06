@@ -17,6 +17,9 @@ extension MainWindowController: WKScriptMessageHandler {
         if message.name == "installButtonClicked" {
             installButtonClicked()
         }
+        if message.name == "showButtonClicked" {
+            openSoftwareUpdatePrefsPane()
+        }
         if message.name == "myItemsButtonClicked" {
             if let item_name = message.body as? String {
                 myItemsActionButtonClicked(item_name)
@@ -107,11 +110,11 @@ extension MainWindowController: WKScriptMessageHandler {
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
+            if !haveAlertedToAppleUpdates() {
                 // if there are pending Apple updates, alert the user to
                 // install via System Preferences
                 alert_controller.alertToAppleUpdates()
-                setFilterAppleUpdates(true)
+                setAlertedToAppleUpdates(true)
             } else {
                 updateNow()
             }

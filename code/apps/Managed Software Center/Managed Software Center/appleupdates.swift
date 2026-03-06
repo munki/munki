@@ -49,8 +49,13 @@ func killSystemPreferencesApp() {
 }
 
 func openSoftwareUpdatePrefsPane() {
-    // kill it first in case it is open with a dialog/sheet
-    //killSystemPreferencesApp() // nope, it reopens to previous pane
+    if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController,
+       let blurredBackground = mainWindowController.blurredBackground
+    {
+        // lower the level of our blur windows so the Software Update
+        // pane can appear in front
+        blurredBackground.lowerWindowLevels()
+    }
     clearLogoutAndStartupFlagFiles()
     if #available(macOS 13, *) {
         // open System Settings > General > Software Updates"

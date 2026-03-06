@@ -9,7 +9,7 @@
 import AppKit
 import Foundation
 
-private var filterAppleUpdates = false
+private var alertedToAppleUpdates = false
 private var filterStagedOSUpdate = false
 
 class Cache {
@@ -1257,29 +1257,6 @@ func _build_update_list() -> [UpdateItem] {
         stagedOSupdate["status"] = "will-be-installed"
         stagedOSupdate["staged_os_installer"] = true
         update_items.append(stagedOSupdate)
-        // don't show Apple updates if we have a pending staged OS upgrade
-        setFilterAppleUpdates(true)
-    } else {
-        if munkiUpdatesContainAppleItems() {
-            // don't show any Apple updates if there are Munki items that are Apple items
-            NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
-        } else if (shouldFilterAppleUpdates() && isAppleSilicon()) {
-            // we can't install any Apple updates on Apple silicon, so filter them all
-            NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
-        } else {
-            for var item in getAppleUpdates() {
-                if (shouldFilterAppleUpdates() &&
-                    ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
-                    // skip this update because it requires a restart and we've been
-                    // directed to filter these out
-                    continue
-                }
-                item["developer"] = "Apple"
-                item["status"] = "will-be-installed"
-                item["apple_update"] = true
-                update_items.append(item)
-            }
-        }
     }
     let install_info = cachedInstallInfo()
     if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
@@ -1343,19 +1320,12 @@ func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
 }
 
 func appleUpdatesMustBeDoneWithSystemPreferences() -> Bool {
-    // Return true if any item in the apple update list must be done with System Preferences Software Update
-    if isAppleSilicon() {
-        return getAppleUpdates().count > 0
-    }
-    return appleUpdatesRequireRestartOnMojaveAndUp()
+    // in Munki 7 we always do them with System Settings/System Preferences
+    return true
 }
 
 func updatesContainNonUserSelectedItems() -> Bool {
     // Does the list of updates contain items not selected by the user?
-    if !munkiUpdatesContainAppleItems() && getAppleUpdates().count > 0 {
-        // available Apple updates are not user selected
-        return true
-    }
     let install_info = cachedInstallInfo()
     let install_items = install_info["managed_installs"] as? [[String: Any]] ?? [[String: Any]]()
     let removal_items = install_info["removals"] as? [[String: Any]] ?? [[String: Any]]()
@@ -1438,9 +1408,9 @@ func dependentItems(_ item_name: String) -> [String] {
     return dependent_items
 }
 
-func setFilterAppleUpdates(_ state: Bool) {
+func setAlertedToAppleUpdates(_ state: Bool) {
     // record our state
-    filterAppleUpdates = state
+    alertedToAppleUpdates = state
 }
 
 func setFilterStagedOSUpdate(_ state: Bool) {
@@ -1448,9 +1418,9 @@ func setFilterStagedOSUpdate(_ state: Bool) {
     filterStagedOSUpdate = state
 }
 
-func shouldFilterAppleUpdates() -> Bool {
+func haveAlertedToAppleUpdates() -> Bool {
     // should we filter out Apple updates?
-    return filterAppleUpdates
+    return alertedToAppleUpdates
 }
 
 func shouldFilterStagedOSUpdate() -> Bool {
