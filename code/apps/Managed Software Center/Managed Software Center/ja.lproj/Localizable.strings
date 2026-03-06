@@ -16,9 +16,8 @@
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "１分以内に強制的にログアウトさせられます。\n保留中のアップデートはすべてインストールされます。保存されていない作業内容は消失します。";
 
-/* TODO: TRANSLATE */
 /* macOS Install Pending detail */
-"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?";
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "macOSのインストールが保留中です。このインストールには時間がかかる場合があります。その他の保留中の項目は後でインストールされます。\n\nインストールを続けますか？";
 
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "削除に失敗しました。次回削除を試みます。\nそれでも削除されない場合は、システムの管理者に連絡してください。";
@@ -56,9 +55,8 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "強制終了してもよろしいですか \"%@\"? 保存されていない変更内容は失われる可能性があります。";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "\"%@\"を強制終了してもよろしいですか？ 保存していない変更内容は失われる可能性があります。";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "注意";
@@ -153,11 +151,9 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "支障の発生を避けるためにアップデートを実行する前にコンピューターを電源に接続してください。アップデートを続けますか？";
 
-/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "強制終了";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "アプリケーションを強制終了しますか？";
 
@@ -239,9 +235,8 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "必須のアップデートを保留中";
 
-/* TODO: verify translation */
 /* Manual quit required label */
-"Manual quit required" = "手動での終了が必要です";
+"Manual quit required" = "手動で終了する必要があります";
 
 /* More link text */
 "More" = "さらに見る";
@@ -327,9 +322,8 @@
 /* Quit button title */
 "Quit" = "終了";
 
-/* TODO: TRANSLATE */
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Quit Apps and Update";
+"Quit Apps and Update" = "アプリを終了して更新する";
 
 /* Removal Error status text */
 "Removal Error" = "削除エラー";
@@ -346,9 +340,8 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "receipt情報を削除中です";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "アップデート後にアプリケーションを再起動してください。";
+"Reopen applications after update" = "更新後にアプリケーションを再び開く";
 
 /* Install Required action text */
 "Required" = "必須";
@@ -380,9 +373,8 @@
 /* Sidebar Size label */
 "Size:" = "サイズ:";
 
-/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Skip and Update Others";
+"Skip and Update Others" = "スキップして他のアップデートを実行する";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "ソフトウェアアップデートをスキップ";
