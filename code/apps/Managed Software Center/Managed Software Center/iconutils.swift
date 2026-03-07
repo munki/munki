@@ -61,31 +61,30 @@ func convertIconToPNG(_ icon_path: String,
     return false
 }
 
+/// Finds the icon file for app_path. Returns a path or nil
+func findIconForApp(_ appPath: String) -> String? {
+    guard FileManager.default.fileExists(atPath: appPath) else { return nil }
+    let infoPlistPath = (appPath as NSString).appendingPathComponent("Contents/Info.plist")
+    guard let info = try? readPlist(infoPlistPath) as? PlistDict else { return nil }
+    let appName = (appPath as NSString).lastPathComponent
+    var iconFilename = info["CFBundleIconFile"] as? String ?? info["CFBundleIconName"] as? String ?? appName
+    if (iconFilename as NSString).pathExtension.isEmpty {
+        iconFilename += ".icns"
+    }
+    let iconPath = (appPath as NSString).appendingPathComponent(
+        "Contents/Resources/\(iconFilename)")
+    if FileManager.default.fileExists(atPath: iconPath) {
+        return iconPath
+    }
+    return nil
+}
+
 func convertAppIconToPNG(_ app_path: String,
                          destination dest_path: String,
                          preferredSize desired_size: Int) -> Bool {
     // Converts an application icns file to a png file, choosing the
     // representation closest to (but >= than if possible) the desired_size.
     // Returns true if successful, false otherwise
-    
-    // find the application
-    if !FileManager.default.fileExists(atPath: app_path) {
-        return false
-    }
-    let info_plist = NSString.path(
-        withComponents: [app_path, "Contents/Info.plist"])
-    var info = [String: Any]()
-    do {
-        info = try readPlist(info_plist) as? [String: Any] ?? [String: Any]()
-    } catch {
-        info = [String: Any]()
-    }
-    let app_name = info["CFBundleName"] as? String ?? ""
-    let icon_filename = info["CFBundleIconFile"] as? String ?? app_name
-    var icon_path = NSString.path(
-        withComponents: [app_path, "Contents/Resources", icon_filename])
-    if (icon_path as NSString).pathExtension.isEmpty {
-        icon_path += ".icns"
-    }
+    guard let icon_path = findIconForApp(app_path) else { return false }
     return convertIconToPNG(icon_path, destination: dest_path, preferredSize: desired_size)
 }
