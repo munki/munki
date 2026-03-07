@@ -17,7 +17,6 @@ struct IconCandidate {
 func convertIconToPNG(_ icon_path: String,
                       destination dest_path: String,
                       preferredSize desired_size: Int) -> Bool {
-
     // Converts an icns file to a png file, choosing the
     // representation closest to (but >= than if possible) the desired_size.
     // Returns true if successful, false otherwise
