@@ -140,9 +140,19 @@ class MSCAlertController: NSObject {
         if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
             alert.icon = suIcon
         }
-        if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
+        if isAppleSilicon() && !currentUserIsVolumeOwner() {
             // tell user they cannot install the updates
-            msc_log("user", "apple_updates_user_cannot_install")
+            msc_log("MSC", "apple_updates_user_cannot_install_not_volume_owner")
+            alert.informativeText = NSLocalizedString(
+                "Your user account is not an owner of the current startup volume.\n" +
+                "You cannot install Apple Software Updates at this time.\n\n" +
+                "Contact your systems administrator.",
+                comment: "Apple Updates Not volume owner detail")
+            // disable install now button
+            alert.buttons[0].isEnabled = false
+        } else if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
+            // tell user they cannot install the updates
+            msc_log("user", "apple_updates_user_cannot_install_not_admin")
             alert.informativeText = NSLocalizedString(
                 "Your administrator has restricted installation of these updates. Contact your administrator for assistance.",
                 comment: "Apple Software Updates Unable detail")
