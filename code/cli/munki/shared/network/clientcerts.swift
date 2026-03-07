@@ -88,7 +88,7 @@ func getClientCertCredential(
     }
     var certChainRefs: [SecCertificate]?
     // loop through results to find cert that matches issuer
-    for identityRef in identityRefs as? [SecIdentity] ?? [SecIdentity]() {
+    for identityRef in identityRefs as? [SecIdentity] ?? [] {
         var certRef: SecCertificate?
         let status = SecIdentityCopyCertificate(identityRef, &certRef)
         guard status == errSecSuccess, let certRef else { continue }
