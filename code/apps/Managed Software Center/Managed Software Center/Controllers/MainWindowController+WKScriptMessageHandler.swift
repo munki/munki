@@ -101,7 +101,7 @@ extension MainWindowController: WKScriptMessageHandler {
             if !FileManager.default.fileExists(atPath: stop_request_flag_file) {
                 FileManager.default.createFile(atPath: stop_request_flag_file, contents: nil, attributes: nil)
             }
-        } else if getUpdateCount() == 0 {
+        } else if getEffectiveUpdateList().count == 0 {
             // no updates, the button must say "Check Again"
             msc_log("user", "refresh_clicked")
             checkForUpdates()
