@@ -647,13 +647,13 @@ func buildUpdatesPage() throws {
         show_additional_updates = false
     }
     
-    var apple_update_list = [GenericItem]()
+    var apple_update_list = [UpdateItem]()
     for var item in getAppleUpdates() {
         item["developer"] = "Apple"
         item["status"] = "will-be-installed"
         item["apple_update"] = true
         item["note"] = ""
-        apple_update_list.append(GenericItem(item))
+        apple_update_list.append(UpdateItem(item))
     }
 
     let item_list = getEffectiveUpdateList()
