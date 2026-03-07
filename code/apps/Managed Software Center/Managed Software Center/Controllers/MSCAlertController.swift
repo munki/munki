@@ -616,7 +616,12 @@ class MSCAlertController: NSObject {
     func alertedToRunningOnBatteryAndCancelled() -> Bool {
         // Returns true if we are running on battery with less
         // than 50% power and user clicks the Cancel button
-        if onBatteryPower() && getBatteryPercentage() < 50 {
+        let desiredBatteryPercentage = if isAppleSilicon() {
+            25
+        } else {
+            50
+        }
+        if onBatteryPower() && getBatteryPercentage() < desiredBatteryPercentage {
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
                 "Your computer is not connected to a power source.",
