@@ -315,10 +315,7 @@ class MSCAlertController: NSObject {
             // make sure this alert panel is gone before we proceed, which
             // might involve opening another alert sheet
             alert.window.orderOut(self)
-            if alertedToFirmwareUpdatesAndCancelled() {
-                msc_log("user", "alerted_to_firmware_updates_and_cancelled")
-                return
-            } else if alertedToRunningOnBatteryAndCancelled() {
+            if alertedToRunningOnBatteryAndCancelled() {
                 msc_log("user", "alerted_on_battery_power_and_cancelled")
                 return
             }
@@ -546,72 +543,6 @@ class MSCAlertController: NSObject {
 		blockingAppsController?.clearAppsToReopen()
 		blockingAppsController = nil
 	}
-
-    func getFirmwareAlertInfo() -> [[String: String]] {
-        // Get detail about a firmware update
-        var info = [[String: String]]()
-        for update_item in getUpdateList() {
-            if let firmware_alert_text = update_item["firmware_alert_text"] as? String {
-                var info_item = [String: String]()
-                info_item["name"] = update_item["display_name"] as? String ?? update_item["name"] as? String ?? "Firmware Update"
-                if firmware_alert_text == "_DEFAULT_FIRMWARE_ALERT_TEXT_" {
-                    info_item["alert_text"] = NSLocalizedString(
-                        "Firmware will be updated on your computer. " +
-                        "Your computer's power cord must be connected " +
-                        "and plugged into a working power source. " +
-                        "It may take several minutes for the update to " +
-                        "complete. Do not disturb or shut off the power " +
-                        "on your computer during this update.",
-                        comment: "Firmware Alert Default detail")
-                } else {
-                    info_item["alert_text"] = firmware_alert_text
-                }
-                info.append(info_item)
-            }
-        }
-        return info
-    }
-    
-    func alertedToFirmwareUpdatesAndCancelled() -> Bool {
-        // Returns true if we have one or more firmware updates and
-        // the user clicks the Cancel button
-        let firmware_alert_info = getFirmwareAlertInfo()
-        if firmware_alert_info.isEmpty {
-            return false
-        }
-        let on_battery_power = onBatteryPower()
-        for item in firmware_alert_info {
-            let alert = NSAlert()
-            alert.messageText = item["name"] ?? "Firmware Update"
-            var alert_text = ""
-            if on_battery_power {
-                alert_text = NSLocalizedString(
-                    "Your computer is not connected to a power source.",
-                    comment: "No Power Source Warning text")
-                alert_text += "\n\n" + (item["alert_text"] ?? "")
-            } else {
-                alert_text = item["alert_text"] ?? ""
-            }
-            alert.informativeText = alert_text
-            alert.addButton(withTitle: NSLocalizedString(
-                "Continue", comment: "Continue button text"))
-            alert.addButton(withTitle: NSLocalizedString(
-                "Cancel", comment: "Cancel button title/short action text"))
-            alert.alertStyle = .critical
-            if on_battery_power {
-                // set Cancel button to be activated by return key
-                alert.buttons[1].keyEquivalent = "\r"
-                // set Continue button to be activated by Escape key
-                alert.buttons[0].keyEquivalent = "\u{1B}"
-            }
-            let response = alert.runModal()
-            if response == .alertSecondButtonReturn {
-                // user clicked Cancel
-                return true
-            }
-        }
-        return true
-    }
     
     func alertedToRunningOnBatteryAndCancelled() -> Bool {
         // Returns true if we are running on battery with less than 50% power
