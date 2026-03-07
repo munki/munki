@@ -218,6 +218,29 @@ class GenericItem: BaseItem {
     
     func getIcon() -> String {
         // Return name/relative path of image file to use for the icon
+
+        // if it's an Apple Software Update, use the Software Update icon
+        if let apple_update = my["apple_update"] as? Bool, apple_update {
+            let appleUpdateIconName = "SystemSettingsIcon.png"
+            let icon_path = NSString.path(withComponents: [html_dir(), appleUpdateIconName])
+            // did we already convert it?
+            if (FileManager.default.fileExists(atPath: icon_path)) {
+                return icon_path
+            }
+            // find the System Settings or System Preferences app and convert its icon
+            for app_path in [
+                "/System/Applications/System Settings.app",
+                "/System/Applications/System Preferences.app",
+                "/Applications/System Preferences.app"]
+            {
+                if convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 256) {
+                    return appleUpdateIconName
+                }
+            }
+            // fall back to static icon
+            return "static/SoftwareUpdate.png"
+        }
+        // Non-Apple updates
         // first look for downloaded icons
         let icon_known_exts = ["bmp", "gif", "icns", "jpg", "jpeg", "png",
                                "psd", "tga", "tif", "tiff", "yuv"]
@@ -236,33 +259,16 @@ class GenericItem: BaseItem {
         // so create one if needed from a locally installed app
         for key in ["icon_name", "display_name", "name"] {
             if var icon_name = my[key] as? String {
+                let app_path = "/Applications/\(icon_name).app"
                 if !icon_known_exts.contains((icon_name as NSString).pathExtension) {
                     icon_name += ".png"
                 }
                 // slightly different path since we can't write to the icons directory
                 let icon_path = NSString.path(withComponents: [html_dir(), icon_name])
-                let app_path = "/Applications/\(icon_name).app"
                 if (FileManager.default.fileExists(atPath: icon_path) ||
                         convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 350)) {
                     return quote(icon_name)
                 }
-            }
-        }
-        // if it's an Apple Software Update, use the Software Update icon
-        if let apple_update = my["apple_update"] as? Bool {
-            if apple_update {
-                let icon_path = NSString.path(withComponents: [html_dir(), "SystemSettingsIcon.png"])
-                for app_path in [
-                    "/System/Applications/System Settings.app",
-                    "/System/Applications/System Preferences.app",
-                    "/Applications/System Preferences.app"]
-                {
-                    if convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 256) {
-                        return icon_path
-                    }
-                }
-                // fall back to static icon
-                return "static/SoftwareUpdate.png"
             }
         }
         // use the Generic package icon
