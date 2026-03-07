@@ -614,8 +614,8 @@ class MSCAlertController: NSObject {
     }
     
     func alertedToRunningOnBatteryAndCancelled() -> Bool {
-        // Returns true if we are running on battery with less
-        // than 50% power and user clicks the Cancel button
+        // Returns true if we are running on battery with less than 50% power
+        // (25% on Apple silicon) and user clicks the Cancel button
         let desiredBatteryPercentage = if isAppleSilicon() {
             25
         } else {
