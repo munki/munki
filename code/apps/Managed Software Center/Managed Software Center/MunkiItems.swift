@@ -241,8 +241,9 @@ class GenericItem: BaseItem {
                 }
                 // slightly different path since we can't write to the icons directory
                 let icon_path = NSString.path(withComponents: [html_dir(), icon_name])
+                let app_path = "/Applications/\(icon_name).app"
                 if (FileManager.default.fileExists(atPath: icon_path) ||
-                        convertIconToPNG(icon_name, destination: icon_path, preferredSize: 350)) {
+                        convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 350)) {
                     return quote(icon_name)
                 }
             }
@@ -250,6 +251,17 @@ class GenericItem: BaseItem {
         // if it's an Apple Software Update, use the Software Update icon
         if let apple_update = my["apple_update"] as? Bool {
             if apple_update {
+                let icon_path = NSString.path(withComponents: [html_dir(), "SystemSettingsIcon.png"])
+                for app_path in [
+                    "/System/Applications/System Settings.app",
+                    "/System/Applications/System Preferences.app",
+                    "/Applications/System Preferences.app"]
+                {
+                    if convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 256) {
+                        return icon_path
+                    }
+                }
+                // fall back to static icon
                 return "static/SoftwareUpdate.png"
             }
         }
