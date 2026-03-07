@@ -257,6 +257,22 @@ class GenericItem: BaseItem {
         }
         // didn't find one in the downloaded icons
         // so create one if needed from a locally installed app
+        // look in the installs array
+        if let installs_items = my["installs"] as? [PlistDict] {
+            let installs_apps = installs_items.filter(
+                { ($0["type"] as? String ?? "" == "application" &&
+                    !($0["path"] as? String ?? "").isEmpty) }).map(
+                        { ($0["path"] as? String ?? "") })
+            if installs_apps.count == 1, let app_path = installs_apps.first {
+                // slightly different path since we can't write to the icons directory
+                let icon_path = NSString.path(withComponents: [html_dir(), icon_name])
+                if (FileManager.default.fileExists(atPath: icon_path) ||
+                        convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 350)) {
+                    return quote(icon_name)
+                }
+            }
+        }
+        // look for an app with the same name as one of these keys
         for key in ["icon_name", "display_name", "name"] {
             if var icon_name = my[key] as? String {
                 let app_path = "/Applications/\(icon_name).app"
