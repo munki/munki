@@ -288,7 +288,7 @@ class MainWindowController: NSWindowController {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
-                alert_controller.alertToAppleUpdates()
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
                 setAlertedToAppleUpdates(true)
                 return .terminateCancel
             }

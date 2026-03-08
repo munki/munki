@@ -124,7 +124,7 @@ class MSCAlertController: NSObject {
         }
     }
     
-    func alertToAppleUpdates() {
+    func alertToAppleUpdates(skipAction: String = "None") {
         // Notify user of pending Apple updates
         guard let mainWindow = window else {
             msc_debug_log("Could not get main window in alertToAppleUpdates")
@@ -134,8 +134,13 @@ class MSCAlertController: NSObject {
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
         alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
-        alert.addButton(withTitle: NSLocalizedString(
-            "Skip these updates", comment: "Skip Apple updates button title"))
+        if skipAction == "quit" {
+            alert.addButton(withTitle: NSLocalizedString(
+                "Quit", comment: "Quit button title"))
+        } else {
+            alert.addButton(withTitle: NSLocalizedString(
+                "Skip Apple updates", comment: "Skip Apple updates button title"))
+        }
         let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
         if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
             alert.icon = suIcon
@@ -170,11 +175,13 @@ class MSCAlertController: NSObject {
             }
         }
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-            self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse)
+            self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse, skipAction: skipAction)
         })
     }
     
-    func appleUpdateAlertEnded(for alert: NSAlert, withResponse modalResponse: NSApplication.ModalResponse) {
+    func appleUpdateAlertEnded(
+        for alert: NSAlert, withResponse modalResponse: NSApplication.ModalResponse,
+        skipAction: String) {
         // Called when Apple update alert ends
         if modalResponse == .alertFirstButtonReturn {
             msc_log("user", "agreed_apple_updates")
@@ -212,16 +219,24 @@ class MSCAlertController: NSObject {
                                               repeats: false)
             timers.append(timer4)
         } else {
-            // cancelled
+            // user decided to defer/skip Apple updates at this time
             msc_log("user", "deferred_apple_updates")
             alert.window.orderOut(self)
             setAlertedToAppleUpdates(true)
-            clearMunkiItemsCache()
-            if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
-                mainWindowController.load_page("updates.html")
-                mainWindowController.displayUpdateCount()
-                if shouldAggressivelyNotifyAboutMunkiUpdates() {
-                    mainWindowController._alertedUserToOutstandingUpdates = false
+            //clearMunkiItemsCache()
+            switch skipAction {
+            case "quit":
+                NSApp.terminate(self)
+            case "update":
+                if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
+                    mainWindowController.updateNow()
+                }
+            default:
+                if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
+                    mainWindowController.load_page("updates.html")
+                    if shouldAggressivelyNotifyAboutMunkiUpdates() {
+                        mainWindowController._alertedUserToOutstandingUpdates = false
+                    }
                 }
             }
         }
