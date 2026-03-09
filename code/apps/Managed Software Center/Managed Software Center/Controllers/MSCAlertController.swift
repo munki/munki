@@ -123,6 +123,19 @@ class MSCAlertController: NSObject {
             })
         }
     }
+
+    /// Returns the localized display name for System Settings/System Preferences
+    func systemSettingsAppName() -> String {
+        for app_path in [
+            "/System/Applications/System Settings.app",
+            "/System/Applications/System Preferences.app",
+        ] {
+            if FileManager.default.fileExists(atPath: app_path) {
+                return FileManager.default.displayName(atPath: app_path)
+            }
+        }
+        return "System Settings"
+    }
     
     func alertToAppleUpdates(skipAction: String = "None") {
         // Notify user of pending Apple updates
@@ -165,11 +178,15 @@ class MSCAlertController: NSObject {
             // disable install now button
             alert.buttons[0].isEnabled = false
         } else {
-            // prompt user to install using System Preferences
+            // prompt user to install using System Preferences/System Settings
             msc_log("user", "apple_updates_pending")
-            alert.informativeText = NSLocalizedString(
-                "You must install these updates using Software Update in System Preferences.",
+            let format_str = NSLocalizedString(
+                "You must install these updates using %@.",
                 comment: "Apple Software Updates Pending detail")
+            alert.informativeText = NSString(
+                format: format_str as NSString,
+                systemSettingsAppName() as NSString
+            ) as String
             if shouldAggressivelyNotifyAboutAppleUpdates() {
                 // disable the skip button
                 alert.buttons[1].isEnabled = false
@@ -615,7 +632,7 @@ class MSCAlertController: NSObject {
                     let deadline_str = stringFromDate(deadline)
                     let formatString = NSLocalizedString(
                         ("One or more updates must be installed by %@. A logout " +
-                          "may be forced if you wait too long to update."),
+                         "may be forced if you wait too long to update."),
                         comment: "Mandatory Updates Pending detail")
                     alertDetail = String(format: formatString, deadline_str)
                 } else {
