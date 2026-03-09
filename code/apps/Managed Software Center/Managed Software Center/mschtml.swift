@@ -725,6 +725,8 @@ func buildUpdatesPage() throws {
         if !apple_update_list.isEmpty {
             page["apple_update_count"] = appleUpdateCountMessage(apple_update_list.count)
             page["apple_update_warning_text"] = getWarningText(forAppleUpdates: true)
+            page["show_apple_updates_label"] = NSLocalizedString(
+                "Show", comment: "Show Apple updates button title")
             page["hide_apple_updates"] = ""
             page["hide_pending_updates"] = ""
             page["apple_update_rows"] = buildItemListHTML(
