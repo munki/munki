@@ -88,3 +88,17 @@ func convertAppIconToPNG(_ app_path: String,
     guard let icon_path = findIconForApp(app_path) else { return false }
     return convertIconToPNG(icon_path, destination: dest_path, preferredSize: desired_size)
 }
+
+/// Finds the path for the icon to use for Software Update
+func findSoftwareUpdateIconPath() -> String? {
+    for app_path in [
+        "/System/Library/PreferencePanes/SoftwareUpdate.prefPane",
+        "/System/Applications/System Preferences.app",
+        "/System/Applications/System Settings.app",
+    ] {
+        if let icon_path = findIconForApp(app_path) {
+            return icon_path
+        }
+    }
+    return nil
+}

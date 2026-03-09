@@ -141,8 +141,9 @@ class MSCAlertController: NSObject {
             alert.addButton(withTitle: NSLocalizedString(
                 "Skip Apple updates", comment: "Skip Apple updates button title"))
         }
-        let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
-        if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
+        if let icon_path = findSoftwareUpdateIconPath(),
+           let suIcon = NSImage.init(contentsOfFile: icon_path)
+        {
             alert.icon = suIcon
         }
         if isAppleSilicon() && !currentUserIsVolumeOwner() {

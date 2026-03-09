@@ -228,14 +228,10 @@ class GenericItem: BaseItem {
                 return icon_path
             }
             // find the System Settings or System Preferences app and convert its icon
-            for app_path in [
-                "/System/Applications/System Settings.app",
-                "/System/Applications/System Preferences.app",
-                "/Applications/System Preferences.app"]
+            if let su_icon_path = findSoftwareUpdateIconPath(),
+               convertIconToPNG(su_icon_path, destination: icon_path, preferredSize: 256)
             {
-                if convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 256) {
-                    return appleUpdateIconName
-                }
+                return appleUpdateIconName
             }
             // fall back to static icon
             return "static/SoftwareUpdate.png"
