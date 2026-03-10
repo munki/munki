@@ -1335,6 +1335,15 @@ func updatesRequireRestart() -> Bool {
     return requiresRestart
 }
 
+func someUpdatesDontRequireLogoutOrRestart() -> Bool {
+    // return true if some updates in the list don't require a logout or restart
+    let filteredUpdates = getUpdateList().filter {
+        !($0["RestartAction"] as? String ?? "").hasSuffix("Logout") &&
+        !($0["RestartAction"] as? String ?? "").hasSuffix("Restart")
+    }
+    return filteredUpdates.count > 0
+}
+
 func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
     // Return true if any item in the apple update list requires a restart
     if #available(OSX 10.10, *) {
