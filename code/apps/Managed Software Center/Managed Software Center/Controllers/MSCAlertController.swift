@@ -309,21 +309,9 @@ class MSCAlertController: NSObject {
         }
         if alertedToMultipleUsers() {
             return
-        } else if updatesRequireRestart() {
-            let alert = NSAlert()
-            alert.messageText = NSLocalizedString(
-                "Restart Required", comment: "Restart Required title")
-            alert.informativeText = NSLocalizedString(
-                "A restart is required after updating. Log " +
-                "out and update now?", comment: "Restart Required detail")
-            alert.addButton(withTitle: NSLocalizedString(
-                "Log out and update", comment: "Log out and Update button text"))
-            alert.addButton(withTitle: NSLocalizedString(
-                "Cancel", comment: "Cancel button title/short action text"))
-           alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-                self.logoutAlertEnded(for: alert, withResponse: modalResponse)
-            })
-        } else if updatesRequireLogout() || installRequiresLogout() {
+        } else if installRequiresLogout() {
+            // admin has set a preference requiring all installs to require a logout
+            // so no option to skip items that require a logout or restart
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
                 "Logout Required", comment: "Logout Required title")
@@ -334,6 +322,50 @@ class MSCAlertController: NSObject {
                 "Log out and update", comment: "Log out and Update button text"))
             alert.addButton(withTitle: NSLocalizedString(
                 "Cancel", comment: "Cancel button title/short action text"))
+            alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+                self.logoutAlertEnded(for: alert, withResponse: modalResponse)
+            })
+        } else if updatesRequireRestart() {
+            // one or more items in the update list require a restart
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Restart Required", comment: "Restart Required title")
+            alert.informativeText = NSLocalizedString(
+                "A restart is required after updating. Log " +
+                "out and update now?", comment: "Restart Required detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Log out and update", comment: "Log out and Update button text"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            if pythonishBool(pref("MSCOfferToUpdateOthers")),
+               someUpdatesDontRequireLogoutOrRestart()
+            {
+                alert.addButton(withTitle: NSLocalizedString(
+                    "Skip updates requiring logout or restart",
+                    comment: "Skip updates requiring logout or restart button text")
+                )
+            }
+           alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+                self.logoutAlertEnded(for: alert, withResponse: modalResponse)
+            })
+        } else if updatesRequireLogout() {
+            // one or more items in the update list require a logout
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Logout Required", comment: "Logout Required title")
+            alert.informativeText = NSLocalizedString(
+                "A logout is required before updating. Log " +
+                "out and update now?", comment: "Logout Required detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Log out and update", comment: "Log out and Update button text"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            if someUpdatesDontRequireLogoutOrRestart() {
+                alert.addButton(withTitle: NSLocalizedString(
+                    "Skip updates requiring logout or restart",
+                    comment: "Skip updates requiring logout or restart button text")
+                )
+            }
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
                 self.logoutAlertEnded(for: alert, withResponse: modalResponse)
             })
@@ -361,6 +393,12 @@ class MSCAlertController: NSObject {
                 try logoutAndUpdate()
             } catch {
                 installSessionErrorAlert("\(error)")
+            }
+        } else if modalResponse == .alertThirdButtonReturn {
+            msc_log("user", "skipped_updates_that_require_logout_or_restart")
+            alert.window.orderOut(self)
+            if let appDelegate = NSApp.delegate! as? AppDelegate {
+                appDelegate.mainWindowController.startUpdateWithoutLogout()
             }
         } else {
             msc_log("user", "cancelled")
