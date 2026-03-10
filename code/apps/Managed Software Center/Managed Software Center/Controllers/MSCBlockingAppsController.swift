@@ -104,6 +104,13 @@ class MSCBlockingAppsController: NSObject {
 
         var running_apps: [BlockingAppInfo] = []
         for update_item in getUpdateList() {
+            if let restartAction = update_item["RestartAction"] as? String {
+                if restartAction.hasSuffix("Logout") || restartAction.hasSuffix("Restart") {
+                    // user chose to skip items that require logout or restart
+                    // so we should ignore these
+                    continue
+                }
+            }
             let manualQuit = update_item["blocking_applications_manual_quit_only"] as? Bool ?? false
             let isBeingRemoved = update_item["status"] as? String == "will-be-removed"
             let itemBlockingApps = blockingApplicationsForItem(update_item.my)
