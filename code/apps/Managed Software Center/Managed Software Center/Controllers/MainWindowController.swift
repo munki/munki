@@ -876,7 +876,61 @@ class MainWindowController: NSWindowController {
     @objc func checkForUpdatesSkippingAppleUpdates() {
         checkForUpdates(suppress_apple_update_check: true)
     }
-        
+
+    func startUpdateWithoutLogout() {
+        // does lots of checks before (hopefully) starting an update run
+        if pythonishBool(pref("MSCOfferToQuitBlockingApps")) {
+            // offer to quit enabled, lets do some magic
+            if !alert_controller.canContinueAfterHandlingBlockingApps() {
+                loadUpdatesPage(self)
+                return
+            }
+        } else {
+            // Fallback to existing logic if auto qutting isn't enabled
+            if alert_controller.alertedToBlockingAppsRunning() {
+                loadUpdatesPage(self)
+                return
+            }
+        }
+        if alert_controller.alertedToRunningOnBatteryAndCancelled() {
+            loadUpdatesPage(self)
+            return
+        }
+        if alert_controller.alertedToNotVolumeOwner() {
+            clearMunkiItemsCache()
+            setFilterStagedOSUpdate(true)
+            setAlertedToAppleUpdates(false)
+            loadUpdatesPage(self)
+            return
+        }
+        if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
+            clearMunkiItemsCache()
+            setFilterStagedOSUpdate(true)
+            setAlertedToAppleUpdates(false)
+            loadUpdatesPage(self)
+            return
+        }
+        managedsoftwareupdate_task = ""
+        msc_log("user", "install_without_logout")
+        _update_in_progress = true
+        displayUpdateCount()
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller._status_message = NSLocalizedString(
+                "Updating...", comment: "Updating message")
+        }
+        do {
+            try justUpdate()
+        } catch {
+            msc_debug_log("Error starting install session: \(error)")
+            munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+        }
+        managedsoftwareupdate_task = "installwithnologout"
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller.startMunkiStatusSession()
+        }
+        markPendingItemsAsInstalling()
+    }
+
     func kickOffInstallSession() {
         // start an update install/removal session
         
@@ -894,56 +948,7 @@ class MainWindowController: NSWindowController {
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
 		} else {
-			if pythonishBool(pref("MSCOfferToQuitBlockingApps")) {
-				// offer to quit enabled, lets do some magic
-				if !alert_controller.canContinueAfterHandlingBlockingApps() {
-					loadUpdatesPage(self)
-					return
-				}
-			} else {
-				// Fallback to existing logic if auto qutting isn't enabled
-				if alert_controller.alertedToBlockingAppsRunning() {
-					loadUpdatesPage(self)
-					return
-				}
-			}
-            if alert_controller.alertedToRunningOnBatteryAndCancelled() {
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToNotVolumeOwner() {
-                clearMunkiItemsCache()
-                setFilterStagedOSUpdate(true)
-                setAlertedToAppleUpdates(false)
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
-                clearMunkiItemsCache()
-                setFilterStagedOSUpdate(true)
-                setAlertedToAppleUpdates(false)
-                loadUpdatesPage(self)
-                return
-            }
-            managedsoftwareupdate_task = ""
-            msc_log("user", "install_without_logout")
-            _update_in_progress = true
-            displayUpdateCount()
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller._status_message = NSLocalizedString(
-                    "Updating...", comment: "Updating message")
-            }
-            do {
-                try justUpdate()
-            } catch {
-                msc_debug_log("Error starting install session: \(error)")
-                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
-            }
-            managedsoftwareupdate_task = "installwithnologout"
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller.startMunkiStatusSession()
-            }
-            markPendingItemsAsInstalling()
+            startUpdateWithoutLogout()
         }
     }
     
