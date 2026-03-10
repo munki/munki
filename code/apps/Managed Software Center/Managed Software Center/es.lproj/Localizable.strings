@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ actualizaciones pendiente";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "1 actualización pendiente";
@@ -51,6 +67,10 @@
 
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Una versión anterior está instalada. Tienes que actualizar a macOS %@ o superior para poder instalar esta actualización.";
+
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicaciones en uso por otros";
@@ -145,9 +165,6 @@
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Finalizando...";
-
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "El firmware de tu equipo se va a actualizar. El equipo tiene que estar conectado a una fuente de alimentación. Puede tardar varios minutos en completarse. No interrumpas o apagues el equipo durante esta instalación.";
 
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Para mejores resultados se recomienda que conectes el equipo a una fuente de alimentación antes de iniciar la instalación. ¿Seguro que quieres continuar con la actualización?";
@@ -253,6 +270,10 @@
 
 /* My Items label */
 "My Items" = "Mis ítems";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "No hay licencias disponibles";
@@ -375,6 +396,10 @@
 
 /* No Installed Software secondary text */
 "Select software to install." = "Selecciona la aplicaciones a instalar.";
+
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
 
 /* Sidebar Size label */
 "Size:" = "Tamaño:";
@@ -536,8 +561,9 @@
 /* No Installed Software primary text */
 "You have no selected software." = "No has seleccionado ninguna aplicación.";
 
+/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Debes instalar estas actualizaciones usando Actualización de software en Preferencias del Sistema";
+"You must install these updates using %@." = "Debes instalar estas actualizaciones usando %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Debes cerrar las siguientes aplicaciones antes de instalar o desinstalar:";
@@ -560,5 +586,9 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Tus aplicaciones están actualizadas.";
 
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Tu cuenta de usuario no es propietaria del volumen de inicio.\nYou cannot install Apple Software Updates at this time.\n\nContacta con tu administrador de sistemas.";
+
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Tu cuenta de usuario no es propietaria del volumen de inicio.\nNo puedes actualizar macOS en este momento.\n\nContacta con tu administrador de sistemas";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Tu cuenta de usuario no es propietaria del volumen de inicio.\nNo puedes actualizar macOS en este momento.\n\nContacta con tu administrador de sistemas.";

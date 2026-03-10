@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ ventende oppdateringer";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "1 ventende oppdatering";
@@ -51,6 +67,10 @@
 
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En eldre versjon er installert. Du må oppgradere macOS til versjon %@ eller nyere for å kunne installere denne oppdateringen.";
+
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer som er i bruk av andre";
@@ -145,9 +165,6 @@
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Fullfører...";
-
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmwaren på din datamaskin vil bli oppdatert. Påse at din datamaskin tilkoblet strømforsyningen og at denne er satt i stikkontakten. Oppdateringen kan ta flere minutter. Ikke avbryt oppdateringen eller koble datamaskinen fra strømnettet.";
 
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør koble datamaskinen til en strømforsyning før du oppdaterer. Er du sikker på at du vil forsette med oppdateringen?";
@@ -253,6 +270,10 @@
 
 /* My Items label */
 "My Items" = "Mine objekter";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Ingen tilgjengelige lisenser";
@@ -376,6 +397,10 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Velg programvare som skal installeres.";
 
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
+
 /* Sidebar Size label */
 "Size:" = "Størrelse:";
 
@@ -383,8 +408,9 @@
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
 
+/* TODO: verify translation */
 /* Skip Apple updates button title */
-"Skip these updates" = "Hopp over oppdateringer";
+"Skip Apple updates" = "Hopp over Apple-oppdateringer";
 
 /* Software label */
 "Software" = "Programvare";
@@ -536,8 +562,9 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Du har ikke valgt noe program.";
 
+/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Du må installere disse fra Programvareoppdatering-valgpanelet i Systemvalg.";
+"You must install these updates using %@." = "Du må installere disse oppdateringene ved hjelp av %@";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:";
@@ -559,6 +586,10 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Din programvare er oppdatert.";
+
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Brukerkontoen din er ikke eier av det gjeldende oppstartsvolumet.\nYou cannot install Apple Software Updates at this time.\n\nKontakt systemadministratoren din.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Brukerkontoen din er ikke eier av det gjeldende oppstartsvolumet.\nDu kan for øyeblikket ikke oppgradere macOS.\n\nKontakt systemadministratoren din.";

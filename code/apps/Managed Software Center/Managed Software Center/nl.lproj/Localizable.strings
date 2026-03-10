@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ wachtende updates";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "1 wachtende update";
@@ -51,6 +67,10 @@
 
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Een oudere versie is op dit moment geïnstalleerd. Werk macOS eerst bij naar versie %@ of hoger om dit onderdeel te kunnen installeren.";
+
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps in gebruik door anderen";
@@ -144,9 +164,6 @@
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Afronden...";
-
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware zal worden bijgewerkt computer. Uw computer moet aangesloten zijn op het lichtnet. Het kan enkele minuten duren voordat deze update voltooid is. Onderbreek deze update niet en zorg dat de stroom aangesloten blijft.";
 
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden de computer aan te sluiten op de netvoeding. Weet je zeker dat je wil doorgaan met bijwerken?";
@@ -249,6 +266,10 @@
 
 /* My Items label */
 "My Items" = "Mijn items";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Geen licenties beschikbaar";
@@ -370,6 +391,10 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Selecteer software om te installeren.";
 
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
+
 /* Sidebar Size label */
 "Size:" = "Grootte:";
 
@@ -377,7 +402,7 @@
 "Skip and Update Others" = "Sla over en werk andere bij";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Sla Apple-updates over";
+"Skip Apple updates" = "Sla Apple-updates over";
 
 /* Software label */
 "Software" = "Software";
@@ -529,8 +554,9 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Je hebt geen software geselecteerd.";
 
+/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Installeer deze updates door gebruik te maken Software-update in Systeeminstellingen.";
+"You must install these updates using %@." = "Installeer deze updates door gebruik te maken %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "De volgende apps dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:";
@@ -552,6 +578,10 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is bijgewerkt.";
+
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nYou cannot install Apple Software Updates at this time.\n\nNeem contact op met je systeembeheerder.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kunt u macOS niet upgraden.\n\nNeem contact op met je systeembeheerder.";

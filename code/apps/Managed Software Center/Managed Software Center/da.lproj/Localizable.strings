@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ ventende opdateringer";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "1 ventende opdatering";
@@ -52,10 +68,13 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En ældre version er installeret. Du skal opgradere til macOS version %@ eller nyere for at installere denne opdatering.";
 
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps der bruges af andre";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil afbryde \"%@\"? Alle ændringer, der ikke er gemt, kan gå tabt.";
 
@@ -146,17 +165,12 @@
 /* managedsoftwareupdate message */
 "Finishing..." = "Afslutter...";
 
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware bliver opdateret på din computer. Sørg for at din computer er sluttet til strømforsyningen og at denne er sat i stikkontakten. Opdateringen kan være flere minutter om at blive færdig. Lad være med at tage stikket ud under denne opdatering.";
-
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør slutte computeren til strømforsyningen før installeringen. Er du sikker på, at du vil forsætte opdateringen?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Afbryd";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "Afbryd app?";
 
@@ -238,7 +252,6 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
 
-/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Skal sluttes manuelt";
 
@@ -253,6 +266,10 @@
 
 /* My Items label */
 "My Items" = "Mine emner";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Ingen tilgængelige licenser";
@@ -344,7 +361,6 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
 "Reopen applications after update" = "Åbn apps igen efter opdatering";
 
@@ -375,14 +391,19 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Vælg software der skal installeres.";
 
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
+
 /* Sidebar Size label */
 "Size:" = "Str.:";
 
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Spring over og opdater andre";
 
+/* TODO: TRANSLATE */
 /* Skip Apple updates button title */
-"Skip these updates" = "Spring over";
+"Skip Apple updates" = "Skip Apple updates";
 
 /* Software label */
 "Software" = "Software";
@@ -534,8 +555,9 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Du har ikke valgt nogen software.";
 
+/*TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
+"You must install these updates using %@" = "Du skal installere opdateringerne fra %@";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Slut disse apps før du fortsætter med installering eller fjernelse:";
@@ -558,5 +580,9 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
 
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nYou cannot install Apple Software Updates at this time.\n\nKontakt din systemadministrator.";
+
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\nKontakt din systemadministrator.";

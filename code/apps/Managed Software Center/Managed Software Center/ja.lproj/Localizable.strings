@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "アップデートを%@個保留しています";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "アップデートを1つ保留しています";
@@ -51,6 +67,10 @@
 
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
+
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
@@ -144,9 +164,6 @@
 
 /* managedsoftwareupdate message */
 "Finishing..." = "仕上げ中…";
-
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "ファームウェアがアップデートされます。お使いのコンピューターの電源コードを電源に繋いでください。アップデート完了までには数分がかかります。アップデート処理の進行中はアップデート処理を妨げたり、コンピューターの電源を切らないでください。";
 
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "支障の発生を避けるためにアップデートを実行する前にコンピューターを電源に接続してください。アップデートを続けますか？";
@@ -249,6 +266,10 @@
 
 /* My Items label */
 "My Items" = "マイアイテム";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "有効なライセンスがありません";
@@ -370,14 +391,19 @@
 /* No Installed Software secondary text */
 "Select software to install." = "インストールするソフトウェアを選択してください";
 
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
+
 /* Sidebar Size label */
 "Size:" = "サイズ:";
 
 /* Skip and Update Others button title */
 "Skip and Update Others" = "スキップして他のアップデートを実行する";
 
+/* TODO: TRANSLATE */
 /* Skip Apple updates button title */
-"Skip these updates" = "ソフトウェアアップデートをスキップ";
+"Skip Apple updates" = "Skip Apple updates";
 
 /* Software label */
 "Software" = "ソフトウェア";
@@ -529,8 +555,9 @@
 /* No Installed Software primary text */
 "You have no selected software." = "ソフトウェアが選択されていません";
 
+/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "このアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
+"You must install these updates using %@." = "このアップデートは、「%@」を使用してインストールする必要があります。";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:";
@@ -552,6 +579,10 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "ソフトウェアは最新です";
+
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\nYou cannot install Apple Software Updates at this time.\n\nシステム管理者にお問い合わせください。";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では MacOS をアップグレードできません。\n\nシステム管理者にお問い合わせください。";

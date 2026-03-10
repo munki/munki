@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ отложенных обновлений";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "1 отложенное обновление";
@@ -51,6 +67,10 @@
 
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "В настоящее время установлена старая версия. Для установки этого обновления необходимо перейти на версию macOS %@ или выше.";
+
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Приложения, которые используются другими";
@@ -145,9 +165,6 @@
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Завершение...";
-
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Прошивка будет обновлена на Вашем компьютере. Шнур питания компьютера должен быть подключен и подключен к исправному источнику питания. Обновление может занять несколько минут. Не мешайте или не отключайте питание на вашем компьютере во время этого обновления.";
 
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Для продолжения установки рекомендуется подключить компьютер к постоянному источнику питания. Вы действительно хотите продолжить установку обновлений?";
@@ -253,6 +270,10 @@
 
 /* My Items label */
 "My Items" = "Мои элементы";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Нет доступных лицензий";
@@ -376,6 +397,10 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Выберите ПО для установки.";
 
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
+
 /* Sidebar Size label */
 "Size:" = "Размер:";
 
@@ -383,8 +408,9 @@
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
 
+/* TODO: verify translation */
 /* Skip Apple updates button title */
-"Skip these updates" = "Пропустить эти обновления";
+"Skip Apple updates" = "Пропустить обновления Apple";
 
 /* Software label */
 "Software" = "Программы";
@@ -539,6 +565,10 @@
 /* No Installed Software primary text */
 "You have no selected software." = "У вас нет выбранного ПО.";
 
+/* TODO: TRANSLATE */
+/* Apple Software Updates Pending detail */
+"You must install these updates using %@." = "You must install these updates using %@.";
+
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Вы должны закрыть следующие приложения перед установкой или удалением:";
 
@@ -559,6 +589,10 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "У Вас самое новое ПО.";
+
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nYou cannot install Apple Software Updates at this time.\n\nОбратитесь к администратору системы.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nОбновление macOS в настоящий момент невозможно.\n\nОбратитесь к администратору системы.";

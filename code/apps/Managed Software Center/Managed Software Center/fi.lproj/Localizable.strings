@@ -1,5 +1,21 @@
+/* TODO: TRANSLATE */
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ additional pending updates";
+
+/* TODO: TRANSLATE */
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ available Apple updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ päivitystä saatavilla";
+
+/* TODO: TRANSLATE */
+/* One managed update message */
+"1 additional pending update" = "1 additional pending update";
+
+/* TODO: TRANSLATE */
+/* One Apple update message */
+"1 available Apple update" = "1 available Apple update";
 
 /* One Update message */
 "1 pending update" = "1 päivitys saatavilla";
@@ -51,6 +67,10 @@
 
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Vanhempi versio on asennettu. Päivityksen asentamiseen tarvitaan macOS %@ tai uudempi.";
+
+/* TODO: TRANSLATE */
+/* No Apple updates message */
+"Apple software is up to date" = "Apple software is up to date";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Muiden käyttäjien käytössä olevat ohjelmat";
@@ -144,9 +164,6 @@
 
 /* managedsoftwareupdate message */
 "Finishing..." = "Viimeistellään...";
-
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Tietokoneellesi asennetaan laiteohjelmistopäivitys. Tietokoneen virtajohdon pitää olla liitettynä toimivaan virtalähteeseen. Päivityksen suorittaminen kestää useita minuutteja. Älä häiritse tai sammuta tietokonetta päivityksen aikana.";
 
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Tietokone tulisi varmuuden vuoksi liittää virtalähteeseen ennen päivittämistä. Oletko varma että haluat jatkaa?";
@@ -249,6 +266,10 @@
 
 /* My Items label */
 "My Items" = "Omat ohjelmistot";
+
+/* TODO: TRANSLATE */
+/* No managed updates message */
+"No additional pending updates" = "No additional pending updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Ei lisenssejä saatavilla";
@@ -370,14 +391,19 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Valitse asennettavat ohjelmistot.";
 
+/* TODO: TRANSLATE */
+/* Show Apple updates button title */
+"Show" = "Show";
+
 /* Sidebar Size label */
 "Size:" = "Koko:";
 
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Ohita ja päivitä muut";
 
+/* TODO: TRANSLATE */
 /* Skip Apple updates button title */
-"Skip these updates" = "Ohita nämä päivitykset";
+"Skip Apple updates" = "Skip Apple updates";
 
 /* Software label */
 "Software" = "Ohjelmistot";
@@ -529,8 +555,9 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Sinulla ei ole valittuja ohjelmistoja.";
 
+/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Päivitykset täytyy asentaa avaamalla Järjestelmäasetukset ja valitsemalla Ohjelmiston päivitys.";
+"You must install these updates using %@." = "Päivitykset täytyy asentaa avaamalla %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Jotta voit jatkaa asennusta tai poistoa, sulje seuraavat ohjelmat:";
@@ -552,6 +579,10 @@
 
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ohjelmisto on ajan tasalla.";
+
+/* TODO: TRANSLATE */
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Käyttäjätililläsi ei ole käynnistyslevyn omistusoikeutta.\nYou cannot install Apple Software Updates at this time.\n\nOta yhteyttä järjestelmän ylläpitäjään.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Käyttäjätililläsi ei ole käynnistyslevyn omistusoikeutta.\nmacOS-päivitys ei onnistu nyt.\n\nOta yhteyttä järjestelmän ylläpitäjään.";
