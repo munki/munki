@@ -55,7 +55,6 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps der bruges af andre";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil afbryde \"%@\"? Alle ændringer, der ikke er gemt, kan gå tabt.";
 
@@ -152,11 +151,9 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør slutte computeren til strømforsyningen før installeringen. Er du sikker på, at du vil forsætte opdateringen?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Afbryd";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "Afbryd app?";
 
@@ -238,7 +235,6 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
 
-/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Skal sluttes manuelt";
 
@@ -344,7 +340,6 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
 "Reopen applications after update" = "Åbn apps igen efter opdatering";
 
