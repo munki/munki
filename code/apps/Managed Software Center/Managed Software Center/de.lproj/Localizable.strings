@@ -55,9 +55,8 @@
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applikationen, die von anderen benutzt werden";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Sind Sie sicher, dass Sie \"%@\" zwangsweise beenden möchten? ? Alle nicht gespeicherten Änderungen gehen möglicherweise verloren.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Sind Sie sicher, dass Sie \"%@\" sofort beenden möchten? ? Alle nicht gespeicherten Änderungen gehen möglicherweise verloren.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Achtung";
@@ -152,13 +151,11 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Sie sollten den Computer an eine Stromquelle anschliessen bevor Sie das Update durchführen. Sind Sie sicher, dass Sie das Update fortsetzen möchten?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
-"Force Quit" = "Beenden erzwingen";
+"Force Quit" = "Sofort beenden";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
-"Force Quit Application?" = "Anwendung zwangsweise beenden?";
+"Force Quit Application?" = "Anwendung sofort beenden?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Erzwungene Abmeldung für eine zwingend notwendige Installation";
@@ -238,7 +235,6 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Zwingend notwendige Updates anstehend";
 
-/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "Manuelles Beenden erforderlich";
 
@@ -326,7 +322,6 @@
 /* Quit button title */
 "Quit" = "Beenden";
 
-/* TODO: verify translation */
 /* Quit Apps button title */
 "Quit Apps and Update" = "Anwendungen beenden und aktualisieren";
 
@@ -345,7 +340,6 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Entferne Paketquittung";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
 "Reopen applications after update" = "Anwendungen nach dem Update erneut öffnen";
 
@@ -379,9 +373,8 @@
 /* Sidebar Size label */
 "Size:" = "Größe:";
 
-/* TODO: verify translation */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Überspringen und Anderen Aktualisieren";
+"Skip and Update Others" = "Überspringen und andere aktualisieren";
 
 /* Skip Apple updates button title */
 "Skip these updates" = "Updates überspringen";
