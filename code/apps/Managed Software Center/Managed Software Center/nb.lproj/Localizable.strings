@@ -412,6 +412,10 @@
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Hopp over Apple-oppdateringer";
 
+/* TODO: TRANSLATE */
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+
 /* Software label */
 "Software" = "Programvare";
 

@@ -397,6 +397,9 @@
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Skip Apple updates";
 
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+
 /* Software label */
 "Software" = "Software";
 

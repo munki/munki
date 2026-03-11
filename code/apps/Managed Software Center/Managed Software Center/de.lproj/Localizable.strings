@@ -403,7 +403,11 @@
 
 /* TODO: verify translation*/
 /* Skip Apple updates button title */
-"Skip these updates" = "Apple-Updates überspringen";
+"Skip Apple updates" = "Apple-Updates überspringen";
+
+/* TODO: TRANSLATE */
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
 
 /* Software label */
 "Software" = "Software";

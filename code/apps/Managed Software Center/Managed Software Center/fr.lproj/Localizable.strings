@@ -402,7 +402,11 @@
 "Skip and Update Others" = "Ignorer et mettre à jour le reste";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Ignorer ces mises à jour Apple";
+"Skip Apple updates" = "Ignorer ces mises à jour Apple";
+
+/* TODO: TRANSLATE */
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
 
 /* Software label */
 "Software" = "Logiciel";

@@ -409,7 +409,11 @@
 "Skip and Update Others" = "Saltar y actualizar a otros";
 
 /* Skip Apple updates button title */
-"Skip these updates" = "Saltar actualizaciones de Apple";
+"Skip Apple updates" = "Saltar actualizaciones de Apple";
+
+/* TODO: TRANSLATE */
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
 
 /* Software label */
 "Software" = "Aplicaciones";

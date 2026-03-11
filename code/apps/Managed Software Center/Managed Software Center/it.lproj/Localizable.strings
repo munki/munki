@@ -410,7 +410,11 @@
 
 /* TODO: verify translation */
 /* Skip Apple updates button title */
-"Skip these updates" = "Ignora gli aggiornamenti Apple";
+"Skip Apple updates" = "Ignora gli aggiornamenti Apple";
+
+/* TODO: TRANSLATE */
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
 
 /* Software label */
 "Software" = "Applicazione";
