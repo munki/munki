@@ -52,7 +52,7 @@ struct MSUCommonOptions: ParsableArguments {
                 throw ValidationError("--force only valid with --installonly")
             }
         }
-        if installOnly && !checkOnly {
+        if installOnly, !checkOnly {
             throw ValidationError("--installonly and --checkonly are mutually exclusive")
         }
     }
