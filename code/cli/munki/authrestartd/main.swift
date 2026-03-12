@@ -292,6 +292,40 @@ class AuthRestartServer: UNIXDomainSocketServer {
         clientSocket.close()
     }
 
+    override func run(withTimeout timeout: Int = 0) async throws {
+        try listenOnSocket()
+        listening = true
+        var currentTimeout = timeout
+        while listening {
+            do {
+                try await waitForConnection(withTimeout: currentTimeout)
+            } catch let e as UNIXDomainSocketError {
+                switch e {
+                case .timeoutError:
+                    if debug {
+                        log("Timeout waiting for connection")
+                    }
+                    if let storedPassword, !storedPassword.isEmpty {
+                        // once we've stored a password we need to keep running;
+                        // we can't exit on idle
+                        if debug {
+                            log("Not exiting because we have a stored password")
+                        }
+                        currentTimeout = 0
+                    } else {
+                        // no connection for some time and we haven't stored
+                        // a password, so we can exit
+                        log("Exiting due to timeout")
+                        stop()
+                    }
+                default:
+                    stop()
+                    logError("\(e)")
+                }
+            }
+        }
+    }
+
     override func log(_ message: String) {
         munkiLog(message, logFile: LOGFILENAME)
     }

@@ -67,7 +67,7 @@ class UNIXDomainSocketServer {
     }
 
     /// Listens for connections on the bound socket.
-    private func listenOnSocket() throws {
+    func listenOnSocket() throws {
         guard let socket = serverSocket else {
             throw UNIXDomainSocketError.socketError
         }
@@ -82,7 +82,7 @@ class UNIXDomainSocketServer {
     }
 
     /// Waits for a connection and accepts it when available.
-    private func waitForConnection(withTimeout timeout: Int = 0) async throws {
+    func waitForConnection(withTimeout timeout: Int = 0) async throws {
         guard let socket = serverSocket else {
             throw UNIXDomainSocketError.socketError
         }
