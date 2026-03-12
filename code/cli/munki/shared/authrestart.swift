@@ -133,13 +133,13 @@ func performAuthRestart(
 ) -> Bool {
     Authrestart.logger.debug1("Checking if performing an Auth Restart is fully supported...")
     if !supportsAuthRestart() {
-        Authrestart.logger.debug1("Machine doesn't support Authorized Restarts...")
+        Authrestart.logger.info("Machine doesn't support Authorized Restarts...")
         return false
     }
     Authrestart.logger.debug1("Machine supports Authorized Restarts...")
     let fvPassword = (getAuthRestartKey() ?? password)
     if fvPassword.isEmpty {
-        Authrestart.logger.debug1("No password or recovery key provided...")
+        Authrestart.logger.info("No password or recovery key provided...")
         return false
     }
     var keys = [String: String]()
@@ -201,6 +201,6 @@ func doAuthorizedOrNormalRestart(
         }
     }
     // fall back to normal restart
-    Authrestart.logger.debug1("Performing a regular restart...")
+    Authrestart.logger.info("Performing a regular restart...")
     _ = runCLI("/sbin/shutdown", arguments: ["-r", "now"])
 }

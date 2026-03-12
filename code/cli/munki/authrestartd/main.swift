@@ -64,6 +64,9 @@ class FDEUtil {
             server.log("Restart request from uid \(uid)")
             if uid == 0 {
                 server.log("Stored username for authrestart: \(server.storedUsername ?? "<none>")")
+                if server.storedPassword == nil {
+                    server.log("No stored password!")
+                }
                 let password = server.storedPassword ?? ""
                 let username = server.storedUsername ?? ""
                 doAuthorizedOrNormalRestart(username: username, password: password)
