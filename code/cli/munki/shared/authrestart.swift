@@ -21,7 +21,7 @@ import Foundation
 
 /// a Singleton struct to hold shared config values
 struct Authrestart {
-    static var logger = MunkiLogger(logname: "authrestartd")
+    static var logger = MunkiLogger(logname: "authrestartd.log")
     private init() {} // prevents assigning an instance to another variable
 }
 
