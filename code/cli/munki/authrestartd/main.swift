@@ -43,6 +43,8 @@ class FDEUtil {
         server.storedPassword = password
         if !username.isEmpty {
             server.storedUsername = username
+        } else {
+            server.log("No username was stored for authrestart")
         }
     }
 
