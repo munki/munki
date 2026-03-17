@@ -549,10 +549,10 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
 // MARK: higher-level functions for getting pkg metadata
 
 /// Get some package info (receipts, version, etc) and return as a dict
-func getPackageInfo(_ pkgpath: String) throws -> PlistDict {
+func getPackageInfo(_ pkgpath: String) -> PlistDict {
     guard hasValidPackageExt(pkgpath) else { return PlistDict() }
     if pathIsDirectory(pkgpath) {
-        return try getBundlePackageInfo(pkgpath)
+        return getBundlePackageInfo(pkgpath)
     }
     return getFlatPackageInfo(pkgpath)
 }
@@ -576,12 +576,7 @@ func getPackageMetaData(_ pkgpath: String) throws -> PlistDict {
         return pkginfo
     }
 
-    var pkginfoErrors = ""
-    do {
-        pkginfo = try getPackageInfo(pkgpath)
-    } catch let err as MunkiError {
-        pkginfoErrors = err.description
-    }
+    pkginfo = getPackageInfo(pkgpath)
     let restartInfo = try getPkgRestartInfo(pkgpath)
     if let restartAction = restartInfo["RestartAction"] as? String {
         pkginfo["RestartAction"] = restartAction
