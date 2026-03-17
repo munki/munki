@@ -1,24 +1,20 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "%@ yderligere opdateringer venter";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "%@ tilgængelige Apple-opdateringer";
 
 /* Multiple Updates message */
-"%@ pending updates" = "%@ ventende opdateringer";
+"%@ pending updates" = "%@ opdateringer venter";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = "1 yderligere opdatering venter";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "1 tilgængelig Apple-opdatering";
 
 /* One Update message */
-"1 pending update" = "1 ventende opdatering";
+"1 pending update" = "1 opdatering venter";
 
 /* Logout Required detail */
 "A logout is required before updating. Log out and update now?" = "Du skal logge ud før opdatering. Log ud og opdater nu?";
@@ -30,7 +26,7 @@
 "A logout will be forced in less than %@ minutes." = "En tvungen log ud vil ske om mindre end %@ minutter.";
 
 /* Logout warning string when logout is in less than a minute */
-"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle uarkiverede oplysninger vil gå tabt.";
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle ændringer, der ikke er gemt, vil gå tabt.";
 
 /* macOS Install Pending detail */
 "A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Der venter en macOS-installation, som kan tage noget tid at gennemføre. Andre ventende emner vil blive installeret senere.\n\nFortsæt med denne installation?";
@@ -68,9 +64,8 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En ældre version er installeret. Du skal opgradere til macOS version %@ eller nyere for at installere denne opdatering.";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Apple-software er ajour";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps der bruges af andre";
@@ -267,15 +262,14 @@
 /* My Items label */
 "My Items" = "Mine emner";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "Ingen yderligere opdateringer venter";
 
 /* No Licenses Available display text */
 "No licenses available" = "Ingen tilgængelige licenser";
 
 /* No Updates message */
-"No pending updates" = "Ingen ventende opdateringer";
+"No pending updates" = "Ingen opdateringer venter";
 
 /* Not Currently Available display text */
 "Not currently available" = "Ikke tilgængeligt i øjeblikket";
@@ -391,9 +385,8 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Vælg software der skal installeres.";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "Vis";
 
 /* Sidebar Size label */
 "Size:" = "Str.:";
@@ -401,13 +394,11 @@
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Spring over og opdater andre";
 
-/* TODO: TRANSLATE */
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Skip Apple updates";
+"Skip Apple updates" = "Spring Apple-opdateringer over";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "Spring opdateringer over, som kræver log ud eller genstart";
 
 /* Software label */
 "Software" = "Software";
@@ -559,7 +550,6 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Du har ikke valgt nogen software.";
 
-/*TODO: verify translation */
 /* Apple Software Updates Pending detail */
 "You must install these updates using %@" = "Du skal installere opdateringerne fra %@";
 
@@ -584,9 +574,8 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nYou cannot install Apple Software Updates at this time.\n\nKontakt din systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke installere Apple-softwareopdateringer lige nu.\n\nKontakt din systemadministrator.";
 
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\nKontakt din systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS lige nu.\n\nKontakt din systemadministrator.";
