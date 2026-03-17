@@ -571,3 +571,28 @@ func makepkginfo(_ filepath: String?,
 
     return pkginfo
 }
+
+/// prints a warning to stdout if the pkginfo lack info needed to determine if an item is installed
+func warnIfNoValidInstallsCriteria(_ pkginfo: PlistDict) {
+    if pkginfo["OnDemand"] as? Bool == true ||
+        !(pkginfo["installcheck_script"] as? String ?? "").isEmpty ||
+        !(pkginfo["version_script"] as? String ?? "").isEmpty ||
+        !(pkginfo["installs"] as? [PlistDict] ?? []).isEmpty ||
+        !(pkginfo["receipts"] as? [PlistDict] ?? []).isEmpty
+    {
+        return
+    }
+    let name = pkginfo["name"] as? String ?? "UNKNOWN"
+    printStderr(
+        """
+
+        WARNING: pkginfo for \(name) contains no installation check info!
+            No useful receipts were detected, and no 'installs' items were provided.
+            If you do not add an 'installs' item, a version_script, or an installcheck_script,
+            Munki will have no way to determine the item's installation state.
+            This can result in repeated installation attempts or failure to
+            attempt installation at all.
+
+        """
+    )
+}
