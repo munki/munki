@@ -312,13 +312,8 @@ struct MunkiImport: AsyncParsableCommand {
                 }
             }
             // warn if no 'is installed' criteria
-            let installerType = pkginfo["installer_type"] as? String ?? ""
-            if installerType != "startosinstall",
-               !pkginfo.keys.contains("receipts"),
-               !pkginfo.keys.contains("installs")
-            {
-                printStderr("WARNING: There are no receipts and no 'installs' items for this installer item. You should add at least one item to the 'installs' list, or add an installcheck_script.")
-            }
+            warnIfNoValidInstallsCriteria(pkginfo)
+
             // Confirm import post-edit
             print("\nImport this item? [y/N] ", terminator: "")
             if let answer = readLine(),

@@ -104,6 +104,9 @@ struct MakePkgInfo: ParsableCommand {
 
         do {
             let pkginfo = try makepkginfo(installerItem, options: options)
+            if installerItem != nil {
+                warnIfNoValidInstallsCriteria(pkginfo)
+            }
             let plistStr = try plistToString(pkginfo)
             print(plistStr)
         } catch let PlistError.writeError(description) {
