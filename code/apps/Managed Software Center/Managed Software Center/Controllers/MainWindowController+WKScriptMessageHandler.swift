@@ -110,7 +110,7 @@ extension MainWindowController: WKScriptMessageHandler {
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            if !haveAlertedToAppleUpdates() {
+            if !getAppleUpdates().isEmpty, !haveAlertedToAppleUpdates() {
                 // if there are pending Apple updates, alert the user to
                 // install via System Preferences
                 alert_controller.alertToAppleUpdates(skipAction: "update")

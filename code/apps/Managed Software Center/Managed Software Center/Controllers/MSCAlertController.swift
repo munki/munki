@@ -143,6 +143,9 @@ class MSCAlertController: NSObject {
             msc_debug_log("Could not get main window in alertToAppleUpdates")
             return
         }
+        if getAppleUpdates().isEmpty {
+            return
+        }
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
