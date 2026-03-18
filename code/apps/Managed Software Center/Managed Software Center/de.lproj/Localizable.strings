@@ -386,7 +386,7 @@
 "Select software to install." = "Wählen Sie die zu installierende Software aus.";
 
 /* Show Apple updates button title */
-"Show" = "Zeige";
+"Show" = "Anzeigen";
 
 /* Sidebar Size label */
 "Size:" = "Größe:";
@@ -577,7 +577,7 @@
 "Your software is up to date." = "Ihre Software ist auf dem neuesten Stand.";
 
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können derzeit keine Apple-Software-Updates installieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können derzeit keine Software-Updates von Apple installieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können macOS derzeit nicht aktualisieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
