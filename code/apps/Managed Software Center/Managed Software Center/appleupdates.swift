@@ -10,7 +10,6 @@ import AppKit
 import Foundation
 import OpenDirectory
 
-
 let INSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.installatstartup"
 let CHECKANDINSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
 
@@ -89,16 +88,20 @@ func userMustBeAdminToInstallAppleUpdates() -> Bool {
     // returns a boolean telling if the user must be an admin to install Apple Updates
     let suMustBeAdmin = CFPreferencesCopyAppValue(
         "restrict-software-update-require-admin-to-install" as CFString,
-        "com.apple.SoftwareUpdate" as CFString) as? Bool ?? false
+        "com.apple.SoftwareUpdate" as CFString
+    ) as? Bool ?? false
     let suMustBeAdminIsForced = CFPreferencesAppValueIsForced(
         "restrict-software-update-require-admin-to-install" as CFString,
-        "com.apple.SoftwareUpdate" as CFString)
+        "com.apple.SoftwareUpdate" as CFString
+    )
     let appStoreMustBeAdmin = CFPreferencesCopyAppValue(
         "restrict-store-require-admin-to-install" as CFString,
-        "com.apple.appstore" as CFString ) as? Bool ?? false
+        "com.apple.appstore" as CFString
+    ) as? Bool ?? false
     let appStoreMustBeAdminIsForced = CFPreferencesAppValueIsForced(
         "restrict-store-require-admin-to-install" as CFString,
-        "com.apple.appstore" as CFString)
+        "com.apple.appstore" as CFString
+    )
     return (suMustBeAdmin && suMustBeAdminIsForced) || (appStoreMustBeAdmin && appStoreMustBeAdminIsForced)
 }
 
@@ -112,7 +115,7 @@ func findODgroupRecords(groupname: String, nodename: String = "/Search") throws 
                             queryValues: groupname,
                             returnAttributes: kODAttributeTypeAllAttributes,
                             maximumResults: 0)
-    return (try query.resultsAllowingPartial(false) as! [ODRecord])
+    return try (query.resultsAllowingPartial(false) as! [ODRecord])
 }
 
 func findODgroupRecord(groupname: String, nodename: String = "/Search") -> ODRecord? {
