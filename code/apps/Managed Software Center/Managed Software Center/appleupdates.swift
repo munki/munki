@@ -59,8 +59,11 @@ func openSoftwareUpdatePrefsPane() {
         }
     } else {
         let appleUpdates = getAppleUpdates()
-        if appleUpdates.count == 1,
+        let os_vers = OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers),
+           appleUpdates.count == 1,
            let update = appleUpdates.first,
+           (update["productKey"] as? String ?? "").hasPrefix("MSU_UPDATE_"),
            (update["productKey"] as? String ?? "").hasSuffix("_rsr")
         {
             // there's only one update and it's a Rapid Security Response/
@@ -110,7 +113,7 @@ func findODgroupRecords(groupname: String, nodename: String = "/Search") throws 
 func findODgroupRecord(groupname: String, nodename: String = "/Search") -> ODRecord? {
     // Returns first record found for groupname, or nil if not found
     do {
-        let records = try findODgroupRecords(groupname: groupname)
+        let records = try findODgroupRecords(groupname: groupname, nodename: nodename)
         if records.isEmpty {
             return nil
         }
