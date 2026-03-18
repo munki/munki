@@ -243,34 +243,46 @@ func getInstallInfo() -> PlistDict {
     return readPlistAsNSDictionary(installinfo_path)
 }
 
+/// Returns info about available Apple software updates
 func getAppleUpdates() -> [PlistDict] {
-    // Returns any available Apple update info
-    let installAppleSoftwareUpdates = pythonishBool(pref("InstallAppleSoftwareUpdates"))
-    let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
-    if installAppleSoftwareUpdates || appleSoftwareUpdatesOnly {
+    var appleUpdates: [PlistDict] = []
+    if pythonishBool(pref("InstallAppleSoftwareUpdates")),
+       let recommendedUpdates = su_pref("RecommendedUpdates") as? [[String: Any]]
+    {
+        // get data from Munki's AppleUpdates.plist if it exists
         let managedinstallbase = pref("ManagedInstallDir") as! String
         let appleupdates_path = NSString.path(
             withComponents: [managedinstallbase, "AppleUpdates.plist"])
         let plistData = readPlistAsNSDictionary(appleupdates_path)
-        let rawAppleUpdates = plistData["AppleUpdates"] as? [PlistDict] ?? []
+        let appleUpdateInfo = plistData["AppleUpdates"] as? [PlistDict] ?? []
         if pythonishBool(plistData["AppleUpdatesTesting"]) {
             // this lets us test MSC behavior with fake data
-            return rawAppleUpdates
+            return appleUpdateInfo
         }
-        // since it's possible SoftwareUpdate has run since managedsoftwareupdate last
-        // ran, we should filter these against the RecommendedUpdates in com.apple.SoftwareUpdate
-        var filteredAppleUpdates = [PlistDict]()
-        for item in rawAppleUpdates {
-            if let productKey = item["productKey"] as? String {
-                if suRecommendedUpdateIDs().contains(productKey) {
-                    filteredAppleUpdates.append(item)
+        // use com.apple.SoftwareUpdate RecommendedUpdates as source of truth
+        for update in recommendedUpdates {
+            guard let productKey = update["Product Key"] as? String else { continue }
+            var matchingItem: PlistDict?
+            for infoItem in appleUpdateInfo {
+                if infoItem["productKey"] as? String == productKey {
+                    matchingItem = infoItem
                 }
             }
+            if let matchingItem {
+                appleUpdates.append(matchingItem)
+            } else {
+                // not in AppleUpdates.plist, construct one with the info we have
+                var item = PlistDict()
+                item["name"] = update["Display Name"] as? String
+                item["display_name"] = item["name"]
+                item["version_to_install"] = update["Display Version"] as? String
+                item["productKey"] = update["Product Key"] as? String
+                item["installer_item_size"] = ""
+                appleUpdates.append(item)
+            }
         }
-        return filteredAppleUpdates
-    } else {
-        return [PlistDict]()
     }
+    return appleUpdates
 }
 
 func getUpdateNotificationTracking() -> PlistDict {
