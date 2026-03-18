@@ -53,9 +53,25 @@ func openSoftwareUpdatePrefsPane() {
     //killSystemPreferencesApp() // nope, it reopens to previous pane
     clearLogoutAndStartupFlagFiles()
     if #available(macOS 13, *) {
-        // open System Settings > General > Software Updates"
-        if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
-            NSWorkspace.shared.open(softwareUpdatePrefsPane)
+        let appleUpdates = getAppleUpdates()
+        let os_vers = OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers),
+           appleUpdates.count == 1,
+           let update = appleUpdates.first,
+           (update["productKey"] as? String ?? "").hasPrefix("MSU_UPDATE_"),
+           (update["productKey"] as? String ?? "").hasSuffix("_rsr")
+        {
+            // there's only one update and it's a Rapid Security Response/
+            // Background Security Improvement.
+            // Open a _different_ settings pane. Thanks, Apple!
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.SecurityImprovements-Settings.extension") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+            }
+        } else {
+            // open System Settings > General > Software Updates"
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+            }
         }
     } else {
         // open System Preferences > Software Update pane
