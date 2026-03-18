@@ -395,7 +395,7 @@
 "Skip and Update Others" = "Hoppa över och uppdatera övriga";
 
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Hoppa över programuppdateringar från Apple";
+"Skip Apple updates" = "Hoppa över Apple-uppdateringar";
 
 /* Skip updates requiring logout or restart button text */
 "Skip updates requiring logout or restart" = "Hoppa över uppdateringar som kräver utloggning eller omstart";
