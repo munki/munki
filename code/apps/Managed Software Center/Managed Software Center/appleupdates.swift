@@ -58,6 +58,18 @@ func openSoftwareUpdatePrefsPane() {
             NSWorkspace.shared.open(softwareUpdatePrefsPane)
         }
     } else {
+        let appleUpdates = getAppleUpdates()
+        if appleUpdates.count == 1,
+           let update = appleUpdates.first,
+           (update["productKey"] as? String ?? "").hasSuffix("_rsr")
+        {
+            // there's only one update and it's a Rapid Security Response/
+            // Background Security Improvement.
+            // Open a _different_ settings pane. Thanks, Apple!
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.SecurityImprovements-Settings.extension") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+            }
+        }
         // open System Preferences > Software Update pane
         if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.preferences.softwareupdate") {
             NSWorkspace.shared.open(softwareUpdatePrefsPane)
