@@ -52,11 +52,6 @@ func openSoftwareUpdatePrefsPane() {
     //killSystemPreferencesApp() // nope, it reopens to previous pane
     clearLogoutAndStartupFlagFiles()
     if #available(macOS 13, *) {
-        // open System Settings > General > Software Updates"
-        if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
-            NSWorkspace.shared.open(softwareUpdatePrefsPane)
-        }
-    } else {
         let appleUpdates = getAppleUpdates()
         let os_vers = OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0)
         if ProcessInfo().isOperatingSystemAtLeast(os_vers),
@@ -71,7 +66,13 @@ func openSoftwareUpdatePrefsPane() {
             if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.SecurityImprovements-Settings.extension") {
                 NSWorkspace.shared.open(softwareUpdatePrefsPane)
             }
+        } else {
+            // open System Settings > General > Software Updates"
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+            }
         }
+    } else {
         // open System Preferences > Software Update pane
         if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.preferences.softwareupdate") {
             NSWorkspace.shared.open(softwareUpdatePrefsPane)
