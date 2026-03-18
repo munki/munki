@@ -275,6 +275,10 @@ func getAppleUpdates() -> [PlistDict] {
             if let matchingItem {
                 appleUpdates.append(matchingItem)
             } else {
+                // sadly this causes majorOS upgrades to be displayed
+                // and some other things that `softwareupdate --list`
+                // doesn't show
+                /*
                 // not in AppleUpdates.plist, construct one with the info we have
                 var item = PlistDict()
                 item["name"] = update["Display Name"] as? String
@@ -283,6 +287,7 @@ func getAppleUpdates() -> [PlistDict] {
                 item["productKey"] = update["Product Key"] as? String
                 item["installer_item_size"] = ""
                 appleUpdates.append(item)
+                */
             }
         }
     }
