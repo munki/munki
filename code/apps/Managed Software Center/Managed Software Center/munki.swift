@@ -280,6 +280,7 @@ func getAppleUpdates() -> [PlistDict] {
                 item["name"] = update["Display Name"] as? String
                 item["display_name"] = item["name"]
                 item["version_to_install"] = update["Display Version"] as? String
+                item["productKey"] = update["Product Key"] as? String
                 item["installer_item_size"] = ""
                 appleUpdates.append(item)
             }
