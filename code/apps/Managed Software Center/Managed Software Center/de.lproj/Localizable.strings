@@ -394,7 +394,6 @@
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Überspringen und andere aktualisieren";
 
-/* TODO: verify translation*/
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Apple-Updates überspringen";
 
@@ -551,9 +550,8 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Sie haben keine Software ausgewählt.";
 
-/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using %@." = "Installieren Sie diese Updates mithilfe %@.";
+"You must install these updates using %@." = "Installieren Sie diese Updates mithilfe von %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:";
