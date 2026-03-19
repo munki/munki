@@ -1,21 +1,17 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "%@ mises à jour additionnelles en attente";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "%@ mises à jour Apple disponibles";
 
 /* Multiple Updates message */
 "%@ pending updates" = "%@ mises à jour en attente";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = "1 mise à jour additionnelle en attente";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "1 mise à jour Apple disponible";
 
 /* One Update message */
 "1 pending update" = "1 mise à jour en attente";
@@ -68,9 +64,8 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Une version antérieure est actuellement installée. Vous devez mettre à jour macOS à la version %@ ou plus récente pour pouvoir installer cette mise à jour.";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Les logiciels Apple sont à jour";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Application utilisée par d'autres";
@@ -267,9 +262,8 @@
 /* My Items label */
 "My Items" = "Mes articles";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "Aucune mise à jour additionnelle en attente";
 
 /* No Licenses Available display text */
 "No licenses available" = "Aucune licence disponible";
@@ -391,9 +385,8 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Choisir les logiciels à installer.";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "Afficher";
 
 /* Sidebar Size label */
 "Size:" = "Taille:";
@@ -404,9 +397,8 @@
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Ignorer ces mises à jour Apple";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "Ignorer les mises à jour nécessitant une fermeture de session ou un redémarrage";
 
 /* Software label */
 "Software" = "Logiciel";
@@ -583,9 +575,8 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Votre logiciel est à jour.";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Votre compte d'utilisateur n'est pas propriétaire de l'actuel disque de démarrage.\nYou cannot install Apple Software Updates at this time.\n\nContactez votre administrateur système.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Votre compte d'utilisateur n'est pas propriétaire de l'actuel disque de démarrage.\nVous ne pouvez pas installer de mises à jour Apple pour l'instant.\n\nContactez votre administrateur système.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Votre compte d'utilisateur n'est pas propriétaire de l'actuel disque de démarrage.\nVous ne pouvez pas mettre à jour macOS pour l'instant.\n\nContactez votre administrateur système.";
