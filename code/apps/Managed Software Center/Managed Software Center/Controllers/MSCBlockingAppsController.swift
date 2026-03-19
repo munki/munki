@@ -676,17 +676,6 @@ class MSCBlockingAppsController: NSObject {
                 return
             }
 
-            // if a background update starts running (or someone runs managedsoftwareupdate
-            // from a terminal window or ssh session, close the sheet and cancel
-            if let mwc = mainWindow.delegate as? MainWindowController,
-               mwc._update_in_progress
-            {
-                timer.invalidate()
-                if let sheetWindow = sheet {
-                    mainWindow.endSheet(sheetWindow, returnCode: .cancel)
-                }
-            }
-
             let stillRunning = getRunningBlockingApps(appsToCheckCopy)
             let myStillRunning = stillRunning.filter { $0.user == currentUserCopy }
 

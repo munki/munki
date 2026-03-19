@@ -239,7 +239,7 @@ class MSCAlertController: NSObject {
                                               userInfo: self,
                                               repeats: false)
             timers.append(timer4)
-        } else {
+        } else if modalResponse == .alertSecondButtonReturn {
             // user decided to defer/skip Apple updates at this time
             msc_log("user", "deferred_apple_updates")
             alert.window.orderOut(self)
@@ -519,6 +519,10 @@ class MSCAlertController: NSObject {
                 // user clicked Cancel
                 return true
             }
+            if response == .stop || response == .abort {
+                // alert sheet was cancelled or aborted
+                return true
+            }
         }
         return false
     }
@@ -651,6 +655,10 @@ class MSCAlertController: NSObject {
             let response = alert.runModal()
             if response == .alertSecondButtonReturn {
                 // user clicked Cancel
+                return true
+            }
+            if response == .stop || response == .abort {
+                // alert sheet was cancelled or aborted
                 return true
             }
         }
