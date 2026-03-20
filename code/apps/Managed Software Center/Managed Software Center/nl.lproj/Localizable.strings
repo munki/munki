@@ -1,36 +1,32 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "%@ extra wachtende updates";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "%@ beschikbare Apple updates";
 
 /* Multiple Updates message */
 "%@ pending updates" = "%@ wachtende updates";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = "1 extra wachtende update";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "1 beschikbare Apple update";
 
 /* One Update message */
 "1 pending update" = "1 wachtende update";
 
 /* Logout Required detail */
-"A logout is required before updating. Log out and update now?" = "Je moet uitloggen voordat het bijwerken kan beginnen. Wil je nu uitloggen en bijwerken?";
+"A logout is required before updating. Log out and update now?" = "U moet uitloggen voordat het bijwerken kan beginnen. Wilt u nu uitloggen en bijwerken?";
 
 /* Logout warning string when logout is an hour or more away */
-"A logout will be forced at approximately %@." = "Je wordt automatisch uitgelogd om ongeveer %@.";
+"A logout will be forced at approximately %@." = "U wordt automatisch uitgelogd om ongeveer %@.";
 
 /* Logout warning string when logout is in < 60 minutes */
-"A logout will be forced in less than %@ minutes." = "Je wordt automatisch uitgelogd binnen %@ minuten.";
+"A logout will be forced in less than %@ minutes." = "U wordt automatisch uitgelogd binnen %@ minuten.";
 
 /* Logout warning string when logout is in less than a minute */
-"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "Je wordt binnen een minuut automatisch uitgelogd.\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.";
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "U wordt binnen een minuut automatisch uitgelogd.\nAlle wachtende updates zullen worden geïnstalleerd. Niet-opgeslagen werk zal verloren gaan.";
 
 /* macOS Install Pending detail */
 "A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Er staat een macOS-installatie in de wachtrij. Deze installatie kan enige tijd in beslag nemen. Overige installaties zullen op een later moment worden geïnstalleerd.\n\nDe installatie voortzetten?";
@@ -39,7 +35,7 @@
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met de systeembeheerder.";
 
 /* Restart Required detail */
-"A restart is required after updating. Log out and update now?" = "Het is nodig te herstarten na het bijwerken. Wil je nu uitloggen en bijwerken?";
+"A restart is required after updating. Log out and update now?" = "Het is nodig te herstarten na het bijwerken. Wilt u nu uitloggen en bijwerken?";
 
 /* System configuration problem alert detail */
 "A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Een probleem met de systeemconfiguratie verhindert het correct functioneren van Managed Software Center. Het probleem is: ";
@@ -54,13 +50,13 @@
 "All items" = "Alle items";
 
 /* Forced Logout warning detail */
-"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle wachtende updates zullen worden geïnstalleerd. Niet-bewaard werk zal verloren gaan.\nJe kunt dit voorkomen door nu zelf uit te loggen.";
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle wachtende updates zullen worden geïnstalleerd. Niet-bewaard werk zal verloren gaan.\nU kunt dit voorkomen door nu zelf uit te loggen.";
 
 /* Allow button text */
 "Allow" = "Sta toe";
 
 /* Install Error message */
-"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een installatiepoging is niet geslaagd. Installatie wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met de systeembeheerder";
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een installatiepoging is niet geslaagd. Installatie wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder";
 
 /* Long Not Enough Disk Space For Update display text */
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Een oudere versie is op dit moment geïnstalleerd. Er is onvoldoende schijfruimte om deze update te downloaden en installeren.";
@@ -68,15 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Een oudere versie is op dit moment geïnstalleerd. Werk macOS eerst bij naar versie %@ of hoger om dit onderdeel te kunnen installeren.";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Apple software is bijgewerkt";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps in gebruik door anderen";
 
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet je zeker dat je \"%@\" geforceerd wil stoppen? Niet-bewaarde wijzigingen kunnen verloren gaan.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet u zeker dat u \"%@\" geforceerd wil stoppen? Niet-bewaarde wijzigingen kunnen verloren gaan.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Attentie";
@@ -166,7 +161,7 @@
 "Finishing..." = "Afronden...";
 
 /* No Power Source Warning detail */
-"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden de computer aan te sluiten op de netvoeding. Weet je zeker dat je wil doorgaan met bijwerken?";
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden de computer aan te sluiten op de netvoeding. Weet u zeker dat u wilt doorgaan met bijwerken?";
 
 /* Force Quit button title */
 "Force Quit" = "Geforceerd stoppen";
@@ -267,9 +262,8 @@
 /* My Items label */
 "My Items" = "Mijn items";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "Geen extra wachtende updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Geen licenties beschikbaar";
@@ -391,9 +385,8 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Selecteer software om te installeren.";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "Toon";
 
 /* Sidebar Size label */
 "Size:" = "Grootte:";
@@ -404,9 +397,8 @@
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Sla Apple-updates over";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "Sla updates over die een logout of herstart vereisen.";
 
 /* Software label */
 "Software" = "Software";
@@ -415,7 +407,7 @@
 "Software installed or removed requires a restart." = "Geïnstalleerde of verwijderde software vereist een herstart.";
 
 /* Restart Required alert detail */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software vereist een herstart. Je kunt openstaand werk opslaan.";
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software vereist een herstart. U kunt openstaand werk opslaan.";
 
 /* Pre Install Uninstall Upgrade Alert Detail */
 "Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met de beheerder voor meer informatie";
@@ -454,7 +446,7 @@
 "There are no items in this category." = "Er zijn geen items in deze categorie.";
 
 /* Other Users Logged In detail */
-"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls je nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer het opnieuw nadat de andere gebruikers zijn uitgelogd.";
+"There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Er zijn andere gebruikers ingelogd op deze computer.\nAls u nu bijwerkt kunnen de andere gebruikers hun werk verliezen.\n\nProbeer het opnieuw nadat de andere gebruikers zijn uitgelogd.";
 
 /* Pending Updates alert detail text */
 "There are pending updates for this computer." = "Er zijn updates voor deze computer.";
@@ -466,7 +458,7 @@
 "There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software-installatie. De bewerking werd onverwacht beëindigd. Neem contact op met de systeembeheerder.";
 
 /* No Pending Updates secondary text */
-"There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor je computer.";
+"There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor uw computer.";
 
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Er is onvoldoende schijfruimte om dit onderdeel te downloaden en te installeren.";
@@ -481,7 +473,7 @@
 "This update has been pending for %@ days." = "Deze update wacht al %@ dagen.";
 
 /* Password explanation */
-"To allow this, enter your login password." = "Om dit toe te staan, vul je loginwachtwoord in.";
+"To allow this, enter your login password." = "Om dit toe te staan, vul uw loginwachtwoord in.";
 
 /* No Items secondary text */
 "Try again later." = "Probeer later nog eens.";
@@ -556,11 +548,10 @@
 "Will be removed" = "Zal verwijderd worden";
 
 /* No Installed Software primary text */
-"You have no selected software." = "Je hebt geen software geselecteerd.";
+"You have no selected software." = "U hebt geen software geselecteerd.";
 
-/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using %@." = "Installeer deze updates door gebruik te maken %@.";
+"You must install these updates using %@." = "Installeer deze updates door gebruik te maken van %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "De volgende apps dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:";
@@ -583,9 +574,8 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is bijgewerkt.";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nYou cannot install Apple Software Updates at this time.\n\nNeem contact op met je systeembeheerder.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Uw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nU kunt op dit moment geen Apple-software-updates installeren.\n\nNeem contact op met uw systeembeheerder.";
 
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kunt u macOS niet upgraden.\n\nNeem contact op met je systeembeheerder.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Uw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kunt u macOS niet upgraden.\n\nNeem contact op met uw systeembeheerder.";
