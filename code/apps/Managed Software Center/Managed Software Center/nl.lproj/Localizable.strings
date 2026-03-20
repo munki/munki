@@ -1,21 +1,17 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "%@ extra wachtende updates";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "%@ beschikbare Apple updates";
 
 /* Multiple Updates message */
 "%@ pending updates" = "%@ wachtende updates";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = "1 extra wachtende update";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "1 beschikbare Apple update";
 
 /* One Update message */
 "1 pending update" = "1 wachtende update";
@@ -68,9 +64,8 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Een oudere versie is op dit moment geïnstalleerd. Werk macOS eerst bij naar versie %@ of hoger om dit onderdeel te kunnen installeren.";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Apple software is bijgewerkt";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Apps in gebruik door anderen";
@@ -267,9 +262,8 @@
 /* My Items label */
 "My Items" = "Mijn items";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "Geen extra wachtende updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Geen licenties beschikbaar";
@@ -391,9 +385,8 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Selecteer software om te installeren.";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "Toon";
 
 /* Sidebar Size label */
 "Size:" = "Grootte:";
@@ -404,9 +397,8 @@
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Sla Apple-updates over";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "Sla updates over die een logout of herstart vereisen.";
 
 /* Software label */
 "Software" = "Software";
@@ -558,9 +550,8 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Je hebt geen software geselecteerd.";
 
-/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using %@." = "Installeer deze updates door gebruik te maken %@.";
+"You must install these updates using %@." = "Installeer deze updates door gebruik te maken van %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "De volgende apps dienen afgesloten te worden voordat de installatie of verwijdering plaats kan vinden:";
@@ -583,9 +574,8 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Uw software is bijgewerkt.";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nYou cannot install Apple Software Updates at this time.\n\nNeem contact op met je systeembeheerder.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nU kunt op dit moment geen Apple-software-updates installeren.\n\nNeem contact op met je systeembeheerder.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Je gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kunt u macOS niet upgraden.\n\nNeem contact op met je systeembeheerder.";
