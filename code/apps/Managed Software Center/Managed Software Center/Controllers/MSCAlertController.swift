@@ -75,8 +75,7 @@ class MSCAlertController: NSObject {
         }
         if let attachedSheet = mainWindow.attachedSheet {
             // there's an existing sheet open; close it first
-            //NSApp.endSheet(attachedSheet)
-            mainWindow.endSheet(attachedSheet)
+            mainWindow.endSheet(attachedSheet, returnCode: .cancel)
         }
         let alert = NSAlert()
         alert.messageText =  NSLocalizedString(
