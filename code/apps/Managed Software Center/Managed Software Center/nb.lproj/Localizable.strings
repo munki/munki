@@ -1,21 +1,17 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "%@ oppdateringer venter";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "%@ tilgjengelige Apple-oppdateringer";
 
 /* Multiple Updates message */
 "%@ pending updates" = "%@ ventende oppdateringer";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = "1 ventende oppdatering";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "1 tilgjengelig Apple-oppdatering";
 
 /* One Update message */
 "1 pending update" = "1 ventende oppdatering";
@@ -68,16 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En eldre versjon er installert. Du må oppgradere macOS til versjon %@ eller nyere for å kunne installere denne oppdateringen.";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Apple-programvaren er oppdatert";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Programmer som er i bruk av andre";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på at du vil tvinge frem avslutning av \"%@\"? Eventuelle ulagrede endringer kan gå tapt.";
+"Are you sure you want to force quit "%@"? Any unsaved changes may be lost." = "Er du sikker på at du vil tvinge "%@" til å avslutte? Eventuelle ulagrede endringer kan gå tapt.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Merk følgende";
@@ -169,13 +163,11 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør koble datamaskinen til en strømforsyning før du oppdaterer. Er du sikker på at du vil forsette med oppdateringen?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
-"Force Quit" = "Tving avslutning";
+"Force Quit" = "Tvungen avslutning";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
-"Force Quit Application?" = "Tving avslutning av applikasjon?";
+"Force Quit Application?" = "Tving programmet til å avslutte?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvungen utlogging for obligatorisk installasjon";
@@ -255,9 +247,8 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Påkrevde oppdateringer venter";
 
-/* TODO: verify translation */
 /* Manual quit required label */
-"Manual quit required" = "Manuell avslutning kreves";
+"Manual quit required" = "Må avsluttes manuelt";
 
 /* More link text */
 "More" = "Mer";
@@ -271,9 +262,8 @@
 /* My Items label */
 "My Items" = "Mine objekter";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "Ingen flere ventende oppdateringer";
 
 /* No Licenses Available display text */
 "No licenses available" = "Ingen tilgjengelige lisenser";
@@ -347,9 +337,8 @@
 /* Quit button title */
 "Quit" = "Avslutt";
 
-/* TODO: TRANSLATE */
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Quit Apps and Update";
+"Quit Apps and Update" = "Avslutt programmer og oppdater"";
 
 /* Removal Error status text */
 "Removal Error" = "Feil ved avinstallasjon";
@@ -366,9 +355,8 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner opplysninger om kvittering";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
-"Reopen applications after update" = "Åpne applikasjoner på nytt etter oppdatering";
+"Reopen applications after update" = "Åpne programmer på nytt etter oppdatering";
 
 /* Install Required action text */
 "Required" = "Påkrevd";
@@ -397,9 +385,8 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Velg programvare som skal installeres.";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "Vis";
 
 /* Sidebar Size label */
 "Size:" = "Størrelse:";
@@ -408,13 +395,11 @@
 /* Skip and Update Others button title */
 "Skip and Update Others" = "Skip and Update Others";
 
-/* TODO: verify translation */
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Hopp over Apple-oppdateringer";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "Hopp over oppdateringer som krever utlogging eller omstart";
 
 /* Software label */
 "Software" = "Programvare";
@@ -566,9 +551,8 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Du har ikke valgt noe program.";
 
-/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using %@." = "Du må installere disse oppdateringene ved hjelp av %@";
+"You must install these updates using %@." = "Du må installere disse oppdateringene med %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Du må avslutte følgende programmer før du forsetter med installasjon eller fjerning:";
@@ -591,9 +575,8 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Din programvare er oppdatert.";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Brukerkontoen din er ikke eier av det gjeldende oppstartsvolumet.\nYou cannot install Apple Software Updates at this time.\n\nKontakt systemadministratoren din.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Brukerkontoen din er ikke eier av gjeldende startvolum. Du kan ikke installere Apple-programvareoppdateringer nå.\n\nKontakt systemadministratoren din.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Brukerkontoen din er ikke eier av det gjeldende oppstartsvolumet.\nDu kan for øyeblikket ikke oppgradere macOS.\n\nKontakt systemadministratoren din.";
