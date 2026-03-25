@@ -71,7 +71,7 @@
 "Applications in use by others" = "Programmer som er i bruk av andre";
 
 /* Force Quit confirmation message */
-"Are you sure you want to force quit "%@"? Any unsaved changes may be lost." = "Er du sikker på at du vil tvinge "%@" til å avslutte? Eventuelle ulagrede endringer kan gå tapt.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på at du vil tvinge \"%@\" til å avslutte? Eventuelle ulagrede endringer kan gå tapt.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Merk følgende";
@@ -338,7 +338,7 @@
 "Quit" = "Avslutt";
 
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Avslutt programmer og oppdater"";
+"Quit Apps and Update" = "Avslutt programmer og oppdater";
 
 /* Removal Error status text */
 "Removal Error" = "Feil ved avinstallasjon";
