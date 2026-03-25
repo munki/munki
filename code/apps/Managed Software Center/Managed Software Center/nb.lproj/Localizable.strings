@@ -391,9 +391,8 @@
 /* Sidebar Size label */
 "Size:" = "Størrelse:";
 
-/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Skip and Update Others";
+"Skip and Update Others" = "Hopp over og oppdater de andre";
 
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Hopp over Apple-oppdateringer";
