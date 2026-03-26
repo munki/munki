@@ -1,21 +1,17 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "未処理のアップデートが %@件あります";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "利用可能な Apple アップデートが %@件あります";
 
 /* Multiple Updates message */
 "%@ pending updates" = "アップデートを%@個保留しています";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = 未処理のアップデートが1件あります"";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "利用可能な Apple アップデートが1件あります";
 
 /* One Update message */
 "1 pending update" = "アップデートを1つ保留しています";
@@ -68,9 +64,8 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Apple ソフトウェアは最新です";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
@@ -267,9 +262,8 @@
 /* My Items label */
 "My Items" = "マイアイテム";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "保留中のアップデートはありません";
 
 /* No Licenses Available display text */
 "No licenses available" = "有効なライセンスがありません";
@@ -391,9 +385,8 @@
 /* No Installed Software secondary text */
 "Select software to install." = "インストールするソフトウェアを選択してください";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "表示する";
 
 /* Sidebar Size label */
 "Size:" = "サイズ:";
@@ -401,13 +394,11 @@
 /* Skip and Update Others button title */
 "Skip and Update Others" = "スキップして他のアップデートを実行する";
 
-/* TODO: TRANSLATE */
 /* Skip Apple updates button title */
-"Skip Apple updates" = "Skip Apple updates";
+"Skip Apple updates" = "Apple アップデートをスキップする";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "ログアウトまたは再起動を必要とするアップデートをスキップする";
 
 /* Software label */
 "Software" = "ソフトウェア";
@@ -559,7 +550,6 @@
 /* No Installed Software primary text */
 "You have no selected software." = "ソフトウェアが選択されていません";
 
-/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
 "You must install these updates using %@." = "このアップデートは、「%@」を使用してインストールする必要があります。";
 
@@ -584,9 +574,8 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "ソフトウェアは最新です";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\nYou cannot install Apple Software Updates at this time.\n\nシステム管理者にお問い合わせください。";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では、Apple ソフトウェア・アップデートをインストールできません。\n\nシステム管理者にお問い合わせください。";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では MacOS をアップグレードできません。\n\nシステム管理者にお問い合わせください。";
