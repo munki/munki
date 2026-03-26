@@ -294,9 +294,98 @@ func getAppleUpdates() -> [PlistDict] {
     return appleUpdates
 }
 
+/// Class to compare two version strings in a consistent way
+/// Originally based on Python's distutils.version.LooseVersion
+/// The intention is for version comparisons to be the same as
+/// the Python version of Munki
+struct MunkiVersion: Equatable, Comparable {
+    let value: String
+
+    init(_ str: String) {
+        value = str
+    }
+
+    /// pads version strings by adding extra ".0"s to one if needed
+    static func pad(_ a: String, count: Int) -> String {
+        var components = a.split(separator: ".", omittingEmptySubsequences: true)
+        while components.count < count {
+            components.append("0")
+        }
+        return components.joined(separator: ".")
+    }
+
+    /// compares two version strings and returns a ComparisonResult
+    static func compare(_ lhs: String, _ rhs: String) -> ComparisonResult {
+        let maxCount = max(lhs.count, rhs.count)
+        let a = pad(lhs, count: maxCount)
+        let b = pad(rhs, count: maxCount)
+        return a.compare(b, options: .numeric)
+    }
+
+    static func < (lhs: MunkiVersion, rhs: MunkiVersion) -> Bool {
+        return compare(lhs.value, rhs.value) == .orderedAscending
+    }
+
+    static func > (lhs: MunkiVersion, rhs: MunkiVersion) -> Bool {
+        return compare(lhs.value, rhs.value) == .orderedDescending
+    }
+
+    static func == (lhs: MunkiVersion, rhs: MunkiVersion) -> Bool {
+        return compare(lhs.value, rhs.value) == .orderedSame
+    }
+}
+
+
+/// Returns the macOS version
+func getOSVersion(onlyMajorMinor: Bool = true) -> String {
+    let version = ProcessInfo().operatingSystemVersion
+
+    if version.patchVersion == 0 || onlyMajorMinor {
+        return "\(version.majorVersion).\(version.minorVersion)"
+    } else {
+        return "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+    }
+}
+
+func macOSOutOfDateDays() -> Int {
+    guard let managedinstallbase = pref("ManagedInstallDir") as? String else {
+        return 0
+    }
+    let appleUpdateHistoryPath = (managedinstallbase as NSString).appendingPathComponent("AppleUpdateHistory.plist")
+    let appleUpdateHistory = readPlistAsNSDictionary(appleUpdateHistoryPath)
+    let currentOSVersion = MunkiVersion(getOSVersion())
+    let majorOSVersion = "\(ProcessInfo().operatingSystemVersion.majorVersion)."
+    var macOSUpdates = [PlistDict]()
+    for value in appleUpdateHistory.values {
+        if let update = value as? PlistDict,
+           let version = update["version"] as? String
+        {
+            macOSUpdates.append(update)
+        }
+    }
+    // sort ascending by version
+    macOSUpdates.sort {
+        MunkiVersion($0["version"] as? String ?? "") < MunkiVersion($1["version"] as? String ?? "")
+    }
+    for update in macOSUpdates {
+        if let version = update["version"] as? String,
+           version.hasPrefix(majorOSVersion),
+           let firstSeen = update["firstSeen"] as? Date,
+           MunkiVersion(version) > currentOSVersion
+        {
+            // found a macOS update (but not _upgrade_) higher than what we are currently running
+            // return the number of days it's been since that update was first seen
+            return Int(Date().timeIntervalSince(firstSeen) / (24 * 60 * 60))
+        }
+    }
+    return 0
+}
+
 func getUpdateNotificationTracking() -> PlistDict {
     // Returns a dictionary describing when items were first made available
-    let managedinstallbase = pref("ManagedInstallDir") as! String
+    guard let managedinstallbase = pref("ManagedInstallDir") as? String else {
+        return PlistDict()
+    }
     let updatetracking_path = NSString.path(
         withComponents: [managedinstallbase, "UpdateNotificationTracking.plist"])
     return readPlistAsNSDictionary(updatetracking_path)
