@@ -597,3 +597,7 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Il tuo utente di sistema non è il proprietario del volume di boot.\nNon puoi aggiornare macOS.\n\nContatta l'amministratore di sistema.";
+
+/* TODO: verify translation */
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS è obsoleto da %@ giorni.";
