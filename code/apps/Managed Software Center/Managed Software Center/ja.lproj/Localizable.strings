@@ -8,7 +8,7 @@
 "%@ pending updates" = "アップデートを%@個保留しています";
 
 /* One managed update message */
-"1 additional pending update" = 未処理のアップデートが1件あります"";
+"1 additional pending update" = "未処理のアップデートが1件あります";
 
 /* One Apple update message */
 "1 available Apple update" = "利用可能な Apple アップデートが1件あります";
