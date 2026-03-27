@@ -46,13 +46,12 @@ struct MSUCommonOptions: ParsableArguments {
     var force = false
 
     mutating func validate() throws {
-        // validate pkgvers actually starts with a digit
         if force {
             if !installOnly {
                 throw ValidationError("--force only valid with --installonly")
             }
         }
-        if installOnly, !checkOnly {
+        if installOnly, checkOnly {
             throw ValidationError("--installonly and --checkonly are mutually exclusive")
         }
     }
