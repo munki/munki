@@ -580,6 +580,5 @@
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ditt användarkonto är inte volymägare för startskivan.\nDu kan inte uppgradera macOS just nu.\n\nKontakta din systemadministratör.";
 
-/* TODO: verify translation */
 /* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS har varit föråldrat i %@ dagar.";
+"macOS has been out-of-date for %@ days." = "En uppdatering för macOS har varit tillgänglig i %@ dagar";
