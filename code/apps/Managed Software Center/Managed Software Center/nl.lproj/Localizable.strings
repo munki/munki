@@ -582,4 +582,4 @@
 
 /* TODO: verify translation */
 /* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS is al %@ dagen verouderd.";
+"macOS has been out-of-date for %@ days." = "Een macOS-update is al %@ dagen beschikbaar.";
