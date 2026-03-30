@@ -580,6 +580,5 @@
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Jouw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kan je macOS niet upgraden.\n\nNeem contact op met jouw systeembeheerder.";
 
-/* TODO: verify translation */
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "Een macOS-update is al %@ dagen beschikbaar.";
