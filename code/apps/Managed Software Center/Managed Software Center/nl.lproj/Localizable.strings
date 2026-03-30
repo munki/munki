@@ -32,7 +32,7 @@
 "A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Er staat een macOS-installatie in de wachtrij. Deze installatie kan enige tijd in beslag nemen. Overige installaties zullen op een later moment worden geïnstalleerd.\n\nDe installatie voortzetten?";
 
 /* Removal Error message */
-"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met de systeembeheerder.";
+"A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een verwijderingspoging is niet geslaagd. Verwijderen wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met jouw systeembeheerder.";
 
 /* Restart Required detail */
 "A restart is required after updating. Log out and update now?" = "Het is nodig te herstarten na het bijwerken. Wilt u nu uitloggen en bijwerken?";
@@ -50,13 +50,13 @@
 "All items" = "Alle items";
 
 /* Forced Logout warning detail */
-"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle wachtende updates zullen worden geïnstalleerd. Niet-bewaard werk zal verloren gaan.\nU kunt dit voorkomen door nu zelf uit te loggen.";
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle wachtende updates zullen worden geïnstalleerd. Niet-bewaard werk zal verloren gaan.\nJe kan dit voorkomen door nu zelf uit te loggen.";
 
 /* Allow button text */
 "Allow" = "Sta toe";
 
 /* Install Error message */
-"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een installatiepoging is niet geslaagd. Installatie wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met uw systeembeheerder";
+"An installation attempt failed. Installation will be attempted again.\nIf this situation continues, contact your systems administrator." = "Een installatiepoging is niet geslaagd. Installatie wordt opnieuw geprobeerd.\nAls deze situatie niet verandert, neem contact op met jouw systeembeheerder";
 
 /* Long Not Enough Disk Space For Update display text */
 "An older version is currently installed. There is not enough disk space to download and install this update." = "Een oudere versie is op dit moment geïnstalleerd. Er is onvoldoende schijfruimte om deze update te downloaden en installeren.";
@@ -71,7 +71,7 @@
 "Applications in use by others" = "Apps in gebruik door anderen";
 
 /* Force Quit confirmation message */
-"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet u zeker dat u \"%@\" geforceerd wil stoppen? Niet-bewaarde wijzigingen kunnen verloren gaan.";
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Weet je zeker dat je \"%@\" geforceerd wil stoppen? Niet-bewaarde wijzigingen kunnen verloren gaan.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Attentie";
@@ -161,7 +161,7 @@
 "Finishing..." = "Afronden...";
 
 /* No Power Source Warning detail */
-"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden de computer aan te sluiten op de netvoeding. Weet u zeker dat u wilt doorgaan met bijwerken?";
+"For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Het is aan te raden jouw computer aan te sluiten op de netvoeding. Weet je zeker dat je door wilt gaan met bijwerken?";
 
 /* Force Quit button title */
 "Force Quit" = "Geforceerd stoppen";
@@ -233,10 +233,10 @@
 "macOS update required" = "macOS update vereist";
 
 /* Failed Preflight Check detail */
-"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan geen updates checken.\nProbeer het later nog eens. Als deze situatie niet verandert, neem contact op met de systeembeheerder.";
+"Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan geen updates checken.\nProbeer het later nog eens. Als deze situatie niet verandert, neem contact op met jouw systeembeheerder.";
 
 /* Cannot Contact Server detail */
-"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan de update server op dit moment niet bereiken.\nProbeer het later nog eens. Als deze situatie niet verandert, neem contact op met de systeembeheerder.";
+"Managed Software Center cannot contact the update server at this time.\nTry again later. If this situation continues, contact your systems administrator." = "Managed Software Center kan de update server op dit moment niet bereiken.\nProbeer het later nog eens. Als deze situatie niet verandert, neem contact op met jouw systeembeheerder.";
 
 /* Password prompt title */
 "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Managed Software Center wil de opstartschijf ontgrendelen na herstart zodat alle nog wachtende updates uitgevoerd kunnen worden.";
@@ -407,10 +407,10 @@
 "Software installed or removed requires a restart." = "Geïnstalleerde of verwijderde software vereist een herstart.";
 
 /* Restart Required alert detail */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software vereist een herstart. U kunt openstaand werk opslaan.";
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "Geïnstalleerde of verwijderde software vereist een herstart. Je kan openstaand werk opslaan.";
 
 /* Pre Install Uninstall Upgrade Alert Detail */
-"Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met de beheerder voor meer informatie";
+"Some conditions apply to this software. Please contact your administrator for more details" = "Op deze software zijn enkele voorwaarden van toepassing. Neem contact op met jouw beheerder voor meer informatie";
 
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Adobe installer opstarten...";
@@ -452,13 +452,13 @@
 "There are pending updates for this computer." = "Er zijn updates voor deze computer.";
 
 /* Could Not Start Session message */
-"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software-installatie. Het proces kon niet gestart worden. Neem contact op met de systeembeheerder.";
+"There is a configuration problem with the managed software installer. Could not start the process. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software-installatie. Het proces kon niet gestart worden. Neem contact op met jouw systeembeheerder.";
 
 /* Unexpected Session End message */
-"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software-installatie. De bewerking werd onverwacht beëindigd. Neem contact op met de systeembeheerder.";
+"There is a configuration problem with the managed software installer. The process ended unexpectedly. Contact your systems administrator." = "Er is een probleem met de configuratie van de beheerde software-installatie. De bewerking werd onverwacht beëindigd. Neem contact op met jouw systeembeheerder.";
 
 /* No Pending Updates secondary text */
-"There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor uw computer.";
+"There is no new software for your computer at this time." = "Er is geen nieuwe software beschikbaar voor jouw computer.";
 
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Er is onvoldoende schijfruimte om dit onderdeel te downloaden en te installeren.";
@@ -473,7 +473,7 @@
 "This update has been pending for %@ days." = "Deze update wacht al %@ dagen.";
 
 /* Password explanation */
-"To allow this, enter your login password." = "Om dit toe te staan, vul uw loginwachtwoord in.";
+"To allow this, enter your login password." = "Om dit toe te staan, vul jouw loginwachtwoord in.";
 
 /* No Items secondary text */
 "Try again later." = "Probeer later nog eens.";
@@ -563,23 +563,22 @@
 "You must upgrade to macOS version %@ to be able to install this item." = "Werk macOS eerst bij naar versie %@ of hoger om dit onderdeel te kunnen installeren.";
 
 /* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "De beheerder van deze computer staat de installatie van deze updates niet toe. Neem contact op met de beheerder voor assistentie.";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Jouw systeembeheerder staat de installatie van deze updates niet toe. Neem contact op met jouw systeembeheerder voor assistentie.";
 
 /* No Power Source Warning text */
-"Your computer is not connected to a power source." = "Uw computer is niet aangesloten op het lichtnet.";
+"Your computer is not connected to a power source." = "Jouw computer is niet aangesloten op het lichtnet.";
 
 /* No Search Results primary text */
-"Your search had no results." = "Uw zoekopdracht geeft geen resultaat.";
+"Your search had no results." = "Jouw zoekopdracht geeft geen resultaat.";
 
 /* No Pending Updates primary text */
-"Your software is up to date." = "Uw software is bijgewerkt.";
+"Your software is up to date." = "Jouw software is bijgewerkt.";
 
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Uw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nU kunt op dit moment geen Apple-software-updates installeren.\n\nNeem contact op met uw systeembeheerder.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Jouw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nJe kan op dit moment geen Apple-software-updates installeren.\n\nNeem contact op met jouw systeembeheerder.";
 
 /* Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Uw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kunt u macOS niet upgraden.\n\nNeem contact op met uw systeembeheerder.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Jouw gebruikersaccount is geen volume-eigenaar van de huidige opstart schijf.\nOp dit moment kan je macOS niet upgraden.\n\nNeem contact op met jouw systeembeheerder.";
 
-/* TODO: verify translation */
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "Een macOS-update is al %@ dagen beschikbaar.";
