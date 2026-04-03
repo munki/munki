@@ -18,7 +18,13 @@ extension MainWindowController: WKScriptMessageHandler {
             installButtonClicked()
         }
         if message.name == "showButtonClicked" {
-            openSoftwareUpdatePrefsPane()
+            setAlertedToAppleUpdates(true)
+            if _obnoxiousNotificationMode {
+                // handles the case where we're in obnoxiousNotificationMode
+                alert_controller.presentAppleUpdates()
+            } else {
+                openSoftwareUpdatePrefsPane()
+            }
         }
         if message.name == "myItemsButtonClicked" {
             if let item_name = message.body as? String {

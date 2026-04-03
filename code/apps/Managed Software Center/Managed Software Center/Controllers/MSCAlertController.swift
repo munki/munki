@@ -207,37 +207,7 @@ class MSCAlertController: NSObject {
             msc_log("user", "agreed_apple_updates")
             // make sure this alert panel is gone before we proceed
             alert.window.orderOut(self)
-            let appDelegate = NSApp.delegate! as! AppDelegate
-            appDelegate.mainWindowController.forceFrontmost = false
-            appDelegate.backdropOnlyMode = true
-            if let mainWindow = window {
-                mainWindow.level = .normal
-            }
-            let timer1 = Timer.scheduledTimer(timeInterval: 0.1,
-                                              target: self,
-                                              selector: #selector(self.openSoftwareUpdate),
-                                              userInfo: nil,
-                                              repeats: false)
-            timers.append(timer1)
-            let timer2 = Timer.scheduledTimer(timeInterval: 1.5,
-                                              target: self,
-                                              selector: #selector(self.closeMainWindow),
-                                              userInfo: nil,
-                                              repeats: false)
-            timers.append(timer2)
-            let timer3 = Timer.scheduledTimer(timeInterval: 14.5,
-                                              target: self,
-                                              selector: #selector(self.removeBlurredBackground),
-                                              userInfo: nil,
-                                              repeats: false)
-            timers.append(timer3)
-            // wait 15 seconds, then quit
-            let timer4 = Timer.scheduledTimer(timeInterval: 15.0,
-                                              target: NSApp as Any,
-                                              selector: #selector(NSApp.terminate),
-                                              userInfo: self,
-                                              repeats: false)
-            timers.append(timer4)
+            presentAppleUpdates()
         } else if modalResponse == .alertSecondButtonReturn {
             // user decided to defer/skip Apple updates at this time
             msc_log("user", "deferred_apple_updates")
@@ -261,7 +231,41 @@ class MSCAlertController: NSObject {
             }
         }
     }
-    
+
+    func presentAppleUpdates() {
+        let appDelegate = NSApp.delegate! as! AppDelegate
+        appDelegate.mainWindowController.forceFrontmost = false
+        appDelegate.backdropOnlyMode = true
+        if let mainWindow = window {
+            mainWindow.level = .normal
+        }
+        let timer1 = Timer.scheduledTimer(timeInterval: 0.1,
+                                          target: self,
+                                          selector: #selector(self.openSoftwareUpdate),
+                                          userInfo: nil,
+                                          repeats: false)
+        timers.append(timer1)
+        let timer2 = Timer.scheduledTimer(timeInterval: 1.5,
+                                          target: self,
+                                          selector: #selector(self.closeMainWindow),
+                                          userInfo: nil,
+                                          repeats: false)
+        timers.append(timer2)
+        let timer3 = Timer.scheduledTimer(timeInterval: 14.5,
+                                          target: self,
+                                          selector: #selector(self.removeBlurredBackground),
+                                          userInfo: nil,
+                                          repeats: false)
+        timers.append(timer3)
+        // wait 15 seconds, then quit
+        let timer4 = Timer.scheduledTimer(timeInterval: 15.0,
+                                          target: NSApp as Any,
+                                          selector: #selector(NSApp.terminate),
+                                          userInfo: self,
+                                          repeats: false)
+        timers.append(timer4)
+    }
+
     @objc func openSoftwareUpdate() {
         // object method to call openSoftwareUpdatePrefsPane function
         openSoftwareUpdatePrefsPane()
