@@ -330,6 +330,10 @@ private func toNode(_ value: Any, forKey key: String? = nil) -> Node {
         if string == "__YAML_NULL_SENTINEL__" {
             return Node("")
         }
+        // Preserve empty strings explicitly as '' in YAML output
+        if string.isEmpty {
+            return Node("", .implicit, .singleQuoted)
+        }
         // Use appropriate block scalar style based on key and content
         if let key = key {
             let style = scalarStyleForString(key: key, value: string)
@@ -426,10 +430,13 @@ func readYaml(fromFile filepath: String) throws -> Any? {
 func normalizeYamlTypes(_ object: Any?) -> Any? {
     guard let object = object else { return nil }
     
-    // Known keys that should always be strings, even if they look like numbers
+    // Keys that YAML may parse as numeric but Munki expects as strings.
+    // IMPORTANT: If you add a new version-like key to Munki's pkginfo schema,
+    // add it here so unquoted values like `10.12` are coerced to "10.12"
+    // instead of remaining as Double, which would fail `as? String` casts.
     let stringKeys: Set<String> = [
         "minimum_os_version",
-        "maximum_os_version", 
+        "maximum_os_version",
         "minimum_munki_version",
         "minimum_update_version",
         "version",
@@ -470,8 +477,10 @@ func normalizeYamlTypes(_ object: Any?) -> Any? {
 
 /// Attempt to read YAML from data
 func readYaml(fromData data: Data) throws -> Any? {
+    guard let yamlString = String(data: data, encoding: .utf8) else {
+        throw YamlError.readError(description: "Data is not valid UTF-8")
+    }
     do {
-        let yamlString = String(data: data, encoding: .utf8) ?? ""
         let parsed = try Yams.load(yaml: yamlString)
         return normalizeYamlTypes(parsed)
     } catch {
@@ -612,8 +621,6 @@ func sanitizeForYaml(_ object: Any) -> Any {
             let sanitizedValue = sanitizeForYaml(value)
             // Also skip if sanitization returned the null sentinel
             if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
-            // Skip empty strings - they serialize ambiguously in YAML and get interpreted as null
-            if let str = sanitizedValue as? String, str.isEmpty { continue }
             if let stringKey = key as? String {
                 result[stringKey] = sanitizedValue
             } else if let stringKey = sanitizeForYaml(key) as? String {
@@ -650,8 +657,6 @@ func sanitizeForYaml(_ object: Any) -> Any {
             if isNullValue(value) { continue }
             let sanitizedValue = sanitizeForYaml(value)
             if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
-            // Skip empty strings - they serialize ambiguously in YAML and get interpreted as null
-            if let str = sanitizedValue as? String, str.isEmpty { continue }
             result[key] = sanitizedValue
         }
         return result
@@ -662,8 +667,6 @@ func sanitizeForYaml(_ object: Any) -> Any {
             if isNullValue(value) { continue }
             let sanitizedValue = sanitizeForYaml(value)
             if let str = sanitizedValue as? String, str == "__YAML_NULL_SENTINEL__" { continue }
-            // Skip empty strings - they serialize ambiguously in YAML and get interpreted as null
-            if let str = sanitizedValue as? String, str.isEmpty { continue }
             if let stringKey = key as? String {
                 result[stringKey] = sanitizedValue
             } else if let stringKey = "\(key)" as String? {
