@@ -56,6 +56,16 @@ struct runCliAsyncTests {
         let results = await runCliAsync("/usr/bin/false")
         #expect(results.exitcode == 1)
     }
+
+    @Test func throwsExceptionForTimeout() async throws {
+        await #expect(throws: ProcessError.self) {
+            _ = try await runCliAsync("/bin/sleep", arguments: ["2"], timeout: 1)
+        }
+    }
+
+    @Test func doesNotThrowExceptionForTimeout() async throws {
+        _ = try await runCliAsync("/bin/sleep", arguments: ["1"], timeout: 2)
+    }
 }
 
 struct checkOutputTests {
@@ -67,16 +77,14 @@ struct checkOutputTests {
     }
 
     @Test func throwsExceptionForNonExistentTool() throws {
-        let error = #expect(throws: ProcessError.self) {
+        #expect(throws: ProcessError.self) {
             try checkOutput("/bin/_does_not_exist")
         }
-        #expect(error != nil)
     }
 
     @Test func throwsExceptionForToolError() throws {
-        let error = #expect(throws: ProcessError.self) {
+        #expect(throws: ProcessError.self) {
             try checkOutput("/usr/bin/false")
         }
-        #expect(error != nil)
     }
 }

@@ -30,18 +30,21 @@ struct xattrTests {
 
         var xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
         for xattr in xattrs {
-            try? removeXattr(xattr, atPath: unwrappedFilepath)
+            try removeXattr(xattr, atPath: unwrappedFilepath)
         }
         xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
         // #expect(xattrs.isEmpty)
 
         let xattrName = "com.googlecode.munki.test"
         let xattrValue = "Hello, World!".data(using: .utf8)!
-        try? setXattr(named: xattrName, data: xattrValue, atPath: unwrappedFilepath)
+
+        try setXattr(named: xattrName, data: xattrValue, atPath: unwrappedFilepath)
         xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
         #expect(xattrs.contains(xattrName))
 
         let retrievedXattrValue = (try? getXattr(named: xattrName, atPath: unwrappedFilepath)) ?? Data()
         #expect(retrievedXattrValue == xattrValue)
+
+        try removeXattr(xattrName, atPath: unwrappedFilepath)
     }
 }
