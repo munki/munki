@@ -201,7 +201,7 @@ extension MakePkgInfo {
             
             var stats = ConversionStats()
             
-            // Get all files in directory (non-recursive for now)
+            // Get all files in directory recursively (supports nested subdirectories)
             let fileManager = FileManager.default
             guard let enumerator = fileManager.enumerator(at: directoryURL,
                                                           includingPropertiesForKeys: [.isRegularFileKey],

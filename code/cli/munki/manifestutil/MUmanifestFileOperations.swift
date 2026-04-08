@@ -35,8 +35,7 @@ func saveManifest(repo: Repo,
         }
     }
     do {
-        let fileExtension = yamlOutput ? ".yaml" : ""
-        let manifestIdentifier = "manifests/\(name)\(fileExtension)"
+        let manifestIdentifier = "manifests/\(name)"
         let data = yamlOutput ? try yamlToData(manifest) : try plistToData(manifest)
         try await repo.put(manifestIdentifier, content: data)
         return true
