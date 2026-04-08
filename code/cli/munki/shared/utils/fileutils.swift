@@ -54,7 +54,16 @@ func pathIsDirectory(_ path: String, followSymlinks: Bool = false) -> Bool {
         }
         if followSymlinks, fileType == FileAttributeType.typeSymbolicLink.rawValue {
             if let target = try? FileManager.default.destinationOfSymbolicLink(atPath: path) {
-                return pathIsDirectory(target)
+                if (target as NSString).isAbsolutePath {
+                    return pathIsDirectory(target, followSymlinks: true)
+                } else {
+                    // path relative to the original path
+                    // need to convert to standardized absolute path
+                    let parentDir = dirName(path)
+                    let fullPath = (parentDir as NSString).appendingPathComponent(target)
+                    let standardizedPath = (fullPath as NSString).standardizingPath
+                    return pathIsDirectory(standardizedPath, followSymlinks: true)
+                }
             }
         }
     }

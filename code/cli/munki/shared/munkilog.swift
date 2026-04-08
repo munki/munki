@@ -60,8 +60,12 @@ func munkiLog(_ message: String, logFile: String = "", logLevel: OSLogType = .de
         }
     }
     if let logData = logString.data(using: String.Encoding.utf8) {
-        if !FileManager.default.fileExists(atPath: logPath) {
-            FileManager.default.createFile(atPath: logPath, contents: nil)
+        let fm = FileManager.default
+        if !fm.fileExists(atPath: logPath) {
+            if !pathIsDirectory(dirName(logPath), followSymlinks: true) {
+                try? fm.createDirectory(atPath: dirName(logPath), withIntermediateDirectories: true)
+            }
+            fm.createFile(atPath: logPath, contents: nil)
         }
         if let fh = FileHandle(forUpdatingAtPath: logPath) {
             let _ = fh.seekToEndOfFile()

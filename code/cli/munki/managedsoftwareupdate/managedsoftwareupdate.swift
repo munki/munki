@@ -316,7 +316,10 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     /// Does an Apple update check if appropriate
     private func doAppleUpdateCheckIfAppropriate(appleUpdatesOnly: Bool) -> Int {
         if shouldDoAppleUpdates(appleUpdatesOnly: appleUpdatesOnly) {
-            return findAndRecordAvailableAppleUpdates()
+            let filterMajorOSUpdates = !(boolPref("AppleSoftwareUpdatesIncludeMajorOSUpdates") ?? false)
+            return findAndRecordAvailableAppleUpdates(
+                shouldFilterMajorOSUpdates: filterMajorOSUpdates
+            )
         }
         //
         return 0
@@ -541,7 +544,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         if DisplayOptions.verbose > 0 {
             print("Managed Software Update Tool")
             print("Version \(getVersion())")
-            print("Copyright 2010-2025 The Munki Project")
+            print("Copyright 2010-2026 The Munki Project")
             print("https://github.com/munki/munki\n")
         }
         display.majorStatus("Starting...")
