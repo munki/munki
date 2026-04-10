@@ -1,21 +1,17 @@
-/* TODO: TRANSLATE */
 /* Multiple managed updates message */
-"%@ additional pending updates" = "%@ additional pending updates";
+"%@ additional pending updates" = "Altri %@ aggiornamenti in sospeso";
 
-/* TODO: TRANSLATE */
 /* Multiple Apple updates message */
-"%@ available Apple updates" = "%@ available Apple updates";
+"%@ available Apple updates" = "%@ aggiornamenti Apple disponibili";
 
 /* Multiple Updates message */
 "%@ pending updates" = "%@ aggiornamenti in sospeso";
 
-/* TODO: TRANSLATE */
 /* One managed update message */
-"1 additional pending update" = "1 additional pending update";
+"1 additional pending update" = "1 altro aggiornamento in sospeso";
 
-/* TODO: TRANSLATE */
 /* One Apple update message */
-"1 available Apple update" = "1 available Apple update";
+"1 available Apple update" = "1 aggiornamento Apple disponibile";
 
 /* One Update message */
 "1 pending update" = "1 aggiornamento in sospeso";
@@ -68,14 +64,12 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Una versione precedente è attualmente installata. Per installare questo update bisogna aggiornare il sistema a Mac OS %@ o superiore.";
 
-/* TODO: TRANSLATE */
 /* No Apple updates message */
-"Apple software is up to date" = "Apple software is up to date";
+"Apple software is up to date" = "Il software Apple è aggiornato";
 
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applicazioni in uso da altri";
 
-/* TODO: verify translation */
 /* Force Quit confirmation message */
 "Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Sei sicuro di voler forzare la chiusura di \"%@\"? Eventuali modifiche non salvate potrebbero andare perse.";
 
@@ -155,7 +149,7 @@
 "Downloading available Apple Software Updates..." = "Download Aggiornamenti Apple Disponibili in corso...";
 
 /* Sidebar Due label */
-"Due:" = "Da fare:";
+"Due:" = "Scadenza:";
 
 /* FeaturedLabel */
 "Featured" = "In primo piano";
@@ -169,11 +163,9 @@
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Per migliori risultati, connettere il computer ad un alimentatore di corrente prima dell'aggiornamento. Sicuro di continuare l'aggiornamento?";
 
-/* TODO: verify translation */
 /* Force Quit button title */
 "Force Quit" = "Uscita forzata";
 
-/* TODO: verify translation */
 /* Force Quit confirmation title */
 "Force Quit Application?" = "Forzare la chiusura dell'applicazione?";
 
@@ -255,7 +247,6 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Aggiornamenti obbligatori in Sospeso";
 
-/* TODO: verify translation */
 /* Manual quit required label */
 "Manual quit required" = "È necessario uscire manualmente dall'applicazione.";
 
@@ -271,9 +262,8 @@
 /* My Items label */
 "My Items" = "I Miei Elementi";
 
-/* TODO: TRANSLATE */
 /* No managed updates message */
-"No additional pending updates" = "No additional pending updates";
+"No additional pending updates" = "Nessun altro aggiornamento in sospeso";
 
 /* No Licenses Available display text */
 "No licenses available" = "Nessuna licenza disponibile";
@@ -347,12 +337,11 @@
 /* Quit button title */
 "Quit" = "Chiudi";
 
-/* TODO: TRANSLATE */
 /* Quit Apps and Update button title */
-"Quit Apps and Update" = "Quit Apps and Update";
+"Quit Apps and Update" = "Esci dalle applicazioni e aggiorna";
 
 /* Removal Error status text */
-"Removal Error" = "Errore di rimozione";
+"Removal Error" = "Errore durante la rimozione";
 
 /* Removal Requested status text */
 "Removal requested" = "Rimozione richiesta";
@@ -366,7 +355,6 @@
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Rimozione info in corso";
 
-/* TODO: verify translation */
 /* Reopen apps after update checkbox */
 "Reopen applications after update" = "Riaprire le applicazioni dopo l'aggiornamento.";
 
@@ -397,24 +385,20 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Seleziona applicazioni da installare.";
 
-/* TODO: TRANSLATE */
 /* Show Apple updates button title */
-"Show" = "Show";
+"Show" = "Mostra";
 
 /* Sidebar Size label */
 "Size:" = "Dimensione:";
 
-/* TODO: TRANSLATE */
 /* Skip and Update Others button title */
-"Skip and Update Others" = "Skip and Update Others";
+"Skip and Update Others" = "Salta e aggiorna il resto";
 
-/* TODO: verify translation */
 /* Skip Apple updates button title */
 "Skip Apple updates" = "Ignora gli aggiornamenti Apple";
 
-/* TODO: TRANSLATE */
 /* Skip updates requiring logout or restart button text */
-"Skip updates requiring logout or restart" = "Skip updates requiring logout or restart";
+"Skip updates requiring logout or restart" = "Salta aggiornamenti che richiedono disconnessione o riavvio";
 
 /* Software label */
 "Software" = "Applicazione";
@@ -555,7 +539,7 @@
 "Version:" = "Versione:";
 
 /* managedsoftwareupdate message */
-"Waiting for network..." = "In attesa del network...";
+"Waiting for network..." = "In attesa della rete...";
 
 /* Will Be Installed status text */
 "Will be installed" = "Verrà installato";
@@ -566,9 +550,8 @@
 /* No Installed Software primary text */
 "You have no selected software." = "Non ci sono applicazioni selezionate.";
 
-/* TODO: verify translation */
 /* Apple Software Updates Pending detail */
-"You must install these updates using %@." = "Installa questi aggiornamenti usando %@.";
+"You must install these updates using %@." = "È necessario installare questi aggiornamenti tramite %@.";
 
 /* Blocking Apps Running detail for auto-quit sheet */
 "You must quit these applications before proceeding with installation or removal:" = "Chiudere le seguenti applicazioni prima di procedere all'installazione o rimozione:";
@@ -591,13 +574,11 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Le applicazioni sono aggiornate.";
 
-/* TODO: TRANSLATE */
 /* Apple Updates Not volume owner detail */
-"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Il tuo utente di sistema non è il proprietario del volume di boot.\nYou cannot install Apple Software Updates at this time.\n\nContatta l'amministratore di sistema.";
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Il tuo utente di sistema non è il proprietario del volume di boot.\nNon è pertanto possibile installare gli aggiornamenti software Apple.\n\nContatta l'amministratore di sistema.";
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Il tuo utente di sistema non è il proprietario del volume di boot.\nNon puoi aggiornare macOS.\n\nContatta l'amministratore di sistema.";
 
-/* TODO: verify translation */
 /* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS è obsoleto da %@ giorni.";
+"macOS has been out-of-date for %@ days." = "macOS non è aggiornato da %@ giorni.";
