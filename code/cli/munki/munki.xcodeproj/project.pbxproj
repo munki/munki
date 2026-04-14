@@ -7,7 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12V8CKR2BDWMSK6ANI03XAOR /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		13E4C7067E5D42ACA351E9EB /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		1FD0D19BBFAD4956B46BA533 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
 		398E815608C94E51AFC0E672 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		D1A10001BEAD7E57C0684E5B /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		D1A10002BEAD7E57C0684E5B /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = D1A10003BEAD7E57C0684E5B /* Yams */; };
+		44728203BA664CAB9B55A423 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		5CKB2LU9D83WIFBA8VR8312Z /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		645EB50BFA35426FBDE4EE4D /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		6779B7C8733F42AEACBC22CB /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		6OENHNW0WHFECJU20VXGX8PP /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		7WD1R6JY69SLB3R5R8A32RLG /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		8EA12F1628DE4BF890BB3366 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		9967QVRFDEZ11UQRSUXGI7IR /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		AGOE4AV3G73BI8FG6Q5UBH7Y /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		B5A572B032E048968565B535 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
 		C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CAD2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CB22C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
@@ -520,38 +535,25 @@
 		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
-		44728203BA664CAB9B55A423 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		B5A572B032E048968565B535 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
 		C52CCC4E3374479E8D7FA5DA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		E6E24AD5B1E14E0CACFFD4A6 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		8EA12F1628DE4BF890BB3366 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		645EB50BFA35426FBDE4EE4D /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		D930A15EAB7E42D0BEB125DA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		13E4C7067E5D42ACA351E9EB /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		FF2DBD716A2C41A5BBE176BE /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		DD529739410642839A14E11A /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		1FD0D19BBFAD4956B46BA533 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		R2Y4B3B2XR5OWNGU7PUINP9V /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		7WD1R6JY69SLB3R5R8A32RLG /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		SP5UQJJ59SACHSFF2P31PRLY /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		UMJLWZ9PZEMPE1892OMMT1OF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		G97WFX4MLP7EC5T0L1MNNW88 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		TTU24H15286HIYTBOB2VFOLA /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		QKIRY89JNKRDPM74J0MHWCIZ /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		V7921MKURTQ1AUC43NLMY18D /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		T19A6OOC0X74PNBMTFTXK0WJ /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		AGOE4AV3G73BI8FG6Q5UBH7Y /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		9967QVRFDEZ11UQRSUXGI7IR /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		WRDJKS4WZGMZDZFNFTJOJY97 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
 		D4HLB3OLAI2KF8XDE189HXEA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		5CKB2LU9D83WIFBA8VR8312Z /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		D930A15EAB7E42D0BEB125DA /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		DD529739410642839A14E11A /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
 		E0F6O710025VFRCFPMHCBQU0 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		6OENHNW0WHFECJU20VXGX8PP /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		ZTGQ58OF3234SV04JFAKCU23 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		E6E24AD5B1E14E0CACFFD4A6 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		FF2DBD716A2C41A5BBE176BE /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		G97WFX4MLP7EC5T0L1MNNW88 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
 		LIS80FWUFZFXL44TOKYIU44J /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
-		12V8CKR2BDWMSK6ANI03XAOR /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
 		Q9F9T0KDP8T5VP1U7YS9PL1Q /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
-		6779B7C8733F42AEACBC22CB /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		QKIRY89JNKRDPM74J0MHWCIZ /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		R2Y4B3B2XR5OWNGU7PUINP9V /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		SP5UQJJ59SACHSFF2P31PRLY /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		T19A6OOC0X74PNBMTFTXK0WJ /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
+		TTU24H15286HIYTBOB2VFOLA /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		UMJLWZ9PZEMPE1892OMMT1OF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		V7921MKURTQ1AUC43NLMY18D /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		WRDJKS4WZGMZDZFNFTJOJY97 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DC8467BF2ECEE53A00EDAE22 /* Yams */; };
+		ZTGQ58OF3234SV04JFAKCU23 /* yamlutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC921FEB5E2FB42F654C578E /* yamlutils.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -711,6 +713,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BC921FEB5E2FB42F654C578E /* yamlutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = yamlutils.swift; sourceTree = "<group>"; };
 		C0011CAB2C7A64F30004ED70 /* Predicates.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Predicates.m; sourceTree = "<group>"; };
 		C0011CAE2C7A98280004ED70 /* Predicates.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Predicates.h; sourceTree = "<group>"; };
 		C0011CAF2C7A990B0004ED70 /* managedsoftwareupdate-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "managedsoftwareupdate-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -843,7 +846,6 @@
 		C0E993F72C5BEDAB006FDF44 /* removepackages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = removepackages.swift; sourceTree = "<group>"; };
 		C0EC07482EF4AE620051894F /* stringutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stringutils.swift; sourceTree = "<group>"; };
 		C0EEC9A62DA7335900F92942 /* clientcerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcerts.swift; sourceTree = "<group>"; };
-		BC921FEB5E2FB42F654C578E /* yamlutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = yamlutils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -885,7 +887,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0E994202C5C1103006FDF44 /* ArgumentParser in Frameworks */,
-			
 				B5A572B032E048968565B535 /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -896,7 +897,6 @@
 			files = (
 				C0E994222C5C1109006FDF44 /* ArgumentParser in Frameworks */,
 				C030A9F42C435113007F0B34 /* libedit.tbd in Frameworks */,
-			
 				E6E24AD5B1E14E0CACFFD4A6 /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -907,7 +907,6 @@
 			files = (
 				C05DB2132DAC681F0081FACD /* libedit.tbd in Frameworks */,
 				C05DB20C2DAC62530081FACD /* ArgumentParser in Frameworks */,
-			
 				645EB50BFA35426FBDE4EE4D /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -935,6 +934,7 @@
 			files = (
 				C058EF742DCE9CAE002775E0 /* ArgumentParser in Frameworks */,
 				C0684EA02DC7E5CD0091E774 /* X509 in Frameworks */,
+				D1A10002BEAD7E57C0684E5B /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -944,7 +944,6 @@
 			files = (
 				C0B715C02DA71F2900F255FB /* X509 in Frameworks */,
 				C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */,
-			
 				6779B7C8733F42AEACBC22CB /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -965,7 +964,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0E9941E2C5C10FE006FDF44 /* ArgumentParser in Frameworks */,
-			
 				13E4C7067E5D42ACA351E9EB /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -984,7 +982,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0BF62D92CEC05AE0030885D /* ArgumentParser in Frameworks */,
-			
 				DD529739410642839A14E11A /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1274,8 +1271,8 @@
 				C07074EA2C34A6AD00B86310 /* versionutils.swift */,
 				C06C213F2C8E1FF50023E9D9 /* ODutils.swift */,
 				C0D66AD32D2DBBED009EF807 /* dateutils.swift */,
-                                BC921FEB5E2FB42F654C578E /* yamlutils.swift */,
-                                C0EC07482EF4AE620051894F /* stringutils.swift */,
+				BC921FEB5E2FB42F654C578E /* yamlutils.swift */,
+				C0EC07482EF4AE620051894F /* stringutils.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -1561,6 +1558,7 @@
 			packageProductDependencies = (
 				C0684E9F2DC7E5CD0091E774 /* X509 */,
 				C058EF732DCE9CAE002775E0 /* ArgumentParser */,
+				D1A10003BEAD7E57C0684E5B /* Yams */,
 			);
 			productName = munkiCLItesting;
 			productReference = C0684E5C2DC736EE0091E774 /* munkiCLItesting.xctest */;
@@ -1954,7 +1952,6 @@
 				C030A9A42C3B4FC9007F0B34 /* pkgutils.swift in Sources */,
 				C0684E442DC585560091E774 /* osutils.swift in Sources */,
 				C030A9AC2C3B500E007F0B34 /* versionutils.swift in Sources */,
-			
 				44728203BA664CAB9B55A423 /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2000,7 +1997,6 @@
 				C0EC076E2F0449A00051894F /* stringutils.swift in Sources */,
 				C01CE24C2CA7ADD400542FA1 /* configure.swift in Sources */,
 				C058EF2A2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
-			
 				C52CCC4E3374479E8D7FA5DA /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2030,7 +2026,6 @@
 				C05DB2162DAC831E0081FACD /* FileRepo.swift in Sources */,
 				C05DB2172DAC831E0081FACD /* RepoFactory.swift in Sources */,
 				C09616C82DEE6DF400281B6B /* UNIXProcessInfo.swift in Sources */,
-			
 				8EA12F1628DE4BF890BB3366 /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2161,6 +2156,7 @@
 				C0684E752DC7BE9F0091E774 /* munkistatus.swift in Sources */,
 				C058EF722DCE9C3E002775E0 /* admincommon.swift in Sources */,
 				C0684E7F2DC7C3AE0091E774 /* info.swift in Sources */,
+				D1A10001BEAD7E57C0684E5B /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2241,7 +2237,6 @@
 				C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C07074DF2C33B9A000B86310 /* reports.swift in Sources */,
 				C058EF2D2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
-			
 				1FD0D19BBFAD4956B46BA533 /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2366,7 +2361,6 @@
 				C0D00FAB2C4581800021DA9C /* repoutils.swift in Sources */,
 				C01364412C2DCA5C008DB215 /* admincommon.swift in Sources */,
 				C013643D2C2DC529008DB215 /* makecatalogslib.swift in Sources */,
-			
 				D930A15EAB7E42D0BEB125DA /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2428,7 +2422,6 @@
 				C058EF212DCD041A002775E0 /* RepoProtocol.swift in Sources */,
 				C0BF62DA2CEC07660030885D /* FileRepo.swift in Sources */,
 				C0BF62E32CEC11310030885D /* admincommon.swift in Sources */,
-			
 				FF2DBD716A2C41A5BBE176BE /* yamlutils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3541,6 +3534,11 @@
 			productName = ArgumentParser;
 		};
 		DC8467BF2ECEE53A00EDAE22 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC8467BE2ECEE53A00EDAE22 /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
+		};
+		D1A10003BEAD7E57C0684E5B /* Yams */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DC8467BE2ECEE53A00EDAE22 /* XCRemoteSwiftPackageReference "Yams" */;
 			productName = Yams;
