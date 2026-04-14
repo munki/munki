@@ -83,6 +83,22 @@ enum YamlError: Error {
     case writeError(description: String)
 }
 
+// MARK: - Custom YAML Resolver
+
+/// Resolver that treats float-looking scalars as strings.
+///
+/// Without this, Yams parses `minimum_os_version: 10.10` as Double 10.1, losing the
+/// trailing zero before we can do anything about it. A post-parse fix-up can never
+/// recover that information — "10.10" and "10.1" are distinct versions.
+///
+/// Removing the float rule means scalars like `10.10`, `2.3`, `1.0`, `26.4` resolve
+/// to `.str` and arrive as Swift Strings, preserving the author's exact text.
+/// Integer and boolean resolvers are kept intact so `installed_size: 1024`,
+/// `optional: yes`, etc. still parse as their native types.
+///
+/// This matches the approach used by AutoPkg's AutoPkgYAMLLoader.
+private let munkiYamlResolver = Resolver.default.removing(.float)
+
 // MARK: - Custom Key Ordering for pkginfo YAML output
 
 /// Keys that should appear first in pkginfo YAML output, in this order
@@ -409,24 +425,21 @@ func isYamlFile(_ filepath: String) -> Bool {
 func readYaml(fromFile filepath: String) throws -> Any? {
     do {
         let yamlString = try String(contentsOfFile: filepath, encoding: .utf8)
-        let parsed = try Yams.load(yaml: yamlString)
+        let parsed = try Yams.load(yaml: yamlString, munkiYamlResolver)
         return normalizeYamlTypes(parsed)
     } catch {
         throw YamlError.readError(description: "Failed to read YAML from \(filepath): \(error)")
     }
 }
 
-/// Normalize YAML parsed data to ensure version strings are strings, not floats
-/// This prevents the common mistake of writing unquoted version numbers like:
-///   minimum_os_version: 10.12  (becomes float 10.12)
-/// Instead of:
-///   minimum_os_version: '10.12'  (string "10.12")
+/// Normalize YAML parsed data to ensure version-like fields are strings.
 ///
-/// Without this normalization, the version check in catalogs.swift would fail:
-///   if let minimumOSVersion = item["minimum_os_version"] as? String
-/// The cast would return nil for a float, silently bypassing the OS version check.
-///
-/// This ensures version-related fields are always strings, matching munki's expectations.
+/// With `munkiYamlResolver` in place, float-looking scalars (10.10, 2.3, 1.0) already
+/// arrive as Strings and this pass is a no-op for them. This function still exists to
+/// handle the Int case: `minimum_os_version: 14` parses as Int 14 under the default
+/// int resolver (which we keep, since fields like `installed_size: 1024` need to stay
+/// integer-typed). Without this pass, a later `as? String` cast on the int-typed
+/// `minimum_os_version` would silently return nil and bypass the OS version check.
 func normalizeYamlTypes(_ object: Any?) -> Any? {
     guard let object = object else { return nil }
     
@@ -481,7 +494,7 @@ func readYaml(fromData data: Data) throws -> Any? {
         throw YamlError.readError(description: "Data is not valid UTF-8")
     }
     do {
-        let parsed = try Yams.load(yaml: yamlString)
+        let parsed = try Yams.load(yaml: yamlString, munkiYamlResolver)
         return normalizeYamlTypes(parsed)
     } catch {
         throw YamlError.readError(description: "Failed to parse YAML data: \(error)")
@@ -491,7 +504,7 @@ func readYaml(fromData data: Data) throws -> Any? {
 /// Attempt to read YAML from a string
 func readYaml(fromString string: String) throws -> Any? {
     do {
-        let parsed = try Yams.load(yaml: string)
+        let parsed = try Yams.load(yaml: string, munkiYamlResolver)
         return normalizeYamlTypes(parsed)
     } catch {
         throw YamlError.readError(description: "Failed to parse YAML string: \(error)")
