@@ -292,10 +292,10 @@ struct CatalogsMaker {
         await cleanupCatalogs()
 
         // write the new catalogs
+        // Catalogs are always written extensionless
         for key in catalogs.keys {
             if !(catalogs[key]?.isEmpty ?? true) {
-                let fileExtension = options.yamlOutput ? ".yaml" : ""
-                let catalogIdentifier = "catalogs/" + key + fileExtension
+                let catalogIdentifier = "catalogs/" + key
                 do {
                     if let value = catalogs[key] {
                         let data = options.yamlOutput ? try yamlToData(value) : try plistToData(value)
