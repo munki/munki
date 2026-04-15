@@ -149,22 +149,16 @@ func independentCopy(of dict: PlistDict) -> PlistDict? {
 }
 
 /// Attempt to convert a PropertyList object to string
-func plistToString(_ dataObject: Any) throws -> String {
+/// If yamlOutput is true, returns yaml format; otherwise returns plist format
+func plistToString(_ dataObject: Any, yamlOutput: Bool = false) throws -> String {
+    if yamlOutput {
+        return try yamlToString(dataObject)
+    }
     do {
         let data = try serialize(dataObject)
         return String(data: data, encoding: String.Encoding.utf8)!
     } catch {
         throw PlistError.writeError(description: "\(error)")
-    }
-}
-
-/// Attempt to convert a PropertyList object to string
-/// If yamlOutput is true, returns yaml format; otherwise returns plist format
-func plistToString(_ dataObject: Any, yamlOutput: Bool = false) throws -> String {
-    if yamlOutput {
-        return try yamlToString(dataObject)
-    } else {
-        return try plistToString(dataObject)
     }
 }
 
