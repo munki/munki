@@ -97,6 +97,62 @@ struct yamlFloatResolverTests {
         #expect(parsed["version"] as? String == "1.0")
     }
 
+    /// Empty-string values must round-trip through YAML write + read.
+    /// Regression test for finding #3 in the yaml-support code review:
+    /// previously `sanitizeForYaml` filtered out any string value where
+    /// `str.isEmpty`, so e.g. `blocking_applications: ""` or an explicit
+    /// empty `description:` silently disappeared on save. After the fix,
+    /// empty-string values must be emitted explicitly quoted (`key: ''`)
+    /// and parse back as empty strings, not null/missing.
+    @Test func emptyStringValuesRoundTrip() async throws {
+        let input: [String: Any] = [
+            "name": "TestApp",
+            "version": "1.0",
+            "description": "",
+            "blocking_applications": "",
+            "notes": "non-empty",
+            "receipts": [
+                [
+                    "packageid": "com.example.testapp",
+                    "version": "1.0",
+                    "filename": ""
+                ] as [String: Any]
+            ]
+        ]
+
+        let yamlString = try yamlToString(input)
+
+        // The empty-string keys must be present in the written YAML.
+        #expect(yamlString.contains("description:"),
+                "description key was dropped from YAML output: \(yamlString)")
+        #expect(yamlString.contains("blocking_applications:"),
+                "blocking_applications key was dropped from YAML output: \(yamlString)")
+        #expect(yamlString.contains("filename:"),
+                "nested filename empty-string key was dropped: \(yamlString)")
+
+        // And the emitted empty strings must be explicitly quoted so they
+        // parse back as "" rather than null.
+        #expect(yamlString.contains("description: ''") || yamlString.contains("description: \"\""),
+                "description empty string was not quoted: \(yamlString)")
+        #expect(yamlString.contains("blocking_applications: ''") || yamlString.contains("blocking_applications: \"\""),
+                "blocking_applications empty string was not quoted: \(yamlString)")
+
+        let parsed = try #require(
+            readYaml(fromString: yamlString) as? [String: Any],
+            "Could not re-parse YAML output"
+        )
+        #expect(parsed["description"] as? String == "",
+                "description did not round-trip as empty string (got \(String(describing: parsed["description"])))")
+        #expect(parsed["blocking_applications"] as? String == "",
+                "blocking_applications did not round-trip as empty string (got \(String(describing: parsed["blocking_applications"])))")
+        #expect(parsed["name"] as? String == "TestApp")
+        #expect(parsed["notes"] as? String == "non-empty")
+
+        let receipts = try #require(parsed["receipts"] as? [[String: Any]])
+        #expect(receipts.first?["filename"] as? String == "",
+                "nested filename empty string did not round-trip (got \(String(describing: receipts.first?["filename"])))")
+    }
+
     /// Nested dicts (e.g., inside receipts or installs) must also preserve versions.
     @Test func nestedVersionsPreserved() async throws {
         let yaml = """
