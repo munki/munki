@@ -153,6 +153,86 @@ struct yamlFloatResolverTests {
                 "nested filename empty string did not round-trip (got \(String(describing: receipts.first?["filename"])))")
     }
 
+    /// Known script field keys always emit as literal block scalars (`|`),
+    /// even when the content is short or single-line. Key-based detection wins.
+    @Test func scriptFieldShortContentEmitsAsLiteralBlock() async throws {
+        let pkginfo: [String: Any] = [
+            "name": "TestApp",
+            "version": "1.0",
+            "preinstall_script": "echo hi"
+        ]
+        let output = try yamlToString(pkginfo)
+        // A YAML literal block starts with `|` on the key line, followed by an
+        // indented value line. Plain/quoted scalars would put the value on the
+        // same line as the key.
+        #expect(output.contains("preinstall_script: |"),
+                "Expected literal block for preinstall_script, got:\n\(output)")
+        #expect(!output.contains("preinstall_script: echo hi"),
+                "Expected script value on a new line, not inline. Got:\n\(output)")
+    }
+
+    /// All known script field keys round-trip as literal blocks.
+    /// Regression guard against accidental removal of entries from `scriptFieldKeys`.
+    @Test func allKnownScriptFieldsEmitAsLiteralBlock() async throws {
+        let keys = [
+            "preinstall_script",
+            "postinstall_script",
+            "preuninstall_script",
+            "postuninstall_script",
+            "uninstall_script",
+            "installcheck_script",
+            "uninstallcheck_script",
+        ]
+        for key in keys {
+            let pkginfo: [String: Any] = [key: "exit 0"]
+            let output = try yamlToString(pkginfo)
+            #expect(output.contains("\(key): |"),
+                    "Expected literal block for \(key), got:\n\(output)")
+        }
+    }
+
+    /// A non-script field (`description`) must NOT emit as a literal block even
+    /// when its content contains a shebang-looking prefix. This is the main
+    /// false-positive the tightened heuristic is designed to prevent.
+    @Test func descriptionWithShebangPrefixIsNotLiteralBlock() async throws {
+        let pkginfo: [String: Any] = [
+            "name": "TestApp",
+            "description": "#!/bin/sh usage note for admins"
+        ]
+        let output = try yamlToString(pkginfo)
+        // Single-line content on a non-script key must never become a literal block.
+        #expect(!output.contains("description: |"),
+                "Single-line description must not emit as literal block. Got:\n\(output)")
+    }
+
+    /// Short multi-line content on an arbitrary (non-script, non-prose) key with
+    /// script-like tokens ("if ", indentation) must NOT trigger literal-block
+    /// emission under the new stricter heuristic. Previously, content like this
+    /// was a false positive.
+    @Test func shortMultilineNonScriptDoesNotBecomeLiteralBlock() async throws {
+        let pkginfo: [String: Any] = [
+            "name": "TestApp",
+            // Short (< 80 chars) multi-line string with tokens the old heuristic
+            // flagged as "script-like". No shebang, so the new heuristic treats
+            // it as folded prose, not a literal script block.
+            "release_notes": "line one\nif fixed: bug"
+        ]
+        let output = try yamlToString(pkginfo)
+        #expect(!output.contains("release_notes: |"),
+                "Short multi-line non-script value must not emit as literal. Got:\n\(output)")
+    }
+
+    /// A multi-line value with a shebang on an unknown key IS treated as a script
+    /// (literal block). Shebang is the strongest content-based signal we keep.
+    @Test func multilineWithShebangOnUnknownKeyUsesLiteralBlock() async throws {
+        let pkginfo: [String: Any] = [
+            "custom_script_field": "#!/bin/sh\necho hi\nexit 0"
+        ]
+        let output = try yamlToString(pkginfo)
+        #expect(output.contains("custom_script_field: |"),
+                "Multi-line shebang content should emit as literal. Got:\n\(output)")
+    }
+
     /// Nested dicts (e.g., inside receipts or installs) must also preserve versions.
     @Test func nestedVersionsPreserved() async throws {
         let yaml = """
