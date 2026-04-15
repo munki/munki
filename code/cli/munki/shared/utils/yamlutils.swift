@@ -484,7 +484,10 @@ func normalizeYamlTypes(_ object: Any?) -> Any? {
         "version",
         "installer_item_version",
         "installed_version",
-        "product_version"
+        "product_version",
+        "CFBundleShortVersionString",
+        "CFBundleVersion",
+        "minosversion"
     ]
     
     if let dict = object as? [String: Any] {
