@@ -60,7 +60,7 @@ struct MunkiImportOptions: ParsableArguments {
         if yaml {
             return true
         }
-        return UserDefaults.standard.bool(forKey: "yaml")
+        return adminPref("use_yaml") as? Bool ?? false
     }
 
     mutating func validate() throws {
