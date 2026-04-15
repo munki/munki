@@ -346,9 +346,18 @@ private func toNode(_ value: Any, forKey key: String? = nil) -> Node {
         if string == "__YAML_NULL_SENTINEL__" {
             return Node("")
         }
-        // Preserve empty strings explicitly as '' in YAML output
+        // Preserve empty strings explicitly as '' in YAML output.
+        //
+        // Round-trip fidelity: a pkginfo key whose value is "" (e.g. an
+        // explicit empty `description:` or `blocking_applications: ""`)
+        // must survive write+read. An unquoted empty scalar in YAML
+        // resolves to null under Yams' core resolver, which would cause
+        // the key to either read back as nil or collide with Munki's
+        // NSNull-filtering pass and silently disappear. Emitting with
+        // an explicit `.str` tag and `.singleQuoted` style guarantees
+        // the value is always parsed back as an empty String.
         if string.isEmpty {
-            return Node("", .implicit, .singleQuoted)
+            return Node("", Tag(.str), .singleQuoted)
         }
         // Use appropriate block scalar style based on key and content
         if let key = key {
