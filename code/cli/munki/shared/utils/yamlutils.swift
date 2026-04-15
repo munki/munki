@@ -128,8 +128,14 @@ private let conditionalItemKeyOrder = ["condition", "managed_installs", "managed
 // MARK: - Block Scalar Handling for Multi-line Strings
 
 /// Script field keys that should use YAML literal block scalar style (|)
-/// These fields contain executable scripts and must preserve exact newlines and formatting
-private let scriptFieldKeys: Set<String> = [
+/// These fields contain executable scripts and must preserve exact newlines and formatting.
+///
+/// This is the canonical list of Munki pkginfo keys whose values are interpreted
+/// as shell/Python scripts. Keep in sync with `ScriptOptions` in pkginfoOptions.swift
+/// and the script handling in pkginfolib.swift / installer.swift.
+///
+/// `internal` (package-private) so tests can reference it; see yamlutilsTests.swift.
+let scriptFieldKeys: Set<String> = [
     "preinstall_script",
     "postinstall_script",
     "installcheck_script",
@@ -137,6 +143,7 @@ private let scriptFieldKeys: Set<String> = [
     "postuninstall_script",
     "uninstall_script",
     "preuninstall_script",
+    "version_script",
     "embedded_script"
 ]
 
@@ -147,47 +154,60 @@ private let proseFieldKeys: Set<String> = [
     "notes"
 ]
 
-/// Determine the appropriate YAML scalar style for a string value based on its key and content
+/// Minimum length for an unknown-key multi-line string to be treated as a script.
+/// Below this, we prefer folded style (readable prose) over literal (preserves whitespace).
+/// 80 chars is roughly one terminal line — shorter content is almost certainly not a script.
+private let scriptContentMinLength = 80
+
+/// Determine the appropriate YAML scalar style for a string value based on its key and content.
+///
+/// Policy (in order):
+///   1. Known script field key → literal block (`|`). Wins regardless of content length or
+///      whether the value has newlines — a single-line `preinstall_script: echo hi` still
+///      emits as a block for consistency with Munki conventions.
+///   2. Single-line string → default (plain/quoted) style. Single-line values are never
+///      scripts, regardless of whether they contain `#!`, `if `, etc.
+///   3. Multi-line prose field key → folded block (`>`).
+///   4. Multi-line value on an unknown key → literal only if it looks like a script by
+///      a STRICT heuristic: contains a shebang OR is at least `scriptContentMinLength`
+///      characters long. Otherwise folded (readable prose).
+///
+/// The previous heuristic fired on any multi-line string containing common tokens like
+/// `\nif `, `\nfor `, `\necho `, or indented lines, which caused short non-script
+/// payloads (descriptions, multi-line URLs, release notes with a code example) to emit
+/// as literal blocks unnecessarily. Key-name detection + a strict content check is
+/// dramatically more accurate.
+///
 /// - Parameters:
 ///   - key: The dictionary key name
 ///   - value: The string value
 /// - Returns: The appropriate Node.Scalar.Style for this string
-private func scalarStyleForString(key: String, value: String) -> Node.Scalar.Style {
-    // Script fields always use literal style to preserve exact formatting
+func scalarStyleForString(key: String, value: String) -> Node.Scalar.Style {
+    // 1. Known script field — always literal, regardless of content.
     if scriptFieldKeys.contains(key) {
         return .literal
     }
-    
-    // Check if string contains newlines
-    let hasNewlines = value.contains("\n")
-    
-    if hasNewlines {
-        // Prose fields use folded style for readable text
-        if proseFieldKeys.contains(key) {
-            return .folded
-        }
-        
-        // Multi-line strings that look like scripts (shebang, common script patterns)
-        if value.hasPrefix("#!") ||                    // Shebang
-           value.hasPrefix("#!/") ||                   // Explicit shebang
-           value.contains("\nif ") ||                  // Shell/Python conditionals
-           value.contains("\nfor ") ||                 // Shell/Python loops
-           value.contains("\nwhile ") ||               // Shell/Python loops
-           value.contains("\necho ") ||                // Shell commands
-           value.contains("\nprint(") ||               // Python print
-           value.contains("\nreturn ") ||              // Return statements
-           value.contains("\nexit ") ||                // Exit commands
-           value.contains("\n  ") ||                   // Indented code blocks
-           value.contains("\n\t") {                    // Tab-indented code
-            return .literal
-        }
-        
-        // Default: use folded for other multi-line strings (readable prose)
+
+    // 2. Single-line strings are never scripts. Let Yams choose the scalar style.
+    if !value.contains("\n") {
+        return .any
+    }
+
+    // 3. Known prose field — folded.
+    if proseFieldKeys.contains(key) {
         return .folded
     }
-    
-    // Single-line strings use default style
-    return .any
+
+    // 4. Unknown key with a multi-line value — strict content check.
+    //    Only promote to literal if we have strong evidence it's a script.
+    let hasShebang = value.hasPrefix("#!")
+    let isLong = value.count >= scriptContentMinLength
+    if hasShebang || isLong {
+        return .literal
+    }
+
+    // Short multi-line content on an unknown key → folded (readable prose wrapping).
+    return .folded
 }
 
 /// Check if a dictionary looks like a receipt entry
