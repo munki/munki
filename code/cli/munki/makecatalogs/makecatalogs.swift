@@ -50,7 +50,7 @@ struct MakeCatalogs: AsyncParsableCommand {
         if yaml {
             return true
         }
-        return UserDefaults.standard.bool(forKey: "yaml")
+        return adminPref("use_yaml") as? Bool ?? false
     }
 
     @Option(help: "Specify a custom plugin to connect to the Munki repo.")

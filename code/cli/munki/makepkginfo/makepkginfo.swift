@@ -103,7 +103,7 @@ struct Create: ParsableCommand {
         if yaml {
             return true
         }
-        return UserDefaults.standard.bool(forKey: "yaml")
+        return adminPref("use_yaml") as? Bool ?? false
     }
 
     mutating func run() throws {

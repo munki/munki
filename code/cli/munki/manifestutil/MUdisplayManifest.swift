@@ -24,7 +24,7 @@ func getManifest(repo: Repo, name: String) async -> PlistDict? {
     do {
         let data = try await repo.get("manifests/\(name)")
         // run a file content detection since manifests don't have extensions
-        let shouldPreferYaml = UserDefaults.standard.bool(forKey: "yaml")
+        let shouldPreferYaml = adminPref("use_yaml") as? Bool ?? false
         let manifest = try readData(data, preferYaml: shouldPreferYaml, filepath: "manifests/\(name)")
         return manifest as? PlistDict
     } catch {
@@ -142,7 +142,7 @@ extension ManifestUtil {
             if yaml {
                 return true
             }
-            return UserDefaults.standard.bool(forKey: "yaml")
+            return adminPref("use_yaml") as? Bool ?? false
         }
 
         @Argument(help: ArgumentHelp(
