@@ -448,6 +448,7 @@ class MSCBlockingAppsController: NSObject {
         let blockingScrollView = NSScrollView()
         blockingScrollView.translatesAutoresizingMaskIntoConstraints = false
         blockingScrollView.contentView = FlippedClipView()
+        blockingScrollView.drawsBackground = false
         blockingScrollView.hasVerticalScroller = (apps.count > maxVisibleRows)
         if apps.count > maxVisibleRows {
             blockingScrollView.hasVerticalScroller = true
