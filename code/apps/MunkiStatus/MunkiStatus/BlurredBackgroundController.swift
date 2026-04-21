@@ -19,7 +19,7 @@ class BlurWindowController: NSWindowController {
     func updateWindowRect() {
         if let screen {
             let bounds = appKitDisplayBounds(screen)
-            if let window = window {
+            if let window {
                 window.setFrame(bounds, display: true)
                 window.setFrameOrigin(bounds.origin)
             }

@@ -9,7 +9,7 @@
 import AppKit
 import Foundation
 
-private var filterAppleUpdates = false
+private var alertedToAppleUpdates = false
 private var filterStagedOSUpdate = false
 
 class Cache {
@@ -218,6 +218,25 @@ class GenericItem: BaseItem {
     
     func getIcon() -> String {
         // Return name/relative path of image file to use for the icon
+
+        // if it's an Apple Software Update, use the Software Update icon
+        if let apple_update = my["apple_update"] as? Bool, apple_update {
+            let appleUpdateIconName = "SystemSettingsIcon.png"
+            let icon_path = NSString.path(withComponents: [html_dir(), appleUpdateIconName])
+            // did we already convert it?
+            if (FileManager.default.fileExists(atPath: icon_path)) {
+                return icon_path
+            }
+            // find the System Settings or System Preferences app and convert its icon
+            if let su_icon_path = findSoftwareUpdateIconPath(),
+               convertIconToPNG(su_icon_path, destination: icon_path, preferredSize: 256)
+            {
+                return appleUpdateIconName
+            }
+            // fall back to static icon
+            return "static/SoftwareUpdate.png"
+        }
+        // Non-Apple updates
         // first look for downloaded icons
         let icon_known_exts = ["bmp", "gif", "icns", "jpg", "jpeg", "png",
                                "psd", "tga", "tif", "tiff", "yuv"]
@@ -234,23 +253,34 @@ class GenericItem: BaseItem {
         }
         // didn't find one in the downloaded icons
         // so create one if needed from a locally installed app
+        // look in the installs array
+        if let installs_items = my["installs"] as? [PlistDict] {
+            let installs_apps = installs_items.filter(
+                { ($0["type"] as? String ?? "" == "application" &&
+                    !($0["path"] as? String ?? "").isEmpty) }).map(
+                        { ($0["path"] as? String ?? "") })
+            if installs_apps.count == 1, let app_path = installs_apps.first {
+                // slightly different path since we can't write to the icons directory
+                let icon_path = NSString.path(withComponents: [html_dir(), icon_name])
+                if (FileManager.default.fileExists(atPath: icon_path) ||
+                        convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 350)) {
+                    return quote(icon_name)
+                }
+            }
+        }
+        // look for an app with the same name as one of these keys
         for key in ["icon_name", "display_name", "name"] {
             if var icon_name = my[key] as? String {
+                let app_path = "/Applications/\(icon_name).app"
                 if !icon_known_exts.contains((icon_name as NSString).pathExtension) {
                     icon_name += ".png"
                 }
                 // slightly different path since we can't write to the icons directory
                 let icon_path = NSString.path(withComponents: [html_dir(), icon_name])
                 if (FileManager.default.fileExists(atPath: icon_path) ||
-                        convertIconToPNG(icon_name, destination: icon_path, preferredSize: 350)) {
+                        convertAppIconToPNG(app_path, destination: icon_path, preferredSize: 350)) {
                     return quote(icon_name)
                 }
-            }
-        }
-        // if it's an Apple Software Update, use the Software Update icon
-        if let apple_update = my["apple_update"] as? Bool {
-            if apple_update {
-                return "static/SoftwareUpdate.png"
             }
         }
         // use the Generic package icon
@@ -842,20 +872,18 @@ class OptionalItem: GenericItem {
                 warning_text = Bundle.main.localizedString(forKey: note, value: note, table: nil)
             }
             start_text += "<span class=\"warning\">\(filtered_html(warning_text))</span><br/><br/>"
-        } else {
-            if let days_available = my["days_available"] as? Int {
-                if days_available > 2 {
-                    let format_str = NSLocalizedString(
-                        "This update has been pending for %@ days.",
-                        comment: "Pending days message")
-                    let formatted_str = NSString(format: format_str as NSString,
-                                             String(days_available) as NSString)
-                    start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
-                }
-            }
-            if !(dependent_items.isEmpty) {
-                start_text += dependency_description()
-            }
+        } else if let days_available = my["days_available"] as? Int, days_available > 2 {
+            let format_str = NSLocalizedString(
+                "This update has been pending for %@ days.",
+                comment: "Pending days message")
+            let formatted_str = NSString(
+                format: format_str as NSString,
+                String(days_available) as NSString
+            )
+            start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
+        }
+        if !(dependent_items.isEmpty) {
+            start_text += dependency_description()
         }
         return start_text + (my["raw_description"] as? String ?? "")
     }
@@ -1004,8 +1032,23 @@ class UpdateItem: GenericItem {
                     }
                     start_text += "<span class=\"warning\">\(filtered_html(warning_text))</span><br/><br/>"
                 }
-            } else if let days_available = my["days_available"] as? Int {
-                if days_available > 2 {
+            } else {
+                let days_available = my["days_available"] as? Int ?? 0
+                if let apple_update = my["apple_update"] as? Bool,
+                   apple_update,
+                   let productKey = my["productKey"] as? String,
+                   productKey.hasPrefix("MSU_UPDATE_"),
+                   macOSOutOfDateDays() > max(days_available, 2)
+                {
+                    let format_str = NSLocalizedString(
+                        "macOS has been out-of-date for %@ days.",
+                        comment: "macOS out-of-date days message")
+                    let formatted_str = NSString(
+                        format: format_str as NSString,
+                        String(macOSOutOfDateDays()) as NSString
+                    )
+                    start_text += "<span class=\"warning\">\(formatted_str)</span><br><br>"
+                } else if days_available > 2 {
                     let format_str = NSLocalizedString(
                         "This update has been pending for %@ days.",
                         comment: "Pending days message")
@@ -1082,13 +1125,9 @@ func shouldAggressivelyNotifyAboutMunkiUpdates(days: Int = -1) -> Bool {
 }
 
 func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
-    // Do we have any Apple updates that require a restart that have been
-    // pending a long time?
+    // Do we have any Apple updates that have been pending a long time?
     var maxPendingDays = 0
-    let requiresRestartItems = getAppleUpdates().filter(
-            { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
-        )
-    for item in requiresRestartItems {
+    for item in getAppleUpdates() {
         if let itemname = item["name"] as? String {
             let thisItemDaysPending = getDaysPending(itemname)
             if thisItemDaysPending > maxPendingDays {
@@ -1096,6 +1135,8 @@ func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
             }
         }
     }
+    maxPendingDays = max(maxPendingDays, macOSOutOfDateDays())
+
     if days == -1 {
         let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
         if aggressiveNotificationDays == 0 {
@@ -1257,29 +1298,6 @@ func _build_update_list() -> [UpdateItem] {
         stagedOSupdate["status"] = "will-be-installed"
         stagedOSupdate["staged_os_installer"] = true
         update_items.append(stagedOSupdate)
-        // don't show Apple updates if we have a pending staged OS upgrade
-        setFilterAppleUpdates(true)
-    } else {
-        if munkiUpdatesContainAppleItems() {
-            // don't show any Apple updates if there are Munki items that are Apple items
-            NSLog("%@", "Not displaying Apple updates because one or more Munki update is an Apple item" )
-        } else if (shouldFilterAppleUpdates() && isAppleSilicon()) {
-            // we can't install any Apple updates on Apple silicon, so filter them all
-            NSLog("%@", "Not displaying any Apple updates because we've been asked to filter Apple updates and we're on Apple silicon" )
-        } else {
-            for var item in getAppleUpdates() {
-                if (shouldFilterAppleUpdates() &&
-                    ((item["RestartAction"] as? String ?? "").hasSuffix("Restart"))) {
-                    // skip this update because it requires a restart and we've been
-                    // directed to filter these out
-                    continue
-                }
-                item["developer"] = "Apple"
-                item["status"] = "will-be-installed"
-                item["apple_update"] = true
-                update_items.append(item)
-            }
-        }
     }
     let install_info = cachedInstallInfo()
     if let managed_installs = install_info["managed_installs"] as? [[String: Any]] {
@@ -1328,6 +1346,15 @@ func updatesRequireRestart() -> Bool {
     return requiresRestart
 }
 
+func someUpdatesDontRequireLogoutOrRestart() -> Bool {
+    // return true if some updates in the list don't require a logout or restart
+    let filteredUpdates = getUpdateList().filter {
+        !($0["RestartAction"] as? String ?? "").hasSuffix("Logout") &&
+        !($0["RestartAction"] as? String ?? "").hasSuffix("Restart")
+    }
+    return filteredUpdates.count > 0
+}
+
 func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
     // Return true if any item in the apple update list requires a restart
     if #available(OSX 10.10, *) {
@@ -1343,19 +1370,12 @@ func appleUpdatesRequireRestartOnMojaveAndUp() -> Bool {
 }
 
 func appleUpdatesMustBeDoneWithSystemPreferences() -> Bool {
-    // Return true if any item in the apple update list must be done with System Preferences Software Update
-    if isAppleSilicon() {
-        return getAppleUpdates().count > 0
-    }
-    return appleUpdatesRequireRestartOnMojaveAndUp()
+    // in Munki 7 we always do them with System Settings/System Preferences
+    return true
 }
 
 func updatesContainNonUserSelectedItems() -> Bool {
     // Does the list of updates contain items not selected by the user?
-    if !munkiUpdatesContainAppleItems() && getAppleUpdates().count > 0 {
-        // available Apple updates are not user selected
-        return true
-    }
     let install_info = cachedInstallInfo()
     let install_items = install_info["managed_installs"] as? [[String: Any]] ?? [[String: Any]]()
     let removal_items = install_info["removals"] as? [[String: Any]] ?? [[String: Any]]()
@@ -1438,9 +1458,9 @@ func dependentItems(_ item_name: String) -> [String] {
     return dependent_items
 }
 
-func setFilterAppleUpdates(_ state: Bool) {
+func setAlertedToAppleUpdates(_ state: Bool) {
     // record our state
-    filterAppleUpdates = state
+    alertedToAppleUpdates = state
 }
 
 func setFilterStagedOSUpdate(_ state: Bool) {
@@ -1448,9 +1468,9 @@ func setFilterStagedOSUpdate(_ state: Bool) {
     filterStagedOSUpdate = state
 }
 
-func shouldFilterAppleUpdates() -> Bool {
+func haveAlertedToAppleUpdates() -> Bool {
     // should we filter out Apple updates?
-    return filterAppleUpdates
+    return alertedToAppleUpdates
 }
 
 func shouldFilterStagedOSUpdate() -> Bool {

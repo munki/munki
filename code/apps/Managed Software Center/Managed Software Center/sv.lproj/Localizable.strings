@@ -1,5 +1,17 @@
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ väntande uppdateringar";
+
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ tillgängliga programuppdateringar från Apple";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ uppdateringar väntar";
+
+/* One managed update message */
+"1 additional pending update" = "1 väntande uppdatering";
+
+/* One Apple update message */
+"1 available Apple update" = "1 tillgänglig programuppdatering från Apple";
 
 /* One Update message */
 "1 pending update" = "1 uppdatering väntar";
@@ -52,8 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En äldre version är installerad. Du behöver uppgradera till macOS version %@ eller nyare för att kunna installera uppdateringen.";
 
+/* No Apple updates message */
+"Apple software is up to date" = "Alla programuppdateringar från Apple installerade";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Andra användare på datorn har programmet öppet";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Är du säker på att du vill tvångsavsluta \"%@\"? Alla osparade ändringar kan gå förlorade.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Observera";
@@ -92,7 +110,7 @@
 "Checking for additional changes..." = "Kontrollerar ytterligare ändringar...";
 
 /* managedsoftwareupdate message */
-"Checking for available Apple Software Updates..." = "Letar efter Apple-uppdateringar...";
+"Checking for available Apple Software Updates..." = "Letar efter programuppdateringar från Apple...";
 
 /* managedsoftwareupdate message */
 "Checking for available updates..." = "Letar efter uppdateringar...";
@@ -128,7 +146,7 @@
 "Downloading" = "Hämtar";
 
 /* managedsoftwareupdate message */
-"Downloading available Apple Software Updates..." = "Hämtar Apple-uppdateringar...";
+"Downloading available Apple Software Updates..." = "Hämtar programuppdateringar från Apple...";
 
 /* Sidebar Due label */
 "Due:" = "Dags:";
@@ -142,11 +160,14 @@
 /* managedsoftwareupdate message */
 "Finishing..." = "Avslutar...";
 
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Den fasta programvaran i din dator kommer att uppdateras. Strömsladden måste vara ansluten till en fungerande strömkälla. Det kan ta flera minuter att installera uppdateringen. Försök inte avbryta uppdateringen eller stänga av datorn under tiden.";
-
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bör ansluta datorn till en strömkälla innan du uppdaterar. Är du säker på att du vill fortsätta?";
+
+/* Force Quit button title */
+"Force Quit" = "Tvångsavsluta";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Tvångsavsluta program?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvingad utloggning för en obligatorisk installation";
@@ -161,7 +182,7 @@
 "Help isn't available for Managed Software Center." = "Det finns ingen hjälp för Managed Software Center.";
 
 /* Apple Software Updates Pending title */
-"Important Apple Updates" = "Viktiga Apple-uppdateringar";
+"Important Apple Updates" = "Viktiga programuppdateringar från Apple";
 
 /* Sidebar Information label */
 "Information" = "Information";
@@ -191,7 +212,7 @@
 "Installing" = "Installerar";
 
 /* managedsoftwareupdate message */
-"Installing available Apple Software Updates..." = "Installerar tillgängliga Apple-uppdateringar...";
+"Installing available Apple Software Updates..." = "Installerar tillgängliga programuppdateringar från Apple...";
 
 /* managedsoftwareupdate message */
 "Launching macOS installer..." = "Startar macOS-installation...";
@@ -226,6 +247,9 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriska uppdateringar väntar";
 
+/* Manual quit required label */
+"Manual quit required" = "Måste avslutas manuellt";
+
 /* More link text */
 "More" = "Mer";
 
@@ -237,6 +261,9 @@
 
 /* My Items label */
 "My Items" = "Mina objekt";
+
+/* No managed updates message */
+"No additional pending updates" = "Inga väntande uppdateringar";
 
 /* No Licenses Available display text */
 "No licenses available" = "Inga licenser tillgängliga";
@@ -263,7 +290,7 @@
 "OK" = "OK";
 
 /* Pending Apple Updates warning */
-"One or more important Apple updates must be installed" = "En eller flera viktiga Apple-uppdateringar måste installeras";
+"One or more important Apple updates must be installed" = "En eller flera viktiga programuppdateringar från Apple måste installeras";
 
 /* Forced Install Date summary */
 "One or more items must be installed by %@" = "Ett eller flera objekt måste installeras senast %@";
@@ -310,6 +337,9 @@
 /* Quit button title */
 "Quit" = "Avsluta";
 
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Avsluta program och uppdatera";
+
 /* Removal Error status text */
 "Removal Error" = "Borttagning misslyckades";
 
@@ -324,6 +354,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Tar bort kvittot";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Öppna program igen efter uppdatering";
 
 /* Install Required action text */
 "Required" = "Krävs";
@@ -352,11 +385,20 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Välj programvara att installera.";
 
+/* Show Apple updates button title */
+"Show" = "Visa";
+
 /* Sidebar Size label */
 "Size:" = "Storlek:";
 
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Hoppa över och uppdatera övriga";
+
 /* Skip Apple updates button title */
-"Skip these updates" = "Hoppa över";
+"Skip Apple updates" = "Hoppa över Apple-uppdateringar";
+
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Hoppa över uppdateringar som kräver utloggning eller omstart";
 
 /* Software label */
 "Software" = "Programvara";
@@ -509,16 +551,19 @@
 "You have no selected software." = "Du har inte valt någon programvara.";
 
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Du måste installera uppdateringarna med inställningspanelen Programuppdatering i Systeminställningar.";
+"You must install these updates using %@." = "Du måste installera programuppdateringarna i %@.";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Du måste avsluta följande program innan installationen eller avinstallationen kan fortsätta:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du behöver uppgradera till macOS version %@ för att kunna installera.";
 
 /* Apple Software Updates Unable detail */
-"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Adminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din adminstratör för hjälp.";
+"Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Systemadminstratören har begränsat möjligheten att installera uppdateringar. Kontakta din systemadminstratör för hjälp.";
 
 /* No Power Source Warning text */
 "Your computer is not connected to a power source." = "Datorn är inte ansluten till en strömkälla.";
@@ -529,5 +574,11 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Programvaran är uppdaterad.";
 
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Ditt användarkonto är inte volymägare för startskivan.\nDu kan inte installera programuppdateringar från Apple just nu.\n\nKontakta din systemadministratör.";
+
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ditt användarkonto är inte volymägare för startskivan.\nDu kan inte uppgradera macOS just nu.\n\nKontakta din systemadministratör.";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "En uppdatering för macOS har varit tillgänglig i %@ dagar";

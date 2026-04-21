@@ -21,6 +21,7 @@
 		849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */; };
 		849D46162E0907420054599E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 849D46152E0907420054599E /* AppIcon.icon */; };
 		84B8FAC32E22E05400ACB45B /* MunkiURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B8FAC22E22E05400ACB45B /* MunkiURL.swift */; };
+		AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00002E2412600012345A /* MSCBlockingAppsController.swift */; };
 		C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
 		C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603D020D0A7FA00DEF9E4 /* SelfService.swift */; };
@@ -96,6 +97,7 @@
 		849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKScriptMessageHandler.swift"; sourceTree = "<group>"; };
 		849D46152E0907420054599E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		84B8FAC22E22E05400ACB45B /* MunkiURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiURL.swift; sourceTree = "<group>"; };
+		AABB00002E2412600012345A /* MSCBlockingAppsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCBlockingAppsController.swift; sourceTree = "<group>"; };
 		C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackgroundController.swift; sourceTree = "<group>"; };
 		C01603CE20CF8B6100DEF9E4 /* iconutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconutils.swift; sourceTree = "<group>"; };
 		C01603D020D0A7FA00DEF9E4 /* SelfService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfService.swift; sourceTree = "<group>"; };
@@ -294,6 +296,7 @@
 				C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */,
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
 				C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */,
+				AABB00002E2412600012345A /* MSCBlockingAppsController.swift */,
 				C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */,
 				8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */,
 				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
@@ -504,6 +507,7 @@
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
+				AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -689,6 +693,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -745,6 +750,7 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

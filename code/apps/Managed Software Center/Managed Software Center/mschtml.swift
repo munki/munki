@@ -162,7 +162,12 @@ extension GenericItem {
         if my["status"] as? String ?? "" == "will-be-removed" {
             my["display_version_escaped_and_size"] = ""
         } else {
-            my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + (my["size"] as? String ?? "")
+            let size = my["size"] as? String ?? ""
+            if size.isEmpty {
+                my["display_version_escaped_and_size"] = my["display_version_escaped"] as? String ?? ""
+            } else {
+                my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + size
+            }
         }
     }
 
@@ -641,6 +646,15 @@ func buildUpdatesPage() throws {
     if (NSApp.delegate! as! AppDelegate).mainWindowController.weShouldBeObnoxious() {
         show_additional_updates = false
     }
+    
+    var apple_update_list = [UpdateItem]()
+    for var item in getAppleUpdates() {
+        item["developer"] = "Apple"
+        item["status"] = "will-be-installed"
+        item["apple_update"] = true
+        item["note"] = ""
+        apple_update_list.append(UpdateItem(item))
+    }
 
     let item_list = getEffectiveUpdateList()
     for item in item_list {
@@ -683,12 +697,19 @@ func buildUpdatesPage() throws {
     }
     let page = GenericItem()
     page["update_rows"] = ""
+    page["hide_pending_updates"] = "hidden"
+    page["apple_update_rows"] = ""
+    page["hide_apple_updates"] = "hidden"
     page["hide_progress_spinner"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
     page["install_all_button_classes"] = ""
     
-    if item_list.isEmpty && other_updates.isEmpty && problem_updates.isEmpty {
+    if apple_update_list.isEmpty,
+       item_list.isEmpty,
+       other_updates.isEmpty,
+       problem_updates.isEmpty
+    {
         let status_results_template = getTemplate("status_results_template.html")
         let alert = BaseItem()
         alert["primary_status_text"] = NSLocalizedString(
@@ -699,8 +720,20 @@ func buildUpdatesPage() throws {
         alert["hide_progress_bar"] = "hidden"
         alert["progress_bar_value"] = ""
         page["update_rows"] = status_results_template.substitute(alert)
+        page["hide_pending_updates"] = ""
     } else {
+        if !apple_update_list.isEmpty {
+            page["apple_update_count"] = appleUpdateCountMessage(apple_update_list.count)
+            page["apple_update_warning_text"] = getWarningText(forAppleUpdates: true)
+            page["show_apple_updates_label"] = NSLocalizedString(
+                "Show", comment: "Show Apple updates button title")
+            page["hide_apple_updates"] = ""
+            page["hide_pending_updates"] = ""
+            page["apple_update_rows"] = buildItemListHTML(
+                apple_update_list, template: "apple_item_template.html", sort: false)
+        }
         if !item_list.isEmpty {
+            page["hide_pending_updates"] = ""
             page["update_rows"] = buildItemListHTML(
                 item_list, template: "update_item_template.html", sort: false)
         }
@@ -708,9 +741,9 @@ func buildUpdatesPage() throws {
     
     let count = item_list.count
     // in Python was count = len([item for item in item_list if item['status'] != 'problem-item'])
-    page["update_count"] = updateCountMessage(count)
+    page["update_count"] = updateCountMessage(count, appleUpdateCount: apple_update_list.count)
     page["install_btn_label"] = getInstallAllButtonTextForCount(count)
-    page["warning_text"] = getWarningText(shouldFilterAppleUpdates())
+    page["warning_text"] = getWarningText()
     
     // build problem updates table
     page["problem_updates_header_message"] = NSLocalizedString(
@@ -747,6 +780,7 @@ func buildUpdateStatusPage() throws {
     let page = GenericItem()
     page["update_rows"] = ""
     page["hide_progress_spinner"] = ""
+    page["hide_apple_updates"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
     page["other_updates_header_message"] = ""
@@ -825,19 +859,27 @@ func getRestartActionForUpdateList(_ update_list: [GenericItem]) -> String {
     return ""
 }
 
-func getWarningText(_ filterAppleUpdates: Bool) -> String {
+func getWarningText(forAppleUpdates: Bool = false) -> String {
     // Return localized text warning about forced installs and/or
     // logouts and/or restarts
-    let item_list = getEffectiveUpdateList()
     var warning_text = ""
-    //if let forced_install_date = earliestForceInstallDate(item_list) {
-    if let forced_install_date = earliestForceInstallDate() {
+    let item_list = if forAppleUpdates {
+        getAppleUpdates().map {
+            GenericItem($0)
+        }
+    } else {
+        getEffectiveUpdateList()
+    }
+    
+    if !forAppleUpdates,
+       let forced_install_date = earliestForceInstallDate()
+    {
         let date_str = stringFromDate(forced_install_date)
         let forced_date_text = NSLocalizedString(
             "One or more items must be installed by %@",
             comment: "Forced Install Date summary")
         warning_text = NSString(format: forced_date_text as NSString, date_str) as String
-    } else if !filterAppleUpdates && shouldAggressivelyNotifyAboutAppleUpdates() {
+    } else if forAppleUpdates && shouldAggressivelyNotifyAboutAppleUpdates() {
         warning_text = NSLocalizedString(
             "One or more important Apple updates must be installed",
             comment: "Pending Apple Updates warning"

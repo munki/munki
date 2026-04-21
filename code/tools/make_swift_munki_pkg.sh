@@ -1160,7 +1160,7 @@ cat > "$DISTFILE" <<EOF
     $CONFREF
     $CLIENTCERTREF
     $AUTORUNREF
-    <product id="$PKGID" version="$VERSION" />
+    <product id="$PKGID" version="$DISTPKGVERSION" />
 </installer-script>
 EOF
 

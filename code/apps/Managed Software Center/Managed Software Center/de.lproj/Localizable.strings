@@ -1,5 +1,17 @@
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ anstehende zusätzliche Updates";
+
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ verfügbare Apple-Updates";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ anstehende Updates";
+
+/* One managed update message */
+"1 additional pending update" = "1 anstehendes zusätzliches Update";
+
+/* One Apple update message */
+"1 available Apple update" = "1 verfügbares Apple-Update";
 
 /* One Update message */
 "1 pending update" = "1 anstehendes Update";
@@ -52,8 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "Eine ältere Version ist derzeit installiert. Sie müssen auf macOS version %@ oder höher aktualisieren, um dieses Update installieren zu können.";
 
+/* No Apple updates message */
+"Apple software is up to date" = "Apple-Software ist auf dem neuesten Stand";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Applikationen, die von anderen benutzt werden";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Sind Sie sicher, dass Sie \"%@\" sofort beenden möchten? ? Alle nicht gespeicherten Änderungen gehen möglicherweise verloren.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Achtung";
@@ -142,11 +160,14 @@
 /* managedsoftwareupdate message */
 "Finishing..." = "Abschließen...";
 
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware auf Ihrem Computer wird aktualisiert. Das Netzteil Ihres Computers muss eingesteckt und mit einer Stromquelle verbunden sein. Das Update kann mehrere Minuten dauern. Benutzen Sie Ihren Computer nicht und schalten Sie Ihn während dieses Updates nicht aus.";
-
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Sie sollten den Computer an eine Stromquelle anschliessen bevor Sie das Update durchführen. Sind Sie sicher, dass Sie das Update fortsetzen möchten?";
+
+/* Force Quit button title */
+"Force Quit" = "Sofort beenden";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Anwendung sofort beenden?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Erzwungene Abmeldung für eine zwingend notwendige Installation";
@@ -226,6 +247,9 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Zwingend notwendige Updates anstehend";
 
+/* Manual quit required label */
+"Manual quit required" = "Manuelles Beenden erforderlich";
+
 /* More link text */
 "More" = "Mehr";
 
@@ -237,6 +261,9 @@
 
 /* My Items label */
 "My Items" = "Meine Objekte";
+
+/* No managed updates message */
+"No additional pending updates" = "Keine zusätzlich anstehenden Updates";
 
 /* No Licenses Available display text */
 "No licenses available" = "Keine Lizenzen verfügbar";
@@ -310,6 +337,9 @@
 /* Quit button title */
 "Quit" = "Beenden";
 
+/* Quit Apps button title */
+"Quit Apps and Update" = "Anwendungen beenden und aktualisieren";
+
 /* Removal Error status text */
 "Removal Error" = "Fehler beim Entfernen";
 
@@ -324,6 +354,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Entferne Paketquittung";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Anwendungen nach dem Update erneut öffnen";
 
 /* Install Required action text */
 "Required" = "Erforderlich";
@@ -352,11 +385,20 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Wählen Sie die zu installierende Software aus.";
 
+/* Show Apple updates button title */
+"Show" = "Anzeigen";
+
 /* Sidebar Size label */
 "Size:" = "Größe:";
 
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Überspringen und andere aktualisieren";
+
 /* Skip Apple updates button title */
-"Skip these updates" = "Updates überspringen";
+"Skip Apple updates" = "Apple-Updates überspringen";
+
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Updates überspringen, die eine Abmeldung oder einen Neustart benötigen";
 
 /* Software label */
 "Software" = "Software";
@@ -509,10 +551,13 @@
 "You have no selected software." = "Sie haben keine Software ausgewählt.";
 
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Installieren Sie diese Updates mithilfe der Softwareupdate-Funktion in den Systemeinstellungen .";
+"You must install these updates using %@." = "Installieren Sie diese Updates mithilfe von %@.";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Sie müssen die folgenden Programme beenden, um mit dem Update fortfahren zu können:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Sie müssen auf macOS version %@ oder höher aktualisieren, um dieses Update installieren zu können.";
@@ -529,5 +574,11 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Ihre Software ist auf dem neuesten Stand.";
 
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können derzeit keine Software-Updates von Apple installieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
+
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können macOS derzeit nicht aktualisieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS ist seit %@ Tagen veraltet.";

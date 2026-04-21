@@ -368,34 +368,69 @@ func getHTTPfileIfChangedAtomically(
             // fall through - no cached headers
         }
     }
-    var headers: [String: String]
-    do {
-        headers = try getURL(
-            url,
-            destinationPath: destinationPath,
-            customHeaders: customHeaders,
-            message: message,
-            onlyIfNewer: getOnlyIfNewer,
-            resume: resume,
-            followRedirects: followRedirects
-        )
-    } catch let err as FetchError {
-        switch err {
-        case .connection:
-            // just rethrow it
-            throw err
-        case let .http(errorCode, description):
-            // rethrow as download error
-            throw FetchError.download(errorCode: errorCode, description: description)
-        case let .fileSystem(description):
-            // rethrow as download error
-            throw FetchError.download(errorCode: -1, description: description)
-        default:
-            // these can't actually happen, but makes compiler happy
-            throw err
+
+    var numTries = 1
+    if let downloadRetriesPref = pref("DownloadRetries") as? Int {
+        if downloadRetriesPref >= 1, downloadRetriesPref <= 10 {
+            numTries = downloadRetriesPref + 1
+        } else if downloadRetriesPref != 0 {
+            DisplayAndLog.main.warning("Ignoring invalid DownloadRetries pref: \(downloadRetriesPref)")
         }
-    } catch {
-        throw FetchError.download(errorCode: -1, description: error.localizedDescription)
+    }
+    var retrySleepSeconds: UInt32 = 10
+    if let retrySleepSecondsPref = pref("DownloadRetrySleepSeconds") as? Int {
+        if retrySleepSecondsPref >= 1, retrySleepSecondsPref <= 30 {
+            retrySleepSeconds = UInt32(retrySleepSecondsPref)
+        } else {
+            DisplayAndLog.main.warning("Ignoring invalid DownloadRetrySleepSeconds pref: \(retrySleepSecondsPref)")
+        }
+    }
+    var triesLeft = numTries
+    // Retry on these HTTP error codes, fail immediately on all other
+    let retryHTTPCodes = [408, 425, 429, 500, 502, 503, 504]
+    var headers: [String: String]
+    while true {
+        if triesLeft != numTries {
+            sleep(retrySleepSeconds)
+        }
+        triesLeft -= 1
+        do {
+            headers = try getURL(
+                url,
+                destinationPath: destinationPath,
+                customHeaders: customHeaders,
+                message: message,
+                onlyIfNewer: getOnlyIfNewer,
+                resume: resume,
+                followRedirects: followRedirects
+            )
+            break
+        } catch let err as FetchError {
+            switch err {
+            case .connection:
+                if triesLeft > 0 {
+                    DisplayAndLog.main.info("Retrying connection error: \(err.localizedDescription)")
+                    continue
+                }
+                // just rethrow it
+                throw err
+            case let .http(errorCode, description):
+                if triesLeft > 0, retryHTTPCodes.contains(errorCode) {
+                    DisplayAndLog.main.info("Retrying HTTP error \(errorCode): \(description)")
+                    continue
+                }
+                // rethrow as download error
+                throw FetchError.download(errorCode: errorCode, description: description)
+            case let .fileSystem(description):
+                // rethrow as download error
+                throw FetchError.download(errorCode: -1, description: description)
+            default:
+                // these can't actually happen, but makes compiler happy
+                throw err
+            }
+        } catch {
+            throw FetchError.download(errorCode: -1, description: error.localizedDescription)
+        }
     }
 
     if (headers["http_result_code"] ?? "") == "304" {

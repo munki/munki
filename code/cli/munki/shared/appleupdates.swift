@@ -193,8 +193,15 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
             info["version_to_install"] = version
             if let sizeStr = item["Size"] {
                 let size = Int(sizeStr.trimmingCharacters(in: ["K", "i", "B"])) ?? 0
-                info["installer_item_size"] = size
-                info["installed_size"] = size
+                if sizeStr.hasSuffix("KiB") {
+                    // size was KiB, convert to KB
+                    info["installer_item_size"] = Int(Double(size) * 1.024)
+                    info["installed_size"] = Int(Double(size) * 1.024)
+                } else {
+                    // size was KB
+                    info["installer_item_size"] = size
+                    info["installed_size"] = size
+                }
             }
             if let restartAction = item["Action"],
                restartAction == "restart"

@@ -11,11 +11,12 @@ import Cocoa
 class MSCAlertController: NSObject {
     // An object that handles some of our alerts, if for no other reason
     // than to move a giant bunch of ugly code out of the WindowController
-    
+
     var window: NSWindow? // our parent window
     var timers: [Timer] = []
     var quitButton: NSButton?
     var haveOpenedSysPrefsSUPane = false
+    var blockingAppsController: MSCBlockingAppsController? // controller for blocking apps sheet
     
     func handlePossibleAuthRestart() {
         // Ask for and store a password for auth restart if needed/possible
@@ -74,8 +75,7 @@ class MSCAlertController: NSObject {
         }
         if let attachedSheet = mainWindow.attachedSheet {
             // there's an existing sheet open; close it first
-            //NSApp.endSheet(attachedSheet)
-            mainWindow.endSheet(attachedSheet)
+            mainWindow.endSheet(attachedSheet, returnCode: .cancel)
         }
         let alert = NSAlert()
         alert.messageText =  NSLocalizedString(
@@ -122,109 +122,152 @@ class MSCAlertController: NSObject {
             })
         }
     }
+
+    /// Returns the localized display name for System Settings/System Preferences
+    func systemSettingsAppName() -> String {
+        for app_path in [
+            "/System/Applications/System Settings.app",
+            "/System/Applications/System Preferences.app",
+        ] {
+            if FileManager.default.fileExists(atPath: app_path) {
+                return FileManager.default.displayName(atPath: app_path)
+            }
+        }
+        return "System Settings"
+    }
     
-    func alertToAppleUpdates() {
+    func alertToAppleUpdates(skipAction: String = "None") {
         // Notify user of pending Apple updates
         guard let mainWindow = window else {
             msc_debug_log("Could not get main window in alertToAppleUpdates")
+            return
+        }
+        if getAppleUpdates().isEmpty {
             return
         }
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
             "Important Apple Updates", comment: "Apple Software Updates Pending title")
         alert.addButton(withTitle: NSLocalizedString("Install now", comment: "Install now button title"))
-        alert.addButton(withTitle: NSLocalizedString(
-            "Skip these updates", comment: "Skip Apple updates button title"))
-        let su_icon_file = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane/Contents/Resources/SoftwareUpdate.icns"
-        if let suIcon = NSImage.init(contentsOfFile: su_icon_file) {
+        if skipAction == "quit" {
+            alert.addButton(withTitle: NSLocalizedString(
+                "Quit", comment: "Quit button title"))
+        } else {
+            alert.addButton(withTitle: NSLocalizedString(
+                "Skip Apple updates", comment: "Skip Apple updates button title"))
+        }
+        if let icon_path = findSoftwareUpdateIconPath(),
+           let suIcon = NSImage.init(contentsOfFile: icon_path)
+        {
             alert.icon = suIcon
         }
-        if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
+        if isAppleSilicon() && !currentUserIsVolumeOwner() {
             // tell user they cannot install the updates
-            msc_log("user", "apple_updates_user_cannot_install")
+            msc_log("MSC", "apple_updates_user_cannot_install_not_volume_owner")
+            alert.informativeText = NSLocalizedString(
+                "Your user account is not an owner of the current startup volume.\n" +
+                "You cannot install Apple Software Updates at this time.\n\n" +
+                "Contact your systems administrator.",
+                comment: "Apple Updates Not volume owner detail")
+            // disable install now button
+            alert.buttons[0].isEnabled = false
+        } else if !userIsAdmin() && userMustBeAdminToInstallAppleUpdates() {
+            // tell user they cannot install the updates
+            msc_log("user", "apple_updates_user_cannot_install_not_admin")
             alert.informativeText = NSLocalizedString(
                 "Your administrator has restricted installation of these updates. Contact your administrator for assistance.",
                 comment: "Apple Software Updates Unable detail")
             // disable install now button
             alert.buttons[0].isEnabled = false
         } else {
-            // prompt user to install using System Preferences
+            // prompt user to install using System Preferences/System Settings
             msc_log("user", "apple_updates_pending")
-            alert.informativeText = NSLocalizedString(
-                "You must install these updates using Software Update in System Preferences.",
+            let format_str = NSLocalizedString(
+                "You must install these updates using %@.",
                 comment: "Apple Software Updates Pending detail")
+            alert.informativeText = NSString(
+                format: format_str as NSString,
+                systemSettingsAppName() as NSString
+            ) as String
             if shouldAggressivelyNotifyAboutAppleUpdates() {
                 // disable the skip button
                 alert.buttons[1].isEnabled = false
             }
         }
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-            self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse)
+            self.appleUpdateAlertEnded(for: alert, withResponse: modalResponse, skipAction: skipAction)
         })
     }
     
-    func appleUpdateAlertEnded(for alert: NSAlert, withResponse modalResponse: NSApplication.ModalResponse) {
+    func appleUpdateAlertEnded(
+        for alert: NSAlert, withResponse modalResponse: NSApplication.ModalResponse,
+        skipAction: String) {
         // Called when Apple update alert ends
         if modalResponse == .alertFirstButtonReturn {
             msc_log("user", "agreed_apple_updates")
             // make sure this alert panel is gone before we proceed
             alert.window.orderOut(self)
-            let appDelegate = NSApp.delegate! as! AppDelegate
-            appDelegate.mainWindowController.forceFrontmost = false
-            appDelegate.backdropOnlyMode = true
-            if let mainWindow = window {
-                mainWindow.level = .normal
-            }
-            let timer1 = Timer.scheduledTimer(timeInterval: 0.1,
-                                              target: self,
-                                              selector: #selector(self.openSoftwareUpdate),
-                                              userInfo: nil,
-                                              repeats: false)
-            timers.append(timer1)
-            let timer2 = Timer.scheduledTimer(timeInterval: 1.5,
-                                              target: self,
-                                              selector: #selector(self.closeMainWindow),
-                                              userInfo: nil,
-                                              repeats: false)
-            timers.append(timer2)
-            let timer3 = Timer.scheduledTimer(timeInterval: 14.5,
-                                              target: self,
-                                              selector: #selector(self.removeBlurredBackground),
-                                              userInfo: nil,
-                                              repeats: false)
-            timers.append(timer3)
-            // wait 15 seconds, then quit
-            let timer4 = Timer.scheduledTimer(timeInterval: 15.0,
-                                              target: NSApp as Any,
-                                              selector: #selector(NSApp.terminate),
-                                              userInfo: self,
-                                              repeats: false)
-            timers.append(timer4)
-        } else {
-            // cancelled
+            presentAppleUpdates()
+        } else if modalResponse == .alertSecondButtonReturn {
+            // user decided to defer/skip Apple updates at this time
             msc_log("user", "deferred_apple_updates")
             alert.window.orderOut(self)
-            setFilterAppleUpdates(true)
-            clearMunkiItemsCache()
-            if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
-                mainWindowController.load_page("updates.html")
-                mainWindowController.displayUpdateCount()
-                if shouldAggressivelyNotifyAboutMunkiUpdates() {
-                    mainWindowController._alertedUserToOutstandingUpdates = false
+            setAlertedToAppleUpdates(true)
+            //clearMunkiItemsCache()
+            switch skipAction {
+            case "quit":
+                NSApp.terminate(self)
+            case "update":
+                if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
+                    mainWindowController.updateNow()
+                }
+            default:
+                if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController {
+                    mainWindowController.load_page("updates.html")
+                    if shouldAggressivelyNotifyAboutMunkiUpdates() {
+                        mainWindowController._alertedUserToOutstandingUpdates = false
+                    }
                 }
             }
         }
     }
-    
+
+    func presentAppleUpdates() {
+        let appDelegate = NSApp.delegate! as! AppDelegate
+        appDelegate.mainWindowController.forceFrontmost = false
+        appDelegate.backdropOnlyMode = true
+        if let mainWindow = window {
+            mainWindow.level = .normal
+        }
+        let timer1 = Timer.scheduledTimer(timeInterval: 0.1,
+                                          target: self,
+                                          selector: #selector(self.openSoftwareUpdate),
+                                          userInfo: nil,
+                                          repeats: false)
+        timers.append(timer1)
+        let timer2 = Timer.scheduledTimer(timeInterval: 1.5,
+                                          target: self,
+                                          selector: #selector(self.closeMainWindow),
+                                          userInfo: nil,
+                                          repeats: false)
+        timers.append(timer2)
+        let timer3 = Timer.scheduledTimer(timeInterval: 14.5,
+                                          target: self,
+                                          selector: #selector(self.removeBlurredBackground),
+                                          userInfo: nil,
+                                          repeats: false)
+        timers.append(timer3)
+        // wait 15 seconds, then quit
+        let timer4 = Timer.scheduledTimer(timeInterval: 15.0,
+                                          target: NSApp as Any,
+                                          selector: #selector(NSApp.terminate),
+                                          userInfo: self,
+                                          repeats: false)
+        timers.append(timer4)
+    }
+
     @objc func openSoftwareUpdate() {
         // object method to call openSoftwareUpdatePrefsPane function
-        if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController,
-           let blurredBackground = mainWindowController.blurredBackground
-        {
-            // lower the level of our blur windows so the Software Update
-            // pane can appear in front
-            blurredBackground.lowerWindowLevels()
-        }
         openSoftwareUpdatePrefsPane()
         self.haveOpenedSysPrefsSUPane = true
     }
@@ -272,21 +315,9 @@ class MSCAlertController: NSObject {
         }
         if alertedToMultipleUsers() {
             return
-        } else if updatesRequireRestart() {
-            let alert = NSAlert()
-            alert.messageText = NSLocalizedString(
-                "Restart Required", comment: "Restart Required title")
-            alert.informativeText = NSLocalizedString(
-                "A restart is required after updating. Log " +
-                "out and update now?", comment: "Restart Required detail")
-            alert.addButton(withTitle: NSLocalizedString(
-                "Log out and update", comment: "Log out and Update button text"))
-            alert.addButton(withTitle: NSLocalizedString(
-                "Cancel", comment: "Cancel button title/short action text"))
-           alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-                self.logoutAlertEnded(for: alert, withResponse: modalResponse)
-            })
-        } else if updatesRequireLogout() || installRequiresLogout() {
+        } else if installRequiresLogout() {
+            // admin has set a preference requiring all installs to require a logout
+            // so no option to skip items that require a logout or restart
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
                 "Logout Required", comment: "Logout Required title")
@@ -297,6 +328,50 @@ class MSCAlertController: NSObject {
                 "Log out and update", comment: "Log out and Update button text"))
             alert.addButton(withTitle: NSLocalizedString(
                 "Cancel", comment: "Cancel button title/short action text"))
+            alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+                self.logoutAlertEnded(for: alert, withResponse: modalResponse)
+            })
+        } else if updatesRequireRestart() {
+            // one or more items in the update list require a restart
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Restart Required", comment: "Restart Required title")
+            alert.informativeText = NSLocalizedString(
+                "A restart is required after updating. Log " +
+                "out and update now?", comment: "Restart Required detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Log out and update", comment: "Log out and Update button text"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            if pythonishBool(pref("MSCOfferToUpdateOthers")),
+               someUpdatesDontRequireLogoutOrRestart()
+            {
+                alert.addButton(withTitle: NSLocalizedString(
+                    "Skip updates requiring logout or restart",
+                    comment: "Skip updates requiring logout or restart button text")
+                )
+            }
+           alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+                self.logoutAlertEnded(for: alert, withResponse: modalResponse)
+            })
+        } else if updatesRequireLogout() {
+            // one or more items in the update list require a logout
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Logout Required", comment: "Logout Required title")
+            alert.informativeText = NSLocalizedString(
+                "A logout is required before updating. Log " +
+                "out and update now?", comment: "Logout Required detail")
+            alert.addButton(withTitle: NSLocalizedString(
+                "Log out and update", comment: "Log out and Update button text"))
+            alert.addButton(withTitle: NSLocalizedString(
+                "Cancel", comment: "Cancel button title/short action text"))
+            if someUpdatesDontRequireLogoutOrRestart() {
+                alert.addButton(withTitle: NSLocalizedString(
+                    "Skip updates requiring logout or restart",
+                    comment: "Skip updates requiring logout or restart button text")
+                )
+            }
             alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
                 self.logoutAlertEnded(for: alert, withResponse: modalResponse)
             })
@@ -314,10 +389,7 @@ class MSCAlertController: NSObject {
             // make sure this alert panel is gone before we proceed, which
             // might involve opening another alert sheet
             alert.window.orderOut(self)
-            if alertedToFirmwareUpdatesAndCancelled() {
-                msc_log("user", "alerted_to_firmware_updates_and_cancelled")
-                return
-            } else if alertedToRunningOnBatteryAndCancelled() {
+            if alertedToRunningOnBatteryAndCancelled() {
                 msc_log("user", "alerted_on_battery_power_and_cancelled")
                 return
             }
@@ -327,6 +399,12 @@ class MSCAlertController: NSObject {
                 try logoutAndUpdate()
             } catch {
                 installSessionErrorAlert("\(error)")
+            }
+        } else if modalResponse == .alertThirdButtonReturn {
+            msc_log("user", "skipped_updates_that_require_logout_or_restart")
+            alert.window.orderOut(self)
+            if let appDelegate = NSApp.delegate! as? AppDelegate {
+                appDelegate.mainWindowController.startUpdateWithoutLogout()
             }
         } else {
             msc_log("user", "cancelled")
@@ -444,6 +522,10 @@ class MSCAlertController: NSObject {
                 // user clicked Cancel
                 return true
             }
+            if response == .stop || response == .abort {
+                // alert sheet was cancelled or aborted
+                return true
+            }
         }
         return false
     }
@@ -473,12 +555,14 @@ class MSCAlertController: NSObject {
         guard let currentUser = getconsoleuser() else {
             return false
         }
-        let other_users_apps = running_apps.filter(
-            { $0["user"] ?? "" != currentUser }).map(
-                { $0["display_name"] ?? "" })
-        let my_apps = running_apps.filter(
-            { $0["user"] ?? "" == currentUser }).map(
-                { $0["display_name"] ?? "" })
+        let other_users_apps = Array(Set(running_apps
+            .filter { $0.user != currentUser }
+            .map { $0.display_name }
+                )).sorted { $0 < $1 }
+        let my_apps = Array(Set(running_apps
+            .filter { $0.user == currentUser }
+            .map { $0.display_name }
+                )).sorted { $0 < $1 }
         //  msc_log("MSC", "conflicting_apps", ','.join(other_users_apps + my_apps))
         let alert = NSAlert()
         if !other_users_apps.isEmpty {
@@ -491,17 +575,17 @@ class MSCAlertController: NSObject {
                 "in use:\n\n%@",
                 comment: "Other Users Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, Array(Set(other_users_apps)).joined(separator: "\n"))
+                format: formatString, other_users_apps.joined(separator: "\n"))
         } else {
             alert.messageText = NSLocalizedString(
                 "Conflicting applications running",
                 comment: "Blocking Apps Running title")
             let formatString = NSLocalizedString(
-                "You must quit the following applications before " +
+                "You must quit these applications before " +
                 "proceeding with installation or removal:\n\n%@",
                 comment: "Blocking Apps Running detail")
             alert.informativeText = String(
-                format: formatString, Array(Set(my_apps)).joined(separator: "\n"))
+                format: formatString, my_apps.joined(separator: "\n"))
         }
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button title"))
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
@@ -509,77 +593,50 @@ class MSCAlertController: NSObject {
         })
         return true
     }
-    
-    func getFirmwareAlertInfo() -> [[String: String]] {
-        // Get detail about a firmware update
-        var info = [[String: String]]()
-        for update_item in getUpdateList() {
-            if let firmware_alert_text = update_item["firmware_alert_text"] as? String {
-                var info_item = [String: String]()
-                info_item["name"] = update_item["display_name"] as? String ?? update_item["name"] as? String ?? "Firmware Update"
-                if firmware_alert_text == "_DEFAULT_FIRMWARE_ALERT_TEXT_" {
-                    info_item["alert_text"] = NSLocalizedString(
-                        "Firmware will be updated on your computer. " +
-                        "Your computer's power cord must be connected " +
-                        "and plugged into a working power source. " +
-                        "It may take several minutes for the update to " +
-                        "complete. Do not disturb or shut off the power " +
-                        "on your computer during this update.",
-                        comment: "Firmware Alert Default detail")
-                } else {
-                    info_item["alert_text"] = firmware_alert_text
-                }
-                info.append(info_item)
-            }
-        }
-        return info
-    }
-    
-    func alertedToFirmwareUpdatesAndCancelled() -> Bool {
-        // Returns true if we have one or more firmware updates and
-        // the user clicks the Cancel button
-        let firmware_alert_info = getFirmwareAlertInfo()
-        if firmware_alert_info.isEmpty {
-            return false
-        }
-        let on_battery_power = onBatteryPower()
-        for item in firmware_alert_info {
-            let alert = NSAlert()
-            alert.messageText = item["name"] ?? "Firmware Update"
-            var alert_text = ""
-            if on_battery_power {
-                alert_text = NSLocalizedString(
-                    "Your computer is not connected to a power source.",
-                    comment: "No Power Source Warning text")
-                alert_text += "\n\n" + (item["alert_text"] ?? "")
-            } else {
-                alert_text = item["alert_text"] ?? ""
-            }
-            alert.informativeText = alert_text
-            alert.addButton(withTitle: NSLocalizedString(
-                "Continue", comment: "Continue button text"))
-            alert.addButton(withTitle: NSLocalizedString(
-                "Cancel", comment: "Cancel button title/short action text"))
-            alert.alertStyle = .critical
-            if on_battery_power {
-                // set Cancel button to be activated by return key
-                alert.buttons[1].keyEquivalent = "\r"
-                // set Continue button to be activated by Escape key
-                alert.buttons[0].keyEquivalent = "\u{1B}"
-            }
-            let response = alert.runModal()
-            if response == .alertSecondButtonReturn {
-                // user clicked Cancel
-                return true
-            }
-        }
-        return true
-    }
+
+	/// Presents an interactive sheet listing blocking applications so the user can close them.
+	///
+	/// - Returns: `false` if blocking apps are running and user cancelled; `true` if no blocking apps or all were closed.
+	///
+	/// The sheet is dismissed automatically when all apps are closed or when the user cancels/ignores it.
+	/// This method blocks further progress until the user has handled the apps or dismissed the sheet.
+	/// Note: The `blockingAppsController` is kept alive after this method returns so that
+	/// `reopenAppsAfterUpdate()` can be called later. Call `clearBlockingAppsController()` when done.
+	func canContinueAfterHandlingBlockingApps() -> Bool {
+		guard let mainWindow = window else {
+			msc_debug_log("Could not get main window in canContinueAfterHandlingBlockingApps")
+			return false
+		}
+
+		blockingAppsController = MSCBlockingAppsController(parentWindow: mainWindow)
+		let result = blockingAppsController?.canContinueAfterPresentingBlockingAppsSheet() ?? false
+		// Don't nil out blockingAppsController here - we need it for reopenAppsAfterUpdate()
+		return result
+	}
+
+	/// Reopens any applications that were closed during the blocking apps sheet,
+	/// if the user had the "Reopen applications after update" checkbox enabled.
+	func reopenAppsAfterUpdate() {
+		blockingAppsController?.reopenApps()
+		blockingAppsController = nil
+	}
+
+	/// Clears the blocking apps controller without reopening apps.
+	/// Call this if the update was cancelled or failed.
+	func clearBlockingAppsController() {
+		blockingAppsController?.clearAppsToReopen()
+		blockingAppsController = nil
+	}
     
     func alertedToRunningOnBatteryAndCancelled() -> Bool {
-        // Returns true if we are running on battery with less
-        // than 50% power and user clicks the Cancel button
-        if onBatteryPower() && getBatteryPercentage() < 50 {
+        // Returns true if we are running on battery with less than 50% power
+        // (25% on Apple silicon) and user clicks the Cancel button
+        let desiredBatteryPercentage = if isAppleSilicon() {
+            25
+        } else {
+            50
+        }
+        if onBatteryPower() && getBatteryPercentage() < desiredBatteryPercentage {
             let alert = NSAlert()
             alert.messageText = NSLocalizedString(
                 "Your computer is not connected to a power source.",
@@ -603,6 +660,10 @@ class MSCAlertController: NSObject {
                 // user clicked Cancel
                 return true
             }
+            if response == .stop || response == .abort {
+                // alert sheet was cancelled or aborted
+                return true
+            }
         }
         return false
     }
@@ -623,7 +684,7 @@ class MSCAlertController: NSObject {
                     let deadline_str = stringFromDate(deadline)
                     let formatString = NSLocalizedString(
                         ("One or more updates must be installed by %@. A logout " +
-                          "may be forced if you wait too long to update."),
+                         "may be forced if you wait too long to update."),
                         comment: "Mandatory Updates Pending detail")
                     alertDetail = String(format: formatString, deadline_str)
                 } else {

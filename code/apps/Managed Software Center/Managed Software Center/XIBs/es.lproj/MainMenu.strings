@@ -128,7 +128,7 @@
 "hz9-B4-Xy5.title" = "Servicios";
 
 /* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "iem-kB-sic"; */
-"iem-kB-sic.title" = "Password:";
+"iem-kB-sic.title" = "Contraseña:";
 
 /* Class = "NSMenuItem"; title = "Forward"; ObjectID = "nIf-zM-816"; */
 "nIf-zM-816.title" = "Siguiente";

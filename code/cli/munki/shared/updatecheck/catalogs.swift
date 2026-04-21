@@ -593,6 +593,12 @@ func getItemDetail(
     /// in the current item passes. If not, also adds the failure reason to
     /// the rejected_items list.
     func installableConditionOK(_ item: PlistDict) async -> Bool {
+        guard let name = item["name"] as? String,
+              let version = item["version"] as? String
+        else {
+            display.error("Unexpected error getting item name or version")
+            return false
+        }
         if let installableCondition = item["installable_condition"] as? String {
             let infoObject = await predicateInfoObject()
             if !predicateEvaluatesAsTrue(installableCondition, infoObject: infoObject) {

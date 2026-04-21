@@ -12,79 +12,106 @@ func morelocalizedstrings() {
     // Some strings that are sent to us from managedsoftwareupdate. By putting
     // them here, genstrings can add them to the Localizable.strings file
     // so localizers will be able to discover them
-    
-    var  _ = "" // we don't actually use these values at all
-    
+
+    _ = "" // we don't actually use these values at all
+
     // Munki messages
     _ = NSLocalizedString(
-        "Starting...", comment: "managedsoftwareupdate message")
+        "Starting...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Finishing...", comment: "managedsoftwareupdate message")
+        "Finishing...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Performing preflight tasks...", comment: "managedsoftwareupdate message")
+        "Performing preflight tasks...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Performing postflight tasks...", comment: "managedsoftwareupdate message")
+        "Performing postflight tasks...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Checking for available updates...", comment: "managedsoftwareupdate message")
+        "Checking for available updates...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Checking for additional changes...", comment: "managedsoftwareupdate message")
+        "Checking for additional changes...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "Software installed or removed requires a restart.",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Waiting for network...", comment: "managedsoftwareupdate message")
+        "Waiting for network...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString("Done.", comment: "managedsoftwareupdate message")
     _ = NSLocalizedString(
         "Retrieving list of software for this machine...",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Verifying package integrity...", comment: "managedsoftwareupdate message")
+        "Verifying package integrity...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "The software was successfully installed.",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "Gathering information on installed packages",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "Determining which filesystem items to remove",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Removing receipt info", comment: "managedsoftwareupdate message")
+        "Removing receipt info", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Nothing to remove.", comment: "managedsoftwareupdate message")
+        "Nothing to remove.", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Package removal complete.", comment: "managedsoftwareupdate message")
+        "Package removal complete.", comment: "managedsoftwareupdate message"
+    )
 
     // apple update messages
     _ = NSLocalizedString(
         "Checking for available Apple Software Updates...",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "Checking Apple Software Update catalog...",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "Downloading available Apple Software Updates...",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "Installing available Apple Software Updates...",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
 
     // Adobe install/uninstall messages
     _ = NSLocalizedString(
-        "Running Adobe Setup", comment: "managedsoftwareupdate message")
+        "Running Adobe Setup", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Running Adobe Uninstall", comment: "managedsoftwareupdate message")
+        "Running Adobe Uninstall", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Starting Adobe installer...", comment: "managedsoftwareupdate message")
+        "Starting Adobe installer...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Running Adobe Patch Installer", comment: "managedsoftwareupdate message")
+        "Running Adobe Patch Installer", comment: "managedsoftwareupdate message"
+    )
 
     // macOS install/upgrade messages
     _ = NSLocalizedString(
-        "Starting macOS upgrade...", comment: "managedsoftwareupdate message")
+        "Starting macOS upgrade...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
-        "Preparing to run macOS Installer...", comment: "managedsoftwareupdate message")
+        "Preparing to run macOS Installer...", comment: "managedsoftwareupdate message"
+    )
     _ = NSLocalizedString(
         "System will restart and begin upgrade of macOS.",
-        comment: "managedsoftwareupdate message")
+        comment: "managedsoftwareupdate message"
+    )
 }

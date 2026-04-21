@@ -380,6 +380,8 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
+            "blocking_applications_manual_quit_only",
+            "blocking_applications_quit_script",
         ]
 
         if isOptionalInstall {
@@ -758,6 +760,8 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
+        "blocking_applications_manual_quit_only",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]
@@ -998,6 +1002,8 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
+        "blocking_applications_manual_quit_only",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]

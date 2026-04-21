@@ -1,5 +1,17 @@
+/* Multiple managed updates message */
+"%@ additional pending updates" = "未処理のアップデートが %@件あります";
+
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "利用可能な Apple アップデートが %@件あります";
+
 /* Multiple Updates message */
 "%@ pending updates" = "アップデートを%@個保留しています";
+
+/* One managed update message */
+"1 additional pending update" = "未処理のアップデートが1件あります";
+
+/* One Apple update message */
+"1 available Apple update" = "利用可能な Apple アップデートが1件あります";
 
 /* One Update message */
 "1 pending update" = "アップデートを1つ保留しています";
@@ -15,6 +27,9 @@
 
 /* Logout warning string when logout is in less than a minute */
 "A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "１分以内に強制的にログアウトさせられます。\n保留中のアップデートはすべてインストールされます。保存されていない作業内容は消失します。";
+
+/* macOS Install Pending detail */
+"A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "macOSのインストールが保留中です。このインストールには時間がかかる場合があります。その他の保留中の項目は後でインストールされます。\n\nインストールを続けますか？";
 
 /* Removal Error message */
 "A removal attempt failed. Removal will be attempted again.\nIf this situation continues, contact your systems administrator." = "削除に失敗しました。次回削除を試みます。\nそれでも削除されない場合は、システムの管理者に連絡してください。";
@@ -49,8 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "旧バージョンがインストールされています。このアップデートをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
 
+/* No Apple updates message */
+"Apple software is up to date" = "Apple ソフトウェアは最新です";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "他のユーザーが使用しているアプリケーションです";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "\"%@\"を強制終了してもよろしいですか？ 保存していない変更内容は失われる可能性があります。";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "注意";
@@ -139,11 +160,14 @@
 /* managedsoftwareupdate message */
 "Finishing..." = "仕上げ中…";
 
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "ファームウェアがアップデートされます。お使いのコンピューターの電源コードを電源に繋いでください。アップデート完了までには数分がかかります。アップデート処理の進行中はアップデート処理を妨げたり、コンピューターの電源を切らないでください。";
-
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "支障の発生を避けるためにアップデートを実行する前にコンピューターを電源に接続してください。アップデートを続けますか？";
+
+/* Force Quit button title */
+"Force Quit" = "強制終了";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "アプリケーションを強制終了しますか？";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "必須インストールのため、強制ログアウトします";
@@ -223,6 +247,9 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "必須のアップデートを保留中";
 
+/* Manual quit required label */
+"Manual quit required" = "手動で終了する必要があります";
+
 /* More link text */
 "More" = "さらに見る";
 
@@ -234,6 +261,9 @@
 
 /* My Items label */
 "My Items" = "マイアイテム";
+
+/* No managed updates message */
+"No additional pending updates" = "保留中のアップデートはありません";
 
 /* No Licenses Available display text */
 "No licenses available" = "有効なライセンスがありません";
@@ -307,6 +337,9 @@
 /* Quit button title */
 "Quit" = "終了";
 
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "アプリを終了して更新する";
+
 /* Removal Error status text */
 "Removal Error" = "削除エラー";
 
@@ -321,6 +354,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "receipt情報を削除中です";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "更新後にアプリケーションを再び開く";
 
 /* Install Required action text */
 "Required" = "必須";
@@ -349,11 +385,20 @@
 /* No Installed Software secondary text */
 "Select software to install." = "インストールするソフトウェアを選択してください";
 
+/* Show Apple updates button title */
+"Show" = "表示する";
+
 /* Sidebar Size label */
 "Size:" = "サイズ:";
 
+/* Skip and Update Others button title */
+"Skip and Update Others" = "スキップして他のアップデートを実行する";
+
 /* Skip Apple updates button title */
-"Skip these updates" = "ソフトウェアアップデートをスキップ";
+"Skip Apple updates" = "Apple アップデートをスキップする";
+
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "ログアウトまたは再起動を必要とするアップデートをスキップする";
 
 /* Software label */
 "Software" = "ソフトウェア";
@@ -506,10 +551,13 @@
 "You have no selected software." = "ソフトウェアが選択されていません";
 
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "このアップデートは、「システム環境設定」の「ソフトウェアアップデート」を使用してインストールする必要があります。";
+"You must install these updates using %@." = "このアップデートは、「%@」を使用してインストールする必要があります。";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "インストールまた削除を進めるには、以下のアプリケーションを終了しなければいけません:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "このアイテムをインストールするにはmacOS %@ 以降にアップグレードする必要があります。";
@@ -526,5 +574,11 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "ソフトウェアは最新です";
 
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では、Apple ソフトウェア・アップデートをインストールできません。\n\nシステム管理者にお問い合わせください。";
+
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では MacOS をアップグレードできません。\n\nシステム管理者にお問い合わせください。";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOSのアップデート期限を%@日過ぎています。";

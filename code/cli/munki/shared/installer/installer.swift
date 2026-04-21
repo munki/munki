@@ -260,8 +260,21 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
 }
 
 /// Uses the installInfo installs list to install items in the correct order and with additional options
+///
+/// There are three install 'modes':
+///   1) Install everything in the list, ignoring 'unattended' state, blocking applications, and any need to logout or restart
+///       - This would be when we're at the loginwindow or when called with the --force option
+///   2) Install things in the list, but skip those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when Managed Software Center triggers an install without logging out, and when the `--installonly` flag is given (without `--force`)
+///   3) Install things in the list, skipping those where unattended_install is false, those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when `managedsoftwareupdate` is called with `--auto`
+///
+///   These modes are controlled by `onlyUnattended` and `considerBlockingApps`, but
+///   in the future perhaps this should be refactored.
 func installWithInstallInfo(
-    installList: [PlistDict], onlyUnattended: Bool = false
+    installList: [PlistDict],
+    onlyUnattended: Bool = false,
+    considerBlockingApps: Bool = true
 ) async -> (Bool, [PlistDict]) {
     var restartFlag = false
     var itemIndex = 0
@@ -290,9 +303,17 @@ func installWithInstallInfo(
                 display.detail("Skipping install of \(itemName) because it's not unattended, and we can only do unattended installs at this time.")
                 continue
             }
+        }
+        if onlyUnattended || considerBlockingApps {
             if blockingApplicationsRunning(item) {
                 skippedInstalls.append(item)
-                display.detail("Skipping unattended install of \(itemName) because blocking applications are running.")
+                display.info("Skipping install of \(itemName) because blocking applications are running.")
+                continue
+            }
+            let restartAction = item["RestartAction"] as? String ?? "None"
+            if restartAction != "None" {
+                skippedInstalls.append(item)
+                display.warning("Skipping install of \(itemName) because RestartAction is \(restartAction).")
                 continue
             }
         }
@@ -306,7 +327,7 @@ func installWithInstallInfo(
             if onlyUnattended {
                 skipActionText = "skipped"
             }
-            display.detail("Skipping unattended install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
+            display.detail("Skipping install of \(itemName) because these prerequisites were \(skipActionText): \(skippedPrereqs.joined(separator: ", "))")
             continue
         }
 
@@ -530,7 +551,22 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
 }
 
 /// Processes removals from the removal list
-func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) async -> (Bool, [PlistDict]) {
+///
+/// There are three removal 'modes':
+///   1) Remove everything in the list, ignoring 'unattended' state, blocking applications, and any need to logout or restart
+///       - This would be when we're at the loginwindow or when called with the --force option
+///   2) Remove things in the list, but skip those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when Managed Software Center triggers an install without logging out, and when the `--installonly` flag is given (without `--force`)
+///   3) Remove things in the list, skipping those where unattended_install is false, those that have currently running blocking applications and those that require a logout or restart.
+///       - This would be when `managedsoftwareupdate` is called with `--auto`
+///
+///   These modes are controlled by `onlyUnattended` and `considerBlockingApps`, but
+///   in the future perhaps this should be refactored.
+func processRemovals(
+    _ removalList: [PlistDict],
+    onlyUnattended: Bool = false,
+    considerBlockingApps: Bool = true
+) async -> (Bool, [PlistDict]) {
     var restartFlag = false
     var index = 0
     var skippedRemovals = [PlistDict]()
@@ -547,9 +583,17 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
                 display.detail("Skipping removal of \(itemName) because it's not unattended.")
                 continue
             }
+        }
+        if onlyUnattended || considerBlockingApps {
             if blockingApplicationsRunning(item) {
                 skippedRemovals.append(item)
-                display.detail("Skipping unattended removal of \(itemName) because blocking applications are running.")
+                display.info("Skipping removal of \(itemName) because blocking applications are running.")
+                continue
+            }
+            let restartAction = item["RestartAction"] as? String ?? "None"
+            if restartAction != "None" {
+                skippedRemovals.append(item)
+                display.warning("Skipping removal of \(itemName) because RestartAction is \(restartAction).")
                 continue
             }
         }
@@ -601,8 +645,12 @@ func processRemovals(_ removalList: [PlistDict], onlyUnattended: Bool = false) a
 /// Runs the install/removal session.
 ///
 /// Args:
-/// only_unattended: Boolean. If True, only do unattended_(un)install pkgs.
-func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> PostAction {
+/// onlyUnattended: Boolean. If true, only do unattended_(un)install pkgs.
+/// considerBlockingApps: Boolean. If true, consider blocking apps when installing/removing
+func doInstallsAndRemovals(
+    onlyUnattended: Bool = false,
+    considerBlockingApps: Bool = true
+) async -> PostAction {
     var removalsNeedRestart = false
     var installsNeedRestart = false
 
@@ -643,7 +691,9 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> PostAction {
                 munkiLog("Processing removals")
                 var skippedRemovals = [PlistDict]()
                 (removalsNeedRestart, skippedRemovals) = await processRemovals(
-                    removalList, onlyUnattended: onlyUnattended
+                    removalList,
+                    onlyUnattended: onlyUnattended,
+                    considerBlockingApps: considerBlockingApps
                 )
                 // if any removals were skipped, record them for later
                 updatedInstallInfo["removals"] = skippedRemovals
@@ -666,7 +716,9 @@ func doInstallsAndRemovals(onlyUnattended: Bool = false) async -> PostAction {
                 munkiLog("Processing installs")
                 var skippedInstalls = [PlistDict]()
                 (installsNeedRestart, skippedInstalls) = await installWithInstallInfo(
-                    installList: installList, onlyUnattended: onlyUnattended
+                    installList: installList,
+                    onlyUnattended: onlyUnattended,
+                    considerBlockingApps: considerBlockingApps
                 )
                 // if any installs were skipped record them for later
                 updatedInstallInfo["managed_installs"] = skippedInstalls

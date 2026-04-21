@@ -1,8 +1,20 @@
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ yderligere opdateringer venter";
+
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ tilgængelige Apple-opdateringer";
+
 /* Multiple Updates message */
-"%@ pending updates" = "%@ ventende opdateringer";
+"%@ pending updates" = "%@ opdateringer venter";
+
+/* One managed update message */
+"1 additional pending update" = "1 yderligere opdatering venter";
+
+/* One Apple update message */
+"1 available Apple update" = "1 tilgængelig Apple-opdatering";
 
 /* One Update message */
-"1 pending update" = "1 ventende opdatering";
+"1 pending update" = "1 opdatering venter";
 
 /* Logout Required detail */
 "A logout is required before updating. Log out and update now?" = "Du skal logge ud før opdatering. Log ud og opdater nu?";
@@ -14,7 +26,7 @@
 "A logout will be forced in less than %@ minutes." = "En tvungen log ud vil ske om mindre end %@ minutter.";
 
 /* Logout warning string when logout is in less than a minute */
-"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle uarkiverede oplysninger vil gå tabt.";
+"A logout will be forced in less than a minute.\nAll pending updates will be installed. Unsaved work will be lost." = "En tvungen log ud vil ske om mindre end et minut.\nAlle ventende opdateringer bliver installeret. Alle ændringer, der ikke er gemt, vil gå tabt.";
 
 /* macOS Install Pending detail */
 "A macOS install is pending. This install may take some time. Other pending items will be installed later.\n\nContinue with the install?" = "Der venter en macOS-installation, som kan tage noget tid at gennemføre. Andre ventende emner vil blive installeret senere.\n\nFortsæt med denne installation?";
@@ -38,7 +50,7 @@
 "All items" = "Alle emner";
 
 /* Forced Logout warning detail */
-"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende opdateringer bliver installeret. Uarkiverede oplysninger vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
+"All pending updates will be installed. Unsaved work will be lost.\nYou may avoid the forced logout by logging out now." = "Alle ventende opdateringer bliver installeret. Alle ændringer, der ikke er gemt, vil gå tabt.\nDu kan undgå den tvungne log ud, hvis du selv vælger at logge ud nu.";
 
 /* Allow button text */
 "Allow" = "Tillad";
@@ -52,8 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "En ældre version er installeret. Du skal opgradere til macOS version %@ eller nyere for at installere denne opdatering.";
 
+/* No Apple updates message */
+"Apple software is up to date" = "Apple-software er ajour";
+
 /* Other Users Blocking Apps Running title */
-"Applications in use by others" = "Programmer i brug af andre";
+"Applications in use by others" = "Apps der bruges af andre";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Er du sikker på, at du vil afbryde \"%@\"? Alle ændringer, der ikke er gemt, kan gå tabt.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Vær opmærksom";
@@ -68,7 +86,7 @@
 "Cancel removal" = "Annuller fjernelse";
 
 /* Cancel Update long action text */
-"Cancel update" = "Annuler opdatering";
+"Cancel update" = "Annuller opdatering";
 
 /* Item Not Found message */
 "Cannot display the requested item." = "Kan ikke vise det ønskede emne.";
@@ -101,7 +119,7 @@
 "Checking for updates..." = "Søger efter opdateringer...";
 
 /* Blocking Apps Running title */
-"Conflicting applications running" = "Der er åbne programmer, som giver konflikt med installeringen";
+"Conflicting applications running" = "Der er åbne apps, som skaber konflikt";
 
 /* Continue button text */
 "Continue" = "Fortsæt";
@@ -142,11 +160,14 @@
 /* managedsoftwareupdate message */
 "Finishing..." = "Afslutter...";
 
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Firmware bliver opdateret på din computer. Sørg for at din computer er sluttet til strømforsyningen og at denne er sat i stikkontakten. Opdateringen kan være flere minutter om at blive færdig. Lad være med at tage stikket ud under denne opdatering.";
-
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Du bør slutte computeren til strømforsyningen før installeringen. Er du sikker på, at du vil forsætte opdateringen?";
+
+/* Force Quit button title */
+"Force Quit" = "Afbryd";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Afbryd app?";
 
 /* Forced Logout title text */
 "Forced Logout for Mandatory Install" = "Tvungen log ud for obligatorisk installering";
@@ -226,6 +247,9 @@
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Obligatoriske opdateringer venter";
 
+/* Manual quit required label */
+"Manual quit required" = "Skal sluttes manuelt";
+
 /* More link text */
 "More" = "Mere";
 
@@ -238,11 +262,14 @@
 /* My Items label */
 "My Items" = "Mine emner";
 
+/* No managed updates message */
+"No additional pending updates" = "Ingen yderligere opdateringer venter";
+
 /* No Licenses Available display text */
 "No licenses available" = "Ingen tilgængelige licenser";
 
 /* No Updates message */
-"No pending updates" = "Ingen ventende opdateringer";
+"No pending updates" = "Ingen opdateringer venter";
 
 /* Not Currently Available display text */
 "Not currently available" = "Ikke tilgængeligt i øjeblikket";
@@ -284,7 +311,7 @@
 "Other users logged in" = "Andre brugere er logget ind";
 
 /* managedsoftwareupdate message */
-"Package removal complete." = "Fjernelse af software er gennemført.";
+"Package removal complete." = "Færdig med at fjerne software.";
 
 /* Password label */
 "Password:" = "Adgangskode:";
@@ -310,6 +337,9 @@
 /* Quit button title */
 "Quit" = "Slut";
 
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Slut apps og opdater";
+
 /* Removal Error status text */
 "Removal Error" = "Fejl ved fjernelse";
 
@@ -324,6 +354,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Fjerner oplysninger om kvittering";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Åbn apps igen efter opdatering";
 
 /* Install Required action text */
 "Required" = "Påkrævet";
@@ -352,11 +385,20 @@
 /* No Installed Software secondary text */
 "Select software to install." = "Vælg software der skal installeres.";
 
+/* Show Apple updates button title */
+"Show" = "Vis";
+
 /* Sidebar Size label */
 "Size:" = "Str.:";
 
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Spring over og opdater andre";
+
 /* Skip Apple updates button title */
-"Skip these updates" = "Spring over";
+"Skip Apple updates" = "Spring Apple-opdateringer over";
+
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Spring opdateringer over, som kræver log ud eller genstart";
 
 /* Software label */
 "Software" = "Software";
@@ -509,10 +551,13 @@
 "You have no selected software." = "Du har ikke valgt nogen software.";
 
 /* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Du skal installere opdateringerne fra Softwareopdatering i Systemindstillinger.";
+"You must install these updates using %@" = "Du skal installere opdateringerne fra %@";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "Slut disse apps før du fortsætter med installering eller fjernelse:";
 
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Du skal slutte følgende programmer for du forsætter med installering eller fjernelse:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Slut disse apps før du fortsætter med installering eller fjernelse:\n\n%@";
 
 /* Long item requires a higher OS version text */
 "You must upgrade to macOS version %@ to be able to install this item." = "Du skal opgradere til macOS version %@ for at installere dette emne.";
@@ -529,5 +574,11 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "Softwaren er opdateret.";
 
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke installere Apple-softwareopdateringer lige nu.\n\nKontakt din systemadministrator.";
+
 /* Not volume owner detail */
-"Your user account is not a owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS i øjeblikket.\n\Kontakt din systemadministrator.";
+"Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS lige nu.\n\nKontakt din systemadministrator.";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS har været forældet i %@ dage.";

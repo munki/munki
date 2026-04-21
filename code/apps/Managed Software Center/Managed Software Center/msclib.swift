@@ -10,14 +10,37 @@ import Foundation
 
 var _msclib_html_dir = "" // TO-DO: eliminate this global var
 
-func updateCountMessage(_ count: Int) -> String {
-    // Return a localized message describing the count of updates to install
+func appleUpdateCountMessage(_ count: Int) -> String {
+    // Return a localized message describing the count of Apple updates to install
     if count == 0 {
-        return NSLocalizedString("No pending updates", comment: "No Updates message") as String
+        return NSLocalizedString("Apple software is up to date", comment: "No Apple updates message") as String
     } else if count == 1 {
-        return NSLocalizedString("1 pending update", comment: "One Update message") as String
+        return NSLocalizedString("1 available Apple update", comment: "One Apple update message") as String
     } else {
-        let formatString = NSLocalizedString("%@ pending updates", comment: "Multiple Updates message")
+        let formatString = NSLocalizedString("%@ available Apple updates", comment: "Multiple Apple updates message")
+        return NSString(format: (formatString as NSString), String(count)) as String
+    }
+}
+
+func updateCountMessage(_ count: Int, appleUpdateCount: Int = 0) -> String {
+    // Return a localized message describing the count of updates to install
+    if appleUpdateCount == 0 {
+        if count == 0 {
+            return NSLocalizedString("No pending updates", comment: "No Updates message") as String
+        } else if count == 1 {
+            return NSLocalizedString("1 pending update", comment: "One Update message") as String
+        } else {
+            let formatString = NSLocalizedString("%@ pending updates", comment: "Multiple Updates message")
+            return NSString(format: (formatString as NSString), String(count)) as String
+        }
+    }
+    // no available Apple updates to display
+    if count == 0 {
+        return NSLocalizedString("No additional pending updates", comment: "No managed updates message") as String
+    } else if count == 1 {
+        return NSLocalizedString("1 additional pending update", comment: "One managed update message") as String
+    } else {
+        let formatString = NSLocalizedString("%@ additional pending updates", comment: "Multiple managed updates message")
         return NSString(format: (formatString as NSString), String(count)) as String
     }
 }
@@ -40,23 +63,64 @@ func runProcess(_ command: String, args: [String] = []) -> (exitcode: Int, stdou
     let proc = Process()
     let stdout_pipe = Pipe()
     let stderr_pipe = Pipe()
-    
+
     msc_debug_log("Running process \(command) with args \(args)")
     proc.launchPath = command
     proc.arguments = args
     proc.standardOutput = stdout_pipe
     proc.standardError = stderr_pipe
-    
+
     proc.launch()
     proc.waitUntilExit()
-    
+
     let stdout = stdout_pipe.fileHandleForReading.readDataToEndOfFile()
     let stderr = stderr_pipe.fileHandleForReading.readDataToEndOfFile()
     let exitcode = proc.terminationStatus
-    
+
     return (Int(exitcode),
             String(data: stdout, encoding: String.Encoding.utf8)!,
             String(data: stderr, encoding: String.Encoding.utf8)!)
+}
+
+func runEmbeddedScript(_ scriptText: String, scriptName: String = "script") -> (exitcode: Int, stdout: String, stderr: String) {
+    // Run an embedded script by writing it to a temp file and executing it.
+    // Returns a tuple of (exitcode, stdout, stderr)
+    let tempDir = NSTemporaryDirectory()
+    let scriptPath = (tempDir as NSString).appendingPathComponent(
+        "\(scriptName)_\(UUID().uuidString)")
+
+    // Write script to temp file
+    do {
+        try scriptText.write(toFile: scriptPath, atomically: true, encoding: .utf8)
+    } catch {
+        msc_debug_log("Failed to write script to \(scriptPath): \(error)")
+        return (-1, "", "Failed to write script: \(error)")
+    }
+
+    // Make it executable (0o700)
+    do {
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: scriptPath)
+    } catch {
+        msc_debug_log("Failed to set permissions on \(scriptPath): \(error)")
+        try? FileManager.default.removeItem(atPath: scriptPath)
+        return (-1, "", "Failed to set script permissions: \(error)")
+    }
+
+    msc_debug_log("Running embedded script: \(scriptName)")
+    let result = runProcess(scriptPath)
+
+    // Clean up temp file
+    try? FileManager.default.removeItem(atPath: scriptPath)
+
+    if result.exitcode != 0 {
+        msc_debug_log("Script \(scriptName) exited with code \(result.exitcode)")
+        if !result.stderr.isEmpty {
+            msc_debug_log("Script stderr: \(result.stderr)")
+        }
+    }
+
+    return result
 }
 
 enum ZipExtractError: Error {

@@ -383,8 +383,11 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         if commonOptions.installOnly || otherOptions.logoutinstall {
             // admin has triggered install or MSC has triggered install,
             // so just install everything
+            let considerBlockingApps = !(otherOptions.logoutinstall || commonOptions.force)
             restartAction = await doInstallTasks(
-                doAppleUpdates: appleUpdateCount > 0)
+                doAppleUpdates: appleUpdateCount > 0,
+                considerBlockingApps: considerBlockingApps
+            )
             // reset our count of available updates (it might not actually
             // be zero, but we want to clear the badge on the Dock icon;
             // it can be updated to the "real" count on the next Munki run)
@@ -424,7 +427,10 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 _ = forceInstallPackageCheck() // this might mark some more items as unattended
                 // now install anything that can be done unattended
                 munkiLog("Installing only items marked unattended because SuppressLoginwindowInstall is true.")
-                _ = await doInstallTasks(onlyUnattended: true)
+                _ = await doInstallTasks(
+                    onlyUnattended: true,
+                    considerBlockingApps: false
+                )
                 return
             }
             if getIdleSeconds() < 10 {
@@ -438,7 +444,9 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             munkiLog("No GUI users, installing at login window.")
             munkiStatusLaunch()
             restartAction = await doInstallTasks(
-                doAppleUpdates: appleUpdateCount > 0
+                doAppleUpdates: appleUpdateCount > 0,
+                onlyUnattended: false,
+                considerBlockingApps: false
             )
             // reset our count of available updates
             munkiUpdateCount = 0
@@ -458,7 +466,8 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             // install anything that can be done unattended
             _ = await doInstallTasks(
                 doAppleUpdates: appleUpdateCount > 0,
-                onlyUnattended: true
+                onlyUnattended: true,
+                considerBlockingApps: true
             )
             // send a notification event so MSC can update its display
             // if needed

@@ -1,11 +1,23 @@
+/* Multiple managed updates message */
+"%@ additional pending updates" = "%@ дополнительных отложенных обновлений";
+
+/* Multiple Apple updates message */
+"%@ available Apple updates" = "%@ доступных обновлений Apple";
+
 /* Multiple Updates message */
 "%@ pending updates" = "%@ отложенных обновлений";
+
+/* One managed update message */
+"1 additional pending update" = "1 дополнительное отложенное обновление";
+
+/* One Apple update message */
+"1 available Apple update" = "1 доступное обновление Apple";
 
 /* One Update message */
 "1 pending update" = "1 отложенное обновление";
 
 /* Logout Required detail */
-"A logout is required before updating. Log out and update now?" = "Перед установкой обновлений необходимо выйти из системы. Выйти из системы и обновить?";
+"A logout is required before updating. Log out and update now?" = "Перед установкой обновлений необходимо выйти из системы. Выйти из системы и обновить сейчас?";
 
 /* Logout warning string when logout is an hour or more away */
 "A logout will be forced at approximately %@." = "Работа будет принудительно завершена в %@.";
@@ -52,8 +64,14 @@
 /* Long update requires a higher OS version text */
 "An older version is currently installed. You must upgrade to macOS version %@ or higher to be able to install this update." = "В настоящее время установлена старая версия. Для установки этого обновления необходимо перейти на версию macOS %@ или выше.";
 
+/* No Apple updates message */
+"Apple software is up to date" = "ПО Apple обновлено";
+
 /* Other Users Blocking Apps Running title */
 "Applications in use by others" = "Приложения, которые используются другими";
+
+/* Force Quit confirmation message */
+"Are you sure you want to force quit \"%@\"? Any unsaved changes may be lost." = "Вы уверены, что хотите принудительно завершить работу \"%@\"? Все несохраненные изменения могут быть потеряны.";
 
 /* Pre Install Uninstall Upgrade Alert Title */
 "Attention" = "Внимание";
@@ -86,13 +104,13 @@
 "Check Again" = "Проверить снова";
 
 /* managedsoftwareupdate message */
-"Checking Apple Software Update catalog..." = "Проверка каталога Обновлений ПО Apple...";
+"Checking Apple Software Update catalog..." = "Проверка каталога обновлений ПО Apple...";
 
 /* managedsoftwareupdate message */
 "Checking for additional changes..." = "Проверка дополнительных изменений...";
 
 /* managedsoftwareupdate message */
-"Checking for available Apple Software Updates..." = "Проверка доступных Обновлений ПО Apple...";
+"Checking for available Apple Software Updates..." = "Проверка доступных обновлений ПО Apple...";
 
 /* managedsoftwareupdate message */
 "Checking for available updates..." = "Проверка доступных обновлений...";
@@ -107,10 +125,10 @@
 "Continue" = "Продолжить";
 
 /* Critical Update type */
-"Critical Update" = "Критическое Обновление";
+"Critical Update" = "Критическое обновление";
 
 /* Unavailable long action text */
-"Currently Unavailable" = "В настоящее время Недоступно";
+"Currently Unavailable" = "В настоящее время недоступно";
 
 /* Deny button text */
 "Deny" = "Не разрешать";
@@ -142,14 +160,17 @@
 /* managedsoftwareupdate message */
 "Finishing..." = "Завершение...";
 
-/* Firmware Alert Default detail */
-"Firmware will be updated on your computer. Your computer's power cord must be connected and plugged into a working power source. It may take several minutes for the update to complete. Do not disturb or shut off the power on your computer during this update." = "Прошивка будет обновлена на Вашем компьютере. Шнур питания компьютера должен быть подключен и подключен к исправному источнику питания. Обновление может занять несколько минут. Не мешайте или не отключайте питание на вашем компьютере во время этого обновления.";
-
 /* No Power Source Warning detail */
 "For best results, you should connect your computer to a power source before updating. Are you sure you want to continue the update?" = "Для продолжения установки рекомендуется подключить компьютер к постоянному источнику питания. Вы действительно хотите продолжить установку обновлений?";
 
+/* Force Quit button title */
+"Force Quit" = "Принудительное завершение работы";
+
+/* Force Quit confirmation title */
+"Force Quit Application?" = "Завершить работу приложения принудительно?";
+
 /* Forced Logout title text */
-"Forced Logout for Mandatory Install" = "Принудительное завершение работы для установки Обязательного Обновления";
+"Forced Logout for Mandatory Install" = "Принудительное завершение работы для установки обязательного обновления";
 
 /* managedsoftwareupdate message */
 "Gathering information on installed packages" = "Сбор информации об установленных пакетах";
@@ -158,7 +179,7 @@
 "Help" = "Помощь";
 
 /* No help alert detail */
-"Help isn't available for Managed Software Center." = "Помощь недоступна для Центра Управления ПО.";
+"Help isn't available for Managed Software Center." = "Помощь недоступна для центра управления ПО.";
 
 /* Apple Software Updates Pending title */
 "Important Apple Updates" = "Важные обновления Apple";
@@ -173,10 +194,10 @@
 "Install now" = "Установить сейчас";
 
 /* Install Requested status text */
-"Install requested" = "Установить Требуемые";
+"Install requested" = "Установить требуемые";
 
 /* Install Required action text */
-"Install Required" = "Установить Обязательные";
+"Install Required" = "Установить обязательные";
 
 /* Install Session Failed title */
 "Install session failed" = "Сбой процесса установки";
@@ -191,7 +212,7 @@
 "Installing" = "Установка";
 
 /* managedsoftwareupdate message */
-"Installing available Apple Software Updates..." = "Установка доступных Обновлений ПО Apple...";
+"Installing available Apple Software Updates..." = "Установка доступных обновлений ПО Apple...";
 
 /* managedsoftwareupdate message */
 "Launching macOS installer..." = "Запуск установщика macOS...";
@@ -209,7 +230,7 @@
 "macOS install pending" = "Ожидание установки macOS";
 
 /* macOS update required text */
-"macOS update required" = "требуется обновление macOS";
+"macOS update required" = "Требуется обновление macOS";
 
 /* Failed Preflight Check detail */
 "Managed Software Center cannot check for updates now.\nTry again later. If this situation continues, contact your systems administrator." = "Центр Управления ПО не может проверить наличие обновлений в данный момент.\nПопробуйте еще раз позже. Если эта ситуация продолжится, обратитесь к системному администратору.";
@@ -221,10 +242,13 @@
 "Managed Software Center wants to unlock the startup disk after restarting to complete all pending updates." = "Центр Управления ПО хочет разблокировать загрузочный диск после перезапуска, чтобы завершить все ожидающие обновления.";
 
 /* Managed Update type */
-"Managed Update" = "Управляемое Обновление";
+"Managed Update" = "Управляемое обновление";
 
 /* Mandatory Updates Pending text */
 "Mandatory Updates Pending" = "Отложенные обязательные обновления";
+
+/* Manual quit required label */
+"Manual quit required" = "Требуется завершение работы вручную";
 
 /* More link text */
 "More" = "Дополнительно";
@@ -237,6 +261,9 @@
 
 /* My Items label */
 "My Items" = "Мои элементы";
+
+/* No managed updates message */
+"No additional pending updates" = "Нет дополнительных отложенных обновлений";
 
 /* No Licenses Available display text */
 "No licenses available" = "Нет доступных лицензий";
@@ -272,7 +299,7 @@
 "One or more mandatory updates are overdue for installation. A logout will be forced soon." = "Одно или несколько обязательных обновлений просрочены для установки. Сеанс будет принудительно завершен.";
 
 /* Mandatory Updates Pending detail */
-"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Один или несколько обвнолений должны быть установлены до %@. Сеанс может быть принудительно завершен.";
+"One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Одно или несколько обвнолений должны быть установлены до %@. Сеанс может быть принудительно завершен.";
 
 /* Other Available Updates label */
 "Other available updates" = "Другие доступные обновления";
@@ -305,10 +332,13 @@
 "Preparing to run macOS Installer..." = "Подготовка к запуску Установщика macOS...";
 
 /* Problem Updates label */
-"Problem updates" = "проблемные обновления";
+"Problem updates" = "Проблемные обновления";
 
 /* Quit button title */
 "Quit" = "Завершить";
+
+/* Quit Apps and Update button title */
+"Quit Apps and Update" = "Выйти из приложений и обновить";
 
 /* Removal Error status text */
 "Removal Error" = "Ошибка Удаления";
@@ -324,6 +354,9 @@
 
 /* managedsoftwareupdate message */
 "Removing receipt info" = "Удаление квитанции";
+
+/* Reopen apps after update checkbox */
+"Reopen applications after update" = "Перезапустить приложения после обновления";
 
 /* Install Required action text */
 "Required" = "Обязательное";
@@ -347,16 +380,25 @@
 "Running Adobe Uninstall" = "Выполнение Adobe Uninstall";
 
 /* See All link text */
-"See All" = "См. все";
+"See All" = "См. Все";
 
 /* No Installed Software secondary text */
 "Select software to install." = "Выберите ПО для установки.";
 
+/* Show Apple updates button title */
+"Show" = "Показать";
+
 /* Sidebar Size label */
 "Size:" = "Размер:";
 
+/* Skip and Update Others button title */
+"Skip and Update Others" = "Пропустить и обновить остальные";
+
 /* Skip Apple updates button title */
-"Skip these updates" = "Пропустить эти обновления";
+"Skip Apple updates" = "Пропустить обновления Apple";
+
+/* Skip updates requiring logout or restart button text */
+"Skip updates requiring logout or restart" = "Пропустить обновления, требующие выхода из системы или перезагрузки";
 
 /* Software label */
 "Software" = "Программы";
@@ -404,7 +446,7 @@
 "There are no items in this category." = "Нет элементов в этой категории.";
 
 /* Apple Software Updates Pending detail */
-"There are one or more pending Apple Software Updates that require a restart.\n\nYou must install these updates using Software Update in System Preferences." = "Вам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
+"You must install these updates using Software Update in System Preferences." = "Вам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
 
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другие пользователи сейчас в системе.\nОбновление может привести к потере их несохраненных документов.\n\nПовторите попытку после выхода других пользователей из системы.";
@@ -511,11 +553,17 @@
 /* No Installed Software primary text */
 "You have no selected software." = "У вас нет выбранного ПО.";
 
+/* Apple Software Updates Pending detail */
+"You must install these updates using %@." = "Вам необходимо установить следующие обновления через %@.";
+
+/* Blocking Apps Running detail for auto-quit sheet */
+"You must quit these applications before proceeding with installation or removal:" = "Вам необходимо закрыть следующие приложения перед установкой или удалением:";
+
 /* Blocking Apps Running detail */
-"You must quit the following applications before proceeding with installation or removal:\n\n%@" = "Вы должны закрыть следующие приложения перед установкой или удалением:\n\n%@";
+"You must quit these applications before proceeding with installation or removal:\n\n%@" = "Вам необходимо закрыть следующие приложения перед установкой или удалением:\n\n%@";
 
 /* Long item requires a higher OS version text */
-"You must upgrade to macOS version %@ to be able to install this item." = "Вы должны перейти на версию macOS %@  чтобы иметь возможность установить этот элемент.";
+"You must upgrade to macOS version %@ to be able to install this item." = "Вам необходимо перейти на версию macOS %@  чтобы иметь возможность установить этот элемент.";
 
 /* Apple Software Updates Unable detail */
 "Your administrator has restricted installation of these updates. Contact your administrator for assistance." = "Администратор запретил установку этих обновлений. Обратитесь за помощью к администратору.";
@@ -529,5 +577,11 @@
 /* No Pending Updates primary text */
 "Your software is up to date." = "У Вас самое новое ПО.";
 
+/* Apple Updates Not volume owner detail */
+"Your user account is not an owner of the current startup volume.\nYou cannot install Apple Software Updates at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nУстановка обновлений ПО Apple в настоящий момент невозможна.\n\nОбратитесь к администратору системы.";
+
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nОбновление macOS в настоящий момент невозможно.\n\nОбратитесь к администратору системы.";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS устарела %@ дней назад.";

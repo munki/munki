@@ -62,11 +62,46 @@ func getAppleUpdates() -> PlistDict? {
     return nil
 }
 
+/// Return number of days we think macOS has been out-of-date
+func macOSOutOfDateDays() -> Double {
+    if !(boolPref("InstallAppleSoftwareUpdates") ?? false) {
+        return 0
+    }
+    let appleUpdateHistoryPath = managedInstallsDir(subpath: "AppleUpdateHistory.plist")
+    let appleUpdateHistory = (try? readPlist(fromFile: appleUpdateHistoryPath) as? PlistDict) ?? [:]
+    let currentOSVersion = MunkiVersion(getOSVersion())
+    let majorOSVersion = "\(ProcessInfo().operatingSystemVersion.majorVersion)."
+    var macOSUpdates = [PlistDict]()
+    for value in appleUpdateHistory.values {
+        if let update = value as? PlistDict,
+           update["version"] as? String != nil
+        {
+            macOSUpdates.append(update)
+        }
+    }
+    // sort ascending by version
+    macOSUpdates.sort {
+        MunkiVersion($0["version"] as? String ?? "") < MunkiVersion($1["version"] as? String ?? "")
+    }
+    for update in macOSUpdates {
+        if let version = update["version"] as? String,
+           version.hasPrefix(majorOSVersion),
+           let firstSeen = update["firstSeen"] as? Date,
+           MunkiVersion(version) > currentOSVersion
+        {
+            // found a macOS update (but not _upgrade_) higher than what we are currently running
+            // return the number of days it's been since that update was first seen
+            return Date().timeIntervalSince(firstSeen) / (24 * 60 * 60)
+        }
+    }
+    return 0
+}
+
 /// Returns age of the oldest pending update in days
 func oldestPendingUpdateInDays() -> Double {
     let updateTrackingFile = managedInstallsDir(subpath: "UpdateNotificationTracking.plist")
     guard let pendingUpdates = try? readPlist(fromFile: updateTrackingFile) as? PlistDict else {
-        return 0
+        return macOSOutOfDateDays()
     }
     let now = Date()
     var oldestDate = now
@@ -84,10 +119,11 @@ func oldestPendingUpdateInDays() -> Double {
             }
         }
     }
+    var oldestPendingUpdate: Double = 0
     if oldestDate < now {
-        return Date().timeIntervalSince(oldestDate) / (24 * 60 * 60)
+        oldestPendingUpdate = Date().timeIntervalSince(oldestDate) / (24 * 60 * 60)
     }
-    return 0
+    return max(oldestPendingUpdate, macOSOutOfDateDays())
 }
 
 struct PendingUpdateInfo {

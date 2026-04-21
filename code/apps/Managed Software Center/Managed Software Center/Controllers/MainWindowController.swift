@@ -283,13 +283,13 @@ class MainWindowController: NSWindowController {
             // no pending updates
             return .terminateNow
         }
-        if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
+        if !haveAlertedToAppleUpdates() {
             if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
-                alert_controller.alertToAppleUpdates()
-                setFilterAppleUpdates(true)
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
+                setAlertedToAppleUpdates(true)
                 return .terminateCancel
             }
         }
@@ -307,6 +307,12 @@ class MainWindowController: NSWindowController {
                 }
                 return .terminateNow
             }
+        }
+        if (getAppleUpdates().count > 0 && getEffectiveUpdateList().count == 0 ) {
+            // we have only Apple updates; remind the user they need to install them
+            alert_controller.alertToAppleUpdates(skipAction: "quit")
+            setAlertedToAppleUpdates(true)
+            return .terminateCancel
         }
         // we have pending updates and we have not yet warned the user
         // about them
@@ -528,7 +534,7 @@ class MainWindowController: NSWindowController {
         let tasktype = managedsoftwareupdate_task
         managedsoftwareupdate_task = ""
         _update_in_progress = false
-        
+
         // The managedsoftwareupdate run will have changed state preferences
         // in ManagedInstalls.plist. Load the new values.
         reloadPrefs()
@@ -546,6 +552,10 @@ class MainWindowController: NSWindowController {
                 msc_log("MSC", "cant_update", msg: "Install session failed")
                 alertMessageText = NSLocalizedString(
                     "Install session failed", comment: "Install Session Failed title")
+                // Clear the blocking apps controller since install failed
+                if alert_controller.blockingAppsController != nil {
+                    alert_controller.clearBlockingAppsController()
+                }
             }
             if sessionResult == -1 {
                 // connection was dropped unexpectedly
@@ -607,10 +617,16 @@ class MainWindowController: NSWindowController {
             updateNow()
             return
         }
-        
+
+        // Install session completed successfully - reopen any apps that were closed
+        // (only if MSCOfferToQuitBlockingApps was enabled and the blocking apps controller was used)
+        if tasktype == "installwithnologout" && alert_controller.blockingAppsController != nil {
+            alert_controller.reopenAppsAfterUpdate()
+        }
+
         // all done checking and/or installing: display results
         resetAndReload()
-        
+
         if updateCheckNeeded() {
             // more stuff pending? Let's do it...
             updateNow()
@@ -675,6 +691,7 @@ class MainWindowController: NSWindowController {
         // define messages JavaScript can send us
         wkContentController.add(self, name: "openExternalLink")
         wkContentController.add(self, name: "installButtonClicked")
+        wkContentController.add(self, name: "showButtonClicked")
         wkContentController.add(self, name: "myItemsButtonClicked")
         wkContentController.add(self, name: "actionButtonClicked")
         wkContentController.add(self, name: "changeSelectedCategory")
@@ -859,7 +876,61 @@ class MainWindowController: NSWindowController {
     @objc func checkForUpdatesSkippingAppleUpdates() {
         checkForUpdates(suppress_apple_update_check: true)
     }
-        
+
+    func startUpdateWithoutLogout() {
+        // does lots of checks before (hopefully) starting an update run
+        if pythonishBool(pref("MSCOfferToQuitBlockingApps")) {
+            // offer to quit enabled, lets do some magic
+            if !alert_controller.canContinueAfterHandlingBlockingApps() {
+                loadUpdatesPage(self)
+                return
+            }
+        } else {
+            // Fallback to existing logic if auto qutting isn't enabled
+            if alert_controller.alertedToBlockingAppsRunning() {
+                loadUpdatesPage(self)
+                return
+            }
+        }
+        if alert_controller.alertedToRunningOnBatteryAndCancelled() {
+            loadUpdatesPage(self)
+            return
+        }
+        if alert_controller.alertedToNotVolumeOwner() {
+            clearMunkiItemsCache()
+            setFilterStagedOSUpdate(true)
+            setAlertedToAppleUpdates(false)
+            loadUpdatesPage(self)
+            return
+        }
+        if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
+            clearMunkiItemsCache()
+            setFilterStagedOSUpdate(true)
+            setAlertedToAppleUpdates(false)
+            loadUpdatesPage(self)
+            return
+        }
+        managedsoftwareupdate_task = ""
+        msc_log("user", "install_without_logout")
+        _update_in_progress = true
+        displayUpdateCount()
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller._status_message = NSLocalizedString(
+                "Updating...", comment: "Updating message")
+        }
+        do {
+            try justUpdate()
+        } catch {
+            msc_debug_log("Error starting install session: \(error)")
+            munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+        }
+        managedsoftwareupdate_task = "installwithnologout"
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller.startMunkiStatusSession()
+        }
+        markPendingItemsAsInstalling()
+    }
+
     func kickOffInstallSession() {
         // start an update install/removal session
         
@@ -876,48 +947,8 @@ class MainWindowController: NSWindowController {
             }
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
-        } else {
-            if alert_controller.alertedToBlockingAppsRunning() {
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToRunningOnBatteryAndCancelled() {
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToNotVolumeOwner() {
-                clearMunkiItemsCache()
-                setFilterStagedOSUpdate(true)
-                setFilterAppleUpdates(false)
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
-                clearMunkiItemsCache()
-                setFilterStagedOSUpdate(true)
-                setFilterAppleUpdates(false)
-                loadUpdatesPage(self)
-                return
-            }
-            managedsoftwareupdate_task = ""
-            msc_log("user", "install_without_logout")
-            _update_in_progress = true
-            displayUpdateCount()
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller._status_message = NSLocalizedString(
-                    "Updating...", comment: "Updating message")
-            }
-            do {
-                try justUpdate()
-            } catch {
-                msc_debug_log("Error starting install session: \(error)")
-                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
-            }
-            managedsoftwareupdate_task = "installwithnologout"
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller.startMunkiStatusSession()
-            }
-            markPendingItemsAsInstalling()
+		} else {
+            startUpdateWithoutLogout()
         }
     }
     
@@ -1035,7 +1066,7 @@ class MainWindowController: NSWindowController {
         if _update_in_progress {
             return 0
         }
-        return getEffectiveUpdateList().count
+        return getEffectiveUpdateList().count + getAppleUpdates().count
     }
     
     func updatesSidebarItemView() -> MSCTableCellView? {
@@ -1211,6 +1242,10 @@ class MainWindowController: NSWindowController {
             return
         }
         var filename = unquote(host)
+        if filename == "appleupdates" {
+            openSoftwareUpdatePrefsPane()
+            return
+        }
         // append ".html" if absent
         if !(filename.hasSuffix(".html")) {
             filename += ".html"
@@ -1422,7 +1457,7 @@ class MainWindowController: NSWindowController {
         // update the updates-to-install header to reflect the new list of
         // updates to install
         setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
-        setInnerText(getWarningText(shouldFilterAppleUpdates()), elementID: "update-warning-text")
+        setInnerText(getWarningText(), elementID: "update-warning-text")
     
         // update text of Install All button
         setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
@@ -1553,7 +1588,7 @@ class MainWindowController: NSWindowController {
     @IBAction func reloadPage(_ sender: Any) {
         // User selected Reload page menu item. Reload the page and kick off an updatecheck
         msc_log("user", "reload_page_menu_item_selected")
-        setFilterAppleUpdates(false)
+        setAlertedToAppleUpdates(false)
         setFilterStagedOSUpdate(false)
         checkForUpdates()
         URLCache.shared.removeAllCachedResponses()
