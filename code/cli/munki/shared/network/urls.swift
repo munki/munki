@@ -58,7 +58,11 @@ func munkiRepoURL(_ type: String = "", resource: String = "", munkiRepoURL: Stri
         "manifests": "ManifestURL",
         "pkgs": "PackageURL",
     ]
-    guard let encodedType = (type as NSString).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+    // we're going to remove '+' from the set of characters allowed in the urlPath
+    // this forces '+' to be precent encoded, which makes some web servers happier
+    let allowedCharacters = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "+"))
+    
+    guard let encodedType = (type as NSString).addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
         // encoding failed
         return nil
     }
@@ -84,7 +88,7 @@ func munkiRepoURL(_ type: String = "", resource: String = "", munkiRepoURL: Stri
     if resource.isEmpty {
         return typeURL
     }
-    if let encodedResource = (resource as NSString).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) {
+    if let encodedResource = (resource as NSString).addingPercentEncoding(withAllowedCharacters: allowedCharacters) {
         return typeURL + encodedResource
     }
     // encoding failed
