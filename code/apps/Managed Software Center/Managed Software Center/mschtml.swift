@@ -697,7 +697,6 @@ func buildUpdatesPage() throws {
     }
     let page = GenericItem()
     page["update_rows"] = ""
-    page["hide_pending_updates"] = "hidden"
     page["apple_update_rows"] = ""
     page["hide_apple_updates"] = "hidden"
     page["hide_progress_spinner"] = "hidden"
@@ -720,7 +719,6 @@ func buildUpdatesPage() throws {
         alert["hide_progress_bar"] = "hidden"
         alert["progress_bar_value"] = ""
         page["update_rows"] = status_results_template.substitute(alert)
-        page["hide_pending_updates"] = ""
     } else {
         if !apple_update_list.isEmpty {
             page["apple_update_count"] = appleUpdateCountMessage(apple_update_list.count)
@@ -728,12 +726,10 @@ func buildUpdatesPage() throws {
             page["show_apple_updates_label"] = NSLocalizedString(
                 "Show", comment: "Show Apple updates button title")
             page["hide_apple_updates"] = ""
-            page["hide_pending_updates"] = ""
             page["apple_update_rows"] = buildItemListHTML(
                 apple_update_list, template: "apple_item_template.html", sort: false)
         }
         if !item_list.isEmpty {
-            page["hide_pending_updates"] = ""
             page["update_rows"] = buildItemListHTML(
                 item_list, template: "update_item_template.html", sort: false)
         }
