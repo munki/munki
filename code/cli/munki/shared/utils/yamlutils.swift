@@ -224,6 +224,14 @@ private func isInstallsDict(_ dict: [String: Any]) -> Bool {
 
 /// Check if a dictionary looks like a conditional_items entry (manifest conditional block)
 private func isConditionalItemDict(_ dict: [String: Any]) -> Bool {
+    // Top-level manifests share most keys with conditional blocks (managed_installs,
+    // included_manifests, etc.). `catalogs` is the disambiguator: conditional blocks
+    // never carry it. Without this check a top-level manifest with `included_manifests`
+    // routes through sortConditionalItemKeys and the keys emit in the conditional
+    // layout instead of the manifest's alphabetical layout.
+    if dict.keys.contains("catalogs") {
+        return false
+    }
     // A conditional item typically has "condition" key, or has manifest list keys without name/version
     // Check for condition key first (most reliable indicator)
     if dict.keys.contains("condition") {
