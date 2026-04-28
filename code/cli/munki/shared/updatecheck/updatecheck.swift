@@ -261,9 +261,9 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     } else {
         do {
             mainManifestPath = try getPrimaryManifest(alternateIdentifier: clientID)
-        } catch let err as ManifestError {
+        } catch let err {
             display.error("Could not retrieve managed install primary manifest: \(err.localizedDescription)")
-            throw err
+            return .finishedWithErrors
         }
     }
 
