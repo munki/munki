@@ -118,6 +118,9 @@ func pref(_ prefName: String) -> Any? {
         "MSCOfferToQuitBlockingApps": false,
         "MSCOfferToForceQuitBlockingApps": false,
         "MSCOfferToUpdateOthers": false,
+        "MSCAllowNotificationWindow": false,
+        "MSCAllowedNotificationWindowStart": 0,
+        "MSCAllowedNotificationWindowEnd": 24,
     ]
 
     var value: Any?
