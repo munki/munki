@@ -8,14 +8,28 @@
 
 import Cocoa
 
-class PrefsWindowController: NSWindowController {
-    @IBOutlet weak var timeRangeSelectorContainingView: NSView!
+class PrefsWindowController: NSWindowController, NSWindowDelegate {
     @IBOutlet var timeRangeSelectorController: TimeRangeSelectorViewController!
+
+    @IBOutlet weak var timeRangeSelector: TimeRangeSelectorView!
+    @IBOutlet weak var updateNotificationTimesCheckbox: NSButton!
+
+    @IBAction func didClickUpdateNotificationTimesCheckbox(_ sender: Any) {
+        if updateNotificationTimesCheckbox.state.rawValue == 1 {
+            timeRangeSelector.isHidden = false
+        } else {
+            timeRangeSelector.isHidden = true
+        }
+    }
 
     override func windowDidLoad() {
         super.windowDidLoad()
+        window?.delegate = self
         window?.makeKeyAndOrderFront(self)
-        timeRangeSelectorController.startTime = 9
-        timeRangeSelectorController.endTime = 17
+    }
+
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // NSWindowDelegate method called when user closes a window
+        return true
     }
 }

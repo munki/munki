@@ -8,37 +8,37 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="PrefsWindowController" customModule="Managed_Software_Center" customModuleProvider="target">
             <connections>
-                <outlet property="timeRangeSelectorContainingView" destination="naM-f4-NOS" id="hRA-0B-Vpq"/>
+                <outlet property="timeRangeSelector" destination="0qu-fh-2nm" id="lUu-Gx-AG7"/>
                 <outlet property="timeRangeSelectorController" destination="S4h-ce-ehS" id="Uyl-y4-mY5"/>
+                <outlet property="updateNotificationTimesCheckbox" destination="59w-1u-1jr" id="afI-Ur-kJX"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="31p-HV-TcG"/>
             </connections>
         </customObject>
-        <viewController id="S4h-ce-ehS" customClass="TimeRangeSelectorViewController" customModule="Managed_Software_Center" customModuleProvider="target">
-            <connections>
-                <outlet property="view" destination="naM-f4-NOS" id="EpP-us-F3o"/>
-            </connections>
-        </viewController>
+        <viewController id="S4h-ce-ehS" customClass="TimeRangeSelectorViewController" customModule="Managed_Software_Center" customModuleProvider="target"/>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="Settings" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES"/>
-            <rect key="contentRect" x="571" y="594" width="664" height="174"/>
+            <rect key="contentRect" x="571" y="594" width="683" height="93"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1512" height="949"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="664" height="174"/>
+                <rect key="frame" x="0.0" y="0.0" width="683" height="93"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="59w-1u-1jr">
-                        <rect key="frame" x="20" y="138" width="319" height="16"/>
+                        <rect key="frame" x="20" y="57" width="643" height="16"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Restrict update notifications to daily time range" bezelStyle="regularSquare" imagePosition="left" inset="2" id="QNT-BW-tLG">
+                        <buttonCell key="cell" type="check" title="Restrict update notifications to selected hours" bezelStyle="regularSquare" imagePosition="left" inset="2" id="QNT-BW-tLG">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
+                            <connections>
+                                <action selector="didClickUpdateNotificationTimesCheckbox:" target="-2" id="84j-qi-zfZ"/>
+                            </connections>
                         </buttonCell>
                     </button>
-                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="naM-f4-NOS">
-                        <rect key="frame" x="44" y="20" width="600" height="110"/>
+                    <customView hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0qu-fh-2nm" customClass="TimeRangeSelectorView" customModule="Managed_Software_Center" customModuleProvider="target">
+                        <rect key="frame" x="43" y="23" width="620" height="24"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     </customView>
                 </subviews>
@@ -46,7 +46,7 @@
             <connections>
                 <outlet property="delegate" destination="-2" id="8Vx-2p-vz3"/>
             </connections>
-            <point key="canvasLocation" x="-42" y="-23"/>
+            <point key="canvasLocation" x="-78.5" y="-1.5"/>
         </window>
     </objects>
 </document>
