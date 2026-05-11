@@ -147,7 +147,7 @@ class MainWindowController: NSWindowController {
             // because SF Symbols only supported on 11.0 or later
             //
             // try preferences (includes managed prefs)
-            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: Any]] {
+            if let sidebarConfig = munkiPref("CustomSidebarItems") as? [[String: Any]] {
                 return sidebarConfig
             }
             // try custom client resources
@@ -543,7 +543,7 @@ class MainWindowController: NSWindowController {
             resetAndReload()
             return
         }
-        let lastCheckResult = pref("LastCheckResult") as? Int ?? 0
+        let lastCheckResult = munkiPref("LastCheckResult") as? Int ?? 0
         if sessionResult != 0 || lastCheckResult < 0 {
             var alertMessageText = NSLocalizedString(
                 "Update check failed", comment: "Update Check Failed title")
@@ -879,7 +879,7 @@ class MainWindowController: NSWindowController {
 
     func startUpdateWithoutLogout() {
         // does lots of checks before (hopefully) starting an update run
-        if pythonishBool(pref("MSCOfferToQuitBlockingApps")) {
+        if pythonishBool(munkiPref("MSCOfferToQuitBlockingApps")) {
             // offer to quit enabled, lets do some magic
             if !alert_controller.canContinueAfterHandlingBlockingApps() {
                 loadUpdatesPage(self)
@@ -1525,7 +1525,7 @@ class MainWindowController: NSWindowController {
     
     // MARK: IBActions
     @IBAction func showHelp(_ sender: Any) {
-        if let helpURL = pref("HelpURL") as? String {
+        if let helpURL = munkiPref("HelpURL") as? String {
             if let finalURL = URL(string: helpURL) {
                 NSWorkspace.shared.open(finalURL)
             }

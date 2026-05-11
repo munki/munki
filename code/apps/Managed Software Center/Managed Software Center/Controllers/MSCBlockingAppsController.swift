@@ -362,7 +362,7 @@ class MSCBlockingAppsController: NSObject {
         quitAppsButton = quitButton
 
         // Update others button
-        if pythonishBool(pref("MSCOfferToUpdateOthers")) {
+        if pythonishBool(munkiPref("MSCOfferToUpdateOthers")) {
             let updateOthersButton = NSButton(
                 title: NSLocalizedString("Skip and Update Others", comment: "Skip and Update Others button title"),
                 target: self, action: #selector(updateOthers(_:))
@@ -715,7 +715,7 @@ class MSCBlockingAppsController: NSObject {
                 if !app.path.isEmpty, !isAppStillRunning(app.path), !closedApps.contains(app.path) {
                     msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
                     moveAppToClosedApps(path: app.path)
-                    if pythonishBool(pref("MSCOfferToUpdateOthers")),
+                    if pythonishBool(munkiPref("MSCOfferToUpdateOthers")),
                        let updateOthersButton = updateOtherItemsButton
                     {
                         updateOthersButton.isHidden = false
@@ -803,7 +803,7 @@ class MSCBlockingAppsController: NSObject {
         spinner.isHidden = true
 
         // Check if MSCOfferToForceQuitBlockingApps is enabled
-        let offerToForceQuitEnabled = pythonishBool(pref("MSCOfferToForceQuitBlockingApps"))
+        let offerToForceQuitEnabled = pythonishBool(munkiPref("MSCOfferToForceQuitBlockingApps"))
         if !offerToForceQuitEnabled {
             // Show "Manual quit required" label instead of Force Quit button
             showManualQuitLabel(for: appPath)

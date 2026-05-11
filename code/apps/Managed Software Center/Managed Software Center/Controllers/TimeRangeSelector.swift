@@ -133,13 +133,11 @@ class TimeRangeSelectorView: NSView {
             .foregroundColor: NSColor.labelColor
         ]
 
-        var hourIndex = 0
-        for hour in hours {
+        for (index, hour) in hours.enumerated() {
             let hourString = labelHour(hour)
-            let x = CGFloat(hourIndex) * hourWidth + borderRadius - 1
+            let x = CGFloat(index) * hourWidth + borderRadius - 1
             let y = bounds.height / 2 - fontSize / 2 - 1
             hourString.draw(at: NSPoint(x: x, y: y), withAttributes: attributes)
-            hourIndex += 1
         }
     }
 
@@ -194,7 +192,7 @@ class TimeRangeSelectorView: NSView {
     }
 
     /// Attempt to detect if user wants time in 24 hour format
-    func is24hourTime() -> Bool {
+    private func is24hourTime() -> Bool {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
         formatter.setLocalizedDateFormatFromTemplate("j")
@@ -203,7 +201,7 @@ class TimeRangeSelectorView: NSView {
 
     /// Returns a compact string for hour labels in our time range selector.
     /// May not strictly adhere to local conventions for displaying the time
-    func labelHour(_ hour: Int) -> String {
+    private func labelHour(_ hour: Int) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
         let using24hTime = is24hourTime()
@@ -234,7 +232,7 @@ class TimeRangeSelectorView: NSView {
         return formattedStr
     }
 
-    func formatHour(_ hour: Int) -> String {
+    private func formatHour(_ hour: Int) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
         formatter.dateStyle = .none
@@ -250,6 +248,17 @@ class TimeRangeSelectorView: NSView {
         }
 
         return formatter.string(from: date)
+    }
+
+    /// Public function to return a list of selected hours
+    func selectedHoursList() -> [Int] {
+        var hourList = [Int]()
+        for (hour, selected) in selectedHours.enumerated() {
+            if selected {
+                hourList.append(hour)
+            }
+        }
+        return hourList
     }
 }
 

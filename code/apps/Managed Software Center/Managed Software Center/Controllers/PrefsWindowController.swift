@@ -28,8 +28,7 @@ class PrefsWindowController: NSWindowController, NSWindowDelegate {
         window?.makeKeyAndOrderFront(self)
     }
 
-    func windowShouldClose(_ sender: NSWindow) -> Bool {
-        // NSWindowDelegate method called when user closes a window
-        return true
+    func windowWillClose(_ notification: Notification) {
+        print(timeRangeSelector.selectedHoursList())
     }
 }

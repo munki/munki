@@ -343,7 +343,7 @@ class MSCAlertController: NSObject {
                 "Log out and update", comment: "Log out and Update button text"))
             alert.addButton(withTitle: NSLocalizedString(
                 "Cancel", comment: "Cancel button title/short action text"))
-            if pythonishBool(pref("MSCOfferToUpdateOthers")),
+            if pythonishBool(munkiPref("MSCOfferToUpdateOthers")),
                someUpdatesDontRequireLogoutOrRestart()
             {
                 alert.addButton(withTitle: NSLocalizedString(

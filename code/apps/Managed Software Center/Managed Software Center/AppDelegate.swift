@@ -98,7 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         center.requestAuthorization(options: [.badge], completionHandler: { _, _ in return })
 
         // Show the Preferences/Settings menu if relevant
-        if pythonishBool(pref("MSCAllowNotificationWindow")) {
+        if pythonishBool(munkiPref("MSCAllowNotificationWindow")) {
             preferencesMenuItem.isHidden = false
             preferencesMenuSeparator.isHidden = false
         }
@@ -107,7 +107,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // been launched by /usr/local/munki/managedsoftwareupdate
         // to display available updates, or via a munki: URL
         if !launchedViaURL {
-            var lastcheck = pref("LastCheckDate") as? Date ?? Date.distantPast
+            var lastcheck = munkiPref("LastCheckDate") as? Date ?? Date.distantPast
             if thereAreUpdatesToBeForcedSoon(hours: 2) {
                 // skip the check and just display the updates
                 // by pretending the lastcheck is now
@@ -118,7 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                 // by pretending the lastcheck is now
                 lastcheck = Date()
             }
-            let max_cache_age = pref("CheckResultsCacheSeconds") as? Int ?? 0
+            let max_cache_age = munkiPref("CheckResultsCacheSeconds") as? Int ?? 0
             if lastcheck.timeIntervalSinceNow * -1 > TimeInterval(max_cache_age) {
                 // check for updates if the last check is over the
                 // configured manualcheck cache age max.
