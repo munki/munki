@@ -74,6 +74,8 @@ func macOSOutOfDateDays() -> Double {
     var macOSUpdates = [PlistDict]()
     for value in appleUpdateHistory.values {
         if let update = value as? PlistDict,
+           let displayName = update["displayName"] as? String,
+           displayName.hasPrefix("macOS "),
            update["version"] as? String != nil
         {
             macOSUpdates.append(update)
