@@ -308,11 +308,14 @@ class MainWindowController: NSWindowController {
                 return .terminateNow
             }
         }
-        if (getAppleUpdates().count > 0 && getEffectiveUpdateList().count == 0 ) {
+        if getAppleUpdates().count > 0, getEffectiveUpdateList().count == 0 {
             // we have only Apple updates; remind the user they need to install them
-            alert_controller.alertToAppleUpdates(skipAction: "quit")
-            setAlertedToAppleUpdates(true)
-            return .terminateCancel
+            if !haveAlertedToAppleUpdates() {
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
+                setAlertedToAppleUpdates(true)
+                return .terminateCancel
+            }
+            return .terminateNow
         }
         // we have pending updates and we have not yet warned the user
         // about them
@@ -1242,6 +1245,16 @@ class MainWindowController: NSWindowController {
             return
         }
         var filename = unquote(host)
+        // Reject payloads that smuggle a remote URL through the munki:// scheme.
+        // handleMunkiURL is for internal page names only; load_page accepts
+        // http/https specifically for admin-configured CustomSidebarItems,
+        // which never flow through this function.
+        if let components = URLComponents(string: filename),
+           ["https", "http"].contains(components.scheme)
+        {
+            msc_debug_log("Refusing munki:// URL with embedded http(s) scheme: \(filename)")
+            return
+        }
         if filename == "appleupdates" {
             openSoftwareUpdatePrefsPane()
             return

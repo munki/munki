@@ -69,11 +69,13 @@ func macOSOutOfDateDays() -> Double {
     }
     let appleUpdateHistoryPath = managedInstallsDir(subpath: "AppleUpdateHistory.plist")
     let appleUpdateHistory = (try? readPlist(fromFile: appleUpdateHistoryPath) as? PlistDict) ?? [:]
-    let currentOSVersion = MunkiVersion(getOSVersion())
+    let currentOSVersion = MunkiVersion(getOSVersion(onlyMajorMinor: false))
     let majorOSVersion = "\(ProcessInfo().operatingSystemVersion.majorVersion)."
     var macOSUpdates = [PlistDict]()
     for value in appleUpdateHistory.values {
         if let update = value as? PlistDict,
+           let displayName = update["displayName"] as? String,
+           displayName.hasPrefix("macOS "),
            update["version"] as? String != nil
         {
             macOSUpdates.append(update)
