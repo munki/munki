@@ -308,11 +308,14 @@ class MainWindowController: NSWindowController {
                 return .terminateNow
             }
         }
-        if (getAppleUpdates().count > 0 && getEffectiveUpdateList().count == 0 ) {
+        if getAppleUpdates().count > 0, getEffectiveUpdateList().count == 0 {
             // we have only Apple updates; remind the user they need to install them
-            alert_controller.alertToAppleUpdates(skipAction: "quit")
-            setAlertedToAppleUpdates(true)
-            return .terminateCancel
+            if !haveAlertedToAppleUpdates() {
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
+                setAlertedToAppleUpdates(true)
+                return .terminateCancel
+            }
+            return .terminateNow
         }
         // we have pending updates and we have not yet warned the user
         // about them
