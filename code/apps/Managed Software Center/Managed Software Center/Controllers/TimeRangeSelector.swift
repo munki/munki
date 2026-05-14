@@ -60,18 +60,6 @@ class TimeRangeSelectorView: NSView {
         }
     }
 
-    func setAllowedHours(start: Int, end: Int) {
-        allowedHoursStart = start
-        allowedHoursEnd = end
-        if allowedHoursStart < allowedHoursEnd {
-            hours  = Array(allowedHoursStart..<allowedHoursEnd)
-        } else {
-            hours = Array(allowedHoursStart...23)
-            hours = hours + Array(0..<allowedHoursEnd)
-        }
-        needsDisplay = true
-    }
-
     // Provide intrinsic content size
     override var intrinsicContentSize: NSSize {
         return NSSize(width: NSView.noIntrinsicMetric, height: NSView.noIntrinsicMetric)
@@ -161,6 +149,7 @@ class TimeRangeSelectorView: NSView {
             isDragging = true
             lastTouchedHour = hour
         } else if selectedHours.filter({ $0 }).count > 1 {
+            // must have at least one selectedHour
             selectedHours[hour] = false
             isDragging = true
             lastTouchedHour = hour
@@ -253,12 +242,53 @@ class TimeRangeSelectorView: NSView {
         return hourList
     }
 
+    /// is the given hour within the start and end range (handles ranges that cross midnight)
+    private func hourWithinRange(_ hour: Int, start: Int, end: Int) -> Bool {
+        if start < end {
+            return hour >= start && hour < end
+        }
+        return hour >= start || hour < end
+    }
+
     /// Public function to set the selected hours
     func setSelectedHours(_ hours: [Int]) {
         selectedHours = Array(repeating: false, count: 24)
-        for hour in hours {
-            selectedHours[hour] = true
+        let validHours = hours.filter {
+            hourWithinRange($0, start: allowedHoursStart, end: allowedHoursEnd)
         }
+        if !validHours.isEmpty {
+            for hour in validHours {
+                selectedHours[hour] = true
+            }
+        } else {
+            if allowedHoursStart < allowedHoursEnd {
+                for hour in allowedHoursStart..<allowedHoursEnd {
+                    selectedHours[hour] = true
+                }
+            } else {
+                // allowed range crosses midnight
+                for hour in allowedHoursStart...23 {
+                    selectedHours[hour] = true
+                }
+                for hour in 0..<allowedHoursEnd {
+                    selectedHours[hour] = true
+                }
+            }
+        }
+
+    }
+
+    /// Public function to set the allowed hour range
+    func setAllowedHours(start: Int, end: Int) {
+        allowedHoursStart = start
+        allowedHoursEnd = end
+        if allowedHoursStart < allowedHoursEnd {
+            hours  = Array(allowedHoursStart..<allowedHoursEnd)
+        } else {
+            hours = Array(allowedHoursStart...23)
+            hours = hours + Array(0..<allowedHoursEnd)
+        }
+        needsDisplay = true
     }
 }
 
