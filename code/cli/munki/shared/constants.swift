@@ -54,6 +54,9 @@ let UPDATECHECKLAUNCHFILE = "/private/tmp/.com.googlecode.munki.updatecheck.laun
 let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 let MSCLAUNCHFILE = "/var/run/com.googlecode.munki.ManagedSoftwareCenter"
 
+/// stop requested flag file
+let STOPREQUESTEDFLAG = "/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested"
+
 /// postinstall actions
 enum PostAction: Int, Codable, Comparable {
     static func < (lhs: PostAction, rhs: PostAction) -> Bool {
