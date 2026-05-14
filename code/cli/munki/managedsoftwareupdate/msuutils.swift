@@ -214,7 +214,7 @@ func getUserNotificationPreferences(_ consoleUser: String) -> PlistDict {
     for key in ["UseNotificationTimes", "NotificationHours"] {
         let value = CFPreferencesCopyValue(
             key as CFString,
-            "com.googlecode.munki.ManagedSoftwareCenter" as CFString,
+            MSC_BUNDLE_ID as CFString,
             consoleUser as CFString,
             kCFPreferencesAnyHost
         )
@@ -249,7 +249,7 @@ func inUserNotificationWindow(_ consoleUser: String) -> Bool {
         return true
     }
     var allowedStart = intPref("MSCAllowedNotificationWindowStart") ?? 0
-    allowedStart = min(max(allowedStart, 0), 24)
+    allowedStart = min(max(allowedStart, 0), 23)
     var allowedEnd = intPref("MSCAllowedNotificationWindowEnd") ?? 24
     allowedEnd = min(max(allowedEnd, 0), 24)
     // now ensure we have at least one hour within the allowedStart and allowedEnd
@@ -262,8 +262,7 @@ func inUserNotificationWindow(_ consoleUser: String) -> Bool {
         return true
     }
     let currentHour = Calendar.current.component(.hour, from: Date())
-    munkiLog("User \(consoleUser) specified allowed notification hours: \(validHours)")
-    munkiLog("Current hour: \(currentHour)")
+    munkiLog("User \(consoleUser) specified allowed notification hours: \(validHours); current hour is \(currentHour)")
     if validHours.contains(currentHour) {
         return true
     }
