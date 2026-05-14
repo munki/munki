@@ -248,10 +248,14 @@ func inUserNotificationWindow(_ consoleUser: String) -> Bool {
         munkiLog("User has not specified allowed notification hours")
         return true
     }
-    let allowedStart = intPref("MSCAllowedNotificationWindowStart") ?? 0
-    let allowedEnd = intPref("MSCAllowedNotificationWindowEnd") ?? 24
+    var allowedStart = intPref("MSCAllowedNotificationWindowStart") ?? 0
+    allowedStart = min(max(allowedStart, 0), 24)
+    var allowedEnd = intPref("MSCAllowedNotificationWindowEnd") ?? 24
+    allowedEnd = min(max(allowedEnd, 0), 24)
     // now ensure we have at least one hour within the allowedStart and allowedEnd
-    let validHours = notificationHours.filter { hourWithinRange($0, start: allowedStart, end: allowedEnd) }
+    let validHours = notificationHours.filter {
+        hourWithinRange($0, start: allowedStart, end: allowedEnd)
+    }
     if validHours.isEmpty {
         // user did not select any allowed hours, so feel free to notify whenever
         munkiLog("User has specified invalid allowed notification hours, ignoring")

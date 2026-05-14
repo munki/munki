@@ -35,8 +35,10 @@ class PrefsWindowController: NSWindowController, NSWindowDelegate {
         if useNotificationTimes {
             timeRangeSelector.isHidden = false
         }
-        let allowedHoursStart = munkiPref("MSCAllowedNotificationWindowStart") as? Int ?? 0
-        let allowedHoursEnd = munkiPref("MSCAllowedNotificationWindowEnd") as? Int ?? 24
+        var allowedHoursStart = munkiPref("MSCAllowedNotificationWindowStart") as? Int ?? 0
+        allowedHoursStart = min(max(allowedHoursStart, 0), 24)
+        var allowedHoursEnd = munkiPref("MSCAllowedNotificationWindowEnd") as? Int ?? 24
+        allowedHoursEnd = min(max(allowedHoursEnd, 0), 24)
         timeRangeSelector.setAllowedHours(start: allowedHoursStart, end: allowedHoursEnd)
         let notificationHours = UserDefaults.standard.array(forKey: "NotificationHours") as? [Int] ?? []
         timeRangeSelector.setSelectedHours(notificationHours)
