@@ -208,6 +208,64 @@ func activeDisplaySleepAssertion() -> Bool {
     return false
 }
 
+/// Returns notification preferences for the user
+func getUserNotificationPreferences(_ consoleUser: String) -> PlistDict {
+    var userPrefs = PlistDict()
+    for key in ["UseNotificationTimes", "NotificationHours"] {
+        let value = CFPreferencesCopyValue(
+            key as CFString,
+            "com.googlecode.munki.ManagedSoftwareCenter" as CFString,
+            consoleUser as CFString,
+            kCFPreferencesAnyHost
+        )
+        userPrefs[key] = value
+    }
+    return userPrefs
+}
+
+/// is the given hour within the start and end range (handles ranges that cross midnight)
+func hourWithinRange(_ hour: Int, start: Int, end: Int) -> Bool {
+    if start < end {
+        return hour >= start && hour < end
+    }
+    return hour >= start || hour < end
+}
+
+/// If the user is allowed to specify a notification window, and they have done so, and are we within that window?
+func inUserNotificationWindow(_ consoleUser: String) -> Bool {
+    if !(boolPref("MSCAllowNotificationWindow") ?? false) {
+        // user not allowed to specify a notification window
+        munkiLog("MSCAllowNotificationWindow is not enabled")
+        return true
+    }
+    let userPrefs = getUserNotificationPreferences(consoleUser)
+    // useNotificationTimes must be true,
+    // NotificationHours must be an array of Int
+    guard let useNotificationTimes = userPrefs["UseNotificationTimes"] as? Bool,
+          useNotificationTimes,
+          let notificationHours = userPrefs["NotificationHours"] as? [Int]
+    else {
+        munkiLog("User has not specified allowed notification hours")
+        return true
+    }
+    let allowedStart = intPref("MSCAllowedNotificationWindowStart") ?? 0
+    let allowedEnd = intPref("MSCAllowedNotificationWindowEnd") ?? 24
+    // now ensure we have at least one hour within the allowedStart and allowedEnd
+    let validHours = notificationHours.filter { hourWithinRange($0, start: allowedStart, end: allowedEnd) }
+    if validHours.isEmpty {
+        // user did not select any allowed hours, so feel free to notify whenever
+        munkiLog("User has specified invalid allowed notification hours, ignoring")
+        return true
+    }
+    let currentHour = Calendar.current.component(.hour, from: Date())
+    munkiLog("User \(consoleUser) specified allowed notification hours: \(validHours)")
+    munkiLog("Current hour: \(currentHour)")
+    if validHours.contains(currentHour) {
+        return true
+    }
+    return false
+}
+
 /// Notify the logged-in user of available updates.
 ///
 /// Args:
@@ -249,6 +307,12 @@ func notifyUserOfUpdates(force: Bool = false) {
             munkiLog("This may indicate the user is presenting or in a virtual meeting.")
             return
         }
+        if !force, !inUserNotificationWindow(consoleUser) {
+            // user has specified an allowed notification window and we're outside it
+            munkiLog("Skipping user notification because the current time is outside the allowed notification window.")
+            return
+        }
+        // we can notify the user!
         // record current notification date
         setPref("LastNotifiedDate", now)
         munkiLog("Notifying user of available updates.")
