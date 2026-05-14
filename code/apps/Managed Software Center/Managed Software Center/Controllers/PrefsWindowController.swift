@@ -9,8 +9,7 @@
 import Cocoa
 
 class PrefsWindowController: NSWindowController, NSWindowDelegate {
-    @IBOutlet var timeRangeSelectorController: TimeRangeSelectorViewController!
-
+    
     @IBOutlet weak var timeRangeSelector: TimeRangeSelectorView!
     @IBOutlet weak var updateNotificationTimesCheckbox: NSButton!
 
@@ -28,7 +27,25 @@ class PrefsWindowController: NSWindowController, NSWindowDelegate {
         window?.makeKeyAndOrderFront(self)
     }
 
+    // read preferences and set up the window to reflect them
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        let useNotificationTimes = UserDefaults.standard.bool(forKey: "UseNotificationTimes")
+        updateNotificationTimesCheckbox.state = useNotificationTimes ? .on : .off
+        if useNotificationTimes {
+            timeRangeSelector.isHidden = false
+        }
+        let allowedHoursStart = munkiPref("MSCAllowedNotificationWindowStart") as? Int ?? 0
+        let allowedHoursEnd = munkiPref("MSCAllowedNotificationWindowEnd") as? Int ?? 24
+        timeRangeSelector.setAllowedHours(start: allowedHoursStart, end: allowedHoursEnd)
+        let notificationHours = UserDefaults.standard.array(forKey: "NotificationHours") as? [Int] ?? []
+        timeRangeSelector.setSelectedHours(notificationHours)
+    }
+
     func windowWillClose(_ notification: Notification) {
-        print(timeRangeSelector.selectedHoursList())
+        let useNotificationTimes = updateNotificationTimesCheckbox.state.rawValue == 1
+        let notificationHours = timeRangeSelector.selectedHoursList()
+        UserDefaults.standard.set(useNotificationTimes, forKey: "UseNotificationTimes")
+        UserDefaults.standard.set(notificationHours, forKey: "NotificationHours")
     }
 }

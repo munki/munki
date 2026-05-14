@@ -12,15 +12,15 @@ class TimeRangeSelectorView: NSView {
 
     // MARK: - Properties
 
-    var selectedHours = [Bool]() {
+    var selectedHours = Array(repeating: false, count: 24) {
         didSet {
             needsDisplay = true
             onTimeSelectionChanged?()
         }
     }
 
-    var allowedHoursStart = 7
-    var allowedHoursEnd = 19
+    private var allowedHoursStart = 8
+    private var allowedHoursEnd = 18
 
     var onTimeSelectionChanged: (() -> Void)?
 
@@ -56,11 +56,20 @@ class TimeRangeSelectorView: NSView {
             hours  = Array(allowedHoursStart..<allowedHoursEnd)
         } else {
             hours = Array(allowedHoursStart...23)
-            hours = hours + Array(0...allowedHoursEnd)
+            hours = hours + Array(0..<allowedHoursEnd)
         }
-        for testHour in 0...23 {
-            selectedHours.append(hours.contains(testHour))
+    }
+
+    func setAllowedHours(start: Int, end: Int) {
+        allowedHoursStart = start
+        allowedHoursEnd = end
+        if allowedHoursStart < allowedHoursEnd {
+            hours  = Array(allowedHoursStart..<allowedHoursEnd)
+        } else {
+            hours = Array(allowedHoursStart...23)
+            hours = hours + Array(0..<allowedHoursEnd)
         }
+        needsDisplay = true
     }
 
     // Provide intrinsic content size
@@ -111,7 +120,7 @@ class TimeRangeSelectorView: NSView {
             if selectedHours[hours[hourIndex]] {
                 let startIndex = hourIndex
                 var endIndex = hourIndex
-                while endIndex + 1 < hours.count, selectedHours[hours[endIndex] + 1] {
+                while endIndex + 1 < hours.count, selectedHours[hours[endIndex + 1]] {
                     endIndex += 1
                 }
                 let selectionCount = CGFloat(endIndex - startIndex + 1)
@@ -184,6 +193,7 @@ class TimeRangeSelectorView: NSView {
         return hours.firstIndex(where: { $0 == hour }) ?? -1
     }
 
+    // return the hour from the position of the mouse pointer
     private func hourFromPosition(_ x: CGFloat) -> Int {
         let hourWidth = bounds.width / CGFloat(hours.count)
         let hourIndex = Int(x / hourWidth)
@@ -222,32 +232,14 @@ class TimeRangeSelectorView: NSView {
         var formattedStr = formatter.string(from: date)
         if !using24hTime {
             // append an 'a' for AM and a 'p' for PM to "12"
-            if hour == 0 || hour == 24 {
+            if hour == 0 || hour == 24 || (hour < 12 && hour == allowedHoursStart) {
                 formattedStr += "a"
             }
-            if hour == 12 {
+            if hour == 12 || (hour > 12 && hour == allowedHoursStart) {
                 formattedStr += "p"
             }
         }
         return formattedStr
-    }
-
-    private func formatHour(_ hour: Int) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale.current
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-
-        var components = DateComponents()
-        components.hour = hour
-        components.minute = 0
-
-        let calendar = Calendar.current
-        guard let date = calendar.date(from: components) else {
-            return "\(hour):00"
-        }
-
-        return formatter.string(from: date)
     }
 
     /// Public function to return a list of selected hours
@@ -260,14 +252,13 @@ class TimeRangeSelectorView: NSView {
         }
         return hourList
     }
-}
 
-// MARK: - View Controller
-
-class TimeRangeSelectorViewController: NSViewController {
-
-    override func loadView() {
-        NSLog("TimeRangeSelectorViewController.loadView called")
-        view.wantsLayer = true
+    /// Public function to set the selected hours
+    func setSelectedHours(_ hours: [Int]) {
+        selectedHours = Array(repeating: false, count: 24)
+        for hour in hours {
+            selectedHours[hour] = true
+        }
     }
 }
+
