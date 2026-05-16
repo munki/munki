@@ -51,7 +51,7 @@ class TimeRangeSelectorView: NSView {
 
     private func setup() {
         wantsLayer = true
-        if allowedHoursStart == -1, allowedHoursEnd == -1 {
+        if allowedHoursStart == -1 || allowedHoursEnd == -1 {
             // default setup
             setAllowedHours(start: 8, end: 18)
         }
