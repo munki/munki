@@ -14,7 +14,7 @@ private class FlippedClipView: NSClipView {
     override var isFlipped: Bool { true }
 }
 
-/// A struct to track UI elements that correspond to blockind apps
+/// A struct to track UI elements that correspond to blocking apps
 private struct BlockingAppRowData {
     var displayName: String
     var rowView: NSView?
