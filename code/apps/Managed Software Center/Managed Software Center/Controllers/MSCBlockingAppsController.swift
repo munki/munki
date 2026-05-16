@@ -543,7 +543,7 @@ class MSCBlockingAppsController: NSObject {
             rowView.addSubview(iconView)
             rowView.addSubview(nameLabel)
 
-            let manualQuitLabel = createManualQuitLabel(for: app.path)
+            let manualQuitLabel = createManualQuitLabel()
             rowView.addSubview(manualQuitLabel)
 
             if isManualQuit {
@@ -741,7 +741,7 @@ class MSCBlockingAppsController: NSObject {
         monitorTimer = timer
     }
 
-    private func createManualQuitLabel(for _: String) -> NSTextField {
+    private func createManualQuitLabel() -> NSTextField {
         let manualQuitLabel = NSTextField(labelWithString: NSLocalizedString(
             "Manual quit required",
             comment: "Manual quit required label"
