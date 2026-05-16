@@ -80,6 +80,12 @@ class MSCBlockingAppsController: NSObject {
         super.init()
     }
 
+    // MARK: - Deinitialization
+
+    deinit {
+        monitorTimer?.invalidate()
+    }
+
     // MARK: - Public Methods
 
     /// Presents an interactive sheet listing blocking applications so the user can close them.
@@ -332,7 +338,6 @@ class MSCBlockingAppsController: NSObject {
             ), target: nil, action: nil)
             checkbox.translatesAutoresizingMaskIntoConstraints = false
             checkbox.state = .on
-            // checkbox.isHidden = hideReopenCheckbox
             mainStackView.addArrangedSubview(checkbox)
             mainStackView.setCustomSpacing(16, after: checkbox)
             reopenCheckbox = checkbox
@@ -417,7 +422,6 @@ class MSCBlockingAppsController: NSObject {
         let adjustedSheetWidth = max(
             sheetWidth,
             actionButtonWidth + 2 * sheetMargin,
-            // titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
             checkboxWidth + 2 * sheetMargin
         )
 
