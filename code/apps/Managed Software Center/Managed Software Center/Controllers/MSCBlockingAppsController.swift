@@ -219,15 +219,6 @@ class MSCBlockingAppsController: NSObject {
         // Create and configure the sheet
         let sheetWindow = createSheet(for: uniqueApps, hideReopenCheckbox: allAppsBeingRemoved)
 
-        /*
-         let sheetWindow = createSheet(
-             for: [
-                 (displayName: "Adobe Photoshop 2026", path: "/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app"),
-                 (displayName: "Geführte Softwareaktualisierung", path: "/Applications/Managed Software Center.app"),
-                 (displayName: "Workspace ONE Intelligent Hub", path: "/Applications/Workspace ONE Intelligent Hub.app"),
-             ])
-         */
-
         sheet = sheetWindow
 
         // Track result
