@@ -9,7 +9,6 @@
 import Cocoa
 
 class TimeRangeSelectorView: NSView {
-
     // MARK: - Properties
 
     var selectedHours = Array(repeating: false, count: 24) {
@@ -19,8 +18,8 @@ class TimeRangeSelectorView: NSView {
         }
     }
 
-    private var allowedHoursStart = 8
-    private var allowedHoursEnd = 18
+    private var allowedHoursStart = -1
+    private var allowedHoursEnd = -1
 
     var onTimeSelectionChanged: (() -> Void)?
 
@@ -52,11 +51,9 @@ class TimeRangeSelectorView: NSView {
 
     private func setup() {
         wantsLayer = true
-        if allowedHoursStart < allowedHoursEnd {
-            hours  = Array(allowedHoursStart..<allowedHoursEnd)
-        } else {
-            hours = Array(allowedHoursStart...23)
-            hours = hours + Array(0..<allowedHoursEnd)
+        if allowedHoursStart == -1, allowedHoursEnd == -1 {
+            // default setup
+            setAllowedHours(start: 8, end: 18)
         }
     }
 
@@ -84,8 +81,8 @@ class TimeRangeSelectorView: NSView {
 
         // Draw vertical lines between hours
         let hourWidth = bounds.width / CGFloat(hours.count)
-        for hour in 1...hours.count - 1 {
-            let x = CGFloat(hour) * hourWidth
+        for index in 1 ..< hours.count {
+            let x = CGFloat(index) * hourWidth
             let path = NSBezierPath()
             path.lineWidth = 0.75
             path.move(to: NSPoint(x: x, y: 0))
@@ -127,7 +124,7 @@ class TimeRangeSelectorView: NSView {
         let fontSize: CGFloat = (hours.count > 12) ? 11 : 13
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: fontSize),
-            .foregroundColor: NSColor.labelColor
+            .foregroundColor: NSColor.labelColor,
         ]
 
         for (index, hour) in hours.enumerated() {
@@ -143,13 +140,15 @@ class TimeRangeSelectorView: NSView {
     override func mouseDown(with event: NSEvent) {
         let location = convert(event.locationInWindow, from: nil)
         let hour = hourFromPosition(location.x)
+        if hour >= selectedHours.count { return }
         dragSelecting = !selectedHours[hour]
         if dragSelecting {
             selectedHours[hour] = true
             isDragging = true
             lastTouchedHour = hour
         } else if selectedHours.filter({ $0 }).count > 1 {
-            // must have at least one selectedHour
+            // must have at least one selected hour;
+            // disallow deselecting all hours
             selectedHours[hour] = false
             isDragging = true
             lastTouchedHour = hour
@@ -157,11 +156,11 @@ class TimeRangeSelectorView: NSView {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        //guard isDragging, let dragStart = dragStartTime else { return }
         guard isDragging, let previousHour = lastTouchedHour else { return }
 
         let location = convert(event.locationInWindow, from: nil)
         let hour = hourFromPosition(location.x)
+        if hour >= selectedHours.count { return }
         if hour == previousHour { return }
         lastTouchedHour = hour
         if dragSelecting {
@@ -171,18 +170,14 @@ class TimeRangeSelectorView: NSView {
         }
     }
 
-    override func mouseUp(with event: NSEvent) {
+    override func mouseUp(with _: NSEvent) {
         isDragging = false
         lastTouchedHour = nil
     }
 
     // MARK: - Helper Methods
 
-    private func indexForHour(_ hour: Int) -> Int {
-        return hours.firstIndex(where: { $0 == hour }) ?? -1
-    }
-
-    // return the hour from the position of the mouse pointer
+    // return the hour based on the position of the mouse pointer
     private func hourFromPosition(_ x: CGFloat) -> Int {
         let hourWidth = bounds.width / CGFloat(hours.count)
         let hourIndex = Int(x / hourWidth)
@@ -200,6 +195,8 @@ class TimeRangeSelectorView: NSView {
 
     /// Returns a compact string for hour labels in our time range selector.
     /// May not strictly adhere to local conventions for displaying the time
+    /// For 12-hour time formats, adds a am/pm label for 12 and for the first
+    /// displayed hour
     private func labelHour(_ hour: Int) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
@@ -221,7 +218,7 @@ class TimeRangeSelectorView: NSView {
         var formattedStr = formatter.string(from: date)
         if !using24hTime {
             // append an 'a' for AM and a 'p' for PM to "12"
-            if hour == 0 || hour == 24 || (hour < 12 && hour == allowedHoursStart) {
+            if hour == 0 || (hour < 12 && hour == allowedHoursStart) {
                 formattedStr += "a"
             }
             if hour == 12 || (hour > 12 && hour == allowedHoursStart) {
@@ -261,34 +258,46 @@ class TimeRangeSelectorView: NSView {
                 selectedHours[hour] = true
             }
         } else {
-            if allowedHoursStart < allowedHoursEnd {
-                for hour in allowedHoursStart..<allowedHoursEnd {
-                    selectedHours[hour] = true
-                }
-            } else {
-                // allowed range crosses midnight
-                for hour in allowedHoursStart...23 {
-                    selectedHours[hour] = true
-                }
-                for hour in 0..<allowedHoursEnd {
-                    selectedHours[hour] = true
-                }
+            // if there are no hours within the allowed range, then
+            // select all hours within the allowed range
+            // (we must not have no selected hours within the allowed range)
+            for hour in 0 ..< selectedHours.count {
+                selectedHours[hour] = hourWithinRange(
+                    hour, start: allowedHoursStart, end: allowedHoursEnd
+                )
             }
         }
-
     }
 
     /// Public function to set the allowed hour range
     func setAllowedHours(start: Int, end: Int) {
-        allowedHoursStart = start
-        allowedHoursEnd = end
-        if allowedHoursStart < allowedHoursEnd {
-            hours  = Array(allowedHoursStart..<allowedHoursEnd)
+        // make sure start is in valid range (0-23)
+        // reset to 0 if invalid
+        if start < 0 || start > 23 {
+            allowedHoursStart = 0
         } else {
-            hours = Array(allowedHoursStart...23)
-            hours = hours + Array(0..<allowedHoursEnd)
+            allowedHoursStart = start
+        }
+        // make sure end is in valid range (0-24)
+        // reset to 24 if invalid
+        if end < 0 || end > 24 {
+            allowedHoursEnd = 24
+        } else {
+            allowedHoursEnd = end
+        }
+        // if start and end are the same then all 24 hours are valid
+        if allowedHoursStart == allowedHoursEnd {
+            allowedHoursStart = 0
+            allowedHoursEnd = 24
+        }
+        if allowedHoursStart < allowedHoursEnd {
+            // "normal" range
+            hours = Array(allowedHoursStart ..< allowedHoursEnd)
+        } else {
+            // range crosses midnight
+            hours = Array(allowedHoursStart ... 23)
+            hours = hours + Array(0 ..< allowedHoursEnd)
         }
         needsDisplay = true
     }
 }
-
