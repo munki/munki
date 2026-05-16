@@ -811,6 +811,23 @@ class MSCBlockingAppsController: NSObject {
         ])
     }
 
+    /// Returns all running applications that match the given app bundle path.
+    /// This handles nested .app bundles (e.g., Docker.app contains Docker Desktop.app)
+    private func getRunningApps(forBundlePath appPath: String) -> [NSRunningApplication] {
+        let bundlePrefix = appPath + "/"
+        // NSRunningApplication.bundleURL.path always ends with a /
+        // so build our comparison URL with a path ending with a /
+        let bundleURL = URL(fileURLWithPath: bundlePrefix)
+
+        // Find all running apps that match this bundle or are nested inside it
+        return NSWorkspace.shared.runningApplications.filter { runningApp in
+            guard let runningBundleURL = runningApp.bundleURL else { return false }
+            let runningPath = runningBundleURL.path
+            return runningBundleURL == bundleURL ||
+                runningPath.hasPrefix(bundlePrefix)
+        }
+    }
+
     @objc private func forceQuitButtonClicked(_ sender: NSButton) {
         guard let appPath = sender.identifier?.rawValue,
               let appInfo = appsToQuit.first(where: { $0.path == appPath }),
@@ -842,18 +859,7 @@ class MSCBlockingAppsController: NSObject {
     }
 
     private func performForceQuit(for appPath: String) {
-        let bundlePrefix = appPath + "/"
-        // NSRunningApplication.bundleURL.path always ends with a /
-        // so build our comparison URL with a path ending with a /
-        let bundleURL = URL(fileURLWithPath: bundlePrefix)
-
-        // Find all running apps that match this bundle or are nested inside it
-        let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
-            guard let runningBundleURL = runningApp.bundleURL else { return false }
-            let runningPath = runningBundleURL.path
-            return runningBundleURL == bundleURL ||
-                runningPath.hasPrefix(bundlePrefix)
-        }
+        let runningApps = getRunningApps(forBundlePath: appPath)
 
         msc_debug_log("Force terminating \(runningApps.count) app(s) for bundle: \(appPath)")
         for runningApp in runningApps {
@@ -1007,20 +1013,7 @@ class MSCBlockingAppsController: NSObject {
                     }
                 } else {
                     // Use default termination logic
-                    // Find the running application by its bundle URL and terminate it
-                    let bundlePrefix = app.path + "/"
-                    // NSRunningApplication.bundleURL.path always ends with a /
-                    // so build our comparison URL with a path ending with a /
-                    let bundleURL = URL(fileURLWithPath: bundlePrefix)
-
-                    // Find all running apps that match this bundle or are nested inside it
-                    // This handles apps like Docker that contain nested .app bundles
-                    let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
-                        guard let runningBundleURL = runningApp.bundleURL else { return false }
-                        let runningPath = runningBundleURL.path
-                        return runningBundleURL == bundleURL ||
-                            runningPath.hasPrefix(bundlePrefix)
-                    }
+                    let runningApps = getRunningApps(forBundlePath: app.path)
 
                     msc_debug_log("Terminating \(runningApps.count) app(s) for bundle: \(app.path)")
                     for runningApp in runningApps {
