@@ -211,6 +211,31 @@ func activeDisplaySleepAssertion() -> Bool {
 /// Returns notification preferences for the user
 func getUserNotificationPreferences(_ consoleUser: String) -> PlistDict {
     var userPrefs = PlistDict()
+
+    // we're going to read directly from the user's prefs file right now
+    // because using CFPreferencesCopyValue seems to get old/cached values
+    // but this means we can't use MCX/configuration profiles to
+    // manage these values
+    if let userHome = NSHomeDirectoryForUser(consoleUser),
+       let plist = try? readPlist(fromFile: "\(userHome)/Library/Preferences/\(MSC_BUNDLE_ID).plist"),
+       let prefs = plist as? PlistDict
+    {
+        for key in ["UseNotificationTimes", "NotificationHours"] {
+            userPrefs[key] = prefs[key]
+        }
+        return userPrefs
+    }
+    // keeping the CFPreferences implementation here as a backup
+    // and reference
+
+    // make sure we have the latest prefs and not a stale cache
+    CFPreferencesAppSynchronize(MSC_BUNDLE_ID as CFString)
+    CFPreferencesSynchronize(
+        MSC_BUNDLE_ID as CFString,
+        consoleUser as CFString,
+        kCFPreferencesAnyHost
+    )
+
     for key in ["UseNotificationTimes", "NotificationHours"] {
         let value = CFPreferencesCopyValue(
             key as CFString,
