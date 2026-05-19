@@ -30,6 +30,23 @@
     top: -6px;
 }
 
+.spinner.half-left {
+    font-size: 22px;
+    position: absolute;
+    display: none;
+    left: -27px;
+    top: calc(58% + 2px);
+    transform: translateY(-50%);
+    vertical-align: middle;
+}
+
+span.downloading>div.spinner.half-left,
+span.preparing-removal>div.spinner.half-left,
+span.installing>div.spinner.half-left,
+span.removing>div.spinner.half-left {
+    display: inline-block !important;
+}
+
 .spinner-blade {
     position: absolute;
     left: 0.4629em;
@@ -40,45 +57,46 @@
     background-color: transparent;
     transform-origin: center -0.1222em;
     -webkit-animation: spinner-fade 1s infinite linear;
+            animation: spinner-fade 1s infinite linear;
 }
 .spinner-blade:nth-child(1) {
-    -webkit-animation-delay: 0s;
-                    animation-delay: 0s;
+    -webkit-animation-delay: -0.861s;
+                    animation-delay: -0.861s;
     transform: rotate(0deg);
 }
 .spinner-blade:nth-child(2) {
-    -webkit-animation-delay: 0.123s;
-                    animation-delay: 0.123s;
+    -webkit-animation-delay: -0.738s;
+                    animation-delay: -0.738s;
     transform: rotate(45deg);
 }
 .spinner-blade:nth-child(3) {
-    -webkit-animation-delay: 0.246s;
-                    animation-delay: 0.246s;
+    -webkit-animation-delay: -0.615s;
+                    animation-delay: -0.615s;
     transform: rotate(90deg);
 }
 .spinner-blade:nth-child(4) {
-    -webkit-animation-delay: 0.369s;
-                    animation-delay: 0.369s;
+    -webkit-animation-delay: -0.492s;
+                    animation-delay: -0.492s;
     transform: rotate(135deg);
 }
 .spinner-blade:nth-child(5) {
-    -webkit-animation-delay: 0.492s;
-                    animation-delay: 0.492s;
+    -webkit-animation-delay: -0.369s;
+                    animation-delay: -0.369s;
     transform: rotate(180deg);
 }
 .spinner-blade:nth-child(6) {
-    -webkit-animation-delay: 0.615s;
-                    animation-delay: 0.615s;
+    -webkit-animation-delay: -0.246s;
+                    animation-delay: -0.246s;
     transform: rotate(225deg);
 }
 .spinner-blade:nth-child(7) {
-    -webkit-animation-delay: 0.738s;
-                    animation-delay: 0.738s;
+    -webkit-animation-delay: -0.123s;
+                    animation-delay: -0.123s;
     transform: rotate(270deg);
 }
 .spinner-blade:nth-child(8) {
-    -webkit-animation-delay: 0.861s;
-                    animation-delay: 0.861s;
+    -webkit-animation-delay: 0s;
+                    animation-delay: 0s;
     transform: rotate(315deg);
 }
 
@@ -92,19 +110,18 @@
 }
 
 div.lockup div.spinner {
-    visibility: hidden;
+    display: none;
 }
 
-span.downloading>div.spinner,
-span.preparing-removal>div.spinner,
-span.installing>div.spinner,
-span.removing>div.spinner,
+span.downloading>div.spinner:not(.half-left),
+span.preparing-removal>div.spinner:not(.half-left),
+span.installing>div.spinner:not(.half-left),
+span.removing>div.spinner:not(.half-left),
 div.lockup li.downloading div.spinner,
 div.lockup li.preparing-removal div.spinner,
 div.lockup li.installing div.spinner,
 div.lockup li.removing div.spinner {
-    visibility: visible !important;
-    float: right;
+    display: block !important;
     opacity: 1;
     width: 20px;
     height: 20px;
