@@ -1259,6 +1259,10 @@ class MainWindowController: NSWindowController {
             openSoftwareUpdatePrefsPane()
             return
         }
+        if filename == "settings" {
+            (NSApp.delegate as? AppDelegate)?.showPreferences(self)
+            return
+        }
         // append ".html" if absent
         if !(filename.hasSuffix(".html")) {
             filename += ".html"
