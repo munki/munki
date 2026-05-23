@@ -1245,14 +1245,14 @@ class MainWindowController: NSWindowController {
             return
         }
         var filename = unquote(host)
-        // Reject payloads that smuggle a remote URL through the munki:// scheme.
+        // Reject payloads that smuggle a URL through the munki:// scheme.
         // handleMunkiURL is for internal page names only; load_page accepts
         // http/https specifically for admin-configured CustomSidebarItems,
         // which never flow through this function.
         if let components = URLComponents(string: filename),
-           ["https", "http"].contains(components.scheme)
+           let embeddedScheme = components.scheme
         {
-            msc_debug_log("Refusing munki:// URL with embedded http(s) scheme: \(filename)")
+            msc_debug_log("Refusing munki:// URL with embedded \(embeddedScheme) scheme: \(filename)")
             return
         }
         if filename == "appleupdates" {
