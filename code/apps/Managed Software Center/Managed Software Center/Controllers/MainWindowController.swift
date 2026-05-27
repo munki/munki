@@ -251,7 +251,12 @@ class MainWindowController: NSWindowController {
             } else {
                 msc_debug_log("Could not parse sidebar item page URL \(page)")
             }
+        } else if let components = URLComponents(string: page),
+                  ["https", "http"].contains(components.scheme)
+        {
+            load_url(page)
         } else {
+            // Treat as a relative page name in htmlDir.
             load_page(page)
         }
     }
@@ -1159,46 +1164,34 @@ class MainWindowController: NSWindowController {
         setInnerHTML(items_html, elementID: "optional_installs_items")
     }
     
-    func load_page(_ url_fragment: String) {
-        // Tells the WebView to load the appropriate page
-        msc_debug_log("load_page request for \(url_fragment)")
-        var request: URLRequest
-        
-        if let components = URLComponents(string: url_fragment),
-           ["https", "http"].contains(components.scheme)
-        {
-            // url_fragment is http:// or https:// URL
-            request = URLRequest(
-                url: URL(string: url_fragment)!,
-                cachePolicy: .reloadIgnoringLocalCacheData,
-                timeoutInterval: TimeInterval(10.0)
-            )
-        } else {
-            // url_fragment is just a path (or filename)
-            let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
-            let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
-            
-            let baseComponents = baseURL.pathComponents
-            let requestComponents = requestURL.pathComponents
-            
-            guard requestComponents.starts(with: baseComponents) else {
-                msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
-                // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
-                let errorURL = baseURL.appendingPathComponent("error.html")
-                webView.load(URLRequest(url: errorURL))
-                return
-            }
-            
-            request = URLRequest(
-                url: requestURL,
-                cachePolicy: .reloadIgnoringLocalCacheData,
-                timeoutInterval: 10.0
-            )
+    func load_page(_ name: String) {
+        // Tells the WebView to load a Munki-internal HTML page from htmlDir.
+        // `name` should be a page name (with or without ".html"). Path traversal
+        // outside htmlDir is blocked. Will not navigate to remote URLs — callers
+        // that need to load an admin-configured http(s) URL must use load_url().
+        msc_debug_log("load_page request for \(name)")
+        let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
+        let requestURL = baseURL.appendingPathComponent(name).standardizedFileURL
+
+        let baseComponents = baseURL.pathComponents
+        let requestComponents = requestURL.pathComponents
+
+        guard requestComponents.starts(with: baseComponents) else {
+            msc_debug_log("Attempt to access file outside htmlDir: \(name)")
+            // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
+            let errorURL = baseURL.appendingPathComponent("error.html")
+            webView.load(URLRequest(url: errorURL))
+            return
         }
 
+        let request = URLRequest(
+            url: requestURL,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 10.0
+        )
         webView.load(request)
-        
-        if url_fragment == "updates.html" {
+
+        if name == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
                 removeAllDeliveredNotifications()
@@ -1208,6 +1201,26 @@ class MainWindowController: NSWindowController {
                 _alertedUserToOutstandingUpdates = true
             }
         }
+    }
+
+    func load_url(_ url_string: String) {
+        // Loads an arbitrary http(s) URL into the main webview. Used by
+        // loadSidebarItemPage to honor admin-configured CustomSidebarItems
+        // whose `page` value is a remote URL. Refuses any other scheme.
+        msc_debug_log("load_url request for \(url_string)")
+        guard let components = URLComponents(string: url_string),
+              ["https", "http"].contains(components.scheme),
+              let url = URL(string: url_string)
+        else {
+            msc_debug_log("load_url refused: \(url_string) is not an http(s) URL")
+            return
+        }
+        let request = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: TimeInterval(10.0)
+        )
+        webView.load(request)
     }
     
     func removeAllDeliveredNotifications() {
@@ -1245,16 +1258,6 @@ class MainWindowController: NSWindowController {
             return
         }
         var filename = unquote(host)
-        // Reject payloads that smuggle a remote URL through the munki:// scheme.
-        // handleMunkiURL is for internal page names only; load_page accepts
-        // http/https specifically for admin-configured CustomSidebarItems,
-        // which never flow through this function.
-        if let components = URLComponents(string: filename),
-           ["https", "http"].contains(components.scheme)
-        {
-            msc_debug_log("Refusing munki:// URL with embedded http(s) scheme: \(filename)")
-            return
-        }
         if filename == "appleupdates" {
             openSoftwareUpdatePrefsPane()
             return
