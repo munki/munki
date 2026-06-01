@@ -104,12 +104,16 @@ func displayInstallerOutput(_ text: String) {
     } else if msg.hasPrefix("%") {
         msg.removeFirst()
         if let percent = Double(msg) {
-            munkiStatusPercent(Int(percent))
+            if display.munkistatusoutput {
+                munkiStatusPercent(Int(percent))
+            }
             display.minorStatus("\(msg) percent complete")
         }
     } else if msg.hasPrefix(" Error") || msg.hasPrefix(" Cannot install") {
         display.error(msg)
-        munkiStatusDetail(msg)
+        if display.munkistatusoutput {
+            munkiStatusDetail(msg)
+        }
     } else {
         munkiLog(msg)
     }

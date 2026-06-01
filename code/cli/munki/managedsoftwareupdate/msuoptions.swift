@@ -100,7 +100,7 @@ struct MSUOtherOptions: ParsableArguments {
     var manualcheck = false
 
     @Flag(name: .shortAndLong,
-          help: "Uses MunkiStatus.app for progress feedback when installing. Not for general use.")
+          help: "Send messages used by Managed Software Center and MunkiStatus.app for progress feedback. Not for general use.")
     var munkistatusoutput = false
 
     @Flag(name: .shortAndLong,

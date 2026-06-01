@@ -631,7 +631,9 @@ func removePackages(
     var pathsToRemove = [String]()
     do {
         display.minorStatus("Determining which filesystem items to remove")
-        munkiStatusPercent(-1)
+        if display.munkistatusoutput {
+            munkiStatusPercent(-1)
+        }
         pathsToRemove = try getPathsToRemove(pkgKeys: pkgKeys)
     } catch {
         display.error("Error getting paths to remove: \(error)")
@@ -646,7 +648,9 @@ func removePackages(
             print("    /" + path)
         }
     } else {
-        munkiStatusDisableStopButton()
+        if display.munkistatusoutput {
+            munkiStatusDisableStopButton()
+        }
         removeFilesystemItems(
             pathsToRemove: pathsToRemove, forceDeleteBundles: forceDeleteBundles
         )
@@ -657,7 +661,9 @@ func removePackages(
                 display.error("Failed to remove pkg receipts: \(error)")
             }
         }
-        munkiStatusEnableStopButton()
+        if display.munkistatusoutput {
+            munkiStatusEnableStopButton()
+        }
         display.minorStatus("Package removal finished.")
     }
     return 0

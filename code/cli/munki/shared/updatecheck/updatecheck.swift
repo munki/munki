@@ -250,8 +250,10 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
     munkiLog("### Beginning managed software check ###")
     display.majorStatus("Checking for available updates...")
-    munkiStatusPercent(-1)
-    munkiStatusDetail("")
+    if DisplayOptions.munkistatusoutput {
+        munkiStatusPercent(-1)
+        munkiStatusDetail("")
+    }
 
     var success = true
 
@@ -319,10 +321,12 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
             return .noUpdatesAvailable
         }
 
-        // reset progress indicator and detail field
-        munkiStatusMessage("Checking for additional changes...")
-        munkiStatusPercent(-1)
-        munkiStatusDetail("")
+        if display.munkistatusoutput {
+            // reset progress indicator and detail field
+            munkiStatusMessage("Checking for additional changes...")
+            munkiStatusPercent(-1)
+            munkiStatusDetail("")
+        }
 
         // check managed_uninstalls
         display.detail("**Checking for removals**")

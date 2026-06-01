@@ -651,6 +651,8 @@ func doInstallsAndRemovals(
     onlyUnattended: Bool = false,
     considerBlockingApps: Bool = true
 ) async -> PostAction {
+    let display = DisplayAndLog.main
+
     var removalsNeedRestart = false
     var installsNeedRestart = false
 
@@ -670,7 +672,9 @@ func doInstallsAndRemovals(
     {
         var updatedInstallInfo = installInfo
         if pref("SuppressStopButtonOnInstall") as? Bool ?? false {
-            munkiStatusHideStopButton()
+            if display.munkistatusoutput {
+                munkiStatusHideStopButton()
+            }
         }
         // process removals
         if let removals = installInfo["removals"] as? [PlistDict] {
@@ -680,14 +684,16 @@ func doInstallsAndRemovals(
             }
             Report.shared.record(removalList, to: "ItemsToRemove")
             if !removalList.isEmpty {
-                if removalList.count == 1 {
-                    munkiStatusMessage("Removing 1 item...")
-                } else {
-                    munkiStatusMessage("Removing \(removalList.count) items...")
+                if display.munkistatusoutput {
+                    if removalList.count == 1 {
+                        munkiStatusMessage("Removing 1 item...")
+                    } else {
+                        munkiStatusMessage("Removing \(removalList.count) items...")
+                    }
+                    munkiStatusDetail("")
+                    // set indeterminate progress bar
+                    munkiStatusPercent(-1)
                 }
-                munkiStatusDetail("")
-                // set indeterminate progress bar
-                munkiStatusPercent(-1)
                 munkiLog("Processing removals")
                 var skippedRemovals = [PlistDict]()
                 (removalsNeedRestart, skippedRemovals) = await processRemovals(
@@ -707,13 +713,15 @@ func doInstallsAndRemovals(
             }
             Report.shared.record(installList, to: "ItemsToInstall")
             if !installList.isEmpty {
-                if installList.count == 1 {
-                    munkiStatusMessage("Installing 1 item...")
-                } else {
-                    munkiStatusMessage("Installing \(installList.count) items...")
+                if display.munkistatusoutput {
+                    if installList.count == 1 {
+                        munkiStatusMessage("Installing 1 item...")
+                    } else {
+                        munkiStatusMessage("Installing \(installList.count) items...")
+                    }
+                    munkiStatusDetail("")
+                    munkiLog("Processing installs")
                 }
-                munkiStatusDetail("")
-                munkiLog("Processing installs")
                 var skippedInstalls = [PlistDict]()
                 (installsNeedRestart, skippedInstalls) = await installWithInstallInfo(
                     installList: installList,

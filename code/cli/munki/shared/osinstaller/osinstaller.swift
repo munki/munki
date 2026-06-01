@@ -277,7 +277,9 @@ func launchStagedOSInstaller() -> Bool {
         return false
     }
     if boolPref("SuppressStopButtonOnInstall") ?? false {
-        munkiStatusHideStopButton()
+        if display.munkistatusoutput {
+            munkiStatusHideStopButton()
+        }
     }
     munkiLog("### Beginning GUI launch of macOS installer ###")
     return launchInstallerApp(osInstallerPath)
