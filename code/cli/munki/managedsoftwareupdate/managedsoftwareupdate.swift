@@ -283,8 +283,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 return updateCheckResult
             } catch {
                 display.error("Error during updatecheck: \(error.localizedDescription)")
-                Report.shared.save()
-                throw ExitCode(-1) // TODO: better exit code
+                return .finishedWithErrors
             }
         }
         return nil
