@@ -14,7 +14,7 @@ private class FlippedClipView: NSClipView {
     override var isFlipped: Bool { true }
 }
 
-/// A struct to track UI elements that correspond to blockind apps
+/// A struct to track UI elements that correspond to blocking apps
 private struct BlockingAppRowData {
     var displayName: String
     var rowView: NSView?
@@ -78,6 +78,12 @@ class MSCBlockingAppsController: NSObject {
     init(parentWindow: NSWindow) {
         self.parentWindow = parentWindow
         super.init()
+    }
+
+    // MARK: - Deinitialization
+
+    deinit {
+        monitorTimer?.invalidate()
     }
 
     // MARK: - Public Methods
@@ -219,15 +225,6 @@ class MSCBlockingAppsController: NSObject {
         // Create and configure the sheet
         let sheetWindow = createSheet(for: uniqueApps, hideReopenCheckbox: allAppsBeingRemoved)
 
-        /*
-         let sheetWindow = createSheet(
-             for: [
-                 (displayName: "Adobe Photoshop 2026", path: "/Applications/Adobe Photoshop 2026/Adobe Photoshop 2026.app"),
-                 (displayName: "Geführte Softwareaktualisierung", path: "/Applications/Managed Software Center.app"),
-                 (displayName: "Workspace ONE Intelligent Hub", path: "/Applications/Workspace ONE Intelligent Hub.app"),
-             ])
-         */
-
         sheet = sheetWindow
 
         // Track result
@@ -341,7 +338,6 @@ class MSCBlockingAppsController: NSObject {
             ), target: nil, action: nil)
             checkbox.translatesAutoresizingMaskIntoConstraints = false
             checkbox.state = .on
-            // checkbox.isHidden = hideReopenCheckbox
             mainStackView.addArrangedSubview(checkbox)
             mainStackView.setCustomSpacing(16, after: checkbox)
             reopenCheckbox = checkbox
@@ -362,7 +358,7 @@ class MSCBlockingAppsController: NSObject {
         quitAppsButton = quitButton
 
         // Update others button
-        if pythonishBool(pref("MSCOfferToUpdateOthers")) {
+        if pythonishBool(munkiPref("MSCOfferToUpdateOthers")) {
             let updateOthersButton = NSButton(
                 title: NSLocalizedString("Skip and Update Others", comment: "Skip and Update Others button title"),
                 target: self, action: #selector(updateOthers(_:))
@@ -426,7 +422,6 @@ class MSCBlockingAppsController: NSObject {
         let adjustedSheetWidth = max(
             sheetWidth,
             actionButtonWidth + 2 * sheetMargin,
-            // titleLabel.intrinsicContentSize.width + 2 * sheetMargin,
             checkboxWidth + 2 * sheetMargin
         )
 
@@ -449,7 +444,6 @@ class MSCBlockingAppsController: NSObject {
         blockingScrollView.translatesAutoresizingMaskIntoConstraints = false
         blockingScrollView.contentView = FlippedClipView()
         blockingScrollView.drawsBackground = false
-        blockingScrollView.hasVerticalScroller = (apps.count > maxVisibleRows)
         if apps.count > maxVisibleRows {
             blockingScrollView.hasVerticalScroller = true
             blockingScrollView.borderType = .lineBorder
@@ -549,7 +543,7 @@ class MSCBlockingAppsController: NSObject {
             rowView.addSubview(iconView)
             rowView.addSubview(nameLabel)
 
-            let manualQuitLabel = createManualQuitLabel(for: app.path)
+            let manualQuitLabel = createManualQuitLabel()
             rowView.addSubview(manualQuitLabel)
 
             if isManualQuit {
@@ -715,7 +709,7 @@ class MSCBlockingAppsController: NSObject {
                 if !app.path.isEmpty, !isAppStillRunning(app.path), !closedApps.contains(app.path) {
                     msc_debug_log("Moving app to closed apps: \(app.displayName) at \(app.path)")
                     moveAppToClosedApps(path: app.path)
-                    if pythonishBool(pref("MSCOfferToUpdateOthers")),
+                    if pythonishBool(munkiPref("MSCOfferToUpdateOthers")),
                        let updateOthersButton = updateOtherItemsButton
                     {
                         updateOthersButton.isHidden = false
@@ -747,7 +741,7 @@ class MSCBlockingAppsController: NSObject {
         monitorTimer = timer
     }
 
-    private func createManualQuitLabel(for _: String) -> NSTextField {
+    private func createManualQuitLabel() -> NSTextField {
         let manualQuitLabel = NSTextField(labelWithString: NSLocalizedString(
             "Manual quit required",
             comment: "Manual quit required label"
@@ -803,7 +797,7 @@ class MSCBlockingAppsController: NSObject {
         spinner.isHidden = true
 
         // Check if MSCOfferToForceQuitBlockingApps is enabled
-        let offerToForceQuitEnabled = pythonishBool(pref("MSCOfferToForceQuitBlockingApps"))
+        let offerToForceQuitEnabled = pythonishBool(munkiPref("MSCOfferToForceQuitBlockingApps"))
         if !offerToForceQuitEnabled {
             // Show "Manual quit required" label instead of Force Quit button
             showManualQuitLabel(for: appPath)
@@ -815,6 +809,23 @@ class MSCBlockingAppsController: NSObject {
             forceQuitButton.widthAnchor.constraint(
                 equalToConstant: forceQuitButton.intrinsicContentSize.width),
         ])
+    }
+
+    /// Returns all running applications that match the given app bundle path.
+    /// This handles nested .app bundles (e.g., Docker.app contains Docker Desktop.app)
+    private func getRunningApps(forBundlePath appPath: String) -> [NSRunningApplication] {
+        let bundlePrefix = appPath + "/"
+        // NSRunningApplication.bundleURL.path always ends with a /
+        // so build our comparison URL with a path ending with a /
+        let bundleURL = URL(fileURLWithPath: bundlePrefix)
+
+        // Find all running apps that match this bundle or are nested inside it
+        return NSWorkspace.shared.runningApplications.filter { runningApp in
+            guard let runningBundleURL = runningApp.bundleURL else { return false }
+            let runningPath = runningBundleURL.path
+            return runningBundleURL == bundleURL ||
+                runningPath.hasPrefix(bundlePrefix)
+        }
     }
 
     @objc private func forceQuitButtonClicked(_ sender: NSButton) {
@@ -848,18 +859,7 @@ class MSCBlockingAppsController: NSObject {
     }
 
     private func performForceQuit(for appPath: String) {
-        let bundlePrefix = appPath + "/"
-        // NSRunningApplication.bundleURL.path always ends with a /
-        // so build our comparison URL with a path ending with a /
-        let bundleURL = URL(fileURLWithPath: bundlePrefix)
-
-        // Find all running apps that match this bundle or are nested inside it
-        let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
-            guard let runningBundleURL = runningApp.bundleURL else { return false }
-            let runningPath = runningBundleURL.path
-            return runningBundleURL == bundleURL ||
-                runningPath.hasPrefix(bundlePrefix)
-        }
+        let runningApps = getRunningApps(forBundlePath: appPath)
 
         msc_debug_log("Force terminating \(runningApps.count) app(s) for bundle: \(appPath)")
         for runningApp in runningApps {
@@ -1013,20 +1013,7 @@ class MSCBlockingAppsController: NSObject {
                     }
                 } else {
                     // Use default termination logic
-                    // Find the running application by its bundle URL and terminate it
-                    let bundlePrefix = app.path + "/"
-                    // NSRunningApplication.bundleURL.path always ends with a /
-                    // so build our comparison URL with a path ending with a /
-                    let bundleURL = URL(fileURLWithPath: bundlePrefix)
-
-                    // Find all running apps that match this bundle or are nested inside it
-                    // This handles apps like Docker that contain nested .app bundles
-                    let runningApps = NSWorkspace.shared.runningApplications.filter { runningApp in
-                        guard let runningBundleURL = runningApp.bundleURL else { return false }
-                        let runningPath = runningBundleURL.path
-                        return runningBundleURL == bundleURL ||
-                            runningPath.hasPrefix(bundlePrefix)
-                    }
+                    let runningApps = getRunningApps(forBundlePath: app.path)
 
                     msc_debug_log("Terminating \(runningApps.count) app(s) for bundle: \(app.path)")
                     for runningApp in runningApps {

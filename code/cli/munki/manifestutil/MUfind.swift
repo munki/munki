@@ -44,7 +44,7 @@ func findTextInManifests(repo: Repo, findText: String, section: String = "") asy
                         }
                     }
                 }
-            } else if let item = manifest[section] as? String {
+            } else if let item = manifest[key] as? String {
                 if item.uppercased().contains(findText.uppercased()) {
                     count += 1
                     if section.isEmpty {

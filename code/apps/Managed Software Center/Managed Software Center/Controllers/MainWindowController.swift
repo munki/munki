@@ -147,7 +147,7 @@ class MainWindowController: NSWindowController {
             // because SF Symbols only supported on 11.0 or later
             //
             // try preferences (includes managed prefs)
-            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: Any]] {
+            if let sidebarConfig = munkiPref("CustomSidebarItems") as? [[String: Any]] {
                 return sidebarConfig
             }
             // try custom client resources
@@ -251,7 +251,12 @@ class MainWindowController: NSWindowController {
             } else {
                 msc_debug_log("Could not parse sidebar item page URL \(page)")
             }
+        } else if let components = URLComponents(string: page),
+                  ["https", "http"].contains(components.scheme)
+        {
+            load_url(page)
         } else {
+            // Treat as a relative page name in htmlDir.
             load_page(page)
         }
     }
@@ -308,11 +313,14 @@ class MainWindowController: NSWindowController {
                 return .terminateNow
             }
         }
-        if (getAppleUpdates().count > 0 && getEffectiveUpdateList().count == 0 ) {
+        if getAppleUpdates().count > 0, getEffectiveUpdateList().count == 0 {
             // we have only Apple updates; remind the user they need to install them
-            alert_controller.alertToAppleUpdates(skipAction: "quit")
-            setAlertedToAppleUpdates(true)
-            return .terminateCancel
+            if !haveAlertedToAppleUpdates() {
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
+                setAlertedToAppleUpdates(true)
+                return .terminateCancel
+            }
+            return .terminateNow
         }
         // we have pending updates and we have not yet warned the user
         // about them
@@ -543,7 +551,7 @@ class MainWindowController: NSWindowController {
             resetAndReload()
             return
         }
-        let lastCheckResult = pref("LastCheckResult") as? Int ?? 0
+        let lastCheckResult = munkiPref("LastCheckResult") as? Int ?? 0
         if sessionResult != 0 || lastCheckResult < 0 {
             var alertMessageText = NSLocalizedString(
                 "Update check failed", comment: "Update Check Failed title")
@@ -879,7 +887,7 @@ class MainWindowController: NSWindowController {
 
     func startUpdateWithoutLogout() {
         // does lots of checks before (hopefully) starting an update run
-        if pythonishBool(pref("MSCOfferToQuitBlockingApps")) {
+        if pythonishBool(munkiPref("MSCOfferToQuitBlockingApps")) {
             // offer to quit enabled, lets do some magic
             if !alert_controller.canContinueAfterHandlingBlockingApps() {
                 loadUpdatesPage(self)
@@ -1156,46 +1164,34 @@ class MainWindowController: NSWindowController {
         setInnerHTML(items_html, elementID: "optional_installs_items")
     }
     
-    func load_page(_ url_fragment: String) {
-        // Tells the WebView to load the appropriate page
-        msc_debug_log("load_page request for \(url_fragment)")
-        var request: URLRequest
-        
-        if let components = URLComponents(string: url_fragment),
-           ["https", "http"].contains(components.scheme)
-        {
-            // url_fragment is http:// or https:// URL
-            request = URLRequest(
-                url: URL(string: url_fragment)!,
-                cachePolicy: .reloadIgnoringLocalCacheData,
-                timeoutInterval: TimeInterval(10.0)
-            )
-        } else {
-            // url_fragment is just a path (or filename)
-            let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
-            let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
-            
-            let baseComponents = baseURL.pathComponents
-            let requestComponents = requestURL.pathComponents
-            
-            guard requestComponents.starts(with: baseComponents) else {
-                msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
-                // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
-                let errorURL = baseURL.appendingPathComponent("error.html")
-                webView.load(URLRequest(url: errorURL))
-                return
-            }
-            
-            request = URLRequest(
-                url: requestURL,
-                cachePolicy: .reloadIgnoringLocalCacheData,
-                timeoutInterval: 10.0
-            )
+    func load_page(_ name: String) {
+        // Tells the WebView to load a Munki-internal HTML page from htmlDir.
+        // `name` should be a page name (with or without ".html"). Path traversal
+        // outside htmlDir is blocked. Will not navigate to remote URLs — callers
+        // that need to load an admin-configured http(s) URL must use load_url().
+        msc_debug_log("load_page request for \(name)")
+        let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
+        let requestURL = baseURL.appendingPathComponent(name).standardizedFileURL
+
+        let baseComponents = baseURL.pathComponents
+        let requestComponents = requestURL.pathComponents
+
+        guard requestComponents.starts(with: baseComponents) else {
+            msc_debug_log("Attempt to access file outside htmlDir: \(name)")
+            // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
+            let errorURL = baseURL.appendingPathComponent("error.html")
+            webView.load(URLRequest(url: errorURL))
+            return
         }
 
+        let request = URLRequest(
+            url: requestURL,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 10.0
+        )
         webView.load(request)
-        
-        if url_fragment == "updates.html" {
+
+        if name == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
                 removeAllDeliveredNotifications()
@@ -1205,6 +1201,26 @@ class MainWindowController: NSWindowController {
                 _alertedUserToOutstandingUpdates = true
             }
         }
+    }
+
+    func load_url(_ url_string: String) {
+        // Loads an arbitrary http(s) URL into the main webview. Used by
+        // loadSidebarItemPage to honor admin-configured CustomSidebarItems
+        // whose `page` value is a remote URL. Refuses any other scheme.
+        msc_debug_log("load_url request for \(url_string)")
+        guard let components = URLComponents(string: url_string),
+              ["https", "http"].contains(components.scheme),
+              let url = URL(string: url_string)
+        else {
+            msc_debug_log("load_url refused: \(url_string) is not an http(s) URL")
+            return
+        }
+        let request = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: TimeInterval(10.0)
+        )
+        webView.load(request)
     }
     
     func removeAllDeliveredNotifications() {
@@ -1244,6 +1260,10 @@ class MainWindowController: NSWindowController {
         var filename = unquote(host)
         if filename == "appleupdates" {
             openSoftwareUpdatePrefsPane()
+            return
+        }
+        if filename == "settings" {
+            (NSApp.delegate as? AppDelegate)?.showPreferences(self)
             return
         }
         // append ".html" if absent
@@ -1525,7 +1545,7 @@ class MainWindowController: NSWindowController {
     
     // MARK: IBActions
     @IBAction func showHelp(_ sender: Any) {
-        if let helpURL = pref("HelpURL") as? String {
+        if let helpURL = munkiPref("HelpURL") as? String {
             if let finalURL = URL(string: helpURL) {
                 NSWorkspace.shared.open(finalURL)
             }

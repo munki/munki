@@ -25,5 +25,7 @@ func printStderr(_ items: Any..., separator: String = " ", terminator: String = 
         .map { String(describing: $0) }
         .joined(separator: separator) + terminator
 
-    FileHandle.standardError.write(output.data(using: .utf8)!)
+    if let data = output.data(using: .utf8, allowLossyConversion: true) {
+        FileHandle.standardError.write(data)
+    }
 }

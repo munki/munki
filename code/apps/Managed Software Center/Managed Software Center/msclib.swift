@@ -143,7 +143,7 @@ func get_custom_resources() {
     if _msclib_html_dir.isEmpty {
         return
     }
-    if let managed_install_dir = pref("ManagedInstallDir") as? String {
+    if let managed_install_dir = munkiPref("ManagedInstallDir") as? String {
         let source_path = NSString.path(
             withComponents: [managed_install_dir, "client_resources/custom.zip"])
         if FileManager.default.fileExists(atPath: source_path) {
@@ -255,7 +255,7 @@ func html_dir() -> String {
         }
         
         // symlink or copy the Managed Installs icons dir
-        if let managed_install_dir = pref("ManagedInstallDir") as? String {
+        if let managed_install_dir = munkiPref("ManagedInstallDir") as? String {
             let source_path = NSString.path(withComponents: [managed_install_dir, "icons"])
             let dest_path = NSString.path(withComponents: [_msclib_html_dir, "icons"])
             linkOrCopy(source_path, dest_path)

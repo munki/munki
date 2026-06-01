@@ -38,6 +38,9 @@ let MSU_MAX_RUNTIME_SECS = 43200 // 12 hours
 #else
     let BUNDLE_ID = "ManagedInstalls" as CFString
 #endif
+
+let MSC_BUNDLE_ID = "com.googlecode.munki.ManagedSoftwareCenter"
+
 let DEFAULT_MANAGED_INSTALLS_DIR = "/Library/Managed Installs"
 let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
@@ -53,6 +56,9 @@ let INSTALLATLOGOUTFLAG = "/private/tmp/com.googlecode.munki.installatlogout"
 let UPDATECHECKLAUNCHFILE = "/private/tmp/.com.googlecode.munki.updatecheck.launchd"
 let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstall.launchd"
 let MSCLAUNCHFILE = "/var/run/com.googlecode.munki.ManagedSoftwareCenter"
+
+/// stop requested flag file
+let STOPREQUESTEDFLAG = "/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested"
 
 /// postinstall actions
 enum PostAction: Int, Codable, Comparable {

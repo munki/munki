@@ -99,10 +99,21 @@ func pythonishBool(_ foo: Any?) -> Bool {
     return false
 }
 
-func pref(_ prefName: String) -> Any? {
-    /* Return a preference. Since this uses CFPreferencesCopyAppValue,
-     Preferences can be defined several places. Precedence is:
-     - MCX
+func appPref(_ prefName: String) -> Any? {
+    /* Return a preference for the com.googlecode.munki.ManagedSoftwareCenter
+     preferences domain. */
+    return UserDefaults.value(forKey: prefName)
+}
+
+func setAppPref(_ prefName: String, value: Any?) {
+    UserDefaults.standard.set(value, forKey: prefName)
+}
+
+func munkiPref(_ prefName: String) -> Any? {
+    /* Return a ManagedInstalls preference.
+     Since this uses CFPreferencesCopyAppValue, preferences
+     can be defined several places. Precedence is:
+     - MCX/Configuration Profiles
      - ~/Library/Preferences/ManagedInstalls.plist
      - /Library/Preferences/ManagedInstalls.plist
      - defaultPrefs defined here. */
@@ -118,6 +129,9 @@ func pref(_ prefName: String) -> Any? {
         "MSCOfferToQuitBlockingApps": false,
         "MSCOfferToForceQuitBlockingApps": false,
         "MSCOfferToUpdateOthers": false,
+        "MSCAllowNotificationWindow": false,
+        "MSCAllowedNotificationWindowStart": 0,
+        "MSCAllowedNotificationWindowEnd": 24,
     ]
 
     var value: Any?
@@ -149,7 +163,7 @@ func readSelfServiceManifest() -> PlistDict {
     var selfServeManifest = WRITEABLE_SELF_SERVICE_MANIFEST_PATH
     if !(FileManager.default.isReadableFile(atPath: selfServeManifest)) {
         // no writable copy; look for system copy
-        let managedinstallbase = pref("ManagedInstallDir") as! String
+        let managedinstallbase = munkiPref("ManagedInstallDir") as! String
         selfServeManifest = NSString.path(
             withComponents: [managedinstallbase, "manifests", "SelfServeManifest"])
     }
@@ -191,7 +205,7 @@ func userSelfServiceChoicesChanged() -> Bool {
     }
     do {
         let user_choices = try readPlist(WRITEABLE_SELF_SERVICE_MANIFEST_PATH) as? NSDictionary
-        let managedinstallbase = pref("ManagedInstallDir") as! String
+        let managedinstallbase = munkiPref("ManagedInstallDir") as! String
         let system_path = NSString.path(
             withComponents: [managedinstallbase, "manifests", "SelfServeManifest"])
         if !(FileManager.default.isReadableFile(atPath: system_path)) {
@@ -206,12 +220,12 @@ func userSelfServiceChoicesChanged() -> Bool {
 
 func getRemovalDetailPrefs() -> Bool {
     // Returns preference to control display of removal detail
-    return pythonishBool(pref("ShowRemovalDetail"))
+    return pythonishBool(munkiPref("ShowRemovalDetail"))
 }
 
 func installRequiresLogout() -> Bool {
     // Returns preference to force logout for all installs
-    return pythonishBool(pref("InstallRequiresLogout"))
+    return pythonishBool(munkiPref("InstallRequiresLogout"))
 }
 
 func readPlistAsNSDictionary(_ filepath: String) -> PlistDict {
@@ -226,7 +240,7 @@ func readPlistAsNSDictionary(_ filepath: String) -> PlistDict {
 
 func getStagedOSUpdate() -> PlistDict {
     // Returns a dictionary describing a staged OS update (if any)
-    let managedinstallbase = pref("ManagedInstallDir") as! String
+    let managedinstallbase = munkiPref("ManagedInstallDir") as! String
     let info_path = NSString.path(
         withComponents: [managedinstallbase, "StagedOSInstaller.plist"])
     let info = readPlistAsNSDictionary(info_path)
@@ -241,7 +255,7 @@ func getStagedOSUpdate() -> PlistDict {
 
 func getInstallInfo() -> PlistDict {
     // Returns the dictionary describing the managed installs and removals
-    let managedinstallbase = pref("ManagedInstallDir") as! String
+    let managedinstallbase = munkiPref("ManagedInstallDir") as! String
     let installinfo_path = NSString.path(
         withComponents: [managedinstallbase, "InstallInfo.plist"])
     return readPlistAsNSDictionary(installinfo_path)
@@ -250,11 +264,11 @@ func getInstallInfo() -> PlistDict {
 /// Returns info about available Apple software updates
 func getAppleUpdates() -> [PlistDict] {
     var appleUpdates: [PlistDict] = []
-    if pythonishBool(pref("InstallAppleSoftwareUpdates")),
+    if pythonishBool(munkiPref("InstallAppleSoftwareUpdates")),
        let recommendedUpdates = su_pref("RecommendedUpdates") as? [[String: Any]]
     {
         // get data from Munki's AppleUpdates.plist if it exists
-        let managedinstallbase = pref("ManagedInstallDir") as! String
+        let managedinstallbase = munkiPref("ManagedInstallDir") as! String
         let appleupdates_path = NSString.path(
             withComponents: [managedinstallbase, "AppleUpdates.plist"])
         let plistData = readPlistAsNSDictionary(appleupdates_path)
@@ -348,16 +362,18 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
 }
 
 func macOSOutOfDateDays() -> Int {
-    guard let managedinstallbase = pref("ManagedInstallDir") as? String else {
+    guard let managedinstallbase = munkiPref("ManagedInstallDir") as? String else {
         return 0
     }
     let appleUpdateHistoryPath = (managedinstallbase as NSString).appendingPathComponent("AppleUpdateHistory.plist")
     let appleUpdateHistory = readPlistAsNSDictionary(appleUpdateHistoryPath)
-    let currentOSVersion = MunkiVersion(getOSVersion())
+    let currentOSVersion = MunkiVersion(getOSVersion(onlyMajorMinor: false))
     let majorOSVersion = "\(ProcessInfo().operatingSystemVersion.majorVersion)."
     var macOSUpdates = [PlistDict]()
     for value in appleUpdateHistory.values {
         if let update = value as? PlistDict,
+           let displayName = update["displayName"] as? String,
+           displayName.hasPrefix("macOS "),
            update["version"] as? String != nil
         {
             macOSUpdates.append(update)
@@ -383,7 +399,7 @@ func macOSOutOfDateDays() -> Int {
 
 func getUpdateNotificationTracking() -> PlistDict {
     // Returns a dictionary describing when items were first made available
-    guard let managedinstallbase = pref("ManagedInstallDir") as? String else {
+    guard let managedinstallbase = munkiPref("ManagedInstallDir") as? String else {
         return PlistDict()
     }
     let updatetracking_path = NSString.path(

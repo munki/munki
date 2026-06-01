@@ -1108,7 +1108,7 @@ func getDaysPending(_ itemname: String) -> Int {
 
 func shouldAggressivelyNotifyAboutMunkiUpdates(days: Int = -1) -> Bool {
     // Do we have any Munki updates that have been pending a long time?
-    let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+    let aggressiveNotificationDays = munkiPref("AggressiveUpdateNotificationDays") as? Int ?? 14
     if aggressiveNotificationDays == 0 {
         return false
     }
@@ -1138,7 +1138,7 @@ func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
     maxPendingDays = max(maxPendingDays, macOSOutOfDateDays())
 
     if days == -1 {
-        let aggressiveNotificationDays = pref("AggressiveUpdateNotificationDays") as? Int ?? 14
+        let aggressiveNotificationDays = munkiPref("AggressiveUpdateNotificationDays") as? Int ?? 14
         if aggressiveNotificationDays == 0 {
             // never get aggressive
             return false
@@ -1155,7 +1155,7 @@ func optionalInstallsExist() -> Bool {
 }
 
 func getOptionalInstallItems() -> [OptionalItem] {
-    let appleSoftwareUpdatesOnly = pythonishBool(pref("AppleSoftwareUpdatesOnly"))
+    let appleSoftwareUpdatesOnly = pythonishBool(munkiPref("AppleSoftwareUpdatesOnly"))
     if appleSoftwareUpdatesOnly {
         return [OptionalItem]()
     }
