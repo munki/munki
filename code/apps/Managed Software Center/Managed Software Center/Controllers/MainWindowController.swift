@@ -1263,7 +1263,10 @@ class MainWindowController: NSWindowController {
             return
         }
         if filename == "settings" {
-            (NSApp.delegate as? AppDelegate)?.showPreferences(self)
+            // open settings/preferences window only if admin allows
+            if pythonishBool(munkiPref("MSCAllowNotificationWindow")) {
+                (NSApp.delegate as? AppDelegate)?.showPreferences(self)
+            }
             return
         }
         // append ".html" if absent
