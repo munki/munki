@@ -582,3 +582,6 @@
 
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "En uppdatering för macOS har varit tillgänglig i %@ dagar";
+
+/* Restrict update notifications checkbox label */
+"Restrict update notifications to selected hours" = "Begränsa uppdateringsnotiser till markerade timmar"
