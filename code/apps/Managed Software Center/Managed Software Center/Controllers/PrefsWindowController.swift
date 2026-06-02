@@ -42,6 +42,24 @@ class PrefsWindowController: NSWindowController, NSWindowDelegate {
         timeRangeSelector.setAllowedHours(start: allowedHoursStart, end: allowedHoursEnd)
         let notificationHours = UserDefaults.standard.array(forKey: "NotificationHours") as? [Int] ?? []
         timeRangeSelector.setSelectedHours(notificationHours)
+
+        // make sure prefs window name matches the name of the menu item
+        // (Settings or Preferences or localized name)
+        if let appDelegate = NSApp.delegate as? AppDelegate {
+            let prefsName = appDelegate.preferencesMenuItem.title
+            if prefsName.hasSuffix("…") {
+                window?.title = String(prefsName.dropLast(1))
+            } else {
+                window?.title = prefsName
+            }
+        }
+
+        // use localized strings from Localizable.strings instead
+        // of having to generate a bunch of PrefsWindows.strings files
+        updateNotificationTimesCheckbox.title = NSLocalizedString(
+            "Restrict update notifications to selected hours",
+            comment: "Restrict update notifications checkbox label"
+        )
     }
 
     func windowWillClose(_ notification: Notification) {

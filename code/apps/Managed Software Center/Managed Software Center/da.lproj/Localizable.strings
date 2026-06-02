@@ -367,6 +367,9 @@
 /* Restart Required title */
 "Restart Required" = "Kræver genstart";
 
+/* Restrict update notifications checkbox label */
+"Restrict update notifications to selected hours" = "Begræns notifikationer om opdateringer til de valgte timer";
+
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Henter en liste over tilgænglig software til denne computer...";
 
@@ -582,6 +585,3 @@
 
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "macOS har været forældet i %@ dage.";
-
-/* Restrict update notifications checkbox label */
-"Restrict update notifications to selected hours" = "Begræns notifikationer om opdateringer til de valgte timer"
