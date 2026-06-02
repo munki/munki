@@ -91,7 +91,7 @@ let CONFIG_KEY_NAMES = [
     "DaysBetweenNotifications",
     "DownloadRetries",
     "DownloadRetrySleepSeconds",
-    "EmulateProfileSupport",
+    //"EmulateProfileSupport", // since we don't support this any longer, no need to report its value
     "FollowHTTPRedirects",
     "HelpURL",
     "IconURL",
@@ -124,7 +124,7 @@ let CONFIG_KEY_NAMES = [
     "SuppressLoginwindowInstall",
     "SuppressStopButtonOnInstall",
     "SuppressUserNotification",
-    "UnattendedAppleUpdates",
+    //"UnattendedAppleUpdates", // since we don't support this any longer, no need to report its value
     "UseClientCertificate",
     "UseClientCertificateCNAsClientIdentifier",
     "UseNotificationCenterDays",
