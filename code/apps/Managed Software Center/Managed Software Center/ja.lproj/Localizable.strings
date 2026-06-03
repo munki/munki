@@ -582,3 +582,6 @@
 
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "macOSのアップデート期限を%@日過ぎています。";
+
+/* Restrict update notifications checkbox label */
+"Restrict update notifications to selected hours" = "アップデート通知を指定した時間帯に制限する";
