@@ -30,8 +30,8 @@ class TimeRangeSelectorView: NSView {
     private var hours = [Int]()
 
     // Colors
-    private let gridColor = NSColor.gray.withAlphaComponent(0.3)
-    private let selectedColor = NSColor.systemBlue.withAlphaComponent(0.3)
+    private let gridColor = NSColor.gridColor
+    private let selectedColor = NSColor.selectedControlColor
     private let backgroundColor = NSColor.controlBackgroundColor
 
     // Other UI constants
