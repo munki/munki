@@ -367,6 +367,9 @@
 /* Restart Required title */
 "Restart Required" = "Требуется перезагрузка";
 
+/* Restrict update notifications checkbox label */
+"Restrict update notifications to selected hours" = "Restrict update notifications to selected hours";
+
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Получение списка ПО для этой машины...";
 
