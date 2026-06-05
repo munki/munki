@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24765" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24765"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="PrefsWindowController" customModule="Managed_Software_Center" customModuleProvider="target">
             <connections>
-                <outlet property="timeRangeSelector" destination="0qu-fh-2nm" id="lUu-Gx-AG7"/>
+                <outlet property="hoursSelector" destination="0qu-fh-2nm" id="lUu-Gx-AG7"/>
                 <outlet property="updateNotificationTimesCheckbox" destination="59w-1u-1jr" id="afI-Ur-kJX"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="31p-HV-TcG"/>
             </connections>
@@ -35,7 +34,7 @@
                             </connections>
                         </buttonCell>
                     </button>
-                    <customView hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0qu-fh-2nm" customClass="TimeRangeSelectorView" customModule="Managed_Software_Center" customModuleProvider="target">
+                    <customView hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0qu-fh-2nm" customClass="HoursSelector" customModule="Managed_Software_Center" customModuleProvider="target">
                         <rect key="frame" x="43" y="22" width="620" height="24"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     </customView>

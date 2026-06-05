@@ -44,6 +44,7 @@
 		C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */; };
 		C0546BD820FDAD82003FE5A6 /* power.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD720FDAD82003FE5A6 /* power.swift */; };
 		C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */; };
+		C05ED2662FD3854100AFA64D /* HoursSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05ED2652FD3854100AFA64D /* HoursSelector.swift */; };
 		C05F87932105587A000DB8D8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C05F87952105587A000DB8D8 /* Localizable.strings */; };
 		C0761E542FA9434C007465D6 /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0761E532FA9434C007465D6 /* PrefsWindow.xib */; };
 		C0761E562FAA97AE007465D6 /* PrefsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */; };
@@ -127,6 +128,7 @@
 		C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCAlertController.swift; sourceTree = "<group>"; };
 		C0546BD720FDAD82003FE5A6 /* power.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = power.swift; sourceTree = "<group>"; };
 		C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCPasswordAlertController.swift; sourceTree = "<group>"; };
+		C05ED2652FD3854100AFA64D /* HoursSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoursSelector.swift; sourceTree = "<group>"; };
 		C05F878D210556C9000DB8D8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C05F879621055BFE000DB8D8 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F879721055DAA000DB8D8 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
 				C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */,
 				C0761E592FAB925A007465D6 /* TimeRangeSelector.swift */,
+				C05ED2652FD3854100AFA64D /* HoursSelector.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -517,6 +520,7 @@
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
 				849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */,
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
+				C05ED2662FD3854100AFA64D /* HoursSelector.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
 				AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */,

@@ -8,20 +8,18 @@
 
 import Cocoa
 
-class TimeRangeSelectorView: NSView {
+class TimeRangeSelector: NSControl {
     // MARK: - Properties
 
     var selectedHours = Array(repeating: false, count: 24) {
         didSet {
             needsDisplay = true
-            onTimeSelectionChanged?()
+            sendAction(action, to: target)
         }
     }
 
     private var allowedHoursStart = -1
     private var allowedHoursEnd = -1
-
-    var onTimeSelectionChanged: (() -> Void)?
 
     private var isDragging = false
     private var dragSelecting = false
@@ -30,9 +28,25 @@ class TimeRangeSelectorView: NSView {
     private var hours = [Int]()
 
     // Colors
-    private let gridColor = NSColor.gridColor
-    private let selectedColor = NSColor.controlAccentColor
-    private let backgroundColor = NSColor.controlBackgroundColor
+    private var gridColor: NSColor {
+        return isEnabled ? NSColor.gridColor : NSColor.disabledControlTextColor.withAlphaComponent(0.3)
+    }
+
+    private var selectedColor: NSColor {
+        return isEnabled ? NSColor.controlAccentColor : NSColor.disabledControlTextColor
+    }
+
+    private var backgroundColor: NSColor {
+        return NSColor.controlBackgroundColor
+    }
+
+    private var labelColor: NSColor {
+        return isEnabled ? NSColor.controlTextColor : NSColor.disabledControlTextColor
+    }
+
+    private var alternateLabelColor: NSColor {
+        return isEnabled ? NSColor.alternateSelectedControlTextColor : NSColor.disabledControlTextColor
+    }
 
     // Other UI constants
     private let borderRadius: CGFloat = 6
@@ -128,9 +142,9 @@ class TimeRangeSelectorView: NSView {
 
         for (index, hour) in hours.enumerated() {
             if selectedHours[hours[index]] {
-                attributes[.foregroundColor] = NSColor.alternateSelectedControlTextColor
+                attributes[.foregroundColor] = alternateLabelColor
             } else {
-                attributes[.foregroundColor] = NSColor.controlTextColor
+                attributes[.foregroundColor] = labelColor
             }
             let hourString = labelHour(hour)
             let x = CGFloat(index) * hourWidth + borderRadius - 1
@@ -142,6 +156,8 @@ class TimeRangeSelectorView: NSView {
     // MARK: - Mouse Handling
 
     override func mouseDown(with event: NSEvent) {
+        guard isEnabled else { return }
+
         let location = convert(event.locationInWindow, from: nil)
         let hour = hourFromPosition(location.x)
         if hour >= selectedHours.count { return }
@@ -160,6 +176,7 @@ class TimeRangeSelectorView: NSView {
     }
 
     override func mouseDragged(with event: NSEvent) {
+        guard isEnabled else { return }
         guard isDragging, let previousHour = lastTouchedHour else { return }
 
         let location = convert(event.locationInWindow, from: nil)
@@ -175,6 +192,8 @@ class TimeRangeSelectorView: NSView {
     }
 
     override func mouseUp(with _: NSEvent) {
+        guard isEnabled else { return }
+
         isDragging = false
         lastTouchedHour = nil
     }
