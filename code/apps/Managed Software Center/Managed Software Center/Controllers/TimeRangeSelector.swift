@@ -31,7 +31,7 @@ class TimeRangeSelectorView: NSView {
 
     // Colors
     private let gridColor = NSColor.gridColor
-    private let selectedColor = NSColor.selectedControlColor
+    private let selectedColor = NSColor.controlAccentColor
     private let backgroundColor = NSColor.controlBackgroundColor
 
     // Other UI constants
@@ -122,12 +122,16 @@ class TimeRangeSelectorView: NSView {
 
     private func drawHourLabels(hourWidth: CGFloat) {
         let fontSize: CGFloat = (hours.count > 12) ? 11 : 13
-        let attributes: [NSAttributedString.Key: Any] = [
+        var attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: fontSize),
-            .foregroundColor: NSColor.labelColor,
         ]
 
         for (index, hour) in hours.enumerated() {
+            if selectedHours[hours[index]] {
+                attributes[.foregroundColor] = NSColor.alternateSelectedControlTextColor
+            } else {
+                attributes[.foregroundColor] = NSColor.controlTextColor
+            }
             let hourString = labelHour(hour)
             let x = CGFloat(index) * hourWidth + borderRadius - 1
             let y = bounds.height / 2 - fontSize / 2 - 1
