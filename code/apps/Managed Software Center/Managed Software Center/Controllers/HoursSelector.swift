@@ -37,6 +37,7 @@ class HoursSelector: NSControl {
 
     private var isDragging = false
     private var dragSelecting = false
+    private var firstClickedIndex: Int?
     private var lastTouchedIndex: Int?
 
     // Colors
@@ -79,7 +80,7 @@ class HoursSelector: NSControl {
     private func setup() {
         wantsLayer = true
         // Default to first cell selected if none specified
-        if selectedIndices.isEmpty && !cellLabels.isEmpty {
+        if selectedIndices.isEmpty, !cellLabels.isEmpty {
             selectedIndices.insert(0)
         }
     }
@@ -183,6 +184,8 @@ class HoursSelector: NSControl {
 
         let location = convert(event.locationInWindow, from: nil)
         let index = cellIndexFromPosition(location)
+        if index == -1 { return }
+        firstClickedIndex = index
 
         if allowsMultipleSelection {
             // Toggle selection
@@ -219,9 +222,27 @@ class HoursSelector: NSControl {
         lastTouchedIndex = index
 
         if dragSelecting {
+            if let firstClickedIndex {
+                if index >= firstClickedIndex, index < previousIndex {
+                    selectedIndices.remove(previousIndex)
+                }
+                if index <= firstClickedIndex, index > previousIndex {
+                    selectedIndices.remove(previousIndex)
+                }
+            }
             selectedIndices.insert(index)
-        } else if selectedIndices.count > minimumSelection {
-            selectedIndices.remove(index)
+        } else {
+            if selectedIndices.count > minimumSelection {
+                if let firstClickedIndex {
+                    if index >= firstClickedIndex, index < previousIndex {
+                        selectedIndices.insert(previousIndex)
+                    }
+                    if index <= firstClickedIndex, index > previousIndex {
+                        selectedIndices.insert(previousIndex)
+                    }
+                }
+                selectedIndices.remove(index)
+            }
         }
     }
 
@@ -266,7 +287,7 @@ class HoursSelector: NSControl {
 
     /// Select all cells
     func selectAll() {
-        selectedIndices = Set(0..<cellLabels.count)
+        selectedIndices = Set(0 ..< cellLabels.count)
     }
 
     /// Clear selection (will maintain minimum selection)
