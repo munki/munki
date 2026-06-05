@@ -48,7 +48,6 @@
 		C05F87932105587A000DB8D8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C05F87952105587A000DB8D8 /* Localizable.strings */; };
 		C0761E542FA9434C007465D6 /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0761E532FA9434C007465D6 /* PrefsWindow.xib */; };
 		C0761E562FAA97AE007465D6 /* PrefsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */; };
-		C0761E5A2FAB925A007465D6 /* TimeRangeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0761E592FAB925A007465D6 /* TimeRangeSelector.swift */; };
 		C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C094C26B28B7E17800CFB0D8 /* osinstaller.swift */; };
 		C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */; };
 		C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */; };
@@ -143,7 +142,6 @@
 		C05F87AA21055F10000DB8D8 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C0761E532FA9434C007465D6 /* PrefsWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PrefsWindow.xib; sourceTree = "<group>"; };
 		C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsWindowController.swift; sourceTree = "<group>"; };
-		C0761E592FAB925A007465D6 /* TimeRangeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeRangeSelector.swift; sourceTree = "<group>"; };
 		C094C26B28B7E17800CFB0D8 /* osinstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstaller.swift; sourceTree = "<group>"; };
 		C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCWebView.swift; sourceTree = "<group>"; };
 		C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appleupdates.swift; sourceTree = "<group>"; };
@@ -312,7 +310,6 @@
 				8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */,
 				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
 				C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */,
-				C0761E592FAB925A007465D6 /* TimeRangeSelector.swift */,
 				C05ED2652FD3854100AFA64D /* HoursSelector.swift */,
 			);
 			path = Controllers;
@@ -490,7 +487,6 @@
 				C03107C320C8B65E007FE337 /* msclib.swift in Sources */,
 				C04F829F20BB713B00F9C57D /* munki.swift in Sources */,
 				8428C7E62E0CB44200D83D41 /* MainContentViewController.swift in Sources */,
-				C0761E5A2FAB925A007465D6 /* TimeRangeSelector.swift in Sources */,
 				C0C5DF6C20F5C27700CA0687 /* MSCStatusController.swift in Sources */,
 				C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */,
 				849BF6382E104F74004A020D /* MainWindowController+NSOutlineView.swift in Sources */,
