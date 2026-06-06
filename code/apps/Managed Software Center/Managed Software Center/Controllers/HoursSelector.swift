@@ -37,8 +37,9 @@ class HoursSelector: NSControl {
 
     private var isDragging = false
     private var dragSelecting = false
-    private var firstClickedIndex: Int?
-    private var lastTouchedIndex: Int?
+    private var firstClickedIndex: Int = -1
+    private var lastTouchedIndex: Int = -1
+    private var previouslySelectedIndices = Set<Int>()
 
     // Colors
     private var gridColor: NSColor {
@@ -63,7 +64,9 @@ class HoursSelector: NSControl {
 
     // Other UI constants
     private let borderRadius: CGFloat = 6
-    private let defaultFontSize: CGFloat = 13
+    private let defaultFontSize: CGFloat = NSFont.systemFontSize // 13
+    private let smallFontSize: CGFloat = NSFont.smallSystemFontSize // 11
+    private let dragSlopFactor: CGFloat = 8
 
     // MARK: - Initialization
 
@@ -152,7 +155,7 @@ class HoursSelector: NSControl {
     }
 
     private func drawCellLabels(cellWidth: CGFloat) {
-        let fontSize = defaultFontSize
+        let fontSize: CGFloat = (cellLabels.count > 12) ? smallFontSize : defaultFontSize
         let font = NSFont.systemFont(ofSize: fontSize)
         var attributes: [NSAttributedString.Key: Any] = [
             .font: font,
@@ -186,6 +189,7 @@ class HoursSelector: NSControl {
         let index = cellIndexFromPosition(location)
         if index == -1 { return }
         firstClickedIndex = index
+        previouslySelectedIndices = selectedIndices
 
         if allowsMultipleSelection {
             // Toggle selection
@@ -212,36 +216,33 @@ class HoursSelector: NSControl {
     override func mouseDragged(with event: NSEvent) {
         guard isEnabled else { return }
         guard allowsMultipleSelection else { return }
-        guard isDragging, let previousIndex = lastTouchedIndex else { return }
+        guard isDragging, lastTouchedIndex != -1 else { return }
         guard !cellLabels.isEmpty else { return }
 
         let location = convert(event.locationInWindow, from: nil)
         let index = cellIndexFromPosition(location)
 
-        if index == previousIndex || index == -1 { return }
+        if index == lastTouchedIndex || index == -1 { return }
         lastTouchedIndex = index
 
         if dragSelecting {
-            if let firstClickedIndex {
-                if index >= firstClickedIndex, index < previousIndex {
-                    selectedIndices.remove(previousIndex)
-                }
-                if index <= firstClickedIndex, index > previousIndex {
-                    selectedIndices.remove(previousIndex)
-                }
+            if index >= firstClickedIndex {
+                let newSelection = Set(firstClickedIndex ... index)
+                selectedIndices = previouslySelectedIndices.union(newSelection)
+            } else {
+                let newSelection = Set(index ... firstClickedIndex)
+                selectedIndices = previouslySelectedIndices.union(newSelection)
             }
-            selectedIndices.insert(index)
-        } else {
-            if selectedIndices.count > minimumSelection {
-                if let firstClickedIndex {
-                    if index >= firstClickedIndex, index < previousIndex {
-                        selectedIndices.insert(previousIndex)
-                    }
-                    if index <= firstClickedIndex, index > previousIndex {
-                        selectedIndices.insert(previousIndex)
-                    }
-                }
-                selectedIndices.remove(index)
+        } else { // deselecting
+            var deselectedRange = Set<Int>()
+            if index >= firstClickedIndex {
+                deselectedRange = Set(firstClickedIndex ... index)
+            } else {
+                deselectedRange = Set(index ... firstClickedIndex)
+            }
+            let newSelection = previouslySelectedIndices.subtracting(deselectedRange)
+            if newSelection.count >= minimumSelection {
+                selectedIndices = newSelection
             }
         }
     }
@@ -250,7 +251,8 @@ class HoursSelector: NSControl {
         guard isEnabled else { return }
 
         isDragging = false
-        lastTouchedIndex = nil
+        lastTouchedIndex = -1
+        firstClickedIndex = -1
     }
 
     // MARK: - Helper Methods
@@ -260,7 +262,7 @@ class HoursSelector: NSControl {
         let x = point.x
         let y = point.y
         // did they drag vertically outside of the control?
-        if y < 0 || y > bounds.height { return -1 }
+        if y < -dragSlopFactor || y > bounds.height + dragSlopFactor { return -1 }
         guard !cellLabels.isEmpty else { return 0 }
         let cellWidth = bounds.width / CGFloat(cellLabels.count)
         let index = Int(x / cellWidth)
