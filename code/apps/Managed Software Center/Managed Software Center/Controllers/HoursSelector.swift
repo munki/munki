@@ -17,6 +17,8 @@ class HoursSelector: NSControl {
             if selectedIndices.isEmpty {
                 selectedIndices = Set([0])
             }
+            // Recreate accessibility children when labels change
+            _accessibilityChildren = createAccessibilityChildren()
             needsDisplay = true
         }
     }
@@ -40,6 +42,12 @@ class HoursSelector: NSControl {
     private var firstClickedIndex: Int = -1
     private var lastTouchedIndex: Int = -1
     private var previouslySelectedIndices = Set<Int>()
+
+    /// Currently focused cell index for keyboard navigation
+    fileprivate var focusedIndex: Int = 0
+
+    /// Store accessibility children
+    private var _accessibilityChildren: [HourCellAccessibilityElement] = []
 
     // Colors
     private var gridColor: NSColor {
@@ -86,6 +94,20 @@ class HoursSelector: NSControl {
         if selectedIndices.isEmpty, !cellLabels.isEmpty {
             selectedIndices.insert(0)
         }
+        setupAccessibility()
+    }
+
+    private func setupAccessibility() {
+        // Configure the main control
+        setAccessibilityRole(.group)
+        setAccessibilityLabel(NSLocalizedString("Hours", comment: "Accessibility label for hour selector"))
+        setAccessibilityHelp(NSLocalizedString(
+            "Use arrow keys to navigate hours, space to toggle selection",
+            comment: "Accessibility help for hour selector"
+        ))
+
+        // Create accessibility children for each cell
+        _accessibilityChildren = createAccessibilityChildren()
     }
 
     // Provide intrinsic content size
@@ -126,6 +148,11 @@ class HoursSelector: NSControl {
         // Draw selected cells
         drawSelectedCells(cellWidth: cellWidth)
 
+        // Draw focus ring for keyboard navigation
+        if window?.firstResponder == self {
+            drawFocusRing(cellWidth: cellWidth)
+        }
+
         // Draw cell labels
         drawCellLabels(cellWidth: cellWidth)
     }
@@ -152,6 +179,20 @@ class HoursSelector: NSControl {
                 index += 1
             }
         }
+    }
+
+    private func drawFocusRing(cellWidth: CGFloat) {
+        guard focusedIndex >= 0, focusedIndex < cellLabels.count else { return }
+
+        NSGraphicsContext.saveGraphicsState()
+        NSFocusRingPlacement.only.set()
+
+        let x = CGFloat(focusedIndex) * cellWidth
+        let focusRect = NSRect(x: x + 2, y: 2, width: cellWidth - 4, height: bounds.height - 4)
+        let focusPath = NSBezierPath(roundedRect: focusRect, xRadius: borderRadius - 1, yRadius: borderRadius - 1)
+        focusPath.fill()
+
+        NSGraphicsContext.restoreGraphicsState()
     }
 
     private func drawCellLabels(cellWidth: CGFloat) {
@@ -189,6 +230,7 @@ class HoursSelector: NSControl {
         let index = cellIndexFromPosition(location)
         if index == -1 { return }
         firstClickedIndex = index
+        focusedIndex = index
         previouslySelectedIndices = selectedIndices
 
         if allowsMultipleSelection {
@@ -224,6 +266,7 @@ class HoursSelector: NSControl {
 
         if index == lastTouchedIndex || index == -1 { return }
         lastTouchedIndex = index
+        focusedIndex = index
 
         if dragSelecting {
             if index >= firstClickedIndex {
@@ -295,5 +338,186 @@ class HoursSelector: NSControl {
     /// Clear selection (will maintain minimum selection)
     func clearSelection() {
         selectedIndices = Set([0])
+    }
+
+    // MARK: - Keyboard Navigation
+
+    override var acceptsFirstResponder: Bool {
+        return isEnabled
+    }
+
+    override func becomeFirstResponder() -> Bool {
+        needsDisplay = true
+        return super.becomeFirstResponder()
+    }
+
+    override func resignFirstResponder() -> Bool {
+        needsDisplay = true
+        return super.resignFirstResponder()
+    }
+
+    override func keyDown(with event: NSEvent) {
+        guard isEnabled else {
+            super.keyDown(with: event)
+            return
+        }
+
+        switch event.keyCode {
+        case 123: // Left arrow
+            moveFocus(by: -1)
+        case 124: // Right arrow
+            moveFocus(by: 1)
+        case 49: // Space
+            toggleFocusedCell()
+        case 36, 76: // Return or Enter
+            // Activate the control (send action)
+            sendAction(action, to: target)
+        default:
+            super.keyDown(with: event)
+        }
+    }
+
+    private func moveFocus(by delta: Int) {
+        guard !cellLabels.isEmpty else { return }
+
+        let newIndex = focusedIndex + delta
+        if newIndex >= 0, newIndex < cellLabels.count {
+            focusedIndex = newIndex
+            needsDisplay = true
+
+            // Announce the focused cell to VoiceOver
+            if focusedIndex < _accessibilityChildren.count {
+                let child = _accessibilityChildren[focusedIndex]
+
+                // Post focused element changed - VoiceOver will read the element's label
+                NSAccessibility.post(element: child, notification: .focusedUIElementChanged)
+            }
+        }
+    }
+
+    private func toggleFocusedCell() {
+        guard !cellLabels.isEmpty else { return }
+        if selectedIndices.contains(focusedIndex) {
+            // Try to deselect
+            if selectedIndices.count > minimumSelection {
+                selectedIndices.remove(focusedIndex)
+                notifySelectionChange(index: focusedIndex, selected: false)
+            }
+        } else {
+            // Select
+            if allowsMultipleSelection {
+                selectedIndices.insert(focusedIndex)
+            } else {
+                selectedIndices = [focusedIndex]
+            }
+            notifySelectionChange(index: focusedIndex, selected: true)
+        }
+    }
+
+    fileprivate func notifySelectionChange(index _: Int, selected _: Bool) {
+        // Post selected children changed notification
+        NSAccessibility.post(element: self, notification: .selectedChildrenChanged)
+    }
+
+    // MARK: - Accessibility Support
+
+    override func isAccessibilityElement() -> Bool {
+        return true
+    }
+
+    override func accessibilityRole() -> NSAccessibility.Role? {
+        return .group
+    }
+
+    override func accessibilityLabel() -> String? {
+        return NSLocalizedString("Hours", comment: "Accessibility label for hour selector")
+    }
+
+    override func accessibilityValue() -> Any? {
+        let selectedLabels = selectedIndices.sorted().map { cellLabels[$0] }
+        return selectedLabels.joined(separator: ", ")
+    }
+
+    private func createAccessibilityChildren() -> [HourCellAccessibilityElement] {
+        return cellLabels.enumerated().map { index, label in
+            let element = HourCellAccessibilityElement(index: index, parent: self)
+            element.setAccessibilityLabel(label)
+            return element
+        }
+    }
+
+    override func accessibilityChildren() -> [Any]? {
+        return _accessibilityChildren
+    }
+
+    override func accessibilitySelectedChildren() -> [Any]? {
+        return _accessibilityChildren.filter { selectedIndices.contains($0.index) }
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        // Toggle the focused cell
+        if isEnabled {
+            toggleFocusedCell()
+            return true
+        }
+        return false
+    }
+}
+
+// MARK: - HourCellAccessibilityElement
+
+/// Accessibility element representing a single hour cell
+class HourCellAccessibilityElement: NSAccessibilityElement {
+    let index: Int
+    weak var parent: HoursSelector?
+    private var isSelected: Bool {
+        parent?.selectedIndices.contains(index) ?? false
+    }
+
+    init(index: Int, parent: HoursSelector) {
+        self.index = index
+        self.parent = parent
+        super.init()
+        setAccessibilityRole(.button)
+        setAccessibilityParent(parent)
+    }
+
+    override func accessibilityLabel() -> String? {
+        guard let parent, index < parent.cellLabels.count else { return nil }
+        return parent.cellLabels[index]
+    }
+
+    override func accessibilityValue() -> Any? {
+        return isSelected ? 1 : 0
+    }
+
+    override func isAccessibilitySelected() -> Bool {
+        return isSelected
+    }
+
+    override func accessibilityFrame() -> NSRect {
+        guard let parent, let window = parent.window else { return .zero }
+        let cellWidth = parent.bounds.width / CGFloat(parent.cellLabels.count)
+        let cellRect = NSRect(x: CGFloat(index) * cellWidth, y: 0, width: cellWidth, height: parent.bounds.height)
+        let frameInWindow = parent.convert(cellRect, to: nil)
+        let frameInScreen = window.convertToScreen(frameInWindow)
+        return frameInScreen
+    }
+
+    override func isAccessibilityElement() -> Bool {
+        return true
+    }
+
+    override func isAccessibilityEnabled() -> Bool {
+        return parent?.isEnabled ?? false
+    }
+
+    override func isAccessibilityFocused() -> Bool {
+        guard let parent else { return false }
+        return parent.focusedIndex == index && parent.window?.firstResponder == parent
+    }
+
+    override func accessibilityHelp() -> String? {
+        return NSLocalizedString("Press to toggle hour selection", comment: "Accessibility help for hour cell")
     }
 }
