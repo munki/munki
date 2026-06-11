@@ -91,9 +91,10 @@ func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
     Report.shared.record(item, to: "StagedOSInstaller")
     display.info("")
     display.info("The following macOS upgrade is available to install:")
-    let name: String
-    let _name = item["display_name"] as? String ?? ""
-    name = !_name.isEmpty ? _name : item["name"] as? String ?? ""
+    let name = item.getString(
+        for: "display_name",
+        fallback: item.getString(for: "name")
+    )
 
     let version = item["version_to_install"] as? String ?? ""
     display.info("    + \(name)-\(version)")

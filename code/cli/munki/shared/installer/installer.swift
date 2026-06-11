@@ -286,12 +286,10 @@ func installWithInstallInfo(
         // Keep track of when this particular install started.
         let startTime = Date()
         itemIndex += 1
-        let itemName = item["name"] as? String ?? "<unknown>"
-        let displayName: String
-        let _displayName = item["display_name"] as? String ?? ""
-        displayName = !_displayName.isEmpty ? _displayName : itemName
-        let versionToInstall = item["version_to_install"] as? String ?? ""
-        let installerType = item["installer_type"] as? String ?? "pkg_install"
+        let itemName = item.getString(for: "name", fallback: "<unknown>")
+        let displayName = item.getString(for: "display_name", fallback: itemName)
+        let versionToInstall = item.getString(for: "version_to_install")
+        let installerType = item.getString(for: "installer_type", fallback: "pkg_install")
 
         if installerType == "startosinstall" {
             skippedInstalls.append(item)
@@ -467,10 +465,8 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
 /// returns an exitcode for the attempted install and a flag to indicate the need to restart
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     var needToRestart = false
-    let itemName = item["name"] as? String ?? "<unknown>"
-    let displayName: String
-    let _displayName = item["display_name"] as? String ?? ""
-    displayName = !_displayName.isEmpty ? _displayName : itemName
+    let itemName = item.getString(for: "name", fallback: "<unknown>")
+    let displayName = item.getString(for: "display_name", fallback: itemName)
 
     // run preuninstall_script if it exists
     if item["preuninstall_script"] is String {
@@ -576,10 +572,8 @@ func processRemovals(
     var skippedRemovals = [PlistDict]()
 
     for item in removalList {
-        let itemName = item["name"] as? String ?? "<unknown>"
-        let displayName: String
-        let _displayName = item["display_name"] as? String ?? ""
-        displayName = !_displayName.isEmpty ? _displayName : itemName
+        let itemName = item.getString(for: "name", fallback: "<unknown>")
+        let displayName = item.getString(for: "display_name", fallback: itemName)
         index += 1
 
         if onlyUnattended {
