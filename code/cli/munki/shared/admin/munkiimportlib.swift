@@ -348,7 +348,10 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict?
 
 /// Return repo identifier for icon
 func getIconIdentifier(_ pkginfo: PlistDict) -> String {
-    var iconName = pkginfo["icon_name"] as? String ?? pkginfo["name"] as? String ?? ""
+    var iconName = pkginfo["icon_name"] as? String ?? ""
+    if iconName.isEmpty {
+        iconName = pkginfo["name"] as? String ?? ""
+    }
     if (iconName as NSString).pathExtension.isEmpty {
         iconName += ".png"
     }

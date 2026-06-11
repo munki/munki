@@ -287,7 +287,9 @@ func installWithInstallInfo(
         let startTime = Date()
         itemIndex += 1
         let itemName = item["name"] as? String ?? "<unknown>"
-        let displayName = item["display_name"] as? String ?? itemName
+        let displayName: String
+        let _displayName = item["display_name"] as? String ?? ""
+        displayName = !_displayName.isEmpty ? _displayName : itemName
         let versionToInstall = item["version_to_install"] as? String ?? ""
         let installerType = item["installer_type"] as? String ?? "pkg_install"
 
@@ -466,7 +468,9 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     var needToRestart = false
     let itemName = item["display_name"] as? String ?? "<unknown>"
-    let displayName = item["display_name"] as? String ?? itemName
+    let displayName: String
+    let _displayName = item["display_name"] as? String ?? ""
+    displayName = !_displayName.isEmpty ? _displayName : itemName
 
     // run preuninstall_script if it exists
     if item["preuninstall_script"] is String {
@@ -573,7 +577,9 @@ func processRemovals(
 
     for item in removalList {
         let itemName = item["name"] as? String ?? "<unknown>"
-        let displayName = item["display_name"] as? String ?? itemName
+        let displayName: String
+        let _displayName = item["display_name"] as? String ?? ""
+        displayName = !_displayName.isEmpty ? _displayName : itemName
         index += 1
 
         if onlyUnattended {

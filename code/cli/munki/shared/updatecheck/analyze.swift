@@ -246,7 +246,9 @@ func processInstall(
 
     var processedItem = PlistDict()
     processedItem["name"] = name
-    let displayName = pkginfo["display_name"] as? String ?? name
+    let displayName: String
+    let _displayName = pkginfo["display_name"] as? String ?? ""
+    displayName = !_displayName.isEmpty ? _displayName : name
     processedItem["display_name"] = displayName
     processedItem["description"] = pkginfo["description"] as? String ?? ""
     processedItem["localized_strings"] = pkginfo["localized_strings"]
