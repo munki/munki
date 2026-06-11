@@ -181,7 +181,7 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     var restartNeeded = false
     let packageName = (pkgpath as NSString).lastPathComponent
     let displayName: String
-    let _displayName = item["display_name"] as? String ?? ""
+    let _displayName = options["display_name"] as? String ?? ""
     displayName = !_displayName.isEmpty ? _displayName : options["name"] as? String ?? packageName
 
     var resolvedPkgPath = pkgpath

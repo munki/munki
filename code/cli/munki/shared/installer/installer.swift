@@ -467,7 +467,7 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
 /// returns an exitcode for the attempted install and a flag to indicate the need to restart
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     var needToRestart = false
-    let itemName = item["display_name"] as? String ?? "<unknown>"
+    let itemName = item["name"] as? String ?? "<unknown>"
     let displayName: String
     let _displayName = item["display_name"] as? String ?? ""
     displayName = !_displayName.isEmpty ? _displayName : itemName
