@@ -184,9 +184,10 @@ func runInstaller(arguments: [String], environment: [String: String], pkgName: S
 func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     var restartNeeded = false
     let packageName = (pkgpath as NSString).lastPathComponent
-    let displayName: String
-    let _displayName = options["display_name"] as? String ?? ""
-    displayName = !_displayName.isEmpty ? _displayName : options["name"] as? String ?? packageName
+    let displayName = options.getString(
+        for: "display_name",
+        fallback: options.getString(for: "name", fallback: packageName)
+    )
 
     var resolvedPkgPath = pkgpath
     if pathIsSymlink(pkgpath) {
