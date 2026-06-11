@@ -245,7 +245,10 @@ func generatePNGsFromMunkiItems(_ repo: Repo, force: Bool = false, items: [Strin
     let itemList = await findItemsToCheck(repo, items: items)
     for item in itemList {
         let itemName = item["name"] as? String ?? "UNKNOWN"
-        var iconName = item["icon_name"] as? String ?? itemName
+        var iconName = item["icon_name"] as? String ?? ""
+        if iconName.isEmpty {
+            iconName = itemName
+        }
         print("Processing \(itemName)...")
         let iconNameExt = (iconName as NSString).pathExtension
         if iconNameExt.isEmpty {
