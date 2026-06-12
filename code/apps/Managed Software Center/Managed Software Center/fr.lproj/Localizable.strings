@@ -368,7 +368,7 @@
 "Restart Required" = "Redémarrage requis";
 
 /* Restrict update notifications checkbox label */
-"Restrict update notifications to selected hours" = "Restrict update notifications to selected hours";
+"Restrict update notifications to selected hours" = "Limiter les notifications de mise à jour à certains horaires";
 
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Obtention de la liste des logiciels pour cet ordinateur...";
