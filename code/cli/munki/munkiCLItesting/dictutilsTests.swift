@@ -23,26 +23,39 @@ struct stringValueTests {
         "name": "TestName",
         "display_name": "",
         "integer": 6,
+        "flag": true,
     ]
 
     @Test func stringValueStringItemReturnsExpectedString() {
         #expect(stringValue(from: info, for: "name", fallback: "bar") == "TestName")
     }
 
-    @Test func stringValueUndefinedItemReturnsEmptyString() async throws {
+    @Test func stringValueUndefinedItemReturnsEmptyString() {
         #expect(stringValue(from: info, for: "nonexistent_key") == "")
     }
 
-    @Test func stringValueUndefinedItemReturnsFallback() async throws {
+    @Test func stringValueUndefinedItemReturnsFallback() {
         #expect(stringValue(from: info, for: "nonexistent_key", fallback: "TestName") == "TestName")
     }
 
-    @Test func stringValueEmptyItemReturnsFallback() async throws {
+    @Test func stringValueEmptyItemReturnsFallback() {
         #expect(stringValue(from: info, for: "display_name", fallback: "TestName") == "TestName")
     }
 
-    @Test func stringValueIntegerItemReturnsEmptyString() async throws {
+    @Test func stringValueIntegerItemReturnsEmptyString() {
         #expect(stringValue(from: info, for: "integer") == "")
+    }
+
+    @Test func stringValueIntegerItemReturnsFallback() {
+        #expect(stringValue(from: info, for: "integer", fallback: "TestName") == "TestName")
+    }
+
+    @Test func stringValueBoolItemReturnsEmptyString() {
+        #expect(stringValue(from: info, for: "flag") == "")
+    }
+
+    @Test func stringValueBoolItemReturnsFallback() {
+        #expect(stringValue(from: info, for: "flag", fallback: "TestName") == "TestName")
     }
 }
 
@@ -51,25 +64,38 @@ struct getStringExtensionTests {
         "name": "TestName",
         "display_name": "",
         "integer": 6,
+        "flag": true,
     ]
 
     @Test func getStringReturnsExpectedString() {
         #expect(info.getString(for: "name", fallback: "bar") == "TestName")
     }
 
-    @Test func getStringUndefinedItemReturnsEmptyString() async throws {
+    @Test func getStringUndefinedItemReturnsEmptyString() {
         #expect(info.getString(for: "nonexistent_key") == "")
     }
 
-    @Test func getStringUndefinedItemReturnsFallback() async throws {
+    @Test func getStringUndefinedItemReturnsFallback() {
         #expect(info.getString(for: "nonexistent_key", fallback: "TestName") == "TestName")
     }
 
-    @Test func getStringEmptyItemReturnsFallback() async throws {
+    @Test func getStringEmptyItemReturnsFallback() {
         #expect(info.getString(for: "display_name", fallback: "TestName") == "TestName")
     }
 
-    @Test func getStringIntegerItemReturnsEmptyString() async throws {
+    @Test func getStringIntegerItemReturnsEmptyString() {
         #expect(info.getString(for: "integer") == "")
+    }
+
+    @Test func getStringIntegerItemReturnsFallback() {
+        #expect(info.getString(for: "integer", fallback: "TestName") == "TestName")
+    }
+
+    @Test func getStringBoolItemReturnsEmptyString() {
+        #expect(info.getString(for: "flag") == "")
+    }
+
+    @Test func getStringBoolItemReturnsFallback() {
+        #expect(info.getString(for: "flag", fallback: "TestName") == "TestName")
     }
 }
