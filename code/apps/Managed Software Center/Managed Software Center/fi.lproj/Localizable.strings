@@ -368,7 +368,7 @@
 "Restart Required" = "Vaatii uudelleenkäynnistyksen";
 
 /* Restrict update notifications checkbox label */
-"Restrict update notifications to selected hours" = "Restrict update notifications to selected hours";
+"Restrict update notifications to selected hours" = "Rajoita päivitysilmoitukset valittuihin tunteihin";
 
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Haetaan ohjelmistolistaa tälle tietokoneelle...";
