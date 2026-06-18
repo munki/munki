@@ -368,7 +368,7 @@
 "Restart Required" = "Omstart påkrevd";
 
 /* Restrict update notifications checkbox label */
-"Restrict update notifications to selected hours" = "Restrict update notifications to selected hours";
+"Restrict update notifications to selected hours" = "Begrens varsler om oppdateringer til de valgte timene";
 
 /* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Henter en liste over tilgjenglig programvare for denne datamaskinen...";
