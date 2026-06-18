@@ -24,7 +24,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
     var launchedViaURL = false
     var backdropOnlyMode = false
-    
+    var shouldQuitNoMatterWhat: Bool = false
+
     @IBAction func showLogWindow(_ sender: Any) {
         if logWindowController == nil {
             logWindowController = LogWindowController(windowNibName: "LogWindow")
@@ -167,6 +168,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // Called if user selects 'Quit' from menu
+        if shouldQuitNoMatterWhat {
+            return .terminateNow
+        }
         return self.mainWindowController.appShouldTerminate()
     }
 

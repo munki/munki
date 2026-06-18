@@ -113,6 +113,7 @@ class MSCAlertController: NSObject {
                     // and we don't want to try to log out in that case
                     msc_log("user", "install_with_logout")
                     self.handlePossibleAuthRestart()
+                    self.setAppToQuitNoMatterWhat()
                     do {
                         try logoutAndUpdate()
                     } catch {
@@ -281,9 +282,23 @@ class MSCAlertController: NSObject {
     
     @objc func removeBlurredBackground() {
         // removes the blurred background so other apps can be accessed
-        if (NSApp.delegate! as! AppDelegate).mainWindowController.blurredBackground != nil {
-            (NSApp.delegate! as! AppDelegate).mainWindowController.blurredBackground = nil
+        guard let appDelegate = NSApp.delegate as? AppDelegate else {
+            msc_debug_log("Could not get app delegate in removeBlurredBackground")
+            return
         }
+        if appDelegate.mainWindowController.blurredBackground != nil {
+            appDelegate.mainWindowController.blurredBackground = nil
+        }
+        // we need to definitely quit when asked in a bit
+        setAppToQuitNoMatterWhat()
+    }
+
+    func setAppToQuitNoMatterWhat() {
+        guard let appDelegate = NSApp.delegate as? AppDelegate else {
+            msc_debug_log("Could not get app delegate in setAppToQuitNoMatterWhat")
+            return
+        }
+        appDelegate.shouldQuitNoMatterWhat = true
     }
 
 
@@ -395,6 +410,7 @@ class MSCAlertController: NSObject {
             }
             msc_log("user", "install_with_logout")
             handlePossibleAuthRestart()
+            setAppToQuitNoMatterWhat()
             do {
                 try logoutAndUpdate()
             } catch {
