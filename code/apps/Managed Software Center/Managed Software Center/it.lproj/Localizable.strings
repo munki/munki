@@ -367,10 +367,10 @@
 /* Restart Required title */
 "Restart Required" = "Riavvio Necessario";
 
-//* Restrict update notifications checkbox label */
-"Restrict update notifications to selected hours" = "Restrict update notifications to selected hours";
+/* Restrict update notifications checkbox label */
+"Restrict update notifications to selected hours" = "Limita le notifiche di aggiornamento agli orari selezionati";
 
-* managedsoftwareupdate message */
+/* managedsoftwareupdate message */
 "Retrieving list of software for this machine..." = "Recupero la lista delle applicazioni per questo mac...";
 
 /* managedsoftwareupdate message */
