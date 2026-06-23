@@ -26,7 +26,7 @@ private let display = DisplayAndLog.main
 struct ManagedSoftwareUpdate: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "managedsoftwareupdate",
-        usage: "mangedsoftwareupdate [options]"
+        usage: "managedsoftwareupdate [options]"
     )
 
     @Flag(name: [.long, .customShort("V")],
@@ -117,7 +117,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
-    /// Process the options needed when we're triggered vi launchd
+    /// Process the options needed when we're triggered by launchd
     private mutating func processLaunchdOptions() throws {
         if otherOptions.auto {
             // typically invoked by a launch daemon periodically.
@@ -276,7 +276,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     private func doMunkiUpdateCheck(skipCheck: Bool) async throws -> UpdateCheckResult? {
         if !skipCheck {
             if !currentGUIUsers().isEmpty {
-                // MSC.app might be opne, so let's send progress info
+                // MSC.app might be open, so let's send progress info
                 DisplayOptions.munkistatusoutput = true
             }
             do {
@@ -502,7 +502,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     /// Possibly clear bootstrapping mode
     private func clearBootstrapModeIfAppropriate() {
         // TODO: rethink all this
-        if runtype == "checkandinstallatstatup",
+        if runtype == "checkandinstallatstartup",
            restartAction == .none,
            pathExists(CHECKANDINSTALLATSTARTUPFLAG),
            currentGUIUsers().isEmpty
