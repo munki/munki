@@ -23,7 +23,7 @@ private let display = DisplayAndLog.main
 
 /// Removes filesystem items based on info in itemlist.
 /// These items were typically installed via copy_from_dmg
-/// This current aborts and returns false on the first error;
+/// This currently aborts and returns false on the first error;
 /// might it make sense to try to continue and remove as much as we can?
 func removeCopiedItems(_ itemList: [PlistDict]) -> Bool {
     if itemList.isEmpty {

@@ -38,7 +38,7 @@ func downloadIconsForActiveItems(_ installInfo: PlistDict) {
 /// an install or removal
 /// this could happen if an item is downloaded on one updatecheck run,
 /// but later removed from the manifest before it is installed or removed
-/// -- so the cached itemis no longer needed.
+/// -- so the cached item is no longer needed.
 func cleanUpDownloadCache(_ installInfo: PlistDict) {
     let managedInstalls = installInfo["managed_installs"] as? [PlistDict] ?? []
     let removals = installInfo["removals"] as? [PlistDict] ?? []

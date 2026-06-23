@@ -51,8 +51,8 @@ func getPkgRestartInfo(_ pkgpath: String) throws -> PlistDict {
 /// is not a string.
 ///
 /// If key is not specified:
-/// if there"s a valid CFBundleShortVersionString, returns that.
-/// else if there"s a CFBundleVersion, returns that
+/// if there's a valid CFBundleShortVersionString, returns that.
+/// else if there's a CFBundleVersion, returns that
 /// else returns an empty string.
 func getVersionString(plist: PlistDict, key: String = "") -> String {
     if !key.isEmpty {

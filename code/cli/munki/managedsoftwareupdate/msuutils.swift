@@ -303,7 +303,7 @@ func notifyUserOfUpdates(force: Bool = false) {
     let consoleUser = getConsoleUser()
     if consoleUser == "loginwindow" || consoleUser.isEmpty {
         // someone is logged in, but we're sitting at the loginwindow
-        // due to to fast user switching so do nothing
+        // due to fast user switching so do nothing
         munkiLog("Skipping user notification because we are at the loginwindow.")
         return
     } else if boolPref("SuppressUserNotification") ?? false {
