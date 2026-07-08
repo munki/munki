@@ -1,5 +1,5 @@
 //
-//  power.swift
+//  Power.swift
 //  From Managed Software Center
 //
 //  Created by Greg Neagle on 7/16/18.

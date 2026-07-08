@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24127" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24765" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24127"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24765"/>
         <capability name="NSView safe area layout guides" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -29,15 +29,17 @@
             <connections>
                 <outlet property="mainWindowController" destination="XGW-R4-ybE" id="q1J-4k-RsT"/>
                 <outlet property="passwordAlertController" destination="wV2-o2-JY3" id="sqE-eh-DvG"/>
+                <outlet property="preferencesMenuItem" destination="clu-PK-oJu" id="YGo-Cb-muz"/>
+                <outlet property="preferencesMenuSeparator" destination="NH5-MT-Qbx" id="B3x-9c-piN"/>
                 <outlet property="statusController" destination="xwS-6W-mbC" id="ICU-bl-X0z"/>
             </connections>
         </customObject>
         <customView id="431-dA-DPq" userLabel="Sidebar View">
-            <rect key="frame" x="0.0" y="0.0" width="226" height="269"/>
+            <rect key="frame" x="0.0" y="0.0" width="239" height="269"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0L3-LH-chu">
-                    <rect key="frame" x="9" y="194" width="208" height="30"/>
+                    <rect key="frame" x="9" y="194" width="221" height="30"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="30" id="gCd-dg-I2z"/>
                     </constraints>
@@ -51,19 +53,19 @@
                     </connections>
                 </searchField>
                 <scrollView borderType="none" horizontalLineScroll="36" horizontalPageScroll="10" verticalLineScroll="36" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="WBA-O8-AVZ">
-                    <rect key="frame" x="0.0" y="0.0" width="226" height="172"/>
+                    <rect key="frame" x="0.0" y="0.0" width="239" height="172"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="fUg-6X-3lt">
-                        <rect key="frame" x="0.0" y="0.0" width="226" height="172"/>
+                        <rect key="frame" x="0.0" y="0.0" width="239" height="172"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="34" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="sSx-QF-C2W" id="pGV-ZA-L14">
-                                <rect key="frame" x="0.0" y="0.0" width="226" height="172"/>
+                                <rect key="frame" x="0.0" y="0.0" width="239" height="172"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                 <tableColumns>
-                                    <tableColumn width="194" minWidth="16" maxWidth="1000" id="sSx-QF-C2W">
+                                    <tableColumn width="207" minWidth="16" maxWidth="1000" id="sSx-QF-C2W">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Items">
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -76,7 +78,7 @@
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         <prototypeCellViews>
                                             <tableCellView identifier="ItemCell" id="8LW-1K-dzo" customClass="MSCTableCellView" customModule="Managed_Software_Center" customModuleProvider="target">
-                                                <rect key="frame" x="11" y="1" width="203" height="34"/>
+                                                <rect key="frame" x="11" y="1" width="216" height="34"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <imageView wantsLayer="YES" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fiC-hB-HCN">
@@ -87,8 +89,8 @@
                                                         </constraints>
                                                         <imageCell key="cell" refusesFirstResponder="YES" imageScaling="proportionallyDown" image="NSTouchBarShareTemplate" id="LeG-M3-5ap"/>
                                                     </imageView>
-                                                    <progressIndicator maxValue="100" displayedWhenStopped="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="KDY-7K-4X8">
-                                                        <rect key="frame" x="178" y="8" width="15" height="16"/>
+                                                    <progressIndicator wantsLayer="YES" maxValue="100" displayedWhenStopped="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="KDY-7K-4X8">
+                                                        <rect key="frame" x="178" y="8" width="28" height="16"/>
                                                     </progressIndicator>
                                                     <button hidden="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="LLF-TK-FyK">
                                                         <rect key="frame" x="178" y="7" width="28" height="18"/>
@@ -101,7 +103,7 @@
                                                         </constraints>
                                                     </button>
                                                     <textField focusRingType="none" horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="545-FJ-GjT">
-                                                        <rect key="frame" x="37" y="5" width="160" height="21"/>
+                                                        <rect key="frame" x="37" y="5" width="173" height="21"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="21" id="RAb-Kg-SRd"/>
                                                         </constraints>
@@ -218,6 +220,12 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
+                            <menuItem title="Preferences…" hidden="YES" keyEquivalent="," id="clu-PK-oJu">
+                                <connections>
+                                    <action selector="showPreferences:" target="Voe-Tx-rLC" id="R1A-Ts-pak"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" hidden="YES" id="NH5-MT-Qbx"/>
                             <menuItem title="Services" id="NMo-om-nkz">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Services" systemMenu="services" id="hz9-B4-Xy5"/>
@@ -307,7 +315,7 @@
                                     <action selector="reloadPage:" target="XGW-R4-ybE" id="0AT-pi-VuZ"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Search" secondaryImage="magnifyingglass" catalog="system" keyEquivalent="f" id="JRN-bq-1gM">
+                            <menuItem title="Search" secondaryImage="NSTouchBarSearchTemplate" keyEquivalent="f" id="JRN-bq-1gM">
                                 <connections>
                                     <action selector="selectText:" target="0L3-LH-chu" id="ykw-S6-5Kl"/>
                                 </connections>
@@ -371,7 +379,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="132" y="116" width="1000" height="500"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="914"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="949"/>
             <value key="minSize" type="size" width="1000" height="500"/>
             <view key="contentView" id="H4V-bM-OJY" userLabel="View">
                 <rect key="frame" x="0.0" y="0.0" width="1000" height="500"/>
@@ -442,7 +450,7 @@
     <resources>
         <image name="NSGoBackTemplate" width="12" height="17"/>
         <image name="NSRefreshTemplate" width="18" height="21"/>
+        <image name="NSTouchBarSearchTemplate" width="20" height="20"/>
         <image name="NSTouchBarShareTemplate" width="19" height="23"/>
-        <image name="magnifyingglass" catalog="system" width="16" height="15"/>
     </resources>
 </document>

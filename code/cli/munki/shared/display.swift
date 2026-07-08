@@ -76,8 +76,13 @@ class DisplayAndLog: MunkiLogger {
     // can't override "standard", can't use "default", so...
     static let main = DisplayAndLog(logname: MAIN_LOG_NAME)
 
-    var verbose = DisplayOptions.verbose
-    var munkistatusoutput = DisplayOptions.munkistatusoutput
+    var verbose: Int {
+        DisplayOptions.verbose
+    }
+
+    var munkistatusoutput: Bool {
+        DisplayOptions.munkistatusoutput
+    }
 
     /// Prints error message to stderr and the log
     override func error(_ message: String) {

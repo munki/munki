@@ -21,6 +21,7 @@
 		849BF63C2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */; };
 		849D46162E0907420054599E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 849D46152E0907420054599E /* AppIcon.icon */; };
 		84B8FAC32E22E05400ACB45B /* MunkiURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B8FAC22E22E05400ACB45B /* MunkiURL.swift */; };
+		AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB00002E2412600012345A /* MSCBlockingAppsController.swift */; };
 		C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */; };
 		C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603CE20CF8B6100DEF9E4 /* iconutils.swift */; };
 		C01603D120D0A7FA00DEF9E4 /* SelfService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01603D020D0A7FA00DEF9E4 /* SelfService.swift */; };
@@ -43,7 +44,10 @@
 		C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */; };
 		C0546BD820FDAD82003FE5A6 /* power.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BD720FDAD82003FE5A6 /* power.swift */; };
 		C0546BDC20FE961E003FE5A6 /* MSCPasswordAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */; };
+		C05ED2662FD3854100AFA64D /* HoursSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05ED2652FD3854100AFA64D /* HoursSelector.swift */; };
 		C05F87932105587A000DB8D8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C05F87952105587A000DB8D8 /* Localizable.strings */; };
+		C0761E542FA9434C007465D6 /* PrefsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = C0761E532FA9434C007465D6 /* PrefsWindow.xib */; };
+		C0761E562FAA97AE007465D6 /* PrefsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */; };
 		C094C26C28B7E17800CFB0D8 /* osinstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = C094C26B28B7E17800CFB0D8 /* osinstaller.swift */; };
 		C0B2E4D921460E7D00FA9806 /* MSCWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */; };
 		C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */; };
@@ -96,6 +100,7 @@
 		849BF63B2E1051BE004A020D /* MainWindowController+WKScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainWindowController+WKScriptMessageHandler.swift"; sourceTree = "<group>"; };
 		849D46152E0907420054599E /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		84B8FAC22E22E05400ACB45B /* MunkiURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MunkiURL.swift; sourceTree = "<group>"; };
+		AABB00002E2412600012345A /* MSCBlockingAppsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCBlockingAppsController.swift; sourceTree = "<group>"; };
 		C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackgroundController.swift; sourceTree = "<group>"; };
 		C01603CE20CF8B6100DEF9E4 /* iconutils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iconutils.swift; sourceTree = "<group>"; };
 		C01603D020D0A7FA00DEF9E4 /* SelfService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfService.swift; sourceTree = "<group>"; };
@@ -122,6 +127,7 @@
 		C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCAlertController.swift; sourceTree = "<group>"; };
 		C0546BD720FDAD82003FE5A6 /* power.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = power.swift; sourceTree = "<group>"; };
 		C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MSCPasswordAlertController.swift; sourceTree = "<group>"; };
+		C05ED2652FD3854100AFA64D /* HoursSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoursSelector.swift; sourceTree = "<group>"; };
 		C05F878D210556C9000DB8D8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/MainMenu.strings; sourceTree = "<group>"; };
 		C05F879621055BFE000DB8D8 /* Base */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F879721055DAA000DB8D8 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -134,6 +140,8 @@
 		C05F87A821055EF1000DB8D8 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87A921055F04000DB8D8 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C05F87AA21055F10000DB8D8 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C0761E532FA9434C007465D6 /* PrefsWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PrefsWindow.xib; sourceTree = "<group>"; };
+		C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsWindowController.swift; sourceTree = "<group>"; };
 		C094C26B28B7E17800CFB0D8 /* osinstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstaller.swift; sourceTree = "<group>"; };
 		C0B2E4D821460E7D00FA9806 /* MSCWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSCWebView.swift; sourceTree = "<group>"; };
 		C0BCAD7C2442A0B3001D2FDD /* appleupdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = appleupdates.swift; sourceTree = "<group>"; };
@@ -202,6 +210,7 @@
 			children = (
 				C04F828220BB319B00F9C57D /* MainMenu.xib */,
 				8428C7ED2E0DA9AF00D83D41 /* LogWindow.xib */,
+				C0761E532FA9434C007465D6 /* PrefsWindow.xib */,
 			);
 			path = XIBs;
 			sourceTree = "<group>";
@@ -294,11 +303,14 @@
 				C0C5DF6B20F5C27700CA0687 /* MSCStatusController.swift */,
 				C0546BD520FBE61A003FE5A6 /* MSCAlertController.swift */,
 				C0546BDB20FE961E003FE5A6 /* MSCPasswordAlertController.swift */,
+				AABB00002E2412600012345A /* MSCBlockingAppsController.swift */,
 				C012D5332C25121F004FDB5A /* BlurredBackgroundController.swift */,
 				8428C7E32E0CB41F00D83D41 /* SidebarViewController.swift */,
 				8428C7E52E0CB44200D83D41 /* MainContentViewController.swift */,
 				8428C7E72E0CB55000D83D41 /* MainSplitViewController.swift */,
 				8428C7EF2E0DABC700D83D41 /* LogWindowController.swift */,
+				C0761E552FAA97AE007465D6 /* PrefsWindowController.swift */,
+				C05ED2652FD3854100AFA64D /* HoursSelector.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -423,6 +435,7 @@
 				C019631121039F020009F51A /* templates in Resources */,
 				C84025F1256DA0B2001D73DC /* InfoPlist.strings in Resources */,
 				C04F828120BB319B00F9C57D /* Assets.xcassets in Resources */,
+				C0761E542FA9434C007465D6 /* PrefsWindow.xib in Resources */,
 				C05F87932105587A000DB8D8 /* Localizable.strings in Resources */,
 				C04F828420BB319B00F9C57D /* MainMenu.xib in Resources */,
 				C019631221039F020009F51A /* WebResources in Resources */,
@@ -484,6 +497,7 @@
 				C0BCAD7D2442A0B3001D2FDD /* appleupdates.swift in Sources */,
 				C04CA61E20E6ADA100711461 /* MainWindowController.swift in Sources */,
 				8428C7E82E0CB55000D83D41 /* MainSplitViewController.swift in Sources */,
+				C0761E562FAA97AE007465D6 /* PrefsWindowController.swift in Sources */,
 				C01603CF20CF8B6100DEF9E4 /* iconutils.swift in Sources */,
 				56C33E812174D7A200D727DC /* MSCTableCellView.swift in Sources */,
 				8428C7F02E0DABC700D83D41 /* LogWindowController.swift in Sources */,
@@ -502,8 +516,10 @@
 				C0546BD820FDAD82003FE5A6 /* power.swift in Sources */,
 				849BF6362E104D9D004A020D /* MainWindowController+NSWindowDelegate.swift in Sources */,
 				C012D5342C25121F004FDB5A /* BlurredBackgroundController.swift in Sources */,
+				C05ED2662FD3854100AFA64D /* HoursSelector.swift in Sources */,
 				C04F829120BB34D100F9C57D /* Localization.swift in Sources */,
 				C0546BD620FBE61A003FE5A6 /* MSCAlertController.swift in Sources */,
+				AABB00012E2412600012345A /* MSCBlockingAppsController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -689,6 +705,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -745,6 +762,7 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

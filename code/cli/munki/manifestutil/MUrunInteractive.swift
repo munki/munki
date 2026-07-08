@@ -218,7 +218,7 @@ func tabCompleter(_ text: UnsafePointer<CChar>?, _ state: Int32) -> UnsafeMutabl
 /// Sets up readline to use our tab completion function
 func setupTabCompleter() {
     rl_completion_entry_function = tabCompleter
-    // bind the tab key/character to to tab completion
+    // bind the tab key/character to tab completion
     rl_parse_and_bind("bind ^I rl_complete")
 }
 

@@ -53,9 +53,15 @@ struct munkiRepoURLTests {
         #expect(munkiRepoURL("manifests", resource: "site_default", munkiRepoURL: munkiBaseURL) == "https://munki.example.com/cgi?manifests/site_default")
     }
 
-    /// Tests building URLs to Munki repo resources when base URL iwhen resource name contains a special character
+    /// Tests building URLs to Munki repo resources when resource name contains a special character
     @Test func urlWithResourceWithSpecialCharacterContructsExpected() async throws {
         let munkiBaseURL = "https://munki.example.com/repo"
         #expect(munkiRepoURL("manifests", resource: "site default", munkiRepoURL: munkiBaseURL) == "https://munki.example.com/repo/manifests/site%20default")
+    }
+
+    /// Tests building URLs to Munki repo resources when resource name contains a +
+    @Test func urlWithResourceWithPlusCharacterContructsExpected() async throws {
+        let munkiBaseURL = "https://munki.example.com/repo"
+        #expect(munkiRepoURL("manifests", resource: "site+default", munkiRepoURL: munkiBaseURL) == "https://munki.example.com/repo/manifests/site%2Bdefault")
     }
 }

@@ -12,14 +12,14 @@ class LogViewDataSource: NSObject, NSTableViewDataSource {
     // Data source for an NSTableView that displays an array of text lines.
     // Line breaks are assumed to be LF, and partial lines from incremental
     // reading are handled.
-    
+
     var logFileData: NSMutableArray = []
     var filteredData: NSArray = []
-    
+
     var lastLineIsPartial = false
     var filterText = ""
-    
-    func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
+
+    func tableView(_: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
         // Implements drag-n-drop of text rows to external apps
         var textToCopy = ""
         for i in rowIndexes {
@@ -29,7 +29,7 @@ class LogViewDataSource: NSObject, NSTableViewDataSource {
         pboard.writeObjects([textToCopy as NSString])
         return true
     }
-    
+
     func applyFilterToData() {
         // Filter our log data
         if !(filterText.isEmpty) {
@@ -39,7 +39,7 @@ class LogViewDataSource: NSObject, NSTableViewDataSource {
             filteredData = logFileData as NSArray
         }
     }
-    
+
     func addLine(_ line: String) {
         if lastLineIsPartial {
             let joinedLine = logFileData.lastObject as! String + line
@@ -51,18 +51,18 @@ class LogViewDataSource: NSObject, NSTableViewDataSource {
         }
         applyFilterToData()
     }
-    
+
     func removeAllLines() {
         // Remove all data from our datasource'''
         logFileData.removeAllObjects()
     }
-    
-    func numberOfRows(in tableView: NSTableView) -> Int {
+
+    func numberOfRows(in _: NSTableView) -> Int {
         // Required datasource method
         return filteredData.count
     }
-    
-    func tableView(_ tableView: NSTableView, objectValueFor column: NSTableColumn?, row: Int) -> Any? {
+
+    func tableView(_: NSTableView, objectValueFor column: NSTableColumn?, row: Int) -> Any? {
         // Required datasource method -- returns the text data for the
         // given row and column
         if column!.identifier == NSUserInterfaceItemIdentifier("data") {
@@ -74,11 +74,10 @@ class LogViewDataSource: NSObject, NSTableViewDataSource {
 }
 
 class LogViewController: NSViewController {
+    @IBOutlet var searchField: NSSearchField!
+    @IBOutlet var pathControl: NSPathControl!
+    @IBOutlet var logView: NSTableView!
 
-    @IBOutlet weak var searchField: NSSearchField!
-    @IBOutlet weak var pathControl: NSPathControl!
-    @IBOutlet weak var logView: NSTableView!
-    
     var updateTimer: Timer? = nil
     var fileHandle: FileHandle? = nil
     var logFileData = LogViewDataSource()
@@ -91,8 +90,8 @@ class LogViewController: NSViewController {
         }
         // Do view setup here.
     }
-    
-    @objc func copy(_ sender: AnyObject?) {
+
+    @objc func copy(_: AnyObject?) {
         var textToCopy = ""
         let indexes = logView.selectedRowIndexes
         for i in indexes {
@@ -103,8 +102,8 @@ class LogViewController: NSViewController {
         pboard.clearContents()
         pboard.writeObjects([textToCopy as NSString])
     }
-    
-    @IBAction func showLogWindow(_ sender: Any) {
+
+    @IBAction func showLogWindow(_: Any) {
         let logWindow = view.window!
         if logWindow.isVisible {
             logWindow.makeKeyAndOrderFront(self)
@@ -127,7 +126,7 @@ class LogViewController: NSViewController {
         watchLogFile(logFileURL)
         logView.setDraggingSourceOperationMask(.every, forLocal: false)
     }
-    
+
     func watchLogFile(_ logFileURL: URL) {
         // Display and continuously update a log file in the main window.
         stopWatching()
@@ -147,7 +146,7 @@ class LogViewController: NSViewController {
             print("Unexpected error: \(error)")
         }
     }
-    
+
     func stopWatching() {
         // Release the file handle and stop the update timer.
         if fileHandle != nil {
@@ -159,7 +158,7 @@ class LogViewController: NSViewController {
             updateTimer = nil
         }
     }
-    
+
     @objc func refreshLog() {
         // Check for new available data, read it, and scroll to the bottom.
         if fileHandle != nil {
@@ -189,8 +188,8 @@ class LogViewController: NSViewController {
             }
         }
     }
-    
-    @IBAction func searchFilterChanged(_ sender: Any) {
+
+    @IBAction func searchFilterChanged(_: Any) {
         // User changed the search field
         let filterString = searchField.stringValue.lowercased()
         logFileData.filterText = filterString

@@ -104,12 +104,16 @@ func displayInstallerOutput(_ text: String) {
     } else if msg.hasPrefix("%") {
         msg.removeFirst()
         if let percent = Double(msg) {
-            munkiStatusPercent(Int(percent))
+            if display.munkistatusoutput {
+                munkiStatusPercent(Int(percent))
+            }
             display.minorStatus("\(msg) percent complete")
         }
     } else if msg.hasPrefix(" Error") || msg.hasPrefix(" Cannot install") {
         display.error(msg)
-        munkiStatusDetail(msg)
+        if display.munkistatusoutput {
+            munkiStatusDetail(msg)
+        }
     } else {
         munkiLog(msg)
     }
@@ -180,7 +184,10 @@ func runInstaller(arguments: [String], environment: [String: String], pkgName: S
 func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     var restartNeeded = false
     let packageName = (pkgpath as NSString).lastPathComponent
-    let displayName = options["display_name"] as? String ?? options["name"] as? String ?? packageName
+    let displayName = options.getString(
+        for: "display_name",
+        fallback: options.getString(for: "name", fallback: packageName)
+    )
 
     var resolvedPkgPath = pkgpath
     if pathIsSymlink(pkgpath) {

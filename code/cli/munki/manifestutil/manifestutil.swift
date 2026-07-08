@@ -22,7 +22,7 @@ import Foundation
 
 func connectToRepo() throws -> Repo {
     guard let repoURL = adminPref("repo_url") as? String else {
-        printStderr("No repo URL defined. Run manifestutil config to define one.")
+        printStderr("No repo URL defined. Run manifestutil configure to define one.")
         throw ExitCode(-1)
     }
     var plugin = adminPref("plugin") as? String ?? "FileRepo"

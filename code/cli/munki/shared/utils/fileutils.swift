@@ -25,15 +25,18 @@ func pathExists(_ path: String) -> Bool {
 }
 
 /// Returns type of file at path
-func fileType(_ path: String) -> String? {
-    // FileAttributeType is really a String
-    return try? (FileManager.default.attributesOfItem(atPath: path) as NSDictionary).fileType()
+func fileType(_ path: String) -> FileAttributeType? {
+    if let fileTypeString = try? (FileManager.default.attributesOfItem(atPath: path) as NSDictionary).fileType() {
+        // convert string to FileAttributeType
+        return FileAttributeType(rawValue: fileTypeString)
+    }
+    return nil
 }
 
 /// Returns true if path is a regular file/
 func pathIsRegularFile(_ path: String) -> Bool {
     if let fileType = fileType(path) {
-        return fileType == FileAttributeType.typeRegular.rawValue
+        return fileType == .typeRegular
     }
     return false
 }
@@ -41,7 +44,7 @@ func pathIsRegularFile(_ path: String) -> Bool {
 /// Returns true if path is a symlink
 func pathIsSymlink(_ path: String) -> Bool {
     if let fileType = fileType(path) {
-        return fileType == FileAttributeType.typeSymbolicLink.rawValue
+        return fileType == .typeSymbolicLink
     }
     return false
 }
@@ -49,10 +52,10 @@ func pathIsSymlink(_ path: String) -> Bool {
 /// Returns true if path is a directory; follows symlinks if followSymlinks=true
 func pathIsDirectory(_ path: String, followSymlinks: Bool = false) -> Bool {
     if let fileType = fileType(path) {
-        if fileType == FileAttributeType.typeDirectory.rawValue {
+        if fileType == .typeDirectory {
             return true
         }
-        if followSymlinks, fileType == FileAttributeType.typeSymbolicLink.rawValue {
+        if followSymlinks, fileType == .typeSymbolicLink {
             if let target = try? FileManager.default.destinationOfSymbolicLink(atPath: path) {
                 if (target as NSString).isAbsolutePath {
                     return pathIsDirectory(target, followSymlinks: true)
