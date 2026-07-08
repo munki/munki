@@ -17,6 +17,15 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
+//
+//  This file is the only place the Swift tools depend on Yams
+//  (https://github.com/jpsim/Yams) for YAML parsing and serialization. Yams and
+//  the libYAML C library it bundles are both MIT-licensed, which is compatible
+//  with Munki's Apache License 2.0; their notices are reproduced in the
+//  repository NOTICE file. Yams has no third-party Swift dependencies of its own
+//  and is pinned to an exact release. Because the dependency is confined to this
+//  file, the pinned MIT source could be vendored in-tree with no other code
+//  changes should the package ever be abandoned or withdrawn.
 
 import Foundation
 import Yams
