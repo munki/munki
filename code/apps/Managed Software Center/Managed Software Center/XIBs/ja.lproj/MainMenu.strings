@@ -2,7 +2,7 @@
 "1Dc-SU-RKH.title" = "ナビゲート";
 
 /* Class = "NSMenuItem"; title = "Enter Full Screen"; ObjectID = "1LL-5u-cZt"; */
-"1LL-5u-cZt.title" = "Enter Full Screen";
+"1LL-5u-cZt.title" = "フルスクリーンにする";
 
 /* Class = "NSMenuItem"; title = "Managed Software Center"; ObjectID = "1Xt-HY-uBw"; */
 "1Xt-HY-uBw.title" = "Managed Software Center";
@@ -26,7 +26,7 @@
 "5kV-Vb-QxS.title" = "Managed Software Centerについて";
 
 /* Class = "NSMenuItem"; title = "Redo"; ObjectID = "6dh-zS-Vam"; */
-"6dh-zS-Vam.title" = "Redo";
+"6dh-zS-Vam.title" = "やり直す";
 
 /* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "8sr-3d-QrU"; */
 "8sr-3d-QrU.title" = "Text Cell";
@@ -106,8 +106,11 @@
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "YIg-jD-AbB"; */
 "YIg-jD-AbB.title" = "ソフトウェア";
 
+/* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "clu-PK-oJu"; */
+"clu-PK-oJu.title" = "環境設定…";
+
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
-"dRJ-4n-Yzg.title" = "Undo";
+"dRJ-4n-Yzg.title" = "取り消す";
 
 /* Class = "NSMenu"; title = "Navigate"; ObjectID = "gGe-RP-Ys4"; */
 "gGe-RP-Ys4.title" = "ナビゲート";

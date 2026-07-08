@@ -17,6 +17,15 @@ extension MainWindowController: WKScriptMessageHandler {
         if message.name == "installButtonClicked" {
             installButtonClicked()
         }
+        if message.name == "showButtonClicked" {
+            setAlertedToAppleUpdates(true)
+            if _obnoxiousNotificationMode {
+                // handles the case where we're in obnoxiousNotificationMode
+                alert_controller.presentAppleUpdates()
+            } else {
+                openSoftwareUpdatePrefsPane()
+            }
+        }
         if message.name == "myItemsButtonClicked" {
             if let item_name = message.body as? String {
                 myItemsActionButtonClicked(item_name)
@@ -98,7 +107,7 @@ extension MainWindowController: WKScriptMessageHandler {
             if !FileManager.default.fileExists(atPath: stop_request_flag_file) {
                 FileManager.default.createFile(atPath: stop_request_flag_file, contents: nil, attributes: nil)
             }
-        } else if getUpdateCount() == 0 {
+        } else if getEffectiveUpdateList().count == 0 {
             // no updates, the button must say "Check Again"
             msc_log("user", "refresh_clicked")
             checkForUpdates()
@@ -107,11 +116,11 @@ extension MainWindowController: WKScriptMessageHandler {
             // we're on the Updates page, so users can see all the pending/
             // outstanding updates
             _alertedUserToOutstandingUpdates = true
-            if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
+            if !getAppleUpdates().isEmpty, !haveAlertedToAppleUpdates() {
                 // if there are pending Apple updates, alert the user to
                 // install via System Preferences
-                alert_controller.alertToAppleUpdates()
-                setFilterAppleUpdates(true)
+                alert_controller.alertToAppleUpdates(skipAction: "update")
+                setAlertedToAppleUpdates(true)
             } else {
                 updateNow()
             }

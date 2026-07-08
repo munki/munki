@@ -34,11 +34,10 @@ func stopRequested() -> Bool {
     if StopRequested.shared.stopRequested {
         return true
     }
-    let stopRequestFlag = "/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested"
-    if pathExists(stopRequestFlag) {
+    if pathExists(STOPREQUESTEDFLAG) {
         StopRequested.shared.stopRequested = true
         DisplayAndLog.main.info("### User stopped session ###")
-        try? FileManager.default.removeItem(atPath: stopRequestFlag)
+        try? FileManager.default.removeItem(atPath: STOPREQUESTEDFLAG)
         return true
     }
     return false

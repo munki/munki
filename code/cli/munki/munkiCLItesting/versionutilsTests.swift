@@ -26,11 +26,31 @@ struct MunkiVersionTests {
         #expect(version1 == version2)
     }
 
-    /// Test that less-than comparison is numeric and not alpha
-    @Test func versionsCompareFoo() async throws {
+    /// Test that version comparison is numeric and not alpha
+    @Test func versionsCompareNumeric() async throws {
         let version1 = MunkiVersion("1.2")
         let version2 = MunkiVersion("1.10")
         #expect(version1 < version2)
+    }
+
+    /// Test that other comparsions return expected results
+    @Test func testOtherComparisons() async throws {
+        let versionPairs = [
+            ("1.0", "1.0b1"),
+            ("1.0b1", "1.0b2"),
+            ("1.0a1", "1.0b1"),
+            ("1.0b1", "1.0d1"),
+            ("1.0", "v1.0"),
+            ("v1.0.0", "v1.0.1"),
+            ("1.0", "v1.0v1"),
+            ("1.0.1", "v1.0"),
+            ("1.0.0", "1.0.0rc6"),
+            ("1.0.0-rc6", "1.0.0"),
+            ("8.0 (build 6300)", "8.0.1 (build 6301)"),
+        ]
+        for (versionA, versionB) in versionPairs {
+            #expect(MunkiVersion(versionA) < MunkiVersion(versionB))
+        }
     }
 }
 

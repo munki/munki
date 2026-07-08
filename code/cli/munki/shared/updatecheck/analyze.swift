@@ -246,9 +246,9 @@ func processInstall(
 
     var processedItem = PlistDict()
     processedItem["name"] = name
-    let displayName = pkginfo["display_name"] as? String ?? name
+    let displayName = pkginfo.getString(for: "display_name", fallback: name)
     processedItem["display_name"] = displayName
-    processedItem["description"] = pkginfo["description"] as? String ?? ""
+    processedItem["description"] = pkginfo.getString(for: "description")
     processedItem["localized_strings"] = pkginfo["localized_strings"]
     processedItem["developer"] = pkginfo["developer"]
     processedItem["icon_name"] = pkginfo["icon_name"]
@@ -380,6 +380,8 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
+            "blocking_applications_manual_quit_only",
+            "blocking_applications_quit_script",
         ]
 
         if isOptionalInstall {
@@ -758,6 +760,8 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
+        "blocking_applications_manual_quit_only",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]
@@ -998,6 +1002,8 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
+        "blocking_applications_manual_quit_only",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]

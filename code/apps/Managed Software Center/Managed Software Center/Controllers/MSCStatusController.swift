@@ -178,6 +178,10 @@ class MSCStatusController: NSObject {
             statusWindowController.load_page("updates.html")
             statusWindowController.displayUpdateCount()
         }
+        if let attachedSheet = statusWindowController.window?.attachedSheet {
+            // there's a sheet open; close it
+            statusWindowController.window?.endSheet(attachedSheet, returnCode: .cancel)
+        }
     }
     
     func cleanUpStatusSession() {

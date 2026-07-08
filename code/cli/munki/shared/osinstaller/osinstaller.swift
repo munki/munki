@@ -91,7 +91,11 @@ func displayStagedOSInstallerInfo(info: PlistDict? = nil) {
     Report.shared.record(item, to: "StagedOSInstaller")
     display.info("")
     display.info("The following macOS upgrade is available to install:")
-    let name = item["display_name"] as? String ?? item["name"] as? String ?? ""
+    let name = item.getString(
+        for: "display_name",
+        fallback: item.getString(for: "name")
+    )
+
     let version = item["version_to_install"] as? String ?? ""
     display.info("    + \(name)-\(version)")
     display.info("       *Must be manually installed")
@@ -137,7 +141,7 @@ func getAdminOpenPath() -> String? {
     # It takes one argument, a path to an app to be launched.
     #
     # If the current console user is not a member of the admin group, the user will
-    # be added to to the group.
+    # be added to the group.
     # The app will then be launched in the console user's context.
     # When the app exits (or this script is killed via SIGINT or SIGTERM),
     # if we had promoted the user to admin, we demote that user once again.
@@ -277,7 +281,9 @@ func launchStagedOSInstaller() -> Bool {
         return false
     }
     if boolPref("SuppressStopButtonOnInstall") ?? false {
-        munkiStatusHideStopButton()
+        if display.munkistatusoutput {
+            munkiStatusHideStopButton()
+        }
     }
     munkiLog("### Beginning GUI launch of macOS installer ###")
     return launchInstallerApp(osInstallerPath)

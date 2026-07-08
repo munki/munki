@@ -34,11 +34,11 @@ struct fileTypeTests {
     }
 
     @Test func directoryReturnsExpected() {
-        #expect(fileType("/") == FileAttributeType.typeDirectory.rawValue)
+        #expect(fileType("/") == .typeDirectory)
     }
 
     @Test func regularFileReturnsExpected() {
-        #expect(fileType(#file) == FileAttributeType.typeRegular.rawValue)
+        #expect(fileType(#file) == .typeRegular)
     }
 
     @Test func symlinkReturnsExpected() throws {
@@ -53,7 +53,7 @@ struct fileTypeTests {
             "Can't create test symlink"
         )
         #expect(
-            fileType(testDirectoryPath + "/symlink_test") == FileAttributeType.typeSymbolicLink.rawValue
+            fileType(testDirectoryPath + "/symlink_test") == .typeSymbolicLink
         )
     }
 }

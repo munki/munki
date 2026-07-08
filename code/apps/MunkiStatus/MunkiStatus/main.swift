@@ -14,7 +14,7 @@ import Cocoa
 // Thanks to Tom Bergin for this insight.
 while CGSessionCopyCurrentDictionary() == nil {
     print("Waiting for a CGSession...")
-    usleep(500000)
+    usleep(500_000)
 }
 
 _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)

@@ -222,7 +222,10 @@ func downloadIcons(_ itemList: [PlistDict]) {
     let supportedIconExtensions = ["bmp", "gif", "icns", "jpg", "jpeg", "png", "psd", "tga", "tif", "tiff", "yuv"]
 
     for item in itemList {
-        var iconName = item["icon_name"] as? String ?? item["name"] as? String ?? "<unknown>"
+        var iconName = item.getString(
+            for: "icon_name",
+            fallback: item.getString(for: "name", fallback: "<unknown>")
+        )
         if !supportedIconExtensions.contains((iconName as NSString).pathExtension) {
             iconName += ".png"
         }
@@ -259,7 +262,10 @@ func downloadIcons(_ itemList: [PlistDict]) {
                 // download this icon
                 continue
             }
-            let itemName = item["display_name"] as? String ?? item["name"] as? String ?? "<unknown>"
+            let itemName = item.getString(
+                for: "display_name",
+                fallback: item.getString(for: "name", fallback: "<unknown>")
+            )
             do {
                 _ = try fetchMunkiResource(
                     kind: .icon,
