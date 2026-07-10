@@ -83,6 +83,7 @@ let CONFIG_KEY_NAMES = [
     "AppleSoftwareUpdatesIncludeMajorOSUpdates",
     "AppleSoftwareUpdatesOnly",
     "CatalogURL",
+    "ClientCertificateIssuers",
     "ClientCertificatePath",
     "ClientIdentifier",
     "ClientKeyPath",
