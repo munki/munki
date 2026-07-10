@@ -230,7 +230,7 @@ func getURL(
     }
 
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
-    let clientCertificateIssuers = pref("ClientCertificateIssuers") as? [String] ?? []
+    let clientCertificateTrustedAnchorDNs = pref("ClientCertificateTrustedAnchorDNs") as? [String] ?? []
 
     let options = GurlOptions(
         url: request.url,
@@ -241,7 +241,7 @@ func getURL(
         canResume: resume,
         downloadOnlyIfChanged: onlyIfNewer,
         cacheData: cacheData,
-        clientCertificateIssuers: clientCertificateIssuers,
+        clientCertificateTrustedAnchorDNs: clientCertificateTrustedAnchorDNs,
         log: DisplayAndLog.main.debug2
     )
 

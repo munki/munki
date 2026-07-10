@@ -31,7 +31,7 @@ struct dnMatchesExpectedIssuersTests {
         #expect(dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [dn],
-            configuredIssuers: []
+            configuredTrustedAnchorDNs: []
         ))
     }
 
@@ -41,7 +41,7 @@ struct dnMatchesExpectedIssuersTests {
         #expect(dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [],
-            configuredIssuers: ["CN=Munki Client CA,O=SomeOrg"]
+            configuredTrustedAnchorDNs: ["CN=Munki Client CA,O=SomeOrg"]
         ))
     }
 
@@ -52,7 +52,7 @@ struct dnMatchesExpectedIssuersTests {
         #expect(dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [serverDN],
-            configuredIssuers: ["CN=Munki Client CA,O=SomeOrg"]
+            configuredTrustedAnchorDNs: ["CN=Munki Client CA,O=SomeOrg"]
         ))
     }
 
@@ -63,7 +63,7 @@ struct dnMatchesExpectedIssuersTests {
         #expect(!dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [serverDN],
-            configuredIssuers: ["CN=Some Other CA,O=SomeOrg"]
+            configuredTrustedAnchorDNs: ["CN=Some Other CA,O=SomeOrg"]
         ))
     }
 
@@ -73,7 +73,7 @@ struct dnMatchesExpectedIssuersTests {
         #expect(!dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [],
-            configuredIssuers: []
+            configuredTrustedAnchorDNs: []
         ))
     }
 
@@ -83,12 +83,12 @@ struct dnMatchesExpectedIssuersTests {
         #expect(!dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [],
-            configuredIssuers: ["O=SomeOrg,CN=Munki Client CA"]
+            configuredTrustedAnchorDNs: ["O=SomeOrg,CN=Munki Client CA"]
         ))
         #expect(!dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [],
-            configuredIssuers: ["CN=Munki Client CA, O=SomeOrg"]
+            configuredTrustedAnchorDNs: ["CN=Munki Client CA, O=SomeOrg"]
         ))
     }
 
@@ -98,7 +98,7 @@ struct dnMatchesExpectedIssuersTests {
         #expect(dnMatchesExpectedIssuers(
             dn,
             serverIssuers: [],
-            configuredIssuers: ["CN=Munki Client CA,O=SomeOrg\\, Inc."]
+            configuredTrustedAnchorDNs: ["CN=Munki Client CA,O=SomeOrg\\, Inc."]
         ))
     }
 }
