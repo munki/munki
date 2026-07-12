@@ -52,24 +52,24 @@ func getCertChainRefs(_ certRef: SecCertificate) -> [SecCertificate]? {
 
 /// Returns true if the given distinguished name matches either one of the
 /// server-advertised acceptable issuers, or one of the admin-configured
-/// trusted anchor DN strings (RFC 4514-style, as produced by
+/// acceptable CA strings (RFC 4514-style distinguished names, as produced by
 /// DistinguishedName.description, e.g. "CN=Munki Client CA,O=SomeOrg")
 func dnMatchesExpectedIssuers(
     _ dn: DistinguishedName,
     serverIssuers: [DistinguishedName],
-    configuredTrustedAnchorDNs: [String]
+    configuredAcceptableCAs: [String]
 ) -> Bool {
     if serverIssuers.contains(dn) {
         return true
     }
-    return configuredTrustedAnchorDNs.contains(dn.description)
+    return configuredAcceptableCAs.contains(dn.description)
 }
 
 /// Attempts to find an appropriate identity for the protectionSpace and return a credential
 /// for client certificate authentication
 func getClientCertCredential(
     protectionSpace: URLProtectionSpace,
-    configuredTrustedAnchorDNs: [String] = [],
+    configuredAcceptableCAs: [String] = [],
     log: (String) -> Void
 ) -> URLCredential? {
     var expectedIssuers = [DistinguishedName]()
@@ -88,11 +88,11 @@ func getClientCertCredential(
     if expectedIssuers.isEmpty {
         log("The server didn't send the list of acceptable certificate-issuing authorities")
     }
-    for anchorDN in configuredTrustedAnchorDNs {
-        log("Configured trusted anchor DN: \(anchorDN)")
+    for acceptableCA in configuredAcceptableCAs {
+        log("Configured acceptable certificate-issuing authority: \(acceptableCA)")
     }
-    if expectedIssuers.isEmpty, configuredTrustedAnchorDNs.isEmpty {
-        log("No acceptable certificate-issuing authorities are available, either sent by the server or configured via the ClientCertificateTrustedAnchorDNs preference")
+    if expectedIssuers.isEmpty, configuredAcceptableCAs.isEmpty {
+        log("No acceptable certificate-issuing authorities are available, either sent by the server or configured via the ClientCertificateAcceptableCAs preference")
         return nil
     }
     // search for a matching identity (cert paired with private key)
@@ -130,7 +130,7 @@ func getClientCertCredential(
             if dnMatchesExpectedIssuers(
                 certSubject,
                 serverIssuers: expectedIssuers,
-                configuredTrustedAnchorDNs: configuredTrustedAnchorDNs
+                configuredAcceptableCAs: configuredAcceptableCAs
             ) {
                 log("Found matching identity")
                 return URLCredential(
