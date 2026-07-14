@@ -40,6 +40,7 @@ struct GurlOptions {
     var cacheData: [String: String]?
     var connectionTimeout: Double = 60.0
     var minimumTLSprotocol = tls_protocol_version_t.TLSv10
+    var clientCertificateAcceptableCAs: [String] = []
     var log: (String) -> Void = defaultLogger // logging function
 }
 
@@ -435,7 +436,11 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             completionHandler(.useCredential, credential)
         } else if authenticationMethod == NSURLAuthenticationMethodClientCertificate {
             options.log("Client certificate required")
-            if let credential = getClientCertCredential(protectionSpace: protectionSpace, log: options.log) {
+            if let credential = getClientCertCredential(
+                protectionSpace: protectionSpace,
+                configuredAcceptableCAs: options.clientCertificateAcceptableCAs,
+                log: options.log
+            ) {
                 options.log("Will attempt to authenticate")
                 completionHandler(.useCredential, credential)
             } else {
