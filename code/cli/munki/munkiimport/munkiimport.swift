@@ -426,20 +426,28 @@ struct MunkiImport: AsyncParsableCommand {
             print("Saved pkginfo to \(pkginfoPath).")
         }
         // Maybe rebuild the catalogs?
-        if !munkiImportOptions.nointeractive {
+        if munkiImportOptions.rebuildCatalogs {
+            print("Rebuilding catalogs...")
+            try await performCatalogRebuild(repo: repo)
+        } else if !munkiImportOptions.nointeractive {
             print("Rebuild catalogs? [y/N] ", terminator: "")
             if let answer = readLine(),
                answer.lowercased().hasPrefix("y")
             {
-                let makecatalogOptions = MakeCatalogOptions()
-                var catalogsmaker = try await CatalogsMaker(repo: repo, options: makecatalogOptions)
-                await catalogsmaker.makecatalogs()
-                if !catalogsmaker.errors.isEmpty {
-                    for error in catalogsmaker.errors {
-                        printStderr(error)
-                    }
-                }
+                try await performCatalogRebuild(repo: repo)
             }
+        }
+    }
+}
+
+/// Helper function to rebuild catalogs
+private func performCatalogRebuild(repo: Repo) async throws {
+    let makecatalogOptions = MakeCatalogOptions()
+    var catalogsmaker = try await CatalogsMaker(repo: repo, options: makecatalogOptions)
+    await catalogsmaker.makecatalogs()
+    if !catalogsmaker.errors.isEmpty {
+        for error in catalogsmaker.errors {
+            printStderr(error)
         }
     }
 }
