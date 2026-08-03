@@ -274,13 +274,18 @@ class MainWindowController: NSWindowController {
     }
 
     @objc func sidebarItemClicked() {
-        let row = sidebarList.clickedRow
-        guard row >= 0 && row < sidebar_items.count else { return }
-        clearSearchField()
-        let item = sidebar_items[row]
-        loadSidebarItemPage(item.page)
+        // On macOS 27 the action can arrive before selectedRow is updated.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let row = self.sidebarList.selectedRow
+            guard row >= 0, row < self.sidebar_items.count else { return }
+            let page = self.sidebar_items[row].page
+            msc_debug_log("Sidebar route row \(row): \(page)")
+            self.clearSearchField()
+            self.loadSidebarItemPage(page)
+        }
     }
-    
+
     func appShouldTerminate() -> NSApplication.TerminateReply {
         // called by app delegate
         // when it receives applicationShouldTerminate:
@@ -478,17 +483,21 @@ class MainWindowController: NSWindowController {
         return getUpdateCount() > 0 || !getProblemItems().isEmpty
     }
     
-    func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() {
+    @discardableResult
+    func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() -> Bool {
         // if we have no optional_items set MSC to show updates only
         // if updates available go right to update screen
         if optionalInstallsExist() {
             updatesAndOptionalWindowMode()
             if shouldMoveToUpdatesPage() {
                 loadUpdatesPage(self)
+                return true
             }
         } else {
             updatesOnlyWindowMode()
+            return true
         }
+        return false
     }
     
     func loadInitialView() {
@@ -653,29 +662,36 @@ class MainWindowController: NSWindowController {
         get_custom_resources()
         // pending updates may have changed
         _alertedUserToOutstandingUpdates = false
-        // enable/disable controls as needed
-        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
-        // what page are we currently viewing?
-        let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
+        // Record the current page before updating the window mode, since that
+        // update can intentionally navigate to Updates.
+        let pageURL = webView.url
+        let filename = pageURL?.lastPathComponent ?? ""
+        // Enable/disable controls as needed. If this selects Updates, it has
+        // already performed the one navigation this refresh needs.
         let name = (filename as NSString).deletingPathExtension
         let key = name.components(separatedBy: "-")[0]
-        switch key {
-        case "detail", "updatedetail":
-            // item detail page; just rebuild and reload it
-            load_page(filename)
-        case "category", "filter", "developer":
-            // optional item list page
-            updateListPage()
-        case "categories":
-            // categories page
-            updateCategoriesPage()
-        case "myitems":
-            // my items page
-            updateMyItemsPage()
-        case "updates":
-            // updates page; just rebuild and reload it
-            load_page("updates.html")
+        let didLoadUpdatesPage = determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
+        if !didLoadUpdatesPage {
+            switch key {
+            case "detail", "updatedetail":
+                load_page(filename)
+            case "category", "filter", "developer":
+                updateListPage()
+            case "categories":
+                updateCategoriesPage()
+            case "myitems":
+                updateMyItemsPage()
+            case "updates":
+                load_page("updates.html")
+            default:
+                if pageURL != nil {
+                    webView.reload(self)
+                } else {
+                    msc_debug_log("Unexpected value for page name: \(filename)")
+                }
+            }
+        }
+        if didLoadUpdatesPage || key == "updates" {
             if !shouldAggressivelyNotifyAboutMunkiUpdates() {
                 _alertedUserToOutstandingUpdates = true
             }
@@ -687,11 +703,7 @@ class MainWindowController: NSWindowController {
                     makeUsUnobnoxious()
                 }
             }
-        default:
-            // should never get here
-            msc_debug_log("Unexpected value for page name: \(filename)")
         }
-        // update count might have changed
         displayUpdateCount()
     }
     
@@ -795,6 +807,8 @@ class MainWindowController: NSWindowController {
             // this is a bit of a hack since awakeFromNib gets called several times
             // but we only want this part of the config to run once
             mainWindowConfigurationComplete = true
+            sidebarList.target = self
+            sidebarList.action = #selector(sidebarItemClicked)
             setupSplitView()
             insertWebView()
             setNoPageCache()
