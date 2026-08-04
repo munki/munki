@@ -19,37 +19,49 @@
 
 import Foundation
 
-let ADMIN_BUNDLE_ID = "com.googlecode.munki.munkiimport" as CFString
+#if os(macOS)
+    let ADMIN_BUNDLE_ID = "com.googlecode.munki.munkiimport" as CFString
 
-/// Return an admin preference. Since this uses CFPreferencesCopyAppValue,
-/// Preferences can be defined several places. Precedence is:
-/// - MCX/configuration profile
-/// - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XXXXXX.plist
-/// - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
-/// - /Library/Preferences/com.googlecode.munki.munkiimport.plist
-/// - .GlobalPreferences defined at various levels (ByHost, user, system)
-/// But typically these preferences are _not_ managed and are stored in the
-/// user's preferences (~/Library/Preferences/com.googlecode.munki.munkiimport.plist)
-func adminPref(_ pref_name: String) -> Any? {
-    return CFPreferencesCopyAppValue(pref_name as CFString, ADMIN_BUNDLE_ID)
-}
-
-/// Sets a preference, writing it to ~/Library/Preferences/com.googlecode.munki.munkiimport.plist.
-func setAdminPref(_ prefName: String, _ prefValue: Any?) {
-    if let key = prefName as CFString? {
-        if prefValue == nil {
-            CFPreferencesSetAppValue(key, nil, ADMIN_BUNDLE_ID)
-            CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
-        } else if let value = prefValue as CFPropertyList? {
-            CFPreferencesSetAppValue(key, value, ADMIN_BUNDLE_ID)
-            CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
-        } else {
-            // raise error about illegal value?
-        }
-    } else {
-        // raise error about illegal key?
+    /// Return an admin preference. Since this uses CFPreferencesCopyAppValue,
+    /// Preferences can be defined several places. Precedence is:
+    /// - MCX/configuration profile
+    /// - ~/Library/Preferences/ByHost/com.googlecode.munki.munkiimport.XXXXXX.plist
+    /// - ~/Library/Preferences/com.googlecode.munki.munkiimport.plist
+    /// - /Library/Preferences/com.googlecode.munki.munkiimport.plist
+    /// - .GlobalPreferences defined at various levels (ByHost, user, system)
+    /// But typically these preferences are _not_ managed and are stored in the
+    /// user's preferences (~/Library/Preferences/com.googlecode.munki.munkiimport.plist)
+    func adminPref(_ pref_name: String) -> Any? {
+        return CFPreferencesCopyAppValue(pref_name as CFString, ADMIN_BUNDLE_ID)
     }
-}
+
+    /// Sets a preference, writing it to ~/Library/Preferences/com.googlecode.munki.munkiimport.plist.
+    func setAdminPref(_ prefName: String, _ prefValue: Any?) {
+        if let key = prefName as CFString? {
+            if prefValue == nil {
+                CFPreferencesSetAppValue(key, nil, ADMIN_BUNDLE_ID)
+                CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
+            } else if let value = prefValue as CFPropertyList? {
+                CFPreferencesSetAppValue(key, value, ADMIN_BUNDLE_ID)
+                CFPreferencesAppSynchronize(ADMIN_BUNDLE_ID)
+            } else {
+                // raise error about illegal value?
+            }
+        } else {
+            // raise error about illegal key?
+        }
+    }
+#else
+    /// On Linux, CFPreferences is not available. Always returns nil,
+    /// so callers must supply --repo_url or a repo path argument.
+    func adminPref(_: String) -> Any? {
+        return nil
+    }
+
+    func setAdminPref(_: String, _: Any?) {
+        // no-op on Linux
+    }
+#endif
 
 /// Adds `count` spaces to the start of `str`
 func leftPad(_ str: String, _ count: Int) -> String {
