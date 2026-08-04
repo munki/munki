@@ -428,6 +428,7 @@
 		C0AD96302F3E58D80029A293 /* appleupdatesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96192F3E58D80029A293 /* appleupdatesTests.swift */; };
 		C0AD96312F3E58D80029A293 /* cliutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961A2F3E58D80029A293 /* cliutilsTests.swift */; };
 		C0AD96322F3E58D80029A293 /* compareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961B2F3E58D80029A293 /* compareTests.swift */; };
+		C0AD96FE2F3E58D80029A293 /* clientcertsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */; };
 		C0AD96332F3E58D80029A293 /* downloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961C2F3E58D80029A293 /* downloadTests.swift */; };
 		C0AD96342F3E58D80029A293 /* factsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961D2F3E58D80029A293 /* factsTests.swift */; };
 		C0AD96352F3E58D80029A293 /* fetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961E2F3E58D80029A293 /* fetchTests.swift */; };
@@ -860,6 +861,7 @@
 		C0AD961F2F3E58D80029A293 /* fileUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileUtilsTests.swift; sourceTree = "<group>"; };
 		C0AD96202F3E58D80029A293 /* installationstateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installationstateTests.swift; sourceTree = "<group>"; };
 		C0AD96212F3E58D80029A293 /* keychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keychainTests.swift; sourceTree = "<group>"; };
+		C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcertsTests.swift; sourceTree = "<group>"; };
 		C0AD96222F3E58D80029A293 /* makepkginfolibTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfolibTests.swift; sourceTree = "<group>"; };
 		C0AD96232F3E58D80029A293 /* manifestsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifestsTests.swift; sourceTree = "<group>"; };
 		C0AD96242F3E58D80029A293 /* pkgutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkgutilsTests.swift; sourceTree = "<group>"; };
@@ -1404,6 +1406,7 @@
 				C0AD96182F3E58D80029A293 /* analyzeTests.swift */,
 				C0AD96192F3E58D80029A293 /* appleupdatesTests.swift */,
 				C0AD961A2F3E58D80029A293 /* cliutilsTests.swift */,
+				C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */,
 				C0AD961B2F3E58D80029A293 /* compareTests.swift */,
 				C0AD961C2F3E58D80029A293 /* downloadTests.swift */,
 				C0AD961D2F3E58D80029A293 /* factsTests.swift */,
@@ -2223,6 +2226,7 @@
 				C0AD962F2F3E58D80029A293 /* analyzeTests.swift in Sources */,
 				C0AD96302F3E58D80029A293 /* appleupdatesTests.swift in Sources */,
 				C0AD96312F3E58D80029A293 /* cliutilsTests.swift in Sources */,
+				C0AD96FE2F3E58D80029A293 /* clientcertsTests.swift in Sources */,
 				C0AD96322F3E58D80029A293 /* compareTests.swift in Sources */,
 				C0AD96332F3E58D80029A293 /* downloadTests.swift in Sources */,
 				C0AD96342F3E58D80029A293 /* factsTests.swift in Sources */,
