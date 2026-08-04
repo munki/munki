@@ -17,7 +17,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import CryptoKit
+#if canImport(CryptoKit)
+    import CryptoKit
+#else
+    import Crypto
+#endif
 import Foundation
 
 // put all the hashing functions here
