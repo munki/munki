@@ -50,7 +50,7 @@ let DEFAULT_PREFS: [String: Any] = [
     "LoggingLevel": 1,
     "LogToSyslog": false,
     "ManagedInstallDir": DEFAULT_MANAGED_INSTALLS_DIR,
-    "MaxSizeOverLowDataConnection": 0,
+    "MaxSizeOverLowDataConnection": -1,
     "MSCAllowNotificationWindow": false,
     "MSCAllowedNotificationWindowStart": 0,
     "MSCAllowedNotificationWindowEnd": 24,

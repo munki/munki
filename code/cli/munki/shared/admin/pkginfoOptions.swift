@@ -317,7 +317,7 @@ struct AdditionalPkginfoOptions: ParsableArguments {
     var notes: String? = nil
 
     @Option(name: [.long, .customLong("download_on_low_data")],
-            help: "Specify whether this item should be downloaded on a low-data connection (cellular, personal hotspot, or an interface in Low Data Mode): 'always' (regardless of size), 'never', or 'auto' (follow the MaxSizeOverLowDataConnection size threshold). Defaults to 'auto' when omitted.")
+            help: "Specify whether this item should be downloaded on a low-data connection (cellular, personal hotspot, or an interface in Low Data Mode): 'always' (when MaxSizeOverLowDataConnection is positive), 'never', or 'auto' (follow the MaxSizeOverLowDataConnection size threshold). Defaults to 'auto' when omitted.")
     var downloadOnLowData: DownloadOnLowData? = nil
 
     mutating func validate() throws {

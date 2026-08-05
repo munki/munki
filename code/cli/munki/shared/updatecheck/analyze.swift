@@ -140,10 +140,11 @@ func forceInstallDeadlinePassed(_ pkginfo: PlistDict) -> Bool {
 /// pure function that is easy to test.
 ///
 /// A reached force_install_after_date always wins: an item that is due to be
-/// force-installed must download regardless of connection. The per-item
-/// download_on_low_data key ("always"/"never") overrides the size threshold;
-/// "auto" (or an absent/unrecognized value) follows the threshold, which is
-/// itself disabled when MaxSizeOverLowDataConnection is 0.
+/// force-installed must download regardless of connection. A negative
+/// MaxSizeOverLowDataConnection disables low-data deferrals. 0 defers every
+/// uncached download. For positive thresholds, the per-item download_on_low_data
+/// key ("always"/"never") overrides the size threshold; "auto" (or an
+/// absent/unrecognized value) follows the threshold.
 func shouldDeferDownloadForLowData(
     _ pkginfo: PlistDict,
     installerItemSize: Int,
@@ -157,6 +158,12 @@ func shouldDeferDownloadForLowData(
         // deadline reached; item will be force-installed, so it must download
         return false
     }
+    if maxSizeOverLowDataConnection < 0 {
+        return false
+    }
+    if maxSizeOverLowDataConnection == 0 {
+        return true
+    }
     switch pkginfo["download_on_low_data"] as? String {
     case "always":
         return false
@@ -164,9 +171,6 @@ func shouldDeferDownloadForLowData(
         return true
     default:
         // "auto", absent, or an unrecognized value: follow the size threshold
-        if maxSizeOverLowDataConnection <= 0 {
-            return false
-        }
         return installerItemSize > maxSizeOverLowDataConnection
     }
 }
@@ -338,16 +342,17 @@ func processInstall(
             // ponytail: presence check, not a hash check; a partial cache would
             // still resume on low data. Full-cache is the case that matters here.
             let alreadyCached = !installerLocation.isEmpty && pathExists(getDownloadCachePath(installerLocation))
+            let maxSizeOverLowDataConnection = pref("MaxSizeOverLowDataConnection") as? Int ?? -1
             if !lowDataExempt, !alreadyCached,
                shouldDeferDownloadForLowData(
                    pkginfo,
                    installerItemSize: installerItemSize,
                    onLowDataConnection: onLowDataConnection(),
-                   maxSizeOverLowDataConnection: pref("MaxSizeOverLowDataConnection") as? Int ?? 0
+                   maxSizeOverLowDataConnection: maxSizeOverLowDataConnection
                )
             {
                 let allowOverride = pref("AllowLowDataOverride") as? Bool ?? true
-                if allowOverride, lowDataOverrideItems().contains(name) {
+                if maxSizeOverLowDataConnection > 0, allowOverride, lowDataOverrideItems().contains(name) {
                     display.detail("Downloading \(manifestItemName) anyway on a low data connection due to a user override.")
                 } else {
                     display.detail("Deferring download of \(manifestItemName) because this Mac is on a low data connection.")

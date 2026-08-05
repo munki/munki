@@ -28,7 +28,7 @@ struct shouldDeferDownloadForLowDataTests {
             onLowDataConnection: false, maxSizeOverLowDataConnection: 1) == false)
     }
 
-    /// download_on_low_data "always" never defers on a low data connection
+    /// download_on_low_data "always" does not defer when the threshold is positive
     @Test func alwaysDoesNotDefer() async throws {
         let pkginfo: PlistDict = ["download_on_low_data": "always"]
         #expect(shouldDeferDownloadForLowData(
@@ -41,15 +41,31 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == true)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 1) == true)
     }
 
-    /// auto with the size threshold disabled (0) downloads
+    /// a negative threshold disables low-data deferrals
     @Test func autoThresholdDisabledDownloads() async throws {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: -1) == false)
+    }
+
+    /// a negative threshold disables even explicit low-data pkginfo rules
+    @Test func disabledThresholdIgnoresNever() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "never"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 999_999,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: -1) == false)
+    }
+
+    /// a zero threshold defers every uncached download
+    @Test func zeroThresholdDefersAllDownloads() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "always"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 1,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == true)
     }
 
     /// auto, item larger than the threshold, defers
