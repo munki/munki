@@ -54,7 +54,7 @@ private func loadRepoPlugin(at path: String) throws -> RepoPluginBuilder {
 /// Try to load a Repo plugin from our RepoPlugins directory
 func findRepoInPlugins(_ name: String, url: String) throws -> Repo? {
     let pluginName = name + ".plugin"
-    let repoPluginsDir = (Bundle.main.bundlePath as NSString).appendingPathComponent("repoplugins")
+    let repoPluginsDir = "/usr/local/munki/RepoPlugins"
     let repoPluginNames = (try? FileManager.default.contentsOfDirectory(atPath: repoPluginsDir)) ?? []
     if repoPluginNames.contains(pluginName) {
         let pluginPath = (repoPluginsDir as NSString).appendingPathComponent(pluginName)
