@@ -60,12 +60,20 @@ struct shouldDeferDownloadForLowDataTests {
             onLowDataConnection: true, maxSizeOverLowDataConnection: -1) == false)
     }
 
-    /// a zero threshold defers every uncached download
-    @Test func zeroThresholdDefersAllDownloads() async throws {
-        let pkginfo: PlistDict = ["download_on_low_data": "always"]
+    /// a zero threshold defers auto/default downloads
+    @Test func zeroThresholdDefersAutoDownloads() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
             onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == true)
+    }
+
+    /// download_on_low_data "always" can override a zero threshold
+    @Test func alwaysOverridesZeroThreshold() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "always"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 1,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == false)
     }
 
     /// auto, item larger than the threshold, defers
