@@ -11,10 +11,10 @@
       container: swift:6.3.3
 
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v6
 
         - name: Cache musl SDK
-          uses: actions/cache@v4
+          uses: actions/cache@v7
           with:
             path: ~/.swiftpm/swift-sdks
             key: swift-musl-sdk-6.3.3
@@ -31,7 +31,7 @@
           run: swift build -c release --swift-sdk x86_64-swift-linux-musl
 
         - name: Upload artifact
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: makecatalogs-linux-x86_64
             path: code/cli/munki/.build/x86_64-swift-linux-musl/release/makecatalogs
