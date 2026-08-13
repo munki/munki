@@ -424,7 +424,7 @@ struct MunkiImport: AsyncParsableCommand {
         do {
             pkginfoPath = try await copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
             print("Saved pkginfo to \(pkginfoPath).")
-            
+
             // rebuild catalogs if --rebuild-catalogs was specified
             if munkiImportOptions.rebuildCatalogs {
                 print("Rebuilding catalogs...")
@@ -433,7 +433,7 @@ struct MunkiImport: AsyncParsableCommand {
                 // rebuild catalogs if interative mode and users responds y/yes
                 print("Rebuild catalogs? [y/N] ", terminator: "")
                 if let answer = readLine(),
-                    answer.lowercased().hasPrefix("y")
+                   answer.lowercased().hasPrefix("y")
                 {
                     try await performCatalogRebuild(repo: repo)
                 }
@@ -441,7 +441,6 @@ struct MunkiImport: AsyncParsableCommand {
         }
     }
 }
-
 
 private func performCatalogRebuild(repo: Repo) async throws {
     let makecatalogOptions = MakeCatalogOptions()
