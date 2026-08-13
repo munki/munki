@@ -52,6 +52,10 @@ struct MunkiImportOptions: ParsableArguments {
     @Flag(name: .shortAndLong, help: "More detailed output.")
     var verbose = false
 
+    @Flag(name: [.long, .customLong("rebuild-catalogs")],
+          help: "Rebuild the catalogs after importing the item. If interactive and this flag is not specified, you will be prompted.")
+    var rebuildCatalogs = false
+
     mutating func validate() throws {
         // update plugin (not really a validation, but close enough)
         if plugin == nil {
