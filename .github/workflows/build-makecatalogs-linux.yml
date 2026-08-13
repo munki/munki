@@ -1,6 +1,8 @@
   name: Build makecatalogs (Linux)
 
   on:
+    push:
+      branches: [linux_makecatalogs]
     workflow_dispatch:
 
   jobs:
