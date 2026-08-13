@@ -361,7 +361,16 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     }
 }
 
+/// Returns number of days that macOS has been out-of-date, pulling from the cache if available
 func macOSOutOfDateDays() -> Int {
+    if !Cache.shared.keys.contains("macOSOutOfDateDays") {
+      Cache.shared["macOSOutOfDateDays"] = _macOSOutOfDateDays()
+    }
+    return Cache.shared["macOSOutOfDateDays"] as? Int ?? 0
+}
+
+/// Returns number of days that macOS has been out-of-date (not cached)
+private func _macOSOutOfDateDays() -> Int {
     guard let managedinstallbase = munkiPref("ManagedInstallDir") as? String else {
         return 0
     }
