@@ -11,10 +11,10 @@
       container: swift:6.3.3
 
       steps:
-        - uses: actions/checkout@v6
+        - uses: actions/checkout@v7
 
         - name: Cache musl SDK
-          uses: actions/cache@v7
+          uses: actions/cache@v6
           with:
             path: ~/.swiftpm/swift-sdks
             key: swift-musl-sdk-6.3.3
