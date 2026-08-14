@@ -1208,7 +1208,11 @@ class MainWindowController: NSWindowController {
         if name == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
-                removeAllDeliveredNotifications()
+                // we'll do this in a background queue so as not to delay
+                // the loading of the Updates view
+                DispatchQueue.global(qos: .background).async {
+                    self.removeAllDeliveredNotifications()
+                }
             }
             // record that the user has been presented pending updates
             if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
