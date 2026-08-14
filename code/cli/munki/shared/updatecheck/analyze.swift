@@ -24,6 +24,18 @@
 
 import Foundation
 
+let assistedQuitPkginfoKeys = [
+    "blocking_applications_manual_quit_only",
+    "blocking_applications_quit_script",
+    "blocking_applications_launch_args",
+]
+
+func copyAssistedQuitMetadata(from pkginfo: PlistDict, to item: inout PlistDict) {
+    for key in assistedQuitPkginfoKeys {
+        item[key] = pkginfo[key]
+    }
+}
+
 private let display = DisplayAndLog.main
 
 /// Determines if an item is in a list of processed items.
@@ -380,8 +392,6 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
-            "blocking_applications_manual_quit_only",
-            "blocking_applications_quit_script",
         ]
 
         if isOptionalInstall {
@@ -398,6 +408,7 @@ func processInstall(
         for key in optionalKeys {
             processedItem[key] = pkginfo[key]
         }
+        copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
 
         if pkginfo["apple_item"] == nil {
             // admin did not explicitly mark this item; let's determine if
@@ -760,12 +771,11 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
-        "blocking_applications_manual_quit_only",
-        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]
     }
+    copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
     let itemName = processedItem["name"] as? String ?? "<unknown>"
     display.debug1("Adding \(itemName) to the optional install list")
     var optionalInstalls = installInfo["optional_installs"] as? [PlistDict] ?? []
@@ -1002,12 +1012,11 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
-        "blocking_applications_manual_quit_only",
-        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]
     }
+    copyAssistedQuitMetadata(from: uninstallItem, to: &processedItem)
 
     if processedItem["apple_item"] == nil {
         // admin did not explicitly mark this item; let's determine if
