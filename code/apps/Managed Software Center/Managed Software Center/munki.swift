@@ -361,7 +361,16 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     }
 }
 
+/// Returns number of days that macOS has been out-of-date, pulling from the cache if available
 func macOSOutOfDateDays() -> Int {
+    if !Cache.shared.keys.contains("macOSOutOfDateDays") {
+      Cache.shared["macOSOutOfDateDays"] = _macOSOutOfDateDays()
+    }
+    return Cache.shared["macOSOutOfDateDays"] as? Int ?? 0
+}
+
+/// Returns number of days that macOS has been out-of-date (not cached)
+private func _macOSOutOfDateDays() -> Int {
     guard let managedinstallbase = munkiPref("ManagedInstallDir") as? String else {
         return 0
     }
@@ -436,7 +445,7 @@ func discardTimeZoneFromDate(_ theDate: Date) -> Date {
 func thereAreUpdatesToBeForcedSoon(hours: Int = 72) -> Bool {
     // Return True if any updates need to be installed within the next
     // X hours, false otherwise
-    var installinfo = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
+    var installinfo = cachedInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
     installinfo = installinfo + getAppleUpdates()
     let now_xhours = Date(timeIntervalSinceNow: TimeInterval(hours * 3600))
     for item in installinfo {
@@ -456,7 +465,7 @@ func earliestForceInstallDate(_ installinfo: [PlistDict]? = nil) -> Date? {
     var installinfo = installinfo
     var earliest_date: Date?
     if installinfo == nil {
-        let managed_installs = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
+        let managed_installs = cachedInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
         installinfo = managed_installs + getAppleUpdates()
     }
     for install in installinfo! {

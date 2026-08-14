@@ -78,9 +78,9 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
         try await repo.put(destIdentifier, fromFile: itempath)
         return destIdentifier
     } catch let error as MunkiError {
-        throw MunkiError("Unable to copy \(itempath) to pkgs/\(destIdentifier): \(error.description)")
+        throw MunkiError("Unable to copy \(itempath) to \(destIdentifier): \(error.description)")
     } catch {
-        throw MunkiError("Unexpected error when copying \(itempath) to pkgs/\(destIdentifier): \(error)")
+        throw MunkiError("Unexpected error when copying \(itempath) to \(destIdentifier): \(error)")
     }
 }
 

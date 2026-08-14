@@ -38,7 +38,8 @@ for TOOL in ${TOOLS} ; do
         -scheme "${TOOL}" \
         -destination "generic/platform=macOS" \
         -derivedDataPath "${BUILD_DIR}" \
-        build
+        build \
+        DEPLOYMENT_POSTPROCESSING=YES
     check_exit_code "$?" "Error building ${TOOL}"
     cp "${BUILD_DIR}/Build/Products/Release/${TOOL}" "${BINARIES_DIR}/"
 done
