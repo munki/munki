@@ -32,17 +32,17 @@ private struct AppToReopen {
 
 private func recordLaunchArguments(
     _ arguments: [String],
-    for appNames: [String],
+    for appPaths: [String],
     in configurations: inout [String: [String]]
 ) -> [String] {
     var conflicts = [String]()
-    for appName in appNames {
-        if let existingArguments = configurations[appName] {
+    for appPath in appPaths {
+        if let existingArguments = configurations[appPath] {
             if existingArguments != arguments {
-                conflicts.append(appName)
+                conflicts.append(appPath)
             }
         } else {
-            configurations[appName] = arguments
+            configurations[appPath] = arguments
         }
     }
     return conflicts
@@ -80,7 +80,7 @@ class MSCBlockingAppsController: NSObject {
     // Custom quit script tracking - maps app names to their quit scripts
     private var appQuitScripts: [String: String] = [:] // keyed by app name (e.g. "Safari.app")
 
-    // Launch arguments for reopening apps, keyed by app name (e.g. "Google Chrome.app")
+    // Launch arguments for reopening apps, keyed by resolved app bundle path
     private var appLaunchArguments: [String: [String]] = [:]
 
     // Removal tracking - apps being removed shouldn't be reopened
@@ -186,18 +186,21 @@ class MSCBlockingAppsController: NSObject {
             }
 
             if let launchArguments = update_item["blocking_applications_launch_args"] as? [String] {
-                let configuredApps = itemBlockingApps.filter { appLaunchArguments[$0] == nil }
+                let appPaths = Array(Set(runningBlockingApps.map(\.pathname).filter {
+                    $0.hasSuffix(".app")
+                }))
+                let configuredApps = appPaths.filter { appLaunchArguments[$0] == nil }
                 let conflicts = recordLaunchArguments(
                     launchArguments,
-                    for: itemBlockingApps,
+                    for: appPaths,
                     in: &appLaunchArguments
                 )
-                for appName in configuredApps {
-                    msc_debug_log("Found blocking_applications_launch_args for \(appName)")
+                for appPath in configuredApps {
+                    msc_debug_log("Found blocking_applications_launch_args for \(appPath)")
                 }
-                for appName in conflicts {
+                for appPath in conflicts {
                     msc_debug_log(
-                        "Ignoring conflicting blocking_applications_launch_args for \(appName)"
+                        "Ignoring conflicting blocking_applications_launch_args for \(appPath)"
                     )
                 }
             }
@@ -297,10 +300,9 @@ class MSCBlockingAppsController: NSObject {
         if canContinue, reopenCheckbox?.state == .on, reopenCheckbox?.isHidden == false {
             appsToReopenAfterUpdate = closedApps.compactMap { appPath in
                 guard !appsBeingRemovedPaths.contains(appPath) else { return nil }
-                let appName = (appPath as NSString).lastPathComponent
                 return AppToReopen(
                     path: appPath,
-                    arguments: appLaunchArguments[appName] ?? []
+                    arguments: appLaunchArguments[appPath] ?? []
                 )
             }
         } else {
