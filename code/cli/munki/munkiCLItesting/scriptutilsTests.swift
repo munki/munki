@@ -28,6 +28,11 @@ private let ERROR_SCRIPT_TEXT = """
 exit 1
 """
 
+private let SLEEP_SCRIPT_TEXT = """
+#!/bin/sh
+sleep 5
+"""
+
 private let PKGINFO: PlistDict = [
     "postinstall_script": """
     #!/bin/sh
@@ -81,6 +86,19 @@ struct runScriptAndReturnResultsTests {
         )
         #expect(results.exitcode == 0)
         #expect(results.output == "Hello, world!")
+    }
+
+    @Test func timesOut() async throws {
+        let filePath = try #require(tempFile(), "Can't get a temp file path")
+        let success = createExecutableFile(
+            atPath: filePath, withStringContents: SLEEP_SCRIPT_TEXT
+        )
+        try #require(success, "Expected to create a file at \(filePath)")
+        let results = await runScriptAndReturnResults(
+            filePath, itemName: "Foo", scriptName: "Bar", timeout: 2
+        )
+        #expect(results.timedOut == true)
+        #expect(results.exitcode != 0)
     }
 }
 
