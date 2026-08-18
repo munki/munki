@@ -38,6 +38,10 @@ private let PKGINFO: PlistDict = [
     #!/bin/sh
     /bin/echo "Hello, world!"
     """,
+    "version_script": """
+    #!/bin/sh
+    /bin/echo "1.0"
+    """,
 ]
 
 struct createExecutableFileTests {
@@ -100,6 +104,19 @@ struct runScriptAndReturnResultsTests {
         #expect(results.timedOut == true)
         #expect(results.exitcode != 0)
     }
+
+    @Test func doesntTimeOut() async throws {
+        let filePath = try #require(tempFile(), "Can't get a temp file path")
+        let success = createExecutableFile(
+            atPath: filePath, withStringContents: SLEEP_SCRIPT_TEXT
+        )
+        try #require(success, "Expected to create a file at \(filePath)")
+        let results = await runScriptAndReturnResults(
+            filePath, itemName: "Foo", scriptName: "Bar", timeout: 60
+        )
+        #expect(results.timedOut == false)
+        #expect(results.exitcode == 0)
+    }
 }
 
 struct runEmbeddedScriptTests {
@@ -114,9 +131,9 @@ struct runEmbeddedScriptTests {
 struct runEmbeddedScriptAndReturnResultsTests {
     @Test func returnsExpected() async throws {
         let results = await runEmbeddedScriptAndReturnResults(
-            name: "postinstall_script", pkginfo: PKGINFO
+            name: "version_script", pkginfo: PKGINFO
         )
         #expect(results.exitcode == 0)
-        #expect(results.output == "Hello, world!")
+        #expect(results.output == "1.0")
     }
 }
