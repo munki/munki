@@ -785,6 +785,28 @@ func doInstallsAndRemovals(
             }
             updatedInstallInfo["optional_installs"] = optionalInstalls
         }
+        // update optional_uninstalls with new removal status
+        var optionalUninstalls = installInfo["optional_uninstalls"] as? [PlistDict] ?? [PlistDict]()
+        if !optionalUninstalls.isEmpty {
+            if let removalResults = Report.shared.retrieve(key: "RemovalResults") as? [PlistDict] {
+                for (index, optionalUninstall) in optionalUninstalls.enumerated() {
+                    let optionalUninstallName = optionalUninstall["name"] as? String ?? "<unknown>"
+                    for removal in removalResults {
+                        let removalName = removal["name"] as? String ?? "<unknown>"
+                        if optionalUninstallName == removalName {
+                            if (removal["status"] as? Int ?? 0) != 0 {
+                                optionalUninstalls[index]["removal_error"] = true
+                                optionalUninstalls[index]["will_be_removed"] = false
+                            } else {
+                                optionalUninstalls[index]["installed"] = false
+                                optionalUninstalls[index]["will_be_removed"] = false
+                            }
+                        }
+                    }
+                }
+            }
+            updatedInstallInfo["optional_uninstalls"] = optionalUninstalls
+        }
         // write updated installinfo back to disk to reflect current state
         do {
             try writePlist(updatedInstallInfo, toFile: installInfoPath)
