@@ -138,6 +138,26 @@
                             </div>
                         </div>
                     </div>
+                    <div id="optional-uninstalls"
+                         class="lockup-container installations updates ${hide_optional_uninstalls}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="3">
+                                        <div class="non-scan-progress">
+                                            ${optional_uninstalls_header_message}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div id="optional-uninstalls-content" class="lockup-container content" data-columns-current="1">
+                            <div class="content-and-controls updates-page" id="optional-uninstalls-table">
+                                ${optional_uninstall_rows}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
