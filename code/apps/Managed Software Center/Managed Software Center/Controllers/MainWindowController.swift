@@ -1483,6 +1483,21 @@ class MainWindowController: NSWindowController {
                 addToInnerHTML(item_html, elementID: "other-updates-table")
             }
         }
+        if (item["uninstall_only"] as? Bool ?? false) && current_status == "removal-requested" {
+            // user just queued an optional-uninstall item for removal;
+            // add it to the main updates-to-install table so it's visible
+            let item_template = getTemplate("update_item_template.html")
+            item["added_class"] = "added"
+            let item_html = item_template.substitute(item)
+            addToInnerHTML(item_html, elementID: "updates-to-install-table")
+        }
+        if (item["uninstall_only"] as? Bool ?? false) && current_status == "installed" {
+            // user cancelled a pending removal; move item back to the suggested-removals table
+            let item_template = getTemplate("update_item_template.html")
+            item["added_class"] = "added"
+            let item_html = item_template.substitute(item)
+            addToInnerHTML(item_html, elementID: "optional-uninstalls-table")
+        }
         
         // might need to toggle visibility of other updates div
         // find any optional installs with status update available
@@ -1494,14 +1509,27 @@ class MainWindowController: NSWindowController {
         } else {
             webView.evaluateJavaScript("document.getElementById('other-updates').classList.remove('hidden')")
         }
+
+        // might need to toggle visibility of optional-uninstalls div
+        let optional_uninstall_items = getOptionalInstallItems().filter(
+            { ($0["uninstall_only"] as? Bool ?? false) &&
+              ($0["status"] as? String ?? "") == "installed" }
+        )
+        if optional_uninstall_items.isEmpty {
+            webView.evaluateJavaScript("document.getElementById('optional-uninstalls').classList.add('hidden')")
+        } else {
+            webView.evaluateJavaScript("document.getElementById('optional-uninstalls').classList.remove('hidden')")
+        }
         
         // update the updates-to-install header to reflect the new list of
         // updates to install
-        setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
+        let effectiveCount = getEffectiveUpdateList().count
+        let appleCount = getAppleUpdates().count
+        setInnerText(updateCountMessage(effectiveCount, appleUpdateCount: appleCount), elementID: "update-count-string")
         setInnerText(getWarningText(), elementID: "update-warning-text")
-    
+
         // update text of Install All button
-        setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
+        setInnerText(getInstallAllButtonTextForCount(effectiveCount), elementID: "install-all-button-text")
         
         // update count badges
         displayUpdateCount()
