@@ -469,38 +469,36 @@ func buildListPageItemsHTML(category: String = "",
         item_html = buildItemListHTML(items)
     } else {
         // no items; build appropriate alert messages
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
         if !filter.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "Your search had no results.",
                 comment: "No Search Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try searching again.", comment: "No Search Results secondary text")
         } else if !category.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no items in this category.",
                 comment: "No Category Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try selecting another category.",
                 comment: "No Category Results secondary text")
         } else if !developer.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no items from this developer.",
                 comment: "No Developer Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try selecting another developer.",
                 comment: "No Developer Results secondary text")
         } else {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no available software items.",
                 comment: "No Items primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try again later.",
                 comment: "No Items secondary text")
         }
-        alert["hide_progress_bar"] = "hidden"
-        alert["progress_bar_value"] = ""
         item_html = status_results_template.substitute(alert)
     }
     return item_html
@@ -551,16 +549,14 @@ func buildCategoryItemsHTML() -> String {
     }
     if all_items.isEmpty {
         // no items
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
-        alert["primary_status_text"] = NSLocalizedString(
+        alert["primary_results_text"] = NSLocalizedString(
             "There are no available software items.",
             comment: "No Items primary text")
-        alert["secondary_status_text"] = NSLocalizedString(
+        alert["secondary_results_text"] = NSLocalizedString(
             "Try again later.",
             comment: "No Items secondary text")
-        alert["hide_progress_bar"] = "hidden"
-        alert["progress_bar_value"] = ""
         item_html = status_results_template.substitute(alert)
     } else {
         let item_template = getTemplate("category_item_template.html")
@@ -620,17 +616,16 @@ func buildMyItemsRows() -> String {
         myitems_rows = buildItemListHTML(item_list,
                                          template: "myitems_item_template.html")
     } else {
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
-        alert["primary_status_text"] = NSLocalizedString(
+        alert["primary_results_text"] = NSLocalizedString(
             "You have no selected software.",
             comment: "No Installed Software primary text")
         let select_software_msg = NSLocalizedString(
             "Select software to install.",
             comment: "No Installed Software secondary text")
-        alert["secondary_status_text"] = (
+        alert["secondary_results_text"] = (
             "<a href=\"munki://category-all.html\">\(select_software_msg)</a>" )
-        alert["hide_progress_bar"] = "hidden"
         myitems_rows = status_results_template.substitute(alert)
     }
     return myitems_rows
