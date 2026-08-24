@@ -113,7 +113,7 @@ enum ParseError: Error {
 func parseArgumentData(_ data: Data) throws -> [String] {
     // Lifted from Quinn's work here: https://developer.apple.com/forums/thread/681817
 
-    // The algorithm here was was ‘stolen’ from the Darwin source for `ps`.
+    // The algorithm here was ‘stolen’ from the Darwin source for `ps`.
     //
     // <https://opensource.apple.com/source/adv_cmds/adv_cmds-176/ps/print.c.auto.html>
 

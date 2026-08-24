@@ -337,7 +337,7 @@ func reloadLaunchDaemons(group: String) {
     // first, unload active Munki jobs
     var activeDaemonLabels = getMunkiLaunchdLabels()
     if group == "appusage" {
-        // we should only unload APPUSAGE_DAEMON if if's active
+        // we should only unload APPUSAGE_DAEMON if it's active
         activeDaemonLabels = activeDaemonLabels.filter { $0 == APPUSAGE_DAEMON }
     }
     if group == "launchd" {
