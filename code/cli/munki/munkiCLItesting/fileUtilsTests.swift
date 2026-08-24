@@ -171,7 +171,7 @@ struct pathIsDirectoryTests {
 }
 
 struct pathIsRegularFileTests {
-    @Test func nonExistantPathReturnsFalse() {
+    @Test func nonExistentPathReturnsFalse() {
         #expect(!pathIsRegularFile("/this/path/does/not/exist"))
     }
 
