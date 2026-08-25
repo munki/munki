@@ -45,6 +45,14 @@
                                         </div>
                                     </button>
                                 </div>
+                                <div class="msc-button large ${hide_low_data_button}">
+                                    <button class="button-area uppercase"
+                                     onClick="window.webkit.messageHandlers.downloadAnywayButtonClicked.postMessage('${name_quoted}');">
+                                        <div class="msc-button-inner large install">
+                                            ${low_data_action_text}
+                                        </div>
+                                    </button>
+                                </div>
                                 <div class="warning">
                                     <br/>&nbsp;
                                     ${restart_action_text}

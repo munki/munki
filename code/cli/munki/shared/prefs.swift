@@ -26,6 +26,7 @@ let DEFAULT_INSECURE_REPO_URL = "http://munki/repo"
 let DEFAULT_PREFS: [String: Any] = [
     // "AdditionalHttpHeaders": None,
     "AggressiveUpdateNotificationDays": 14,
+    "AllowLowDataOverride": true,
     "AppleSoftwareUpdatesIncludeMajorOSUpdates": false,
     "AppleSoftwareUpdatesOnly": false,
     // "CatalogURL": None,
@@ -49,6 +50,7 @@ let DEFAULT_PREFS: [String: Any] = [
     "LoggingLevel": 1,
     "LogToSyslog": false,
     "ManagedInstallDir": DEFAULT_MANAGED_INSTALLS_DIR,
+    "MaxSizeOverLowDataConnection": -1,
     "MSCAllowNotificationWindow": false,
     "MSCAllowedNotificationWindowStart": 0,
     "MSCAllowedNotificationWindowEnd": 24,
@@ -80,6 +82,7 @@ let DEFAULT_PREFS: [String: Any] = [
 let CONFIG_KEY_NAMES = [
     "AdditionalHttpHeaders",
     "AggressiveUpdateNotificationDays",
+    "AllowLowDataOverride",
     "AppleSoftwareUpdatesIncludeMajorOSUpdates",
     "AppleSoftwareUpdatesOnly",
     "CatalogURL",
@@ -106,6 +109,7 @@ let CONFIG_KEY_NAMES = [
     "LogToSyslog",
     "ManagedInstallDir",
     "ManifestURL",
+    "MaxSizeOverLowDataConnection",
     "MSCAllowNotificationWindow",
     "MSCAllowedNotificationWindowStart",
     "MSCAllowedNotificationWindowEnd",

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09F71AB7CE8B63172BD55302 /* networkconditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 033045629272F3646E39608C /* networkconditions.swift */; };
+		8972AAAED592738E565ED67B /* networkconditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 033045629272F3646E39608C /* networkconditions.swift */; };
 		C0011CAC2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CAD2C7A64F30004ED70 /* Predicates.m in Sources */ = {isa = PBXBuildFile; fileRef = C0011CAB2C7A64F30004ED70 /* Predicates.m */; };
 		C0011CB22C7CDEC40004ED70 /* updatecheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0011CB12C7CDEC40004ED70 /* updatecheck.swift */; };
@@ -575,6 +577,8 @@
 		C0EEC9A72DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0EEC9A82DA7335900F92942 /* clientcerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EEC9A62DA7335900F92942 /* clientcerts.swift */; };
 		C0FB3AC92DF490CF00BEA7F9 /* libedit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C030A9F32C4350FE007F0B34 /* libedit.tbd */; };
+		D4375BC0418DD3184FA1567D /* networkconditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 033045629272F3646E39608C /* networkconditions.swift */; };
+		EE4741BEC8774B923C0025CC /* networkconditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 033045629272F3646E39608C /* networkconditions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -734,6 +738,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		033045629272F3646E39608C /* networkconditions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = networkconditions.swift; sourceTree = "<group>"; };
 		C0011CAB2C7A64F30004ED70 /* Predicates.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Predicates.m; sourceTree = "<group>"; };
 		C0011CAE2C7A98280004ED70 /* Predicates.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Predicates.h; sourceTree = "<group>"; };
 		C0011CAF2C7A990B0004ED70 /* managedsoftwareupdate-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "managedsoftwareupdate-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -1336,6 +1341,7 @@
 				C058EF7A2DCF9F6E002775E0 /* middleware */,
 				C07AED712C67F77000DE6119 /* sslerrors.swift */,
 				C01792D82C6EC09C008CBC22 /* urls.swift */,
+				033045629272F3646E39608C /* networkconditions.swift */,
 			);
 			path = network;
 			sourceTree = "<group>";
@@ -1505,8 +1511,6 @@
 			dependencies = (
 			);
 			name = authrestartd;
-			packageProductDependencies = (
-			);
 			productName = authrestartd;
 			productReference = C00519A12D2A5B850060DDB6 /* authrestartd */;
 			productType = "com.apple.product-type.tool";
@@ -1541,8 +1545,6 @@
 			dependencies = (
 			);
 			name = repocheck;
-			packageProductDependencies = (
-			);
 			productName = repocheck;
 			productReference = C0276DB12E8C070500D443C3 /* repocheck */;
 			productType = "com.apple.product-type.tool";
@@ -1640,8 +1642,6 @@
 			dependencies = (
 			);
 			name = installhelper;
-			packageProductDependencies = (
-			);
 			productName = installhelper;
 			productReference = C0684E2D2DC040450091E774 /* installhelper */;
 			productType = "com.apple.product-type.tool";
@@ -1782,8 +1782,6 @@
 			dependencies = (
 			);
 			name = logouthelper;
-			packageProductDependencies = (
-			);
 			productName = logouthelper;
 			productReference = C0D66ABF2D2CA1DE009EF807 /* logouthelper */;
 			productType = "com.apple.product-type.tool";
@@ -2176,6 +2174,7 @@
 				C0684DDE2DBFDD190091E774 /* constants.swift in Sources */,
 				C058EF302DCD18D3002775E0 /* tempfileutils.swift in Sources */,
 				C058EF7E2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
+				09F71AB7CE8B63172BD55302 /* networkconditions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2283,6 +2282,7 @@
 				C0684E752DC7BE9F0091E774 /* munkistatus.swift in Sources */,
 				C058EF722DCE9C3E002775E0 /* admincommon.swift in Sources */,
 				C0684E7F2DC7C3AE0091E774 /* info.swift in Sources */,
+				D4375BC0418DD3184FA1567D /* networkconditions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2364,6 +2364,7 @@
 				C0209B862C63C9FD007664A0 /* stoprequested.swift in Sources */,
 				C07074DF2C33B9A000B86310 /* reports.swift in Sources */,
 				C058EF2D2DCD11F2002775E0 /* tempfileutils.swift in Sources */,
+				EE4741BEC8774B923C0025CC /* networkconditions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2461,6 +2462,7 @@
 				C01364592C3265D6008DB215 /* display.swift in Sources */,
 				C0D9C2A72C62C12E0019A067 /* munkistatus.swift in Sources */,
 				C0209B8A2C63DDF1007664A0 /* info.swift in Sources */,
+				8972AAAED592738E565ED67B /* networkconditions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

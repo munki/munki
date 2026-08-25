@@ -672,6 +672,9 @@ func makepkginfo(_ filepath: String?,
     if let restartAction = options.override.restartAction {
         pkginfo["RestartAction"] = restartAction.rawValue
     }
+    if let downloadOnLowData = options.other.downloadOnLowData {
+        pkginfo["download_on_low_data"] = downloadOnLowData.rawValue
+    }
     if !options.other.updateFor.isEmpty {
         pkginfo["update_for"] = options.other.updateFor
     }
