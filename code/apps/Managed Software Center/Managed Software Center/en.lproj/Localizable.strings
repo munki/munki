@@ -142,6 +142,15 @@
 /* managedsoftwareupdate message */
 "Done." = "Done.";
 
+/* Download anyway button title */
+"Download anyway" = "Download anyway";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Download paused — low data connection";
+
+/* Download Anyway alert title */
+"Download anyway?" = "Download anyway?";
+
 /* Downloading status text */
 "Downloading" = "Downloading";
 

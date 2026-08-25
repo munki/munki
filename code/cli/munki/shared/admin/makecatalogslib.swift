@@ -114,6 +114,12 @@ struct CatalogsMaker {
 
     /// Returns true if referenced installer items are present, false otherwise. Updates list of errors.
     mutating func verify(_ identifier: String, _ pkginfo: PlistDict) -> Bool {
+        if let downloadOnLowData = pkginfo["download_on_low_data"] as? String,
+           !["auto", "always", "never"].contains(downloadOnLowData)
+        {
+            warnings.append(
+                "WARNING: \(identifier) has an invalid download_on_low_data value: \(downloadOnLowData). Valid values are auto, always, never.")
+        }
         if let installer_type = pkginfo["installer_type"] as? String {
             if ["nopkg", "apple_update_metadata"].contains(installer_type) {
                 // no associated installer item (pkg) for these types

@@ -322,6 +322,10 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     // recreate if still valid
     removeStagedOSInstallerInfo()
 
+    // copy any user-approved low-data download overrides into place before we
+    // process installs, so deferral decisions honour them for every item
+    updateLowDataOverrides()
+
     do {
         // check managed_installs
         display.detail("**Checking for installs**")

@@ -321,6 +321,35 @@ class MSCAlertController: NSObject {
         })
     }
     
+    func confirmDownloadAnyway(_ itemName: String) {
+        // Confirm the user wants to download a low-data-deferred item over
+        // their low data connection, record the override, then kick off a
+        // check so it downloads now rather than silently waiting for the next
+        // scheduled run.
+        guard let mainWindow = window else {
+            return
+        }
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString(
+            "Download anyway?",
+            comment: "Download Anyway alert title")
+        alert.addButton(withTitle: NSLocalizedString(
+            "Download anyway", comment: "Download anyway button title"))
+        alert.addButton(withTitle: NSLocalizedString(
+            "Cancel", comment: "Cancel button title/short action text"))
+        alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
+            if modalResponse == .alertFirstButtonReturn {
+                if addLowDataOverride(itemName) {
+                    if let mainWindowController = (NSApp.delegate as? AppDelegate)?.mainWindowController {
+                        mainWindowController.checkForUpdates()
+                    }
+                } else {
+                    msc_debug_log("Could not write low-data override for \(itemName)")
+                }
+            }
+        })
+    }
+
     func confirmUpdatesAndInstall() {
         // Make sure it's OK to proceed with installing if logout or restart is
         // required
