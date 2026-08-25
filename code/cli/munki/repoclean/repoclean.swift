@@ -142,7 +142,7 @@ class RepoCleaner {
                 errors.append("Unexpected error for \(manifestName): \(error.localizedDescription)")
                 continue
             }
-            for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs"] {
+            for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "optional_uninstalls"] {
                 for item in manifest[key] as? [String] ?? [] {
                     let (itemName, itemVers) = nameAndVersion(item, onlySplitOnHyphens: true)
                     manifestItems.insert(itemName)
@@ -153,7 +153,7 @@ class RepoCleaner {
             }
             // next check conditional_items within the manifest
             for conditionalItem in manifest["conditional_items"] as? [PlistDict] ?? [] {
-                for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs"] {
+                for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "optional_uninstalls"] {
                     for item in conditionalItem[key] as? [String] ?? [] {
                         let (itemName, itemVers) = nameAndVersion(item, onlySplitOnHyphens: true)
                         manifestItems.insert(itemName)
