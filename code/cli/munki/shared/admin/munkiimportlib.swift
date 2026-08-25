@@ -42,7 +42,7 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
 
     // don't copy if the file is already in the repo
     if let filerepo = repo as? FileRepo {
-        // FileRepo and subclasses have a fulPath method
+        // FileRepo and subclasses have a fullPath method
         let repoPath = (filerepo.fullPath(destIdentifier) as NSString).standardizingPath
         let localPath = getAbsolutePath(itempath)
         if repoPath == localPath {
@@ -78,9 +78,9 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
         try await repo.put(destIdentifier, fromFile: itempath)
         return destIdentifier
     } catch let error as MunkiError {
-        throw MunkiError("Unable to copy \(itempath) to pkgs/\(destIdentifier): \(error.description)")
+        throw MunkiError("Unable to copy \(itempath) to \(destIdentifier): \(error.description)")
     } catch {
-        throw MunkiError("Unexpected error when copying \(itempath) to pkgs/\(destIdentifier): \(error)")
+        throw MunkiError("Unexpected error when copying \(itempath) to \(destIdentifier): \(error)")
     }
 }
 
