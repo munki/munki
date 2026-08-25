@@ -23,15 +23,18 @@ struct assistedQuitMetadataTests {
     @Test func copiesLaunchArguments() {
         let pkginfo: PlistDict = [
             "blocking_applications_launch_args": [
-                "--restore-last-session",
-                "--profile-directory=Profile With Spaces",
+                "Google Chrome.app": [
+                    "--restore-last-session",
+                    "--profile-directory=Profile With Spaces",
+                ],
             ],
         ]
         var processedItem = PlistDict()
 
         copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
 
-        #expect(processedItem["blocking_applications_launch_args"] as? [String] == [
+        let launchArguments = processedItem["blocking_applications_launch_args"] as? PlistDict
+        #expect(launchArguments?["Google Chrome.app"] as? [String] == [
             "--restore-last-session",
             "--profile-directory=Profile With Spaces",
         ])
@@ -41,7 +44,9 @@ struct assistedQuitMetadataTests {
         let pkginfo: PlistDict = [
             "blocking_applications_manual_quit_only": true,
             "blocking_applications_quit_script": "#!/bin/sh\nexit 0",
-            "blocking_applications_launch_args": ["--restore-last-session"],
+            "blocking_applications_launch_args": [
+                "Google Chrome.app": ["--restore-last-session"],
+            ],
         ]
         var processedItem = PlistDict()
 
@@ -49,7 +54,8 @@ struct assistedQuitMetadataTests {
 
         #expect(processedItem["blocking_applications_manual_quit_only"] as? Bool == true)
         #expect(processedItem["blocking_applications_quit_script"] as? String == "#!/bin/sh\nexit 0")
-        #expect(processedItem["blocking_applications_launch_args"] as? [String] == ["--restore-last-session"])
+        let launchArguments = processedItem["blocking_applications_launch_args"] as? PlistDict
+        #expect(launchArguments?["Google Chrome.app"] as? [String] == ["--restore-last-session"])
     }
 
     @Test func ignoresAbsentMetadata() {
