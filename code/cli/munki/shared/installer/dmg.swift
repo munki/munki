@@ -176,7 +176,7 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
             // setPermissions already displayed an error
             return permsresult
         }
-        // remove any previously exiting item at destinationPath
+        // remove any previously existing item at destinationPath
         if pathExists(destinationPath) {
             do {
                 try FileManager.default.removeItem(atPath: destinationPath)

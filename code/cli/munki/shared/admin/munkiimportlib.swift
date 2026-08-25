@@ -42,7 +42,7 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
 
     // don't copy if the file is already in the repo
     if let filerepo = repo as? FileRepo {
-        // FileRepo and subclasses have a fulPath method
+        // FileRepo and subclasses have a fullPath method
         let repoPath = (filerepo.fullPath(destIdentifier) as NSString).standardizingPath
         let localPath = getAbsolutePath(itempath)
         if repoPath == localPath {

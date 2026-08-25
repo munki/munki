@@ -132,7 +132,7 @@ func getConditions() async -> PlistDict {
                     try? filemanager.removeItem(atPath: conditionalItemsPath)
                     return conditions
                 } else {
-                    // data is in wrong formet
+                    // data is in wrong format
                     display.warning("\(conditionalItemsPath) contents are in an unexpected format.")
                 }
             } catch {

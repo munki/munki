@@ -450,7 +450,7 @@ func removePkgReceipts(pkgKeys: [String], updateApplePkgDB: Bool = true) throws 
         }
         displayPercentDone(current: taskIndex, maximum: taskCount)
     }
-    // new remove orphaned paths from DB
+    // now remove orphaned paths from DB
     let statement = try SQL3Statement(
         connection: connection,
         SQLString: "DELETE FROM paths WHERE path_key NOT IN (SELECT DISTINCT path_key FROM pkgs_paths)"
