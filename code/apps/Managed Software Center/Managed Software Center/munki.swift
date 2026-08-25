@@ -726,7 +726,7 @@ func getRunningBlockingApps(_ appnames: [String]) -> [BlockingAppInfo] {
             let filterterm = "/\(appname)/Contents/MacOS/"
             matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]!.contains(filterterm) }
         } else {
-            // check executable name
+            // check executable name -- does an executable path end with this name?
             let filterterm = "/\(appname)"
             matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]!.hasSuffix(filterterm) }
         }
@@ -734,6 +734,10 @@ func getRunningBlockingApps(_ appnames: [String]) -> [BlockingAppInfo] {
             // try adding '.app' to the name and check again
             let filterterm = "/\(appname).app/Contents/MacOS/"
             matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]!.contains(filterterm) }
+        }
+        if matching_items.count == 0 && !appname.contains("/") {
+            // Still no matches. If no slash, check bare-naked name
+            matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]! == appname }
         }
         for index in 0 ..< matching_items.count {
             if var path = matching_items[index]["pathname"] {
