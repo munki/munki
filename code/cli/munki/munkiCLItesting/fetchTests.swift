@@ -26,7 +26,7 @@ struct headerDictFromListTests {
         #expect(headerDict["Authorization"] == "Basic foobarbaz")
     }
 
-    /// Test string with no colon seperator
+    /// Test string with no colon separator
     @Test func ignoresBadlyFormattedString() async throws {
         let headers = ["Authorization Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)

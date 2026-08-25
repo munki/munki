@@ -56,7 +56,7 @@
                     <rect key="frame" x="0.0" y="0.0" width="239" height="172"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="fUg-6X-3lt">
                         <rect key="frame" x="0.0" y="0.0" width="239" height="172"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="34" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="sSx-QF-C2W" id="pGV-ZA-L14">
                                 <rect key="frame" x="0.0" y="0.0" width="239" height="172"/>

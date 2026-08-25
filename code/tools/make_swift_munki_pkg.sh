@@ -362,7 +362,7 @@ mv "${VERSIONFILE}.bak" "${VERSIONFILE}"
 echo "Building Managed Software Center.xcodeproj..."
 pushd "$MUNKIROOT/code/apps/Managed Software Center" > /dev/null
 /usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets clean > /dev/null
-/usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -alltargets build > /dev/null
+/usr/bin/xcodebuild -project "Managed Software Center.xcodeproj" -configuration Release -alltargets build DEPLOYMENT_POSTPROCESSING=YES > /dev/null
 XCODEBUILD_RESULT="$?"
 popd > /dev/null
 if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
@@ -384,7 +384,7 @@ fi
 echo "Building MunkiStatus.xcodeproj..."
 pushd "$MUNKIROOT/code/apps/MunkiStatus" > /dev/null
 /usr/bin/xcodebuild -project "MunkiStatus.xcodeproj" -alltargets clean > /dev/null
-/usr/bin/xcodebuild -project "MunkiStatus.xcodeproj" -alltargets build > /dev/null
+/usr/bin/xcodebuild -project "MunkiStatus.xcodeproj" -configuration Release -alltargets build DEPLOYMENT_POSTPROCESSING=YES > /dev/null
 XCODEBUILD_RESULT="$?"
 popd > /dev/null
 if [ "$XCODEBUILD_RESULT" -ne 0 ]; then
@@ -406,7 +406,7 @@ fi
 echo "Building munki-notifier.xcodeproj..."
 pushd "$MUNKIROOT/code/apps/munki-notifier" > /dev/null
 /usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets clean > /dev/null
-/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -alltargets build > /dev/null
+/usr/bin/xcodebuild -project "munki-notifier.xcodeproj" -configuration Release -alltargets build DEPLOYMENT_POSTPROCESSING=YES > /dev/null
 XCODEBUILD_RESULT="$?"
 popd > /dev/null
 if [ "$XCODEBUILD_RESULT" -ne 0 ]; then

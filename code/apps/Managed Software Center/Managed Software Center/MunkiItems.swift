@@ -749,6 +749,11 @@ class OptionalItem: GenericItem {
         my["user_directed_action"] = false
         let name = my["name"] as? String ?? ""
         let installed = my["installed"] as? Bool ?? false
+        let uninstall_only = my["uninstall_only"] as? Bool ?? false
+        // uninstall_only items that are not installed should not appear at all
+        if uninstall_only && !installed {
+            return ""
+        }
         let dependent_items = my["dependent_items"] as? [String] ?? [String]()
         var status = ""
         if installed {
@@ -939,7 +944,12 @@ class OptionalItem: GenericItem {
                 my["updatecheck_needed"] = false
             }
         case "not-installed":
-            // mark for install
+            // mark for install (blocked for uninstall_only items)
+            let uninstall_only = my["uninstall_only"] as? Bool ?? false
+            if uninstall_only {
+                my["updatecheck_needed"] = false
+                return false
+            }
             my["status"] = "install-requested"
             self_service_change_success = subscribe(self)
         case "installed":
@@ -1151,7 +1161,11 @@ func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
 
 func optionalInstallsExist() -> Bool {
     let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
-    return optional_items.count > 0
+    if optional_items.count > 0 {
+        return true
+    }
+    let optional_uninstall_items = cachedInstallInfo()["optional_uninstalls"] as? [[String : Any]] ?? [[String : Any]]()
+    return optional_uninstall_items.contains { $0["installed"] as? Bool ?? false }
 }
 
 func getOptionalInstallItems() -> [OptionalItem] {
@@ -1176,6 +1190,14 @@ func getOptionalInstallItems() -> [OptionalItem] {
                 if featured_items.contains(name) {
                     optional_install_items[index]["featured"] = true
                 }
+            }
+        }
+        // append optional_uninstalls items that are currently installed
+        let optional_uninstall_items = cachedInstallInfo()["optional_uninstalls"] as? [[String : Any]] ?? [[String : Any]]()
+        for var itemDict in optional_uninstall_items {
+            if itemDict["installed"] as? Bool ?? false {
+                itemDict["uninstall_only"] = true
+                optional_install_items.append(OptionalItem(itemDict))
             }
         }
         Cache.shared["optional_install_items"] = optional_install_items

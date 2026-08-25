@@ -50,11 +50,19 @@ func compareVersions(_ thisVersion: String, _ thatVersion: String) -> MunkiCompa
 }
 
 func compareUsingVersionScript(_ item: PlistDict) async -> MunkiComparisonResult {
+    let itemName = item["name"] as? String ?? "<unknown>"
     let itemVersion = item["version"] as? String ?? "0"
     let results = await runEmbeddedScriptAndReturnResults(name: "version_script", pkginfo: item, suppressError: true)
     if results.exitcode != 0 {
-        // treat an error as .notPresent
-        display.debug1("\tVersion script error \(results.exitcode): \(results.error)")
+        if results.timedOut {
+            // a hung version_script used to wedge managedsoftwareupdate
+            // indefinitely; make sure admins can see it happened without
+            // needing -vv
+            display.warning("\(itemName): \(results.error)")
+        } else {
+            // treat an error as .notPresent
+            display.debug1("\tVersion script error \(results.exitcode): \(results.error)")
+        }
         return .notPresent
     }
     let installedVersion = results.output.trimmingCharacters(in: .whitespacesAndNewlines)

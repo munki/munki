@@ -130,6 +130,99 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
     return info
 }
 
+/// Returns names of applications found directly inside a directory
+func applicationsInDirectory(_ dirpath: String) -> [String] {
+    guard let contents = try? FileManager.default.contentsOfDirectory(atPath: dirpath) else {
+        return []
+    }
+    return contents.filter {
+        isApplication((dirpath as NSString).appendingPathComponent($0))
+    }.sorted()
+}
+
+/// Looks for a non-application folder at the root of mountpoint that contains at least one app.
+/// Returns the folder name and the sorted list of app names inside it, or nil if not found.
+func findFolderWithApps(at mountpoint: String) -> (folderName: String, appNames: [String])? {
+    guard let filelist = try? FileManager.default.contentsOfDirectory(atPath: mountpoint) else {
+        return nil
+    }
+    for item in filelist.sorted() {
+        let itempath = (mountpoint as NSString).appendingPathComponent(item)
+        guard pathIsDirectory(itempath), !isApplication(itempath) else { continue }
+        let apps = applicationsInDirectory(itempath)
+        if !apps.isEmpty {
+            return (item, apps)
+        }
+    }
+    return nil
+}
+
+/// Builds pkginfo for a drag-n-drop folder containing one or more applications.
+/// The folder is copied to destinationpath (default /Applications) and each app
+/// inside it becomes an entry in the installs array.
+func createPkgInfoForFolderWithApps(
+    _ mountpoint: String,
+    folderName: String,
+    appNames: [String],
+    options: PkginfoOptions
+) -> PlistDict {
+    var info = PlistDict()
+    let destinationpath = options.dmg.destinationpath ?? "/Applications"
+
+    var destFolderName = folderName
+    var itemsToCopyItem = PlistDict()
+    itemsToCopyItem["source_item"] = folderName
+    itemsToCopyItem["destination_path"] = destinationpath
+    if let destitemname = options.dmg.destitemname {
+        destFolderName = destitemname
+        itemsToCopyItem["destination_item"] = destitemname
+    }
+    if let user = options.dmg.user { itemsToCopyItem["user"] = user }
+    if let group = options.dmg.group { itemsToCopyItem["group"] = group }
+    if let mode = options.dmg.mode { itemsToCopyItem["mode"] = mode }
+
+    let folderInstallPath = (destinationpath as NSString).appendingPathComponent(destFolderName)
+    let folderpath = (mountpoint as NSString).appendingPathComponent(folderName)
+
+    var installsItems = [PlistDict]()
+    var highestVersion = MunkiVersion("0.0.0.0.0")
+    var highestMinOSVersion: MunkiVersion? = nil
+
+    for appName in appNames {
+        let apppath = (folderpath as NSString).appendingPathComponent(appName)
+        var installsItem = createInstallsItem(apppath)
+        if installsItem.isEmpty { continue }
+        installsItem["path"] = (folderInstallPath as NSString).appendingPathComponent(appName)
+        installsItems.append(installsItem)
+
+        let comparisonKey = installsItem["version_comparison_key"] as? String ?? "CFBundleShortVersionString"
+        let appVersion = MunkiVersion(installsItem[comparisonKey] as? String ?? "0.0.0.0.0")
+        if appVersion > highestVersion {
+            highestVersion = appVersion
+        }
+        if let minOSStr = installsItem["minosversion"] as? String {
+            let appMinOS = MunkiVersion(minOSStr)
+            if highestMinOSVersion == nil || appMinOS > highestMinOSVersion! {
+                highestMinOSVersion = appMinOS
+            }
+        }
+    }
+
+    guard !installsItems.isEmpty else { return info }
+
+    info["name"] = (destFolderName as NSString).deletingPathExtension
+    info["version"] = highestVersion.value
+    if let highestMinOSVersion {
+        info["minimum_os_version"] = highestMinOSVersion.value
+    }
+    info["installs"] = installsItems
+    info["installer_type"] = "copy_from_dmg"
+    info["items_to_copy"] = [itemsToCopyItem]
+    info["uninstallable"] = true
+    info["uninstall_method"] = "remove_copied_items"
+    return info
+}
+
 /// Processes a drag-n-drop dmg to build pkginfo
 func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) throws -> PlistDict {
     var info = PlistDict()
@@ -138,8 +231,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     if let item = options.dmg.item {
         dragNDropItem = item
     } else {
-        // no item specified; look for an application at root of
-        // mounted dmg
+        // no item specified; look for an application at root of mounted dmg
         let filemanager = FileManager.default
         if let filelist = try? filemanager.contentsOfDirectory(atPath: mountpoint) {
             for item in filelist {
@@ -151,6 +243,37 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
             }
         }
     }
+
+    // If no app found at root and no item explicitly specified, check for a
+    // folder containing apps (e.g. folder named "Nuke 17.0v2/" with several .app bundles)
+    if dragNDropItem.isEmpty, options.dmg.item == nil {
+        if let (folderName, appNames) = findFolderWithApps(at: mountpoint) {
+            return createPkgInfoForFolderWithApps(
+                mountpoint, folderName: folderName, appNames: appNames, options: options
+            )
+        }
+    }
+
+    // If --item pointed at a folder (not an app), treat it as a folder-with-apps
+    if !dragNDropItem.isEmpty {
+        var mountpointPattern = mountpoint
+        if !mountpointPattern.hasSuffix("/") { mountpointPattern += "/" }
+        var resolvedItem = dragNDropItem
+        if resolvedItem.hasPrefix(mountpointPattern) {
+            // remove mountpoint sequence to make relative path
+            resolvedItem = String(resolvedItem.dropFirst(mountpointPattern.count))
+        }
+        let itempath = (mountpoint as NSString).appendingPathComponent(resolvedItem)
+        if pathIsDirectory(itempath), !isApplication(itempath) {
+            let appNames = applicationsInDirectory(itempath)
+            if !appNames.isEmpty {
+                return createPkgInfoForFolderWithApps(
+                    mountpoint, folderName: resolvedItem, appNames: appNames, options: options
+                )
+            }
+        }
+    }
+
     guard !dragNDropItem.isEmpty else {
         throw MunkiError("No application found on disk image.")
     }

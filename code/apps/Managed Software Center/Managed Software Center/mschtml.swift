@@ -469,38 +469,36 @@ func buildListPageItemsHTML(category: String = "",
         item_html = buildItemListHTML(items)
     } else {
         // no items; build appropriate alert messages
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
         if !filter.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "Your search had no results.",
                 comment: "No Search Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try searching again.", comment: "No Search Results secondary text")
         } else if !category.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no items in this category.",
                 comment: "No Category Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try selecting another category.",
                 comment: "No Category Results secondary text")
         } else if !developer.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no items from this developer.",
                 comment: "No Developer Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try selecting another developer.",
                 comment: "No Developer Results secondary text")
         } else {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no available software items.",
                 comment: "No Items primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try again later.",
                 comment: "No Items secondary text")
         }
-        alert["hide_progress_bar"] = "hidden"
-        alert["progress_bar_value"] = ""
         item_html = status_results_template.substitute(alert)
     }
     return item_html
@@ -551,16 +549,14 @@ func buildCategoryItemsHTML() -> String {
     }
     if all_items.isEmpty {
         // no items
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
-        alert["primary_status_text"] = NSLocalizedString(
+        alert["primary_results_text"] = NSLocalizedString(
             "There are no available software items.",
             comment: "No Items primary text")
-        alert["secondary_status_text"] = NSLocalizedString(
+        alert["secondary_results_text"] = NSLocalizedString(
             "Try again later.",
             comment: "No Items secondary text")
-        alert["hide_progress_bar"] = "hidden"
-        alert["progress_bar_value"] = ""
         item_html = status_results_template.substitute(alert)
     } else {
         let item_template = getTemplate("category_item_template.html")
@@ -620,17 +616,16 @@ func buildMyItemsRows() -> String {
         myitems_rows = buildItemListHTML(item_list,
                                          template: "myitems_item_template.html")
     } else {
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
-        alert["primary_status_text"] = NSLocalizedString(
+        alert["primary_results_text"] = NSLocalizedString(
             "You have no selected software.",
             comment: "No Installed Software primary text")
         let select_software_msg = NSLocalizedString(
             "Select software to install.",
             comment: "No Installed Software secondary text")
-        alert["secondary_status_text"] = (
+        alert["secondary_results_text"] = (
             "<a href=\"munki://category-all.html\">\(select_software_msg)</a>" )
-        alert["hide_progress_bar"] = "hidden"
         myitems_rows = status_results_template.substitute(alert)
     }
     return myitems_rows
@@ -661,6 +656,9 @@ func buildUpdatesPage() throws {
         item["added_class"] = ""
         if item["note"] == nil {
             item["note"] = ""
+        }
+        if item["uninstall_only"] as? Bool ?? false {
+            item["hide_cancel_button"] = ""
         }
     }
     let update_names = item_list.map({$0["name"] as? String ?? ""})
@@ -695,6 +693,16 @@ func buildUpdatesPage() throws {
             item["added_class"] = ""
         }
     }
+    var optional_uninstall_items = [OptionalItem]()
+    if show_additional_updates {
+        optional_uninstall_items = getOptionalInstallItems().filter(
+            { ($0["uninstall_only"] as? Bool ?? false) &&
+              ($0["status"] as? String ?? "") == "installed" }
+        )
+        for item in optional_uninstall_items {
+            item["added_class"] = ""
+        }
+    }
     let page = GenericItem()
     page["update_rows"] = ""
     page["apple_update_rows"] = ""
@@ -702,12 +710,15 @@ func buildUpdatesPage() throws {
     page["hide_progress_spinner"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
+    page["hide_optional_uninstalls"] = "hidden"
+    page["optional_uninstall_rows"] = ""
     page["install_all_button_classes"] = ""
     
     if apple_update_list.isEmpty,
        item_list.isEmpty,
        other_updates.isEmpty,
-       problem_updates.isEmpty
+       problem_updates.isEmpty,
+       optional_uninstall_items.isEmpty
     {
         let status_results_template = getTemplate("status_results_template.html")
         let alert = BaseItem()
@@ -761,7 +772,17 @@ func buildUpdatesPage() throws {
         page["other_update_rows"] = buildItemListHTML(
             other_updates, template: "update_item_template.html")
     }
-    
+
+    // build suggested removals (optional_uninstalls) table
+    page["optional_uninstalls_header_message"] = NSLocalizedString(
+        "Suggested removals",
+        comment: "Optional Uninstalls label")
+    if !optional_uninstall_items.isEmpty {
+        page["hide_optional_uninstalls"] = ""
+        page["optional_uninstall_rows"] = buildItemListHTML(
+            optional_uninstall_items, template: "update_item_template.html")
+    }
+
     let additional_templates = BaseItem(["footer": getRawTemplate("footer_template.html")])
     try generatePage(named: "updates.html",
                      fromTemplate: "updates_template.html",
@@ -781,6 +802,9 @@ func buildUpdateStatusPage() throws {
     page["hide_other_updates"] = "hidden"
     page["other_updates_header_message"] = ""
     page["other_update_rows"] = ""
+    page["hide_optional_uninstalls"] = "hidden"
+    page["optional_uninstalls_header_message"] = ""
+    page["optional_uninstall_rows"] = ""
     
     // don't like this bit as it ties us to a different object
     guard let status_controller = (NSApp.delegate as? AppDelegate)?.statusController else {

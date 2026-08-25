@@ -78,6 +78,7 @@ func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String =
         "managed_uninstalls",
         "managed_updates",
         "optional_installs",
+        "optional_uninstalls",
         "featured_items",
         "default_installs",
     ]
@@ -85,6 +86,7 @@ func addPkg(repo: Repo, manifestName: String, pkgName: String, section: String =
         "managed_installs",
         "managed_uninstalls",
         "optional_installs",
+        "optional_uninstalls",
     ]
     let optionalInstallsNeededSections = [
         "featured_items",

@@ -115,6 +115,7 @@ func alreadyProcessed(_ itemName: String, installInfo: PlistDict, sections: [Str
         "processed_uninstalls": "uninstall",
         "managed_updates": "update",
         "optional_installs": "optional install",
+        "optional_uninstalls": "optional uninstall",
     ]
     for section in sections {
         if let listOfNames = installInfo[section] as? [String],
@@ -220,7 +221,7 @@ func processInstall(
     //  requires can be a one to many relationship.
     //
     //  The second type of relationship is 'update_for'.
-    //  This signifies that that current package should be considered an update
+    //  This signifies that the current package should be considered an update
     //  for the packages listed in the 'update_for' array. When processing a
     //  package, we look through the catalogs for other packages that declare
     //  they are updates for the current package and install them if needed.
@@ -781,6 +782,88 @@ func processOptionalInstall(
     var optionalInstalls = installInfo["optional_installs"] as? [PlistDict] ?? []
     optionalInstalls.append(processedItem)
     installInfo["optional_installs"] = optionalInstalls
+}
+
+/// Process an optional uninstall item to see if it should be added to
+/// the list of optional uninstalls. Only items that are currently installed
+/// are added; items not installed are silently skipped.
+func processOptionalUninstall(
+    _ manifestItem: String,
+    catalogList: [String],
+    installInfo: inout PlistDict
+) async {
+    let manifestItemName = (manifestItem as NSString).lastPathComponent
+    display.debug1("* Processing manifest item \(manifestItemName) for optional uninstall")
+
+    if alreadyProcessed(
+        manifestItemName,
+        installInfo: installInfo,
+        sections: ["optional_uninstalls", "processed_installs"]
+    ) {
+        return
+    }
+
+    // check to see if item (any version) is already in the optional_uninstalls list
+    if let existingItems = installInfo["optional_uninstalls"] as? [PlistDict] {
+        for item in existingItems {
+            if let name = item["name"] as? String, name == manifestItemName {
+                display.debug1("\(manifestItemName) has already been processed for optional uninstall.")
+                return
+            }
+        }
+    }
+
+    guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
+        display.warning("Could not process item \(manifestItemName) for optional uninstall. No pkginfo found in catalogs: \(catalogList)")
+        return
+    }
+
+    let isCurrentlyInstalled = await someVersionInstalled(pkginfo)
+    if !isCurrentlyInstalled {
+        display.debug1("\(manifestItemName) is not installed, so skipping optional uninstall.")
+        return
+    }
+
+    var processedItem = PlistDict()
+    processedItem["name"] = pkginfo["name"] as? String ?? manifestItemName
+    processedItem["display_name"] = pkginfo["display_name"] ?? ""
+    processedItem["description"] = pkginfo["description"] ?? ""
+    processedItem["version_to_install"] = pkginfo["version"] ?? "UNKNOWN"
+    for key in [
+        "category",
+        "developer",
+        "featured",
+        "icon_name",
+        "icon_hash",
+        "requires",
+        "RestartAction",
+    ] {
+        processedItem[key] = pkginfo[key]
+    }
+    processedItem["installed"] = true
+    processedItem["needs_update"] = false
+    processedItem["licensed_seat_info_available"] = pkginfo["licensed_seat_info_available"] as? Bool ?? false
+    processedItem["uninstallable"] = (pkginfo["uninstallable"] as? Bool ?? false) && !(pkginfo["uninstall_method"] as? String ?? "").isEmpty
+    let installerSize = pkginfo["installer_item_size"] as? Int ?? 0
+    processedItem["installer_item_size"] = installerSize
+    processedItem["installed_size"] = pkginfo["installed_size"] as? Int ?? installerSize
+    if let pkgInfoNote = pkginfo["note"] as? String {
+        processedItem["note"] = pkgInfoNote
+    }
+    let optionalKeys = [
+        "preuninstall_alert",
+        "minimum_os_version",
+        "localized_strings",
+    ]
+    for key in optionalKeys {
+        processedItem[key] = pkginfo[key]
+    }
+    copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
+    let itemName = processedItem["name"] as? String ?? "<unknown>"
+    display.debug1("Adding \(itemName) to the optional uninstall list")
+    var optionalUninstalls = installInfo["optional_uninstalls"] as? [PlistDict] ?? []
+    optionalUninstalls.append(processedItem)
+    installInfo["optional_uninstalls"] = optionalUninstalls
 }
 
 /// Processes a manifest item; attempts to determine if it
