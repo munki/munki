@@ -54,7 +54,7 @@ func isOnLowDataConnection() -> Bool {
     return isLowData
 }
 
-private var cachedLowDataConnection: Bool? = nil
+private var cachedLowDataConnection: Bool?
 
 /// Cached, once-per-run answer to isOnLowDataConnection(). managedsoftwareupdate
 /// runs as a one-shot process, so sampling a single time keeps every per-item
