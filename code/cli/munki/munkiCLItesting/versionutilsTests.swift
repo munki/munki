@@ -33,7 +33,7 @@ struct MunkiVersionTests {
         #expect(version1 < version2)
     }
 
-    /// Test that other comparsions return expected results
+    /// Test that other comparisons return expected results
     @Test func testOtherComparisons() async throws {
         let versionPairs = [
             ("1.0", "1.0b1"),
