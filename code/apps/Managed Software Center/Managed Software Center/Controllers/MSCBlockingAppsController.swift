@@ -26,6 +26,29 @@ private struct BlockingAppRowData {
     var quitInitiatedTime: Date?
 }
 
+private struct AppToReopen {
+    let path: String
+    let arguments: [String]
+}
+
+private func recordLaunchArguments(
+    _ arguments: [String],
+    for appPaths: [String],
+    in configurations: inout [String: [String]]
+) -> [String] {
+    var conflicts = [String]()
+    for appPath in appPaths {
+        if let existingArguments = configurations[appPath] {
+            if existingArguments != arguments {
+                conflicts.append(appPath)
+            }
+        } else {
+            configurations[appPath] = arguments
+        }
+    }
+    return conflicts
+}
+
 /// Controller that manages the blocking apps sheet UI.
 /// Presents a sheet listing running applications that must be quit before updates can proceed.
 class MSCBlockingAppsController: NSObject {
@@ -58,6 +81,9 @@ class MSCBlockingAppsController: NSObject {
     // Custom quit script tracking - maps app names to their quit scripts
     private var appQuitScripts: [String: String] = [:] // keyed by app name (e.g. "Safari.app")
 
+    // Launch arguments for reopening apps, keyed by resolved app bundle path
+    private var appLaunchArguments: [String: [String]] = [:]
+
     // Removal tracking - apps being removed shouldn't be reopened
     private var appsBeingRemovedNames: Set<String> = [] // app names being removed
     private var appsBeingRemovedPaths: Set<String> = [] // app paths being removed
@@ -67,7 +93,7 @@ class MSCBlockingAppsController: NSObject {
 
     // Reopen apps after update
     private var reopenCheckbox: NSButton?
-    private(set) var appsToReopenAfterUpdate: [String] = []
+    private var appsToReopenAfterUpdate: [AppToReopen] = []
 
     // Layout constants
     private var sheetWidth: CGFloat = 320 // can grow
@@ -110,6 +136,7 @@ class MSCBlockingAppsController: NSObject {
         appsToCheck = []
         manualQuitAppNames = []
         appQuitScripts = [:]
+        appLaunchArguments = [:]
         appsBeingRemovedNames = []
         nonBundleExecutablePaths = []
 
@@ -160,6 +187,26 @@ class MSCBlockingAppsController: NSObject {
                 for appName in itemBlockingApps {
                     appQuitScripts[appName] = quitScript
                     msc_debug_log("Found blocking_applications_quit_script for \(appName)")
+                }
+            }
+
+            if let launchArguments = update_item["blocking_applications_launch_args"] as? [String] {
+                let appPaths = Array(Set(runningBlockingApps.map(\.pathname).filter {
+                    $0.hasSuffix(".app")
+                }))
+                let configuredApps = appPaths.filter { appLaunchArguments[$0] == nil }
+                let conflicts = recordLaunchArguments(
+                    launchArguments,
+                    for: appPaths,
+                    in: &appLaunchArguments
+                )
+                for appPath in configuredApps {
+                    msc_debug_log("Found blocking_applications_launch_args for \(appPath)")
+                }
+                for appPath in conflicts {
+                    msc_debug_log(
+                        "Ignoring conflicting blocking_applications_launch_args for \(appPath)"
+                    )
                 }
             }
         }
@@ -261,8 +308,14 @@ class MSCBlockingAppsController: NSObject {
         // Save apps to reopen if checkbox is checked, visible, and user didn't cancel
         // Exclude apps that are being removed as they won't exist after the update
         if canContinue, reopenCheckbox?.state == .on, reopenCheckbox?.isHidden == false {
-            appsToReopenAfterUpdate = closedApps.filter {
-                !appsBeingRemovedPaths.contains($0) && !nonBundleExecutablePaths.contains($0)
+            appsToReopenAfterUpdate = closedApps.compactMap { appPath in
+                guard !appsBeingRemovedPaths.contains(appPath),
+                      !nonBundleExecutablePaths.contains(appPath)
+                else { return nil }
+                return AppToReopen(
+                    path: appPath,
+                    arguments: appLaunchArguments[appPath] ?? []
+                )
             }
         } else {
             appsToReopenAfterUpdate = []
@@ -968,25 +1021,25 @@ class MSCBlockingAppsController: NSObject {
         let apps = appsToReopenAfterUpdate
         appsToReopenAfterUpdate = []
 
-        let config = NSWorkspace.OpenConfiguration()
-        config.activates = false // Open apps in background without bringing to foreground
-
         // Stagger app launches to give the system time to settle
         // after package installations.
         let initialDelay: TimeInterval = 2.0
         let staggerDelay: TimeInterval = 1.0
 
-        for (index, appPath) in apps.enumerated() {
+        for (index, app) in apps.enumerated() {
             let delay = initialDelay + (Double(index) * staggerDelay)
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                msc_debug_log("Reopening app in background: \(appPath)")
+                let config = NSWorkspace.OpenConfiguration()
+                config.activates = false
+                config.arguments = app.arguments
+                msc_debug_log("Reopening app in background: \(app.path)")
                 NSWorkspace.shared.openApplication(
-                    at: URL(fileURLWithPath: appPath),
+                    at: URL(fileURLWithPath: app.path),
                     configuration: config
                 ) { _, error in
                     if let error {
                         msc_debug_log(
-                            "Failed to reopen app at \(appPath): \(error.localizedDescription)"
+                            "Failed to reopen app at \(app.path): \(error.localizedDescription)"
                         )
                     }
                 }
