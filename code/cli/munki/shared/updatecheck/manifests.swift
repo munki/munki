@@ -390,6 +390,13 @@ func processManifest(
                     installInfo: &installInfo
                 )
             }
+            if key == "optional_uninstalls" {
+                await processOptionalUninstall(
+                    item,
+                    catalogList: catalogList,
+                    installInfo: &installInfo
+                )
+            }
             if key == "managed_uninstalls" {
                 _ = await processRemoval(
                     item,
