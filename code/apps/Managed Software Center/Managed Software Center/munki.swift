@@ -20,6 +20,7 @@ let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstal
 let BUNDLE_ID = "ManagedInstalls" as CFString
 let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
+let WRITEABLE_LOW_DATA_OVERRIDES_PATH = "/Users/Shared/.low_data_overrides.plist"
 
 func exec(_ command: String, args: [String] = []) -> String {
     // runs a UNIX command and returns stdout as a string
@@ -191,6 +192,27 @@ func writeSelfServiceManifest(_ optional_install_choices: PlistDict) -> Bool {
             manifest_contents,
             toFile: WRITEABLE_SELF_SERVICE_MANIFEST_PATH
         )
+        return true
+    } catch {
+        return false
+    }
+}
+
+func addLowDataOverride(_ item_name: String) -> Bool {
+    /* Record that the user wants to download a low-data-deferred item anyway.
+     Appends the item name to a user-writable plist that managedsoftwareupdate
+     copies into place on its next run. Returns true on success. */
+    var overrides = PlistDict()
+    if FileManager.default.isReadableFile(atPath: WRITEABLE_LOW_DATA_OVERRIDES_PATH) {
+        overrides = ((try? readPlist(WRITEABLE_LOW_DATA_OVERRIDES_PATH)) as? PlistDict) ?? PlistDict()
+    }
+    var items = overrides["items"] as? [String] ?? [String]()
+    if !items.contains(item_name) {
+        items.append(item_name)
+    }
+    overrides["items"] = items
+    do {
+        try writePlist(overrides, toFile: WRITEABLE_LOW_DATA_OVERRIDES_PATH)
         return true
     } catch {
         return false

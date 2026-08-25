@@ -53,6 +53,14 @@ func clearMunkiItemsCache() {
     Cache.shared.clear()
 }
 
+/// Localized text shown for an item whose download is paused on a low-data
+/// connection.
+func lowDataPausedNote() -> String {
+    return NSLocalizedString(
+        "Download paused — low data connection",
+        comment: "Low data connection deferred download note")
+}
+
 class BaseItem {
     // Base class for our types of Munki items
     var my = [String: Any]()
@@ -169,6 +177,10 @@ class GenericItem: BaseItem {
             my["size_sort"] = 0
             my["size"] = "-"
         }
+        // Low-data "Download anyway" button defaults; populated for
+        // low_data_deferred UpdateItems (see UpdateItem.init).
+        my["hide_low_data_button"] = "hidden"
+        my["low_data_action_text"] = ""
     }
 
     func description() -> String {
@@ -307,6 +319,9 @@ class GenericItem: BaseItem {
     
     func status_text() -> String {
         // Return localized status display text
+        if my["low_data_deferred"] as? Bool ?? false {
+            return lowDataPausedNote()
+        }
         let status = my["status"] as? String ?? ""
         if status == "unavailable" {
             return unavailable_reason_text()
@@ -998,6 +1013,19 @@ class UpdateItem: GenericItem {
         my["hide_cancel_button"]  = "hidden"
         my["dependent_items"] = dependentItems(name)
         my["days_available"] = getDaysPending(name)
+        if my["low_data_deferred"] as? Bool ?? false {
+            // Show a localized "paused" message instead of the plain-English
+            // note recorded by managedsoftwareupdate on the CLI side.
+            my["note"] = lowDataPausedNote()
+            // Offer a "Download anyway" button unless the admin disabled
+            // user overrides via AllowLowDataOverride.
+            if munkiPref("AllowLowDataOverride") as? Bool ?? true {
+                my["hide_low_data_button"] = ""
+                my["low_data_action_text"] = NSLocalizedString(
+                    "Download anyway",
+                    comment: "Download anyway button title")
+            }
+        }
     }
     
     override func description() -> String {

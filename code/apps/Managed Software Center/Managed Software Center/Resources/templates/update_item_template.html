@@ -20,6 +20,14 @@
                 </div>
             </button>
         </div>
+        <div class="msc-button small ${hide_low_data_button}">
+            <button class="button-area uppercase"
+                    onClick="window.webkit.messageHandlers.downloadAnywayButtonClicked.postMessage('${name_quoted}');">
+                <div class="msc-button-inner install">
+                    ${low_data_action_text}
+                </div>
+            </button>
+        </div>
     </div>
     <div class="row2">
         <p class="description" data-text-truncate-lines="2">

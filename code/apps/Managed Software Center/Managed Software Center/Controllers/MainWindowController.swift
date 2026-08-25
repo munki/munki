@@ -717,6 +717,7 @@ class MainWindowController: NSWindowController {
         wkContentController.add(self, name: "changeSelectedCategory")
         wkContentController.add(self, name: "updateOptionalInstallButtonClicked")
         wkContentController.add(self, name: "updateOptionalInstallButtonFinishAction")
+        wkContentController.add(self, name: "downloadAnywayButtonClicked")
     }
 
     func insertWebView() {
