@@ -117,7 +117,7 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
     return updates
 }
 
-/// FIlters out any majorOS upgrades from a list of Apple updates
+/// Filters out any majorOS upgrades from a list of Apple updates
 func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     // There's a couple of strategies we could use here:
     //

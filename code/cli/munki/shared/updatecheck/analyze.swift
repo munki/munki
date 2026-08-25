@@ -208,7 +208,7 @@ func processInstall(
     //  requires can be a one to many relationship.
     //
     //  The second type of relationship is 'update_for'.
-    //  This signifies that that current package should be considered an update
+    //  This signifies that the current package should be considered an update
     //  for the packages listed in the 'update_for' array. When processing a
     //  package, we look through the catalogs for other packages that declare
     //  they are updates for the current package and install them if needed.
