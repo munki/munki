@@ -190,23 +190,40 @@ class MSCBlockingAppsController: NSObject {
                 }
             }
 
-            if let launchArguments = update_item["blocking_applications_launch_args"] as? [String] {
-                let appPaths = Array(Set(runningBlockingApps.map(\.pathname).filter {
+            if let launchArgumentMappings = update_item["blocking_applications_launch_args"] as? [String: Any] {
+                let itemAppPaths = Set(runningBlockingApps.map(\.pathname).filter {
                     $0.hasSuffix(".app")
-                }))
-                let configuredApps = appPaths.filter { appLaunchArguments[$0] == nil }
-                let conflicts = recordLaunchArguments(
-                    launchArguments,
-                    for: appPaths,
-                    in: &appLaunchArguments
-                )
-                for appPath in configuredApps {
-                    msc_debug_log("Found blocking_applications_launch_args for \(appPath)")
-                }
-                for appPath in conflicts {
-                    msc_debug_log(
-                        "Ignoring conflicting blocking_applications_launch_args for \(appPath)"
+                })
+                for appIdentifier in launchArgumentMappings.keys.sorted() {
+                    guard let launchArguments = launchArgumentMappings[appIdentifier] as? [String] else {
+                        msc_debug_log(
+                            "Ignoring invalid blocking_applications_launch_args for \(appIdentifier)"
+                        )
+                        continue
+                    }
+                    let appPaths = Array(Set(
+                        getRunningBlockingApps([appIdentifier]).map(\.pathname)
+                    ).intersection(itemAppPaths)).sorted()
+                    if appPaths.isEmpty {
+                        msc_debug_log(
+                            "Ignoring blocking_applications_launch_args for non-blocking application \(appIdentifier)"
+                        )
+                        continue
+                    }
+                    let configuredApps = appPaths.filter { appLaunchArguments[$0] == nil }
+                    let conflicts = recordLaunchArguments(
+                        launchArguments,
+                        for: appPaths,
+                        in: &appLaunchArguments
                     )
+                    for appPath in configuredApps {
+                        msc_debug_log("Found blocking_applications_launch_args for \(appPath)")
+                    }
+                    for appPath in conflicts {
+                        msc_debug_log(
+                            "Ignoring conflicting blocking_applications_launch_args for \(appPath)"
+                        )
+                    }
                 }
             }
         }
