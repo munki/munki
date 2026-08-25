@@ -142,6 +142,15 @@
 /* managedsoftwareupdate message */
 "Done." = "Klar.";
 
+/* Download anyway button title */
+"Download anyway" = "Ladda ner ändå";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Nerladdning pausad — låg dataförbrukning";
+
+/* Download Anyway alert title */
+"Download anyway?" = "Ladda ner ändå?";
+
 /* Downloading status text */
 "Downloading" = "Hämtar";
 
