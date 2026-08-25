@@ -67,7 +67,8 @@ func updateSelfServeManifest() {
     promoteUserWritablePlist(
         from: "/Users/Shared/.SelfServeManifest",
         to: selfServiceManifestPath(),
-        label: "SelfServeManifest")
+        label: "SelfServeManifest"
+    )
 }
 
 /// Returns the path to the root-owned low-data overrides plist. This records the
@@ -86,7 +87,8 @@ func updateLowDataOverrides() {
     promoteUserWritablePlist(
         from: "/Users/Shared/.low_data_overrides.plist",
         to: lowDataOverridesPath(),
-        label: "low-data overrides")
+        label: "low-data overrides"
+    )
 }
 
 private var cachedLowDataOverrideItems: [String]?

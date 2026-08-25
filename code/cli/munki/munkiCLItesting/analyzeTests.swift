@@ -68,7 +68,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
-            onLowDataConnection: false, maxSizeOverLowDataConnection: 1) == false)
+            onLowDataConnection: false, maxSizeOverLowDataConnection: 1
+        ) == false)
     }
 
     /// download_on_low_data "always" does not defer when the threshold is positive
@@ -76,7 +77,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "always"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 1) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 1
+        ) == false)
     }
 
     /// download_on_low_data "never" always defers on a low data connection
@@ -84,7 +86,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 1) == true)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 1
+        ) == true)
     }
 
     /// a negative threshold disables low-data deferrals
@@ -92,7 +95,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: -1) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: -1
+        ) == false)
     }
 
     /// a negative threshold disables even explicit low-data pkginfo rules
@@ -100,7 +104,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: -1) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: -1
+        ) == false)
     }
 
     /// a zero threshold defers auto/default downloads
@@ -108,7 +113,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == true)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0
+        ) == true)
     }
 
     /// download_on_low_data "always" can override a zero threshold
@@ -116,7 +122,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "always"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0
+        ) == false)
     }
 
     /// auto, item larger than the threshold, defers
@@ -124,7 +131,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 250_001,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000) == true)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == true)
     }
 
     /// auto, item at or under the threshold, downloads
@@ -132,7 +140,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 250_000,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == false)
     }
 
     /// An absent key is treated as auto (follows the threshold)
@@ -140,7 +149,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo = PlistDict()
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 300_000,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000) == true)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == true)
     }
 
     /// An unrecognized value is treated as auto (follows the threshold)
@@ -148,7 +158,8 @@ struct shouldDeferDownloadForLowDataTests {
         let pkginfo: PlistDict = ["download_on_low_data": "bogus"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 100,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == false)
     }
 
     /// A reached force_install_after_date wins over "never"
@@ -159,7 +170,8 @@ struct shouldDeferDownloadForLowDataTests {
         ]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
-            onLowDataConnection: true, maxSizeOverLowDataConnection: 0) == false)
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0
+        ) == false)
     }
 }
 
