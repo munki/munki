@@ -559,7 +559,7 @@ func getResourceIfChangedAtomically(
             let data = try getXattr(named: XATTR_SHA, atPath: destinationPath)
             xattrHash = String(data: data, encoding: .utf8)
         } catch {
-            // no hahs stored in xattrs, so generate one and store it
+            // no hash stored in xattrs, so generate one and store it
             xattrHash = storeCachedChecksum(toPath: destinationPath)
         }
         if let xattrHash, xattrHash == expectedHash {

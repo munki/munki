@@ -136,7 +136,7 @@ struct alreadyProcessedTests {
     ]
 
     /// Tests that alreadyProcessed() returns expected results
-    @Test func itemInInstallInfoAsExepcted() async throws {
+    @Test func itemInInstallInfoAsExpected() async throws {
         #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["managed_installs", "optional_installs"]) == true)
         #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["managed_installs"]) == true)
         #expect(alreadyProcessed("GoogleChrome", installInfo: installInfo, sections: ["managed_installs"]) == true)
