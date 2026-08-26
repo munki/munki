@@ -392,20 +392,21 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
             return .noUpdatesAvailable
         }
 
-        // build list of optional installs
+        // build list of optional uninstalls (must run before optional_installs
+        // so that processOptionalInstall can skip items already in optional_uninstalls)
         _ = try await processManifest(
             mainManifest,
-            forKey: "optional_installs",
+            forKey: "optional_uninstalls",
             installInfo: &installInfo
         )
         if stopRequested() {
             return .noUpdatesAvailable
         }
 
-        // build list of optional uninstalls
+        // build list of optional installs
         _ = try await processManifest(
             mainManifest,
-            forKey: "optional_uninstalls",
+            forKey: "optional_installs",
             installInfo: &installInfo
         )
         if stopRequested() {
