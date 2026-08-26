@@ -852,6 +852,7 @@ func processOptionalInstall(
         }
     }
     let optionalKeys = [
+        "action_labels",
         "preinstall_alert",
         "preuninstall_alert",
         "preupgrade_alert",
@@ -938,6 +939,7 @@ func processOptionalUninstall(
         processedItem["note"] = pkgInfoNote
     }
     let optionalKeys = [
+        "action_labels",
         "preuninstall_alert",
         "minimum_os_version",
         "localized_strings",

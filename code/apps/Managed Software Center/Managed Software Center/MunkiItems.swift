@@ -317,6 +317,57 @@ class GenericItem: BaseItem {
                                  comment: "Not Currently Available display text")
     }
     
+    func custom_label(forSubKey sub_key: String) -> String? {
+        // Return the admin-defined label for one action_labels sub-key, or nil
+        // if the pkginfo doesn't supply a usable one. add_localizations() has
+        // already swapped in a translation if the pkginfo provided one for the
+        // user's preferred language.
+        guard let action_labels = my["action_labels"] as? [String: Any],
+              let label = action_labels[sub_key] as? String,
+              !label.isEmpty
+        else {
+            return nil
+        }
+        // the value ends up in our html templates, so escape it like we do
+        // display_name and the other admin-supplied strings
+        return escapeHTML(label)
+    }
+
+    func custom_action_label(forStatus status: String) -> String? {
+        // Return the admin-defined replacement for our built-in action button
+        // text at this status, or nil if there isn't one. Each sub-key is named
+        // for the string it replaces, which is not always the status name.
+        let label_key_for_status = [
+            "not-installed": "install",
+            "installing": "installing",
+            "installed": "remove",
+            "installed-not-removable": "installed",
+            "removing": "removing",
+            "update-available": "update",
+        ]
+        guard let label_key = label_key_for_status[status] else {
+            return nil
+        }
+        return custom_label(forSubKey: label_key)
+    }
+
+    func custom_status_label(forStatus status: String) -> String? {
+        // Same idea, but for the status line rather than the button. Only the
+        // statuses whose status line shows one of our sub-key strings appear
+        // here; "Not installed" and "Update available" are different strings
+        // that no sub-key names, so they are left alone.
+        let label_key_for_status = [
+            "installing": "installing",
+            "installed": "installed",
+            "installed-not-removable": "installed",
+            "removing": "removing",
+        ]
+        guard let label_key = label_key_for_status[status] else {
+            return nil
+        }
+        return custom_label(forSubKey: label_key)
+    }
+
     func status_text() -> String {
         // Return localized status display text
         if my["low_data_deferred"] as? Bool ?? false {
@@ -389,6 +440,9 @@ class GenericItem: BaseItem {
                 NSLocalizedString("Unavailable",
                                   comment: "Unavailable status text")
         ]
+        if let label = custom_status_label(forStatus: status) {
+            return label
+        }
         return text_for[status] ?? status
     }
     
@@ -454,7 +508,7 @@ class GenericItem: BaseItem {
                                   comment: "Unavailable status text")
         ]
         let status = my["status"] as? String ?? ""
-        return text_for[status] ?? status
+        return custom_action_label(forStatus: status) ?? text_for[status] ?? status
     }
     
     func long_action_text() -> String {
@@ -519,7 +573,7 @@ class GenericItem: BaseItem {
                                   comment: "Unavailable long action text")
         ]
         let status = my["status"] as? String ?? ""
-        return text_for[status] ?? status
+        return custom_action_label(forStatus: status) ?? text_for[status] ?? status
     }
     
     func myitem_action_text() -> String {
@@ -577,7 +631,7 @@ class GenericItem: BaseItem {
                                   comment: "Install Required action text"),
         ]
         let status = my["status"] as? String ?? ""
-        return text_for[status] ?? status
+        return custom_action_label(forStatus: status) ?? text_for[status] ?? status
     }
     
     func version_label() -> String {
@@ -689,7 +743,8 @@ class GenericItem: BaseItem {
         let language_code = _get_preferred_locale(available_locales)
         if language_code != fallback_locale {
             if let locale_dict = localized_strings[language_code] as? [String: Any] {
-                let localized_keys = ["category",
+                let localized_keys = ["action_labels",
+                                      "category",
                                       "description",
                                       "display_name",
                                       "preinstall_alert",
