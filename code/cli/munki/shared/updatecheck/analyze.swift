@@ -677,7 +677,7 @@ func processOptionalInstall(
     if alreadyProcessed(
         manifestItemName,
         installInfo: installInfo,
-        sections: ["optional_installs", "processed_installs", "processed_uninstalls"]
+        sections: ["optional_installs", "optional_uninstalls", "processed_installs", "processed_uninstalls"]
     ) {
         return
     }
