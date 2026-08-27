@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/10/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -41,6 +40,7 @@ struct GurlOptions {
     var cacheData: [String: String]?
     var connectionTimeout: Double = 60.0
     var minimumTLSprotocol = tls_protocol_version_t.TLSv10
+    var clientCertificateAcceptableCAs: [String] = []
     var log: (String) -> Void = defaultLogger // logging function
 }
 
@@ -436,7 +436,11 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             completionHandler(.useCredential, credential)
         } else if authenticationMethod == NSURLAuthenticationMethodClientCertificate {
             options.log("Client certificate required")
-            if let credential = getClientCertCredential(protectionSpace: protectionSpace, log: options.log) {
+            if let credential = getClientCertCredential(
+                protectionSpace: protectionSpace,
+                configuredAcceptableCAs: options.clientCertificateAcceptableCAs,
+                log: options.log
+            ) {
                 options.log("Will attempt to authenticate")
                 completionHandler(.useCredential, credential)
             } else {

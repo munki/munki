@@ -106,6 +106,9 @@
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "YIg-jD-AbB"; */
 "YIg-jD-AbB.title" = "Programvara";
 
+/* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "clu-PK-oJu"; */
+"clu-PK-oJu.title" = "Inställningar…";
+
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
 "dRJ-4n-Yzg.title" = "Ångra";
 

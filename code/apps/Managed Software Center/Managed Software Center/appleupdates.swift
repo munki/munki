@@ -3,13 +3,12 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 4/11/20.
-//  Copyright © 2020-2025 The Munki Project. All rights reserved.
+//  Copyright © 2020-2026 The Munki Project. All rights reserved.
 //
 
 import AppKit
 import Foundation
 import OpenDirectory
-
 
 let INSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.installatstartup"
 let CHECKANDINSTALLATSTARTUPFILE = "/Users/Shared/.com.googlecode.munki.checkandinstallatstartup"
@@ -49,13 +48,34 @@ func killSystemPreferencesApp() {
 }
 
 func openSoftwareUpdatePrefsPane() {
-    // kill it first in case it is open with a dialog/sheet
-    //killSystemPreferencesApp() // nope, it reopens to previous pane
+    if let mainWindowController = (NSApp.delegate! as! AppDelegate).mainWindowController,
+       let blurredBackground = mainWindowController.blurredBackground
+    {
+        // lower the level of our blur windows so the Software Update
+        // pane can appear in front
+        blurredBackground.lowerWindowLevels()
+    }
     clearLogoutAndStartupFlagFiles()
     if #available(macOS 13, *) {
-        // open System Settings > General > Software Updates"
-        if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
-            NSWorkspace.shared.open(softwareUpdatePrefsPane)
+        let appleUpdates = getAppleUpdates()
+        let os_vers = OperatingSystemVersion(majorVersion: 26, minorVersion: 0, patchVersion: 0)
+        if ProcessInfo().isOperatingSystemAtLeast(os_vers),
+           appleUpdates.count == 1,
+           let update = appleUpdates.first,
+           (update["productKey"] as? String ?? "").hasPrefix("MSU_UPDATE_"),
+           (update["productKey"] as? String ?? "").hasSuffix("_rsr")
+        {
+            // there's only one update and it's a Rapid Security Response/
+            // Background Security Improvement.
+            // Open a _different_ settings pane. Thanks, Apple!
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.SecurityImprovements-Settings.extension") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+            }
+        } else {
+            // open System Settings > General > Software Updates"
+            if let softwareUpdatePrefsPane = URL(string: "x-apple.systempreferences:com.apple.Software-Update-Settings.extension") {
+                NSWorkspace.shared.open(softwareUpdatePrefsPane)
+            }
         }
     } else {
         // open System Preferences > Software Update pane
@@ -69,16 +89,20 @@ func userMustBeAdminToInstallAppleUpdates() -> Bool {
     // returns a boolean telling if the user must be an admin to install Apple Updates
     let suMustBeAdmin = CFPreferencesCopyAppValue(
         "restrict-software-update-require-admin-to-install" as CFString,
-        "com.apple.SoftwareUpdate" as CFString) as? Bool ?? false
+        "com.apple.SoftwareUpdate" as CFString
+    ) as? Bool ?? false
     let suMustBeAdminIsForced = CFPreferencesAppValueIsForced(
         "restrict-software-update-require-admin-to-install" as CFString,
-        "com.apple.SoftwareUpdate" as CFString)
+        "com.apple.SoftwareUpdate" as CFString
+    )
     let appStoreMustBeAdmin = CFPreferencesCopyAppValue(
         "restrict-store-require-admin-to-install" as CFString,
-        "com.apple.appstore" as CFString ) as? Bool ?? false
+        "com.apple.appstore" as CFString
+    ) as? Bool ?? false
     let appStoreMustBeAdminIsForced = CFPreferencesAppValueIsForced(
         "restrict-store-require-admin-to-install" as CFString,
-        "com.apple.appstore" as CFString)
+        "com.apple.appstore" as CFString
+    )
     return (suMustBeAdmin && suMustBeAdminIsForced) || (appStoreMustBeAdmin && appStoreMustBeAdminIsForced)
 }
 
@@ -92,13 +116,13 @@ func findODgroupRecords(groupname: String, nodename: String = "/Search") throws 
                             queryValues: groupname,
                             returnAttributes: kODAttributeTypeAllAttributes,
                             maximumResults: 0)
-    return (try query.resultsAllowingPartial(false) as! [ODRecord])
+    return try (query.resultsAllowingPartial(false) as! [ODRecord])
 }
 
 func findODgroupRecord(groupname: String, nodename: String = "/Search") -> ODRecord? {
     // Returns first record found for groupname, or nil if not found
     do {
-        let records = try findODgroupRecords(groupname: groupname)
+        let records = try findODgroupRecords(groupname: groupname, nodename: nodename)
         if records.isEmpty {
             return nil
         }

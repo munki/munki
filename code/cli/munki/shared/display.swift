@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/30/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -28,6 +27,17 @@ struct DisplayOptions {
     static var munkistatusoutput = false
 
     private init() {} // prevents assigning an instance to another variable
+}
+
+/// Displays bytes received, for downloads where we don't have an expected filesize
+/// Displayed only at the command-line. No logging or MunkStatus output.
+/// Note that there's no way to know we're done (unlike with percent-done, where 100% is done)
+/// So the terminal cursor will always be left right after the number printed
+func displayBytesReceived(_ bytes: Int) {
+    if DisplayOptions.verbose > 0 {
+        print("\r\tBytes received: \(bytes)", terminator: "")
+        fflush(stdout)
+    }
 }
 
 /// Displays percent-done info, both at the command-line, and via MunkiStatus
@@ -66,8 +76,13 @@ class DisplayAndLog: MunkiLogger {
     // can't override "standard", can't use "default", so...
     static let main = DisplayAndLog(logname: MAIN_LOG_NAME)
 
-    var verbose = DisplayOptions.verbose
-    var munkistatusoutput = DisplayOptions.munkistatusoutput
+    var verbose: Int {
+        DisplayOptions.verbose
+    }
+
+    var munkistatusoutput: Bool {
+        DisplayOptions.munkistatusoutput
+    }
 
     /// Prints error message to stderr and the log
     override func error(_ message: String) {
@@ -81,7 +96,7 @@ class DisplayAndLog: MunkiLogger {
             Report.shared.add(string: errorMsg, to: "Errors")
         }
         // let the superclass handle logging to the main log
-        super.error(errorMsg)
+        super.error(message)
     }
 
     /// Prints warning message to stderr and the log
@@ -96,7 +111,7 @@ class DisplayAndLog: MunkiLogger {
             Report.shared.add(string: warningMsg, to: "Warnings")
         }
         // let the superclass handle logging to the main log
-        super.warning(warningMsg)
+        super.warning(message)
     }
 
     /// Displays major status messages, formatting as needed

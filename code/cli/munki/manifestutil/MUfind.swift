@@ -3,8 +3,7 @@
 //  manifestutil
 //
 //  Created by Greg Neagle on 4/15/25.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -45,7 +44,7 @@ func findTextInManifests(repo: Repo, findText: String, section: String = "") asy
                         }
                     }
                 }
-            } else if let item = manifest[section] as? String {
+            } else if let item = manifest[key] as? String {
                 if item.uppercased().contains(findText.uppercased()) {
                     count += 1
                     if section.isEmpty {

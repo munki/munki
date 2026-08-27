@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 7/11/18.
-//  Copyright © 2018-2025 The Munki Project. All rights reserved.
+//  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -177,6 +177,10 @@ class MSCStatusController: NSObject {
             //statusWindowController.makeUsUnobnoxious()
             statusWindowController.load_page("updates.html")
             statusWindowController.displayUpdateCount()
+        }
+        if let attachedSheet = statusWindowController.window?.attachedSheet {
+            // there's a sheet open; close it
+            statusWindowController.window?.endSheet(attachedSheet, returnCode: .cancel)
         }
     }
     

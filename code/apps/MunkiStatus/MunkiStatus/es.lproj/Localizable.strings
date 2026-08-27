@@ -11,7 +11,7 @@
 "Checking for available updates..." = "Comprobando actualizaciones disponibles...";
 
 /* managedsoftwareupdate message */
-"Determining which filesystem items to remove" = "Determinando que archivos hay que quitar";
+"Determining which filesystem items to remove" = "Determinando qué archivos hay que quitar";
 
 /* managedsoftwareupdate message */
 "Done." = "Hecho.";
@@ -68,13 +68,13 @@
 "Software installed or removed requires a restart." = "El software instalado o desinstalado requiere reiniciar el equipo.";
 
 /* No comment provided by engineer. */
-"Software installed or removed requires a restart. You will have a chance to save open documents." = "El software instalado necesita reiniciar el ordenador. Podrás guardar tus documentos";
+"Software installed or removed requires a restart. You will have a chance to save open documents." = "El software instalado o desinstalado requiere reiniciar el equipo. Tendrás oportunidad de guardar tus documentos.";
 
 /* managedsoftwareupdate message */
 "Starting Adobe installer..." = "Empezando el instalador de Adobe...";
 
 /* managedsoftwareupdate message */
-"Starting macOS upgrade..." = "Comenzando actualización de macOS...";
+"Starting macOS upgrade..." = "Empezando actualización de macOS...";
 
 /* managedsoftwareupdate message */
 "Starting..." = "Empezando...";

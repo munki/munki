@@ -3,8 +3,7 @@
 //  manifestutil
 //
 //  Created by Greg Neagle on 4/13/25.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import Foundation
 
 func connectToRepo() throws -> Repo {
     guard let repoURL = adminPref("repo_url") as? String else {
-        printStderr("No repo URL defined. Run manifestutil config to define one.")
+        printStderr("No repo URL defined. Run manifestutil configure to define one.")
         throw ExitCode(-1)
     }
     var plugin = adminPref("plugin") as? String ?? "FileRepo"

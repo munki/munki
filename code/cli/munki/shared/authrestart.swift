@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 1/3/25.
+//  Copyright 2025-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -20,7 +21,7 @@ import Foundation
 
 /// a Singleton struct to hold shared config values
 struct Authrestart {
-    static var logger = MunkiLogger(logname: "authrestartd")
+    static var logger = MunkiLogger(logname: "authrestartd.log")
     private init() {} // prevents assigning an instance to another variable
 }
 
@@ -132,13 +133,13 @@ func performAuthRestart(
 ) -> Bool {
     Authrestart.logger.debug1("Checking if performing an Auth Restart is fully supported...")
     if !supportsAuthRestart() {
-        Authrestart.logger.debug1("Machine doesn't support Authorized Restarts...")
+        Authrestart.logger.info("Machine doesn't support Authorized Restarts...")
         return false
     }
     Authrestart.logger.debug1("Machine supports Authorized Restarts...")
     let fvPassword = (getAuthRestartKey() ?? password)
     if fvPassword.isEmpty {
-        Authrestart.logger.debug1("No password or recovery key provided...")
+        Authrestart.logger.info("No password or recovery key provided...")
         return false
     }
     var keys = [String: String]()
@@ -200,6 +201,6 @@ func doAuthorizedOrNormalRestart(
         }
     }
     // fall back to normal restart
-    Authrestart.logger.debug1("Performing a regular restart...")
+    Authrestart.logger.info("Performing a regular restart...")
     _ = runCLI("/sbin/shutdown", arguments: ["-r", "now"])
 }

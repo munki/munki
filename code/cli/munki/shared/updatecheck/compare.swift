@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/19/24.
+//  Copyright 2025-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 
@@ -38,11 +50,19 @@ func compareVersions(_ thisVersion: String, _ thatVersion: String) -> MunkiCompa
 }
 
 func compareUsingVersionScript(_ item: PlistDict) async -> MunkiComparisonResult {
+    let itemName = item["name"] as? String ?? "<unknown>"
     let itemVersion = item["version"] as? String ?? "0"
     let results = await runEmbeddedScriptAndReturnResults(name: "version_script", pkginfo: item, suppressError: true)
     if results.exitcode != 0 {
-        // treat an error as .notPresent
-        display.debug1("\tVersion script error \(results.exitcode): \(results.error)")
+        if results.timedOut {
+            // a hung version_script used to wedge managedsoftwareupdate
+            // indefinitely; make sure admins can see it happened without
+            // needing -vv
+            display.warning("\(itemName): \(results.error)")
+        } else {
+            // treat an error as .notPresent
+            display.debug1("\tVersion script error \(results.exitcode): \(results.error)")
+        }
         return .notPresent
     }
     let installedVersion = results.output.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/2/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -52,8 +51,8 @@ func getPkgRestartInfo(_ pkgpath: String) throws -> PlistDict {
 /// is not a string.
 ///
 /// If key is not specified:
-/// if there"s a valid CFBundleShortVersionString, returns that.
-/// else if there"s a CFBundleVersion, returns that
+/// if there's a valid CFBundleShortVersionString, returns that.
+/// else if there's a CFBundleVersion, returns that
 /// else returns an empty string.
 func getVersionString(plist: PlistDict, key: String = "") -> String {
     if !key.isEmpty {
@@ -223,7 +222,7 @@ func getSinglePkgReceipt(_ pkgpath: String) -> PlistDict {
 }
 
 /// Get metadata from a bundle-style package
-func getBundlePackageInfo(_ pkgpath: String) throws -> PlistDict {
+func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
     var receiptarray = [PlistDict]()
     if pkgpath.hasSuffix(".pkg") {
         // try to get info as if this is a single component pkg
@@ -271,7 +270,7 @@ func getBundlePackageInfo(_ pkgpath: String) throws -> PlistDict {
                         receiptarray.append(receipt)
                     }
                 } else if itempath.hasSuffix(".mpkg") {
-                    let info = try getBundlePackageInfo(itempath)
+                    let info = getBundlePackageInfo(itempath)
                     if !info.isEmpty {
                         if let receipts = info["receipts"] as? [PlistDict] {
                             receiptarray += receipts
@@ -284,7 +283,8 @@ func getBundlePackageInfo(_ pkgpath: String) throws -> PlistDict {
     if !receiptarray.isEmpty {
         return ["receipts": receiptarray]
     }
-    throw MunkiError("Could not get receipt info from \(pkgpath)")
+    printStderr("WARNING: Could not get receipt info from \(pkgpath)")
+    return PlistDict()
 }
 
 // MARK: XML file functions (mostly for flat packages)
@@ -295,7 +295,7 @@ func getProductVersionFromDist(_ filepath: String) -> String {
     guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
     guard let products = try? doc.nodes(forXPath: "//product") else { return "" }
     if products.isEmpty { return "" }
-    guard let product = products[0] as? XMLElement else { return "" }
+    guard let product = products.first as? XMLElement else { return "" }
     guard let versionAttr = product.attribute(forName: "version") else { return "" }
     return versionAttr.stringValue ?? ""
 }
@@ -306,9 +306,9 @@ func getMinOSVersFromDist(_ filepath: String) -> String {
     guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
     guard let volumeChecks = try? doc.nodes(forXPath: "//volume-check") else { return "" }
     if volumeChecks.isEmpty { return "" }
-    guard let allowedOSVersions = try? volumeChecks[0].nodes(forXPath: "child::allowed-os-versions") else { return "" }
+    guard let allowedOSVersions = try? volumeChecks.first?.nodes(forXPath: "child::allowed-os-versions") else { return "" }
     if allowedOSVersions.isEmpty { return "" }
-    guard let osVersions = try? allowedOSVersions[0].nodes(forXPath: "child::os-version") else { return "" }
+    guard let osVersions = try? allowedOSVersions.first?.nodes(forXPath: "child::os-version") else { return "" }
     var minOSVersionStrings = [String]()
     for osVersion in osVersions {
         guard let element = osVersion as? XMLElement else { continue }
@@ -345,18 +345,23 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict? {
             if let version = versionAttr.stringValue {
                 pkginfo["version"] = version
             }
-            if let payloads = try? element.nodes(forXPath: "child::payload") {
-                if payloads.isEmpty { continue }
-                guard let payload = payloads[0] as? XMLElement else { continue }
+            if let minOSVersionAttr = element.attribute(forName: "minimumSystemVersion"),
+               let minOSVersion = minOSVersionAttr.stringValue
+            {
+                pkginfo["minimum_os_version"] = minOSVersion
+            }
+            if let payloads = try? element.nodes(forXPath: "child::payload"),
+               let payload = payloads.first as? XMLElement
+            {
                 if let sizeAttr = payload.attribute(forName: "installKBytes") {
                     if let size = sizeAttr.stringValue {
                         pkginfo["installed_size"] = Int(size)
                     }
                 }
+            }
+            if !pkginfo.isEmpty {
                 return pkginfo
             }
-            // no payloads means payload-free pkg that doesn't actually
-            // leave a receipt, so keep looking and eventually fall through
         }
     }
     return nil
@@ -438,12 +443,11 @@ func receiptsFromDistFile(_ filepath: String) -> [PlistDict] {
 // MARK: flat pkg methods
 
 /// Returns info for a flat package, including receipts array
-func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
+func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
     var info = PlistDict()
     var receiptarray = [PlistDict]()
     var productVersion = ""
     var minimumOSVersion = ""
-    var errors = [String]()
 
     // get the absolute path to the pkg because we need to do a chdir later
     let absolutePkgPath = getAbsolutePath(pkgpath)
@@ -467,11 +471,21 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
                     let packageInfoPath = getAbsolutePath(
                         (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
                     if let receipt = receiptFromPackageInfoFile(packageInfoPath) {
-                        receiptarray.append(receipt)
+                        // no installed_size means no payload
+                        // payload-free pkgs don't actually record a receipt
+                        if receipt["installed_size"] != nil {
+                            receiptarray.append(receipt)
+                        }
+                        // record the version
+                        if let version = receipt["version"] as? String {
+                            if MunkiVersion(version) > MunkiVersion(productVersion) {
+                                productVersion = version
+                            }
+                        }
                     }
                 } else {
-                    errors.append(
-                        "An error occurred while extracting \(tocEntry): \(tocResults.error)")
+                    printStderr(
+                        "WARNING: An error occurred while extracting \(tocEntry): \(tocResults.error)")
                 }
             }
         }
@@ -491,17 +505,17 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
                     }
                     break
                 } else {
-                    errors.append(
-                        "An error occurred while extracting \(tocEntry): \(tocResults.error)")
+                    printStderr(
+                        "WARNING: An error occurred while extracting \(tocEntry): \(tocResults.error)")
                 }
             }
         }
 
         if receiptarray.isEmpty {
-            errors.append("No receipts found in Distribution or PackageInfo files within the package.")
+            printStderr("WARNING: No receipts found in Distribution or PackageInfo files within the package.")
         }
     } else {
-        errors.append("An error occurred while getting table of contents for \(pkgpath): \(tocResults.error)")
+        printStderr("WARNING: An error occurred while getting table of contents for \(pkgpath): \(tocResults.error)")
     }
     // change back to original working dir
     filemanager.changeCurrentDirectoryPath(cwd)
@@ -513,24 +527,34 @@ func getFlatPackageInfo(_ pkgpath: String) throws -> PlistDict {
     if !productVersion.isEmpty {
         info["product_version"] = productVersion
     }
+    if minimumOSVersion.isEmpty {
+        // look through receipts for minimum_os_version
+        for receipt in receiptarray {
+            if let minosversion = receipt["minimum_os_version"] as? String {
+                if MunkiVersion(minosversion) > MunkiVersion(minimumOSVersion) {
+                    minimumOSVersion = minosversion
+                }
+            }
+        }
+    }
     if !minimumOSVersion.isEmpty {
         info["minimum_os_version"] = minimumOSVersion
     }
-    if !info.isEmpty {
-        return info
+    if info.isEmpty {
+        printStderr("WARNING: Could not parse any useful info from \(pkgpath)")
     }
-    throw MunkiError("Could not parse info from \(pkgpath):\n\(errors.joined(separator: "\n"))")
+    return info
 }
 
 // MARK: higher-level functions for getting pkg metadata
 
 /// Get some package info (receipts, version, etc) and return as a dict
-func getPackageInfo(_ pkgpath: String) throws -> PlistDict {
+func getPackageInfo(_ pkgpath: String) -> PlistDict {
     guard hasValidPackageExt(pkgpath) else { return PlistDict() }
     if pathIsDirectory(pkgpath) {
-        return try getBundlePackageInfo(pkgpath)
+        return getBundlePackageInfo(pkgpath)
     }
-    return try getFlatPackageInfo(pkgpath)
+    return getFlatPackageInfo(pkgpath)
 }
 
 /// Queries an installer item (.pkg, .mpkg, .dist)
@@ -552,7 +576,7 @@ func getPackageMetaData(_ pkgpath: String) throws -> PlistDict {
         return pkginfo
     }
 
-    pkginfo = try getPackageInfo(pkgpath)
+    pkginfo = getPackageInfo(pkgpath)
     let restartInfo = try getPkgRestartInfo(pkgpath)
     if let restartAction = restartInfo["RestartAction"] as? String {
         pkginfo["RestartAction"] = restartAction

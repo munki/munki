@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/9/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -133,7 +132,7 @@ func getConditions() async -> PlistDict {
                     try? filemanager.removeItem(atPath: conditionalItemsPath)
                     return conditions
                 } else {
-                    // data is in wrong formet
+                    // data is in wrong format
                     display.warning("\(conditionalItemsPath) contents are in an unexpected format.")
                 }
             } catch {

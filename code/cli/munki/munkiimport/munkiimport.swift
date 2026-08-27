@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/12/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -313,13 +312,8 @@ struct MunkiImport: AsyncParsableCommand {
                 }
             }
             // warn if no 'is installed' criteria
-            let installerType = pkginfo["installer_type"] as? String ?? ""
-            if installerType != "startosinstall",
-               !pkginfo.keys.contains("receipts"),
-               !pkginfo.keys.contains("installs")
-            {
-                printStderr("WARNING: There are no receipts and no 'installs' items for this installer item. You should add at least one item to the 'installs' list, or add an installcheck_script.")
-            }
+            warnIfNoValidInstallsCriteria(pkginfo)
+
             // Confirm import post-edit
             print("\nImport this item? [y/N] ", terminator: "")
             if let answer = readLine(),
@@ -430,22 +424,31 @@ struct MunkiImport: AsyncParsableCommand {
         do {
             pkginfoPath = try await copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
             print("Saved pkginfo to \(pkginfoPath).")
-        }
-        // Maybe rebuild the catalogs?
-        if !munkiImportOptions.nointeractive {
-            print("Rebuild catalogs? [y/N] ", terminator: "")
-            if let answer = readLine(),
-               answer.lowercased().hasPrefix("y")
-            {
-                let makecatalogOptions = MakeCatalogOptions()
-                var catalogsmaker = try await CatalogsMaker(repo: repo, options: makecatalogOptions)
-                await catalogsmaker.makecatalogs()
-                if !catalogsmaker.errors.isEmpty {
-                    for error in catalogsmaker.errors {
-                        printStderr(error)
-                    }
+
+            // rebuild catalogs if --rebuild-catalogs was specified
+            if munkiImportOptions.rebuildCatalogs {
+                print("Rebuilding catalogs...")
+                try await performCatalogRebuild(repo: repo)
+            } else if !munkiImportOptions.nointeractive {
+                // rebuild catalogs if interative mode and users responds y/yes
+                print("Rebuild catalogs? [y/N] ", terminator: "")
+                if let answer = readLine(),
+                   answer.lowercased().hasPrefix("y")
+                {
+                    try await performCatalogRebuild(repo: repo)
                 }
             }
+        }
+    }
+}
+
+private func performCatalogRebuild(repo: Repo) async throws {
+    let makecatalogOptions = MakeCatalogOptions()
+    var catalogsmaker = try await CatalogsMaker(repo: repo, options: makecatalogOptions)
+    await catalogsmaker.makecatalogs()
+    if !catalogsmaker.errors.isEmpty {
+        for error in catalogsmaker.errors {
+            printStderr(error)
         }
     }
 }

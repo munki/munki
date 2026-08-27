@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/26/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -37,7 +38,7 @@ func downloadIconsForActiveItems(_ installInfo: PlistDict) {
 /// an install or removal
 /// this could happen if an item is downloaded on one updatecheck run,
 /// but later removed from the manifest before it is installed or removed
-/// -- so the cached itemis no longer needed.
+/// -- so the cached item is no longer needed.
 func cleanUpDownloadCache(_ installInfo: PlistDict) {
     let managedInstalls = installInfo["managed_installs"] as? [PlistDict] ?? []
     let removals = installInfo["removals"] as? [PlistDict] ?? []
@@ -128,7 +129,8 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
             localOnlyManifest[key] = nil
         }
     }
-    for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs"] {
+    for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "default_installs", "featured_items"] {
+        display.info("Processing \(key) in \(localOnlyManifestName)")
         _ = try await processManifest(
             localOnlyManifest,
             forKey: key,
@@ -248,8 +250,10 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
     munkiLog("### Beginning managed software check ###")
     display.majorStatus("Checking for available updates...")
-    munkiStatusPercent(-1)
-    munkiStatusDetail("")
+    if DisplayOptions.munkistatusoutput {
+        munkiStatusPercent(-1)
+        munkiStatusDetail("")
+    }
 
     var success = true
 
@@ -259,9 +263,9 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     } else {
         do {
             mainManifestPath = try getPrimaryManifest(alternateIdentifier: clientID)
-        } catch let err as ManifestError {
+        } catch let err {
             display.error("Could not retrieve managed install primary manifest: \(err.localizedDescription)")
-            throw err
+            return .finishedWithErrors
         }
     }
 
@@ -317,10 +321,12 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
             return .noUpdatesAvailable
         }
 
-        // reset progress indicator and detail field
-        munkiStatusMessage("Checking for additional changes...")
-        munkiStatusPercent(-1)
-        munkiStatusDetail("")
+        if display.munkistatusoutput {
+            // reset progress indicator and detail field
+            munkiStatusMessage("Checking for additional changes...")
+            munkiStatusPercent(-1)
+            munkiStatusDetail("")
+        }
 
         // check managed_uninstalls
         display.detail("**Checking for removals**")
@@ -447,8 +453,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         managedInstalls = nonStartOSInstallItems + startOSInstallItems
         installInfo["managed_installs"] = managedInstalls
 
-        if startOSInstallItems.count > 1 {
-            display.warning("There are multiple startosinstall items in managed_installs. Only the install of the first one will be attempted.")
+        if startOSInstallItems.count > 0 {
+            display.warning("There are startosinstall items in managed_installs. This type of install is no longer supported.")
         }
 
         // record detail before we throw it away...

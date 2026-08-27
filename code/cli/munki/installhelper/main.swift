@@ -3,8 +3,7 @@
 //  installhelper
 //
 //  Created by Greg Neagle on 4/28/25.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -263,10 +262,7 @@ func reloadUserLaunchAgents(group: String) {
         // first, unload active Munki jobs
         var activeAgentLabels = getMunkiLaunchdLabels(uid: uid)
         if group == "appusage" {
-            if activeAgentLabels.contains(APPUSAGE_AGENT) {
-                // only unload APPUSAGE_AGENT
-                activeAgentLabels = [APPUSAGE_AGENT]
-            }
+            activeAgentLabels = activeAgentLabels.filter { $0 == APPUSAGE_AGENT }
         }
         if group == "launchd" {
             // unload everything but APPUSAGE_AGENT
@@ -309,9 +305,10 @@ private func getConsoleUser() -> String {
 
 /// Reload Munki loginwindow agents if needed
 func reloadMunkiLoginwindowLaunchAgents() {
-    if getConsoleUser() != "loginwindow" {
+    let consoleUser = getConsoleUser()
+    if consoleUser != "loginwindow", consoleUser != "" {
         // we're not at the loginwindow, so nothing to do
-        log("Skipping loginwindow launchd reload, we're not at the loginwindow")
+        log("Skipping loginwindow launchd reload, we're not at the loginwindow (current user is \(consoleUser))")
         return
     }
     log("Processing Munki loginwindow launchd jobs...")
@@ -340,10 +337,8 @@ func reloadLaunchDaemons(group: String) {
     // first, unload active Munki jobs
     var activeDaemonLabels = getMunkiLaunchdLabels()
     if group == "appusage" {
-        // we should only unload APPUSAGE_DAEMON if if's active
-        if activeDaemonLabels.contains(APPUSAGE_DAEMON) {
-            activeDaemonLabels = [APPUSAGE_DAEMON]
-        }
+        // we should only unload APPUSAGE_DAEMON if it's active
+        activeDaemonLabels = activeDaemonLabels.filter { $0 == APPUSAGE_DAEMON }
     }
     if group == "launchd" {
         // unload all Munki jobs _except_ APPUSAGE_DAEMON and our installhelper jobs

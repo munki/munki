@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 3/15/25.
-//
-//  Copyright 2025 Greg Neagle.
+//  Copyright 2025-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -121,7 +120,9 @@ func getMunkiClientCertInfo() -> [String: Any] {
     for key in ["SoftwareRepoURL", "PackageURL", "CatalogURL",
                 "ManifestURL", "IconURL", "ClientResourceURL"]
     {
-        if let url = pref(key) as? String {
+        if let url = pref(key) as? String,
+           !url.isEmpty
+        {
             siteUrls.append(url.deletingSuffix("/") + "/")
         }
     }

@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 9/9/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -116,7 +117,7 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
     return updates
 }
 
-/// FIlters out any majorOS upgrades from a list of Apple updates
+/// Filters out any majorOS upgrades from a list of Apple updates
 func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     // There's a couple of strategies we could use here:
     //
@@ -192,8 +193,15 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
             info["version_to_install"] = version
             if let sizeStr = item["Size"] {
                 let size = Int(sizeStr.trimmingCharacters(in: ["K", "i", "B"])) ?? 0
-                info["installer_item_size"] = size
-                info["installed_size"] = size
+                if sizeStr.hasSuffix("KiB") {
+                    // size was KiB, convert to KB
+                    info["installer_item_size"] = Int(Double(size) * 1.024)
+                    info["installed_size"] = Int(Double(size) * 1.024)
+                } else {
+                    // size was KB
+                    info["installer_item_size"] = size
+                    info["installed_size"] = size
+                }
             }
             if let restartAction = item["Action"],
                restartAction == "restart"

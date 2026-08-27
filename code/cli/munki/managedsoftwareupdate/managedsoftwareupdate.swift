@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/24/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -27,7 +26,7 @@ private let display = DisplayAndLog.main
 struct ManagedSoftwareUpdate: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "managedsoftwareupdate",
-        usage: "mangedsoftwareupdate [options]"
+        usage: "managedsoftwareupdate [options]"
     )
 
     @Flag(name: [.long, .customShort("V")],
@@ -118,13 +117,13 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
-    /// Process the options needed when we're triggered vi launchd
+    /// Process the options needed when we're triggered by launchd
     private mutating func processLaunchdOptions() throws {
         if otherOptions.auto {
             // typically invoked by a launch daemon periodically.
             // munkistatusoutput is false for checking, but true for installing
             runtype = "auto"
-            otherOptions.munkistatusoutput = false
+            // otherOptions.munkistatusoutput = false
             // otherOptions.quiet = true  // behavior change here; we're going to print output unless --quiet is explicitly given
             commonOptions.checkOnly = false
             commonOptions.installOnly = false
@@ -276,6 +275,10 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     /// Do our update check against the Munki repo
     private func doMunkiUpdateCheck(skipCheck: Bool) async throws -> UpdateCheckResult? {
         if !skipCheck {
+            if !currentGUIUsers().isEmpty {
+                // MSC.app might be open, so let's send progress info
+                DisplayOptions.munkistatusoutput = true
+            }
             do {
                 let updateCheckResult = try await checkForUpdates(
                     clientID: configOptions.id
@@ -284,8 +287,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 return updateCheckResult
             } catch {
                 display.error("Error during updatecheck: \(error.localizedDescription)")
-                Report.shared.save()
-                throw ExitCode(-1) // TODO: better exit code
+                return .finishedWithErrors
             }
         }
         return nil
@@ -317,7 +319,10 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     /// Does an Apple update check if appropriate
     private func doAppleUpdateCheckIfAppropriate(appleUpdatesOnly: Bool) -> Int {
         if shouldDoAppleUpdates(appleUpdatesOnly: appleUpdatesOnly) {
-            return findAndRecordAvailableAppleUpdates()
+            let filterMajorOSUpdates = !(boolPref("AppleSoftwareUpdatesIncludeMajorOSUpdates") ?? false)
+            return findAndRecordAvailableAppleUpdates(
+                shouldFilterMajorOSUpdates: filterMajorOSUpdates
+            )
         }
         //
         return 0
@@ -379,10 +384,14 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             return
         }
         if commonOptions.installOnly || otherOptions.logoutinstall {
+            DisplayOptions.munkistatusoutput = true
             // admin has triggered install or MSC has triggered install,
             // so just install everything
+            let considerBlockingApps = !(otherOptions.logoutinstall || commonOptions.force)
             restartAction = await doInstallTasks(
-                doAppleUpdates: appleUpdateCount > 0)
+                doAppleUpdates: appleUpdateCount > 0,
+                considerBlockingApps: considerBlockingApps
+            )
             // reset our count of available updates (it might not actually
             // be zero, but we want to clear the badge on the Dock icon;
             // it can be updated to the "real" count on the next Munki run)
@@ -423,8 +432,8 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                 // now install anything that can be done unattended
                 munkiLog("Installing only items marked unattended because SuppressLoginwindowInstall is true.")
                 _ = await doInstallTasks(
-                    doAppleUpdates: appleUpdateCount > 0,
-                    onlyUnattended: true
+                    onlyUnattended: true,
+                    considerBlockingApps: false
                 )
                 return
             }
@@ -439,7 +448,9 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             munkiLog("No GUI users, installing at login window.")
             munkiStatusLaunch()
             restartAction = await doInstallTasks(
-                doAppleUpdates: appleUpdateCount > 0
+                doAppleUpdates: appleUpdateCount > 0,
+                onlyUnattended: false,
+                considerBlockingApps: false
             )
             // reset our count of available updates
             munkiUpdateCount = 0
@@ -457,9 +468,11 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             // don't require a logout
             _ = forceInstallPackageCheck()
             // install anything that can be done unattended
+            DisplayOptions.munkistatusoutput = true
             _ = await doInstallTasks(
                 doAppleUpdates: appleUpdateCount > 0,
-                onlyUnattended: true
+                onlyUnattended: true,
+                considerBlockingApps: true
             )
             // send a notification event so MSC can update its display
             // if needed
@@ -489,7 +502,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
     /// Possibly clear bootstrapping mode
     private func clearBootstrapModeIfAppropriate() {
         // TODO: rethink all this
-        if runtype == "checkandinstallatstatup",
+        if runtype == "checkandinstallatstartup",
            restartAction == .none,
            pathExists(CHECKANDINSTALLATSTARTUPFLAG),
            currentGUIUsers().isEmpty
@@ -545,7 +558,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         if DisplayOptions.verbose > 0 {
             print("Managed Software Update Tool")
             print("Version \(getVersion())")
-            print("Copyright 2010-2025 The Munki Project")
+            print("Copyright 2010-2026 The Munki Project")
             print("https://github.com/munki/munki\n")
         }
         display.majorStatus("Starting...")

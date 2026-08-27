@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 9/2/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -29,7 +30,7 @@ struct MSUCommonOptions: ParsableArguments {
     var checkOnly = false
 
     @Flag(name: .customLong("installonly"),
-          help: "Skip checking and install all pending updates. No safety checks.")
+          help: "Skip checking and install all pending updates. Will skip items with running blocking applications and those that require a logout or restart unless --force is used.")
     var installOnly = false
 
     @Flag(name: .customLong("applesuspkgsonly"),
@@ -39,6 +40,21 @@ struct MSUCommonOptions: ParsableArguments {
     @Flag(name: .customLong("munkipkgsonly"),
           help: "Only check/install Munki packages, skip Apple software updates.")
     var munkiPkgsOnly = false
+
+    @Flag(name: .customLong("force"),
+          help: "Used with --installonly. Installs or remove updates, regardless of running blocking applications or the need for logout or restart.")
+    var force = false
+
+    mutating func validate() throws {
+        if force {
+            if !installOnly {
+                throw ValidationError("--force only valid with --installonly")
+            }
+        }
+        if installOnly, checkOnly {
+            throw ValidationError("--installonly and --checkonly are mutually exclusive")
+        }
+    }
 }
 
 struct MSUConfigOptions: ParsableArguments {
@@ -65,7 +81,7 @@ struct MSUConfigOptions: ParsableArguments {
 
 struct MSUOtherOptions: ParsableArguments {
     @Flag(name: .shortAndLong,
-          help: "Triggers an updatecheck, followed by an install/removal of items that can be done without user interaction. Used by launchd LaunchDaemon for scheduled/background runs. Not tested or supported with any other option. This is a safer option to use than --installonly when using managedsoftwareupdate to install pending updates, since only unattended updates are installed if there is an active user.")
+          help: "Triggers an updatecheck, followed by an install/removal of items that can be done without user interaction. Used by launchd LaunchDaemon for scheduled/background runs. Not tested or supported with any other option.")
     var auto = false
 
     @Flag(name: .shortAndLong,
@@ -84,7 +100,7 @@ struct MSUOtherOptions: ParsableArguments {
     var manualcheck = false
 
     @Flag(name: .shortAndLong,
-          help: "Uses MunkiStatus.app for progress feedback when installing. Not for general use.")
+          help: "Send messages used by Managed Software Center and MunkiStatus.app for progress feedback. Not for general use.")
     var munkistatusoutput = false
 
     @Flag(name: .shortAndLong,

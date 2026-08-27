@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/6/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -83,6 +82,10 @@ struct MakePkgInfo: ParsableCommand {
             hidden: hiddenOptions
         )
 
+        // we somewhat arbitrarily allow calling the tool without
+        // an installerItem for some specific options. This is not
+        // well-documented. The only option for which this behavior is
+        // clear and obvious is --nopkg.
         if installerItem == nil,
            options.installs.file.isEmpty,
            options.type.nopkg == false,
@@ -93,13 +96,17 @@ struct MakePkgInfo: ParsableCommand {
            options.script.postinstallScript == nil,
            options.script.preuninstallScript == nil,
            options.script.postuninstallScript == nil,
-           options.script.uninstallScript == nil
+           options.script.uninstallScript == nil,
+           options.script.versionScript == nil
         {
             throw ValidationError("Can't figure out what to do!")
         }
 
         do {
             let pkginfo = try makepkginfo(installerItem, options: options)
+            if installerItem != nil {
+                warnIfNoValidInstallsCriteria(pkginfo)
+            }
             let plistStr = try plistToString(pkginfo)
             print(plistStr)
         } catch let PlistError.writeError(description) {

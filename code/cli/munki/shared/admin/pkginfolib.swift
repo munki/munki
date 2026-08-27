@@ -1,11 +1,10 @@
 //
 //  pkginfolib.swift
+//  functions used by makepkginfo to create pkginfo files
 //  munki
 //
 //  Created by Greg Neagle on 7/2/24.
-//  functions used by makepkginfo to create pkginfo files
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -74,26 +73,24 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         } else {
             info["type"] = "bundle"
         }
-        if let plist = getBundleInfo(itempath) {
-            for key in ["CFBundleName", "CFBundleIdentifier",
-                        "CFBundleShortVersionString", "CFBundleVersion"]
-            {
-                if let value = plist[key] as? String {
-                    info[key] = value
-                }
+        for key in ["CFBundleName", "CFBundleIdentifier",
+                    "CFBundleShortVersionString", "CFBundleVersion"]
+        {
+            if let value = plist[key] as? String {
+                info[key] = value
             }
-            if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
-                info["minosversion"] = minOSVers
-            } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
-                // get the highest/latest of all the minimum os versions
-                let minOSVersions = minOSVersByArch.values
-                let versions = minOSVersions.map { MunkiVersion($0) }
-                if let maxVersion = versions.max() {
-                    info["minosversion"] = maxVersion.value
-                }
-            } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
-                info["minosversion"] = minSysVers
+        }
+        if let minOSVers = plist["LSMinimumSystemVersion"] as? String {
+            info["minosversion"] = minOSVers
+        } else if let minOSVersByArch = plist["LSMinimumSystemVersionByArchitecture"] as? [String: String] {
+            // get the highest/latest of all the minimum os versions
+            let minOSVersions = minOSVersByArch.values
+            let versions = minOSVersions.map { MunkiVersion($0) }
+            if let maxVersion = versions.max() {
+                info["minosversion"] = maxVersion.value
             }
+        } else if let minSysVers = plist["SystemVersionCheck:MinimumSystemVersion"] as? String {
+            info["minosversion"] = minSysVers
         }
     } else if let plist = try? readPlist(fromFile: itempath) as? PlistDict {
         // we must be a plist
@@ -115,6 +112,8 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
         } else {
             info["version_comparison_key"] = "CFBundleShortVersionString"
         }
+    } else if info["CFBundleVersion"] != nil {
+        info["version_comparison_key"] = "CFBundleVersion"
     }
 
     if !info.keys.contains("CFBundleShortVersionString"), !info.keys.contains("CFBundleVersion") {
@@ -131,6 +130,99 @@ func createInstallsItem(_ itempath: String) -> PlistDict {
     return info
 }
 
+/// Returns names of applications found directly inside a directory
+func applicationsInDirectory(_ dirpath: String) -> [String] {
+    guard let contents = try? FileManager.default.contentsOfDirectory(atPath: dirpath) else {
+        return []
+    }
+    return contents.filter {
+        isApplication((dirpath as NSString).appendingPathComponent($0))
+    }.sorted()
+}
+
+/// Looks for a non-application folder at the root of mountpoint that contains at least one app.
+/// Returns the folder name and the sorted list of app names inside it, or nil if not found.
+func findFolderWithApps(at mountpoint: String) -> (folderName: String, appNames: [String])? {
+    guard let filelist = try? FileManager.default.contentsOfDirectory(atPath: mountpoint) else {
+        return nil
+    }
+    for item in filelist.sorted() {
+        let itempath = (mountpoint as NSString).appendingPathComponent(item)
+        guard pathIsDirectory(itempath), !isApplication(itempath) else { continue }
+        let apps = applicationsInDirectory(itempath)
+        if !apps.isEmpty {
+            return (item, apps)
+        }
+    }
+    return nil
+}
+
+/// Builds pkginfo for a drag-n-drop folder containing one or more applications.
+/// The folder is copied to destinationpath (default /Applications) and each app
+/// inside it becomes an entry in the installs array.
+func createPkgInfoForFolderWithApps(
+    _ mountpoint: String,
+    folderName: String,
+    appNames: [String],
+    options: PkginfoOptions
+) -> PlistDict {
+    var info = PlistDict()
+    let destinationpath = options.dmg.destinationpath ?? "/Applications"
+
+    var destFolderName = folderName
+    var itemsToCopyItem = PlistDict()
+    itemsToCopyItem["source_item"] = folderName
+    itemsToCopyItem["destination_path"] = destinationpath
+    if let destitemname = options.dmg.destitemname {
+        destFolderName = destitemname
+        itemsToCopyItem["destination_item"] = destitemname
+    }
+    if let user = options.dmg.user { itemsToCopyItem["user"] = user }
+    if let group = options.dmg.group { itemsToCopyItem["group"] = group }
+    if let mode = options.dmg.mode { itemsToCopyItem["mode"] = mode }
+
+    let folderInstallPath = (destinationpath as NSString).appendingPathComponent(destFolderName)
+    let folderpath = (mountpoint as NSString).appendingPathComponent(folderName)
+
+    var installsItems = [PlistDict]()
+    var highestVersion = MunkiVersion("0.0.0.0.0")
+    var highestMinOSVersion: MunkiVersion? = nil
+
+    for appName in appNames {
+        let apppath = (folderpath as NSString).appendingPathComponent(appName)
+        var installsItem = createInstallsItem(apppath)
+        if installsItem.isEmpty { continue }
+        installsItem["path"] = (folderInstallPath as NSString).appendingPathComponent(appName)
+        installsItems.append(installsItem)
+
+        let comparisonKey = installsItem["version_comparison_key"] as? String ?? "CFBundleShortVersionString"
+        let appVersion = MunkiVersion(installsItem[comparisonKey] as? String ?? "0.0.0.0.0")
+        if appVersion > highestVersion {
+            highestVersion = appVersion
+        }
+        if let minOSStr = installsItem["minosversion"] as? String {
+            let appMinOS = MunkiVersion(minOSStr)
+            if highestMinOSVersion == nil || appMinOS > highestMinOSVersion! {
+                highestMinOSVersion = appMinOS
+            }
+        }
+    }
+
+    guard !installsItems.isEmpty else { return info }
+
+    info["name"] = (destFolderName as NSString).deletingPathExtension
+    info["version"] = highestVersion.value
+    if let highestMinOSVersion {
+        info["minimum_os_version"] = highestMinOSVersion.value
+    }
+    info["installs"] = installsItems
+    info["installer_type"] = "copy_from_dmg"
+    info["items_to_copy"] = [itemsToCopyItem]
+    info["uninstallable"] = true
+    info["uninstall_method"] = "remove_copied_items"
+    return info
+}
+
 /// Processes a drag-n-drop dmg to build pkginfo
 func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) throws -> PlistDict {
     var info = PlistDict()
@@ -139,8 +231,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     if let item = options.dmg.item {
         dragNDropItem = item
     } else {
-        // no item specified; look for an application at root of
-        // mounted dmg
+        // no item specified; look for an application at root of mounted dmg
         let filemanager = FileManager.default
         if let filelist = try? filemanager.contentsOfDirectory(atPath: mountpoint) {
             for item in filelist {
@@ -152,28 +243,43 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
             }
         }
     }
+
+    // If no app found at root and no item explicitly specified, check for a
+    // folder containing apps (e.g. folder named "Nuke 17.0v2/" with several .app bundles)
+    if dragNDropItem.isEmpty, options.dmg.item == nil {
+        if let (folderName, appNames) = findFolderWithApps(at: mountpoint) {
+            return createPkgInfoForFolderWithApps(
+                mountpoint, folderName: folderName, appNames: appNames, options: options
+            )
+        }
+    }
+
+    // If --item pointed at a folder (not an app), treat it as a folder-with-apps
+    if !dragNDropItem.isEmpty {
+        var mountpointPattern = mountpoint
+        if !mountpointPattern.hasSuffix("/") { mountpointPattern += "/" }
+        var resolvedItem = dragNDropItem
+        if resolvedItem.hasPrefix(mountpointPattern) {
+            // remove mountpoint sequence to make relative path
+            resolvedItem = String(resolvedItem.dropFirst(mountpointPattern.count))
+        }
+        let itempath = (mountpoint as NSString).appendingPathComponent(resolvedItem)
+        if pathIsDirectory(itempath), !isApplication(itempath) {
+            let appNames = applicationsInDirectory(itempath)
+            if !appNames.isEmpty {
+                return createPkgInfoForFolderWithApps(
+                    mountpoint, folderName: resolvedItem, appNames: appNames, options: options
+                )
+            }
+        }
+    }
+
     guard !dragNDropItem.isEmpty else {
         throw MunkiError("No application found on disk image.")
     }
-    // check to see if item is a macOS installer and we can generate a startosinstall item
-    // TODO: remove this or print warning
-    // since it looks like Munki 7 won't support this installer_type
-    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
-    let itemIsInstallMacOSApp = pathIsInstallMacOSApp(itempath)
-    if itemIsInstallMacOSApp,
-       options.type.installerType == .startosinstall
-    {
-        if options.hidden.printWarnings,
-           installMacOSAppIsStub(itempath)
-        {
-            printStderr("WARNING: the provided disk image appears to contain an Install macOS application, but the application does not contain Contents/SharedSupport/InstallESD.dmg or Contents/SharedSupport/SharedSupport.dmg")
-        }
-        return try makeStartOSInstallPkgInfo(
-            mountpoint: mountpoint, item: dragNDropItem
-        )
-    }
 
     // continue as copy_from_dmg item
+    let itempath = (mountpoint as NSString).appendingPathComponent(dragNDropItem)
     installsitem = createInstallsItem(itempath)
 
     if !installsitem.isEmpty {
@@ -234,7 +340,7 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
         info["uninstall_method"] = "remove_copied_items"
 
         // Should we add extra info for a stage_os_installer item?
-        if itemIsInstallMacOSApp,
+        if pathIsInstallMacOSApp(itempath),
            options.type.installerType == nil || options.type.installerType == .stage_os_installer
         {
             let additionalInfo = try makeStageOSInstallerPkgInfo(itempath)
@@ -310,11 +416,12 @@ func createPkgInfoFromDmg(_ dmgpath: String,
 
 /// Attempt to read a file with the same name as the input string and return its text,
 /// otherwise return the input string
-func readFileOrString(_ fileNameOrString: String) -> String {
-    if !pathExists(fileNameOrString) {
+func readFileOrString(_ fileNameOrString: String) throws -> String {
+    let expandedPath = (fileNameOrString as NSString).expandingTildeInPath
+    if !pathExists(expandedPath) {
         return fileNameOrString
     }
-    return (try? String(contentsOfFile: fileNameOrString, encoding: .utf8)) ?? fileNameOrString
+    return try fileContents(fileNameOrString)
 }
 
 /// If path appears to be inside the repo's pkgs directory, return a path relative to the pkgs dir
@@ -357,6 +464,16 @@ func getMinimumOSVersionFromInstallsApps(_ pkginfo: PlistDict) -> String? {
         minimumOSVersions.append(MunkiVersion(pkgInfoMinimumOSVersion))
     }
     return minimumOSVersions.max()?.value
+}
+
+/// return contents of file at path, expanding tilde as needed
+func fileContents(_ path: String) throws -> String {
+    let expandedPath = (path as NSString).expandingTildeInPath
+    do {
+        return try String(contentsOfFile: expandedPath, encoding: .utf8)
+    } catch {
+        throw MunkiError("Failed to read file \(expandedPath): \(error)")
+    }
 }
 
 /// Return a pkginfo dictionary for installeritem
@@ -448,7 +565,7 @@ func makepkginfo(_ filepath: String?,
         pkginfo["catalogs"] = options.other.catalog
     }
     if let description = options.override.description {
-        pkginfo["description"] = readFileOrString(description)
+        pkginfo["description"] = try readFileOrString(description)
     }
     if let displayname = options.override.displayname {
         pkginfo["display_name"] = displayname
@@ -494,46 +611,30 @@ func makepkginfo(_ filepath: String?,
     // add pkginfo scripts if specified
     // TODO: verify scripts start with a shebang line?
     if let installcheckScript = options.script.installcheckScript {
-        if let scriptText = try? String(contentsOfFile: installcheckScript, encoding: .utf8) {
-            pkginfo["installcheck_script"] = scriptText
-        }
+        pkginfo["installcheck_script"] = try fileContents(installcheckScript)
     }
     if let uninstallcheckScript = options.script.uninstallcheckScript {
-        if let scriptText = try? String(contentsOfFile: uninstallcheckScript, encoding: .utf8) {
-            pkginfo["uninstallcheck_script"] = scriptText
-        }
+        pkginfo["uninstallcheck_script"] = try fileContents(uninstallcheckScript)
     }
     if let postinstallScript = options.script.postinstallScript {
-        if let scriptText = try? String(contentsOfFile: postinstallScript, encoding: .utf8) {
-            pkginfo["postinstall_script"] = scriptText
-        }
+        pkginfo["postinstall_script"] = try fileContents(postinstallScript)
     }
     if let preinstallScript = options.script.preinstallScript {
-        if let scriptText = try? String(contentsOfFile: preinstallScript, encoding: .utf8) {
-            pkginfo["preinstall_script"] = scriptText
-        }
+        pkginfo["preinstall_script"] = try fileContents(preinstallScript)
     }
     if let postuninstallScript = options.script.postuninstallScript {
-        if let scriptText = try? String(contentsOfFile: postuninstallScript, encoding: .utf8) {
-            pkginfo["postuninstall_script"] = scriptText
-        }
+        pkginfo["postuninstall_script"] = try fileContents(postuninstallScript)
     }
     if let preuninstallScript = options.script.preuninstallScript {
-        if let scriptText = try? String(contentsOfFile: preuninstallScript, encoding: .utf8) {
-            pkginfo["preuninstall_script"] = scriptText
-        }
+        pkginfo["preuninstall_script"] = try fileContents(preuninstallScript)
     }
     if let uninstallScript = options.script.uninstallScript {
-        if let scriptText = try? String(contentsOfFile: uninstallScript, encoding: .utf8) {
-            pkginfo["uninstall_script"] = scriptText
-            pkginfo["uninstall_method"] = "uninstall_script"
-            pkginfo["uninstallable"] = true
-        }
+        pkginfo["uninstall_script"] = try fileContents(uninstallScript)
+        pkginfo["uninstall_method"] = "uninstall_script"
+        pkginfo["uninstallable"] = true
     }
     if let versionScript = options.script.versionScript {
-        if let scriptText = try? String(contentsOfFile: versionScript, encoding: .utf8) {
-            pkginfo["version_script"] = scriptText
-        }
+        pkginfo["version_script"] = try fileContents(versionScript)
     }
     // more options and pkginfo bits
     if !installeritem.isEmpty || options.type.nopkg {
@@ -588,8 +689,33 @@ func makepkginfo(_ filepath: String?,
         pkginfo["installer_environment"] = options.pkg.installerEnvironmentDict
     }
     if let notes = options.other.notes {
-        pkginfo["notes"] = readFileOrString(notes)
+        pkginfo["notes"] = try readFileOrString(notes)
     }
 
     return pkginfo
+}
+
+/// prints a warning to stdout if the pkginfo lack info needed to determine if an item is installed
+func warnIfNoValidInstallsCriteria(_ pkginfo: PlistDict) {
+    if pkginfo["OnDemand"] as? Bool == true ||
+        !(pkginfo["installcheck_script"] as? String ?? "").isEmpty ||
+        !(pkginfo["version_script"] as? String ?? "").isEmpty ||
+        !(pkginfo["installs"] as? [PlistDict] ?? []).isEmpty ||
+        !(pkginfo["receipts"] as? [PlistDict] ?? []).isEmpty
+    {
+        return
+    }
+    let name = pkginfo["name"] as? String ?? "UNKNOWN"
+    printStderr(
+        """
+
+        WARNING: pkginfo for \(name) contains no installation check info!
+            No useful receipts were detected, and no 'installs' items were provided.
+            If you do not add an 'installs' item, a version_script, or an installcheck_script,
+            Munki will have no way to determine the item's installation state.
+            This can result in repeated installation attempts or failure to
+            attempt installation at all.
+
+        """
+    )
 }

@@ -236,7 +236,10 @@ struct PackageInfoFileTests {
         let unwrappedPkginfoPath = try #require(
             pkginfoPath, "Failed to create temporary pkgInfo file"
         )
-        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
         #expect((receipt["packageid"] as? String ?? "") == "com.googlecode.munki.core")
     }
 
@@ -244,7 +247,10 @@ struct PackageInfoFileTests {
         let unwrappedPkginfoPath = try #require(
             pkginfoPath, "Failed to create temporary pkgInfo file"
         )
-        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
         #expect((receipt["version"] as? String ?? "") == "7.0.0.5096")
     }
 
@@ -252,8 +258,48 @@ struct PackageInfoFileTests {
         let unwrappedPkginfoPath = try #require(
             pkginfoPath, "Failed to create temporary pkgInfo file"
         )
-        let receipt = receiptFromPackageInfoFile(unwrappedPkginfoPath)
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
         #expect((receipt["installed_size"] as? Int ?? 0) == 39393)
+    }
+}
+
+struct PayloadFreePackageInfoFileTests {
+    let pkginfo = """
+    <?xml version="1.0" encoding="utf-8"?>
+    <pkg-info postinstall-action="none" preserve-xattr="false" format-version="2" identifier="com.github.munki.pkg.payload-free-pkg-test" version="1.0.1" generator-version="InstallCmds-864 (25D125)" auth="root">
+        <bundle-version/>
+        <upgrade-bundle/>
+        <update-bundle/>
+        <atomic-update-bundle/>
+        <strict-identifier/>
+        <relocate/>
+        <scripts>
+            <postinstall file="./postinstall" timeout="600"/>
+        </scripts>
+    </pkg-info>
+    """
+    var pkginfoPath: String?
+    init() throws {
+        if let filepath = tempFile() {
+            let data = pkginfo.data(using: .utf8)
+            if FileManager.default.createFile(atPath: filepath, contents: data) {
+                pkginfoPath = filepath
+            }
+        }
+    }
+
+    @Test func receiptFromPackageInfoFileGetsExpectedVersion() throws {
+        let unwrappedPkginfoPath = try #require(
+            pkginfoPath, "Failed to create temporary pkgInfo file"
+        )
+        let receipt = try #require(
+            receiptFromPackageInfoFile(unwrappedPkginfoPath),
+            "Could not get receipt from pkginfo"
+        )
+        #expect((receipt["version"] as? String ?? "") == "1.0.1")
     }
 }
 

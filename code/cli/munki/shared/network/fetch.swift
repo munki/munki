@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/13/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 
@@ -131,9 +143,9 @@ func headerDictFromList(_ strList: [String]?) -> [String: String] {
     if let strList {
         for item in strList {
             if item.contains(":") {
-                let parts = item.components(separatedBy: ":")
+                let parts = item.split(separator: ":", maxSplits: 1)
                 if parts.count == 2 {
-                    headerDict[parts[0]] = parts[1].trimmingCharacters(in: .whitespaces)
+                    headerDict[String(parts[0])] = String(parts[1]).trimmingCharacters(in: .whitespaces)
                 }
             }
         }
@@ -218,6 +230,7 @@ func getURL(
     }
 
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
+    let clientCertificateAcceptableCAs = pref("ClientCertificateAcceptableCAs") as? [String] ?? []
 
     let options = GurlOptions(
         url: request.url,
@@ -228,6 +241,7 @@ func getURL(
         canResume: resume,
         downloadOnlyIfChanged: onlyIfNewer,
         cacheData: cacheData,
+        clientCertificateAcceptableCAs: clientCertificateAcceptableCAs,
         log: DisplayAndLog.main.debug2
     )
 
@@ -257,9 +271,14 @@ func getURL(
         } else if session.bytesReceived != storedBytesReceived {
             // if we don't have percent done info, log bytes received
             storedBytesReceived = session.bytesReceived
-            display.detail("Bytes received: \(storedBytesReceived)")
+            displayBytesReceived(storedBytesReceived)
         }
         if done {
+            if storedBytesReceived > 0, DisplayOptions.verbose > 0 {
+                // displayBytesReceived leaves the cursor at the end of the line
+                // so just print a newline
+                print()
+            }
             break
         }
     }
@@ -336,51 +355,84 @@ func getHTTPfileIfChangedAtomically(
     resume: Bool = false,
     followRedirects: String = "none",
 ) throws -> Bool {
-    var eTag = ""
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
-        getOnlyIfNewer = true
-        // see if we have an etag attribute
+        // see if we have a stored etag or last-modified header
         do {
             let data = try getXattr(named: GURL_XATTR, atPath: destinationPath)
             if let headers = try readPlist(fromData: data) as? [String: String] {
-                eTag = headers["etag"] ?? ""
+                // We can use onlyIfNewer if we have either etag or last-modified
+                if headers["etag"] != nil || headers["last-modified"] != nil {
+                    getOnlyIfNewer = true
+                }
             }
         } catch {
-            // fall through
-        }
-        if eTag.isEmpty {
-            getOnlyIfNewer = false
+            // fall through - no cached headers
         }
     }
-    var headers: [String: String]
-    do {
-        headers = try getURL(
-            url,
-            destinationPath: destinationPath,
-            customHeaders: customHeaders,
-            message: message,
-            onlyIfNewer: getOnlyIfNewer,
-            resume: resume,
-            followRedirects: followRedirects
-        )
-    } catch let err as FetchError {
-        switch err {
-        case .connection:
-            // just rethrow it
-            throw err
-        case let .http(errorCode, description):
-            // rethrow as download error
-            throw FetchError.download(errorCode: errorCode, description: description)
-        case let .fileSystem(description):
-            // rethrow as download error
-            throw FetchError.download(errorCode: -1, description: description)
-        default:
-            // these can't actually happen, but makes compiler happy
-            throw err
+
+    var numTries = 1
+    if let downloadRetriesPref = pref("DownloadRetries") as? Int {
+        if downloadRetriesPref >= 1, downloadRetriesPref <= 10 {
+            numTries = downloadRetriesPref + 1
+        } else if downloadRetriesPref != 0 {
+            DisplayAndLog.main.warning("Ignoring invalid DownloadRetries pref: \(downloadRetriesPref)")
         }
-    } catch {
-        throw FetchError.download(errorCode: -1, description: error.localizedDescription)
+    }
+    var retrySleepSeconds: UInt32 = 10
+    if let retrySleepSecondsPref = pref("DownloadRetrySleepSeconds") as? Int {
+        if retrySleepSecondsPref >= 1, retrySleepSecondsPref <= 30 {
+            retrySleepSeconds = UInt32(retrySleepSecondsPref)
+        } else {
+            DisplayAndLog.main.warning("Ignoring invalid DownloadRetrySleepSeconds pref: \(retrySleepSecondsPref)")
+        }
+    }
+    var triesLeft = numTries
+    // Retry on these HTTP error codes, fail immediately on all other
+    let retryHTTPCodes = [408, 425, 429, 500, 502, 503, 504]
+    var headers: [String: String]
+    while true {
+        if triesLeft != numTries {
+            sleep(retrySleepSeconds)
+        }
+        triesLeft -= 1
+        do {
+            headers = try getURL(
+                url,
+                destinationPath: destinationPath,
+                customHeaders: customHeaders,
+                message: message,
+                onlyIfNewer: getOnlyIfNewer,
+                resume: resume,
+                followRedirects: followRedirects
+            )
+            break
+        } catch let err as FetchError {
+            switch err {
+            case .connection:
+                if triesLeft > 0 {
+                    DisplayAndLog.main.info("Retrying connection error: \(err.localizedDescription)")
+                    continue
+                }
+                // just rethrow it
+                throw err
+            case let .http(errorCode, description):
+                if triesLeft > 0, retryHTTPCodes.contains(errorCode) {
+                    DisplayAndLog.main.info("Retrying HTTP error \(errorCode): \(description)")
+                    continue
+                }
+                // rethrow as download error
+                throw FetchError.download(errorCode: errorCode, description: description)
+            case let .fileSystem(description):
+                // rethrow as download error
+                throw FetchError.download(errorCode: -1, description: description)
+            default:
+                // these can't actually happen, but makes compiler happy
+                throw err
+            }
+        } catch {
+            throw FetchError.download(errorCode: -1, description: error.localizedDescription)
+        }
     }
 
     if (headers["http_result_code"] ?? "") == "304" {
@@ -507,7 +559,7 @@ func getResourceIfChangedAtomically(
             let data = try getXattr(named: XATTR_SHA, atPath: destinationPath)
             xattrHash = String(data: data, encoding: .utf8)
         } catch {
-            // no hahs stored in xattrs, so generate one and store it
+            // no hash stored in xattrs, so generate one and store it
             xattrHash = storeCachedChecksum(toPath: destinationPath)
         }
         if let xattrHash, xattrHash == expectedHash {

@@ -2,7 +2,7 @@
 
    File: MSCDockTilePlugIn.h
  
-   Copyright 2015-2025 Greg Neagle.
+   Copyright © 2015-2026 The Munki Project
    Liberally adapted from Apple sample code:
    https://developer.apple.com/library/mac/samplecode/DockTile/Listings/DockTilePlugIn_DockTilePlugIn_h.html
  

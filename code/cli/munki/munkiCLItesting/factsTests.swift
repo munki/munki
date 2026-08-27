@@ -174,4 +174,23 @@ struct applicationDataTesting {
             infoObject: info
         ) == false)
     }
+
+    /// Make sure an invalid predicate doesn't trigger a crash
+    @Test func invalidPredicateDoesntCauseCrash() {
+        #expect(predicateEvaluatesAsTrue(
+            "FOO bar.baz ^& 'banana'",
+            infoObject: PlistDict()
+        ) == false)
+        // let result = objCpredicateEvaluatesAsTrue(predicateString, ourObject, &err)
+    }
+
+    /// Test that an invalid predicate returns the expected error
+    @Test func invalidPredicateReturnsObjErr() {
+        let predicateString = "FOO bar.baz ^& 'banana'"
+        let infoObject = PlistDict()
+        var err: NSError?
+        let result = objCpredicateEvaluatesAsTrue(predicateString, infoObject, &err)
+        #expect(result == -1)
+        #expect(err != nil)
+    }
 }

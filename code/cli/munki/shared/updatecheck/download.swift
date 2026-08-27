@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/15/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 
@@ -207,10 +219,14 @@ func downloadIcons(_ itemList: [PlistDict]) {
     var iconsToKeep = [String]()
     let iconsDir = managedInstallsDir(subpath: "icons")
     let iconHashes = getIconHashes()
+    let supportedIconExtensions = ["bmp", "gif", "icns", "jpg", "jpeg", "png", "psd", "tga", "tif", "tiff", "yuv"]
 
     for item in itemList {
-        var iconName = item["icon_name"] as? String ?? item["name"] as? String ?? "<unknown>"
-        if (iconName as NSString).pathExtension.isEmpty {
+        var iconName = item.getString(
+            for: "icon_name",
+            fallback: item.getString(for: "name", fallback: "<unknown>")
+        )
+        if !supportedIconExtensions.contains((iconName as NSString).pathExtension) {
             iconName += ".png"
         }
         iconsToKeep.append(iconName)
@@ -246,7 +262,10 @@ func downloadIcons(_ itemList: [PlistDict]) {
                 // download this icon
                 continue
             }
-            let itemName = item["display_name"] as? String ?? item["name"] as? String ?? "<unknown>"
+            let itemName = item.getString(
+                for: "display_name",
+                fallback: item.getString(for: "name", fallback: "<unknown>")
+            )
             do {
                 _ = try fetchMunkiResource(
                     kind: .icon,

@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/7/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -35,11 +34,10 @@ func stopRequested() -> Bool {
     if StopRequested.shared.stopRequested {
         return true
     }
-    let stopRequestFlag = "/private/tmp/com.googlecode.munki.managedsoftwareupdate.stop_requested"
-    if pathExists(stopRequestFlag) {
+    if pathExists(STOPREQUESTEDFLAG) {
         StopRequested.shared.stopRequested = true
         DisplayAndLog.main.info("### User stopped session ###")
-        try? FileManager.default.removeItem(atPath: stopRequestFlag)
+        try? FileManager.default.removeItem(atPath: STOPREQUESTEDFLAG)
         return true
     }
     return false

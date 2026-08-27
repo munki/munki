@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/25/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -50,6 +49,12 @@ let DEFAULT_PREFS: [String: Any] = [
     "LoggingLevel": 1,
     "LogToSyslog": false,
     "ManagedInstallDir": DEFAULT_MANAGED_INSTALLS_DIR,
+    "MSCAllowNotificationWindow": false,
+    "MSCAllowedNotificationWindowStart": 0,
+    "MSCAllowedNotificationWindowEnd": 24,
+    "MSCOfferToForceQuitBlockingApps": false,
+    "MSCOfferToQuitBlockingApps": false,
+    "MSCOfferToUpdateOthers": false,
     // "ManifestURL": None,
     // "PackageURL": None,
     "PackageVerificationMode": "hash",
@@ -78,13 +83,16 @@ let CONFIG_KEY_NAMES = [
     "AppleSoftwareUpdatesIncludeMajorOSUpdates",
     "AppleSoftwareUpdatesOnly",
     "CatalogURL",
+    "ClientCertificateAcceptableCAs",
     "ClientCertificatePath",
     "ClientIdentifier",
     "ClientKeyPath",
     "ClientResourcesFilename",
     "ClientResourceURL",
     "DaysBetweenNotifications",
-    "EmulateProfileSupport",
+    "DownloadRetries",
+    "DownloadRetrySleepSeconds",
+    // "EmulateProfileSupport", // since we don't support this any longer, no need to report its value
     "FollowHTTPRedirects",
     "HelpURL",
     "IconURL",
@@ -98,6 +106,12 @@ let CONFIG_KEY_NAMES = [
     "LogToSyslog",
     "ManagedInstallDir",
     "ManifestURL",
+    "MSCAllowNotificationWindow",
+    "MSCAllowedNotificationWindowStart",
+    "MSCAllowedNotificationWindowEnd",
+    "MSCOfferToForceQuitBlockingApps",
+    "MSCOfferToQuitBlockingApps",
+    "MSCOfferToUpdateOthers",
     "PackageURL",
     "PackageVerificationMode",
     "PerformAuthRestarts",
@@ -111,7 +125,7 @@ let CONFIG_KEY_NAMES = [
     "SuppressLoginwindowInstall",
     "SuppressStopButtonOnInstall",
     "SuppressUserNotification",
-    "UnattendedAppleUpdates",
+    // "UnattendedAppleUpdates", // since we don't support this any longer, no need to report its value
     "UseClientCertificate",
     "UseClientCertificateCNAsClientIdentifier",
     "UseNotificationCenterDays",

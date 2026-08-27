@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/27/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -69,10 +70,24 @@ func runMunkiDirScript(_ scriptPath: String, taskName: String, runType: String) 
             display.info("\(scriptPath) return code: \(result.exitcode)")
         }
         if !result.output.isEmpty {
-            display.info("\(scriptPath) stdout: \(result.output)")
+            display.info("\(scriptPath) stdout:")
+            let lines = result.output.trailingNewlineTrimmed.split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            ).map(String.init)
+            for line in lines {
+                display.info("    \(line)")
+            }
         }
         if !result.error.isEmpty {
-            display.info("\(scriptPath) stderr: \(result.error)")
+            display.info("\(scriptPath) stderr:")
+            let lines = result.error.trailingNewlineTrimmed.split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            ).map(String.init)
+            for line in lines {
+                display.info("    \(line)")
+            }
         }
         return result.exitcode
     } catch ExternalScriptError.notFound {
@@ -193,15 +208,102 @@ func activeDisplaySleepAssertion() -> Bool {
     return false
 }
 
+/// Returns notification preferences for the user
+func getUserNotificationPreferences(_ consoleUser: String) -> PlistDict {
+    var userPrefs = PlistDict()
+
+    // we're going to read directly from the user's prefs file right now
+    // because using CFPreferencesCopyValue seems to get old/cached values
+    // but this means we can't use MCX/configuration profiles to
+    // manage these values
+    if let userHome = NSHomeDirectoryForUser(consoleUser),
+       let plist = try? readPlist(fromFile: "\(userHome)/Library/Preferences/\(MSC_BUNDLE_ID).plist"),
+       let prefs = plist as? PlistDict
+    {
+        for key in ["UseNotificationTimes", "NotificationHours"] {
+            userPrefs[key] = prefs[key]
+        }
+        return userPrefs
+    }
+    // keeping the CFPreferences implementation here as a backup
+    // and reference
+
+    // make sure we have the latest prefs and not a stale cache
+    CFPreferencesAppSynchronize(MSC_BUNDLE_ID as CFString)
+    CFPreferencesSynchronize(
+        MSC_BUNDLE_ID as CFString,
+        consoleUser as CFString,
+        kCFPreferencesAnyHost
+    )
+
+    for key in ["UseNotificationTimes", "NotificationHours"] {
+        let value = CFPreferencesCopyValue(
+            key as CFString,
+            MSC_BUNDLE_ID as CFString,
+            consoleUser as CFString,
+            kCFPreferencesAnyHost
+        )
+        userPrefs[key] = value
+    }
+    return userPrefs
+}
+
+/// is the given hour within the start and end range (handles ranges that cross midnight)
+func hourWithinRange(_ hour: Int, start: Int, end: Int) -> Bool {
+    if start < end {
+        return hour >= start && hour < end
+    }
+    return hour >= start || hour < end
+}
+
+/// If the user is allowed to specify a notification window, and they have done so, and are we within that window?
+func inUserNotificationWindow(_ consoleUser: String) -> Bool {
+    if !(boolPref("MSCAllowNotificationWindow") ?? false) {
+        // user not allowed to specify a notification window
+        munkiLog("MSCAllowNotificationWindow is not enabled")
+        return true
+    }
+    let userPrefs = getUserNotificationPreferences(consoleUser)
+    // useNotificationTimes must be true,
+    // NotificationHours must be an array of Int
+    guard let useNotificationTimes = userPrefs["UseNotificationTimes"] as? Bool,
+          useNotificationTimes,
+          let notificationHours = userPrefs["NotificationHours"] as? [Int]
+    else {
+        munkiLog("User has not specified allowed notification hours")
+        return true
+    }
+    var allowedStart = intPref("MSCAllowedNotificationWindowStart") ?? 0
+    allowedStart = min(max(allowedStart, 0), 23)
+    var allowedEnd = intPref("MSCAllowedNotificationWindowEnd") ?? 24
+    allowedEnd = min(max(allowedEnd, 0), 24)
+    // now ensure we have at least one hour within the allowedStart and allowedEnd
+    let validHours = notificationHours.filter {
+        hourWithinRange($0, start: allowedStart, end: allowedEnd)
+    }
+    if validHours.isEmpty {
+        // user did not select any allowed hours, so feel free to notify whenever
+        munkiLog("User has specified invalid allowed notification hours, ignoring")
+        return true
+    }
+    let currentHour = Calendar.current.component(.hour, from: Date())
+    munkiLog("User \(consoleUser) specified allowed notification hours: \(validHours); current hour is \(currentHour)")
+    if validHours.contains(currentHour) {
+        return true
+    }
+    return false
+}
+
 /// Notify the logged-in user of available updates.
 ///
 /// Args:
 ///     force: bool, default false, forcefully notify user regardless
 ///     of LastNotifiedDate.
 func notifyUserOfUpdates(force: Bool = false) {
-    if getConsoleUser() == "loginwindow" {
+    let consoleUser = getConsoleUser()
+    if consoleUser == "loginwindow" || consoleUser.isEmpty {
         // someone is logged in, but we're sitting at the loginwindow
-        // due to to fast user switching so do nothing
+        // due to fast user switching so do nothing
         munkiLog("Skipping user notification because we are at the loginwindow.")
         return
     } else if boolPref("SuppressUserNotification") ?? false {
@@ -229,13 +331,20 @@ func notifyUserOfUpdates(force: Bool = false) {
         if !force, activeDisplaySleepAssertion() {
             // user may be in a virtual meeting or presenting.
             // Skip the notification; hopefully we'll be able to notify later.
-            munkiLog("Skipping user notification.")
+            munkiLog("Skipping user notification because there is an active display sleep assertion.")
+            munkiLog("This may indicate the user is presenting or in a virtual meeting.")
             return
         }
+        if !force, !inUserNotificationWindow(consoleUser) {
+            // user has specified an allowed notification window and we're outside it
+            munkiLog("Skipping user notification because the current time is outside the allowed notification window.")
+            return
+        }
+        // we can notify the user!
         // record current notification date
         setPref("LastNotifiedDate", now)
         munkiLog("Notifying user of available updates.")
-        munkiLog("LastNotifiedDate was \(lastNotifiedDate)")
+        munkiLog("LastNotifiedDate was \(RFC3339String(for: lastNotifiedDate))")
         // trigger LaunchAgent to launch munki-notifier.app in the right context
         let launchfile = "/var/run/com.googlecode.munki.munki-notifier"
         FileManager.default.createFile(atPath: launchfile, contents: nil)
@@ -243,6 +352,9 @@ func notifyUserOfUpdates(force: Bool = false) {
         // clear the trigger file. We have to do it because we're root,
         // and the munki-notifier process is running as the user
         try? FileManager.default.removeItem(atPath: launchfile)
+    } else {
+        munkiLog("Skipping user notification")
+        munkiLog("Last notification was \(RFC3339String(for: lastNotifiedDate)) and notification interval is \(daysBetweenNotifications) day(s).")
     }
 }
 
@@ -321,27 +433,28 @@ func doRestart(shutdown: Bool = false) {
 /// Args:
 ///    doAppleUpdates: Bool. If true, install Apple updates
 ///    onlyUnattended:  Bool. If true, only do unattended_(un)install items.
+///    considerBlockingApps: Bool. If true, consider blocking applications
 ///
 /// Returns:
 ///    PostAction - one of .none, .logout, .restart, .shutdown
-func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) async -> PostAction {
-    if !onlyUnattended {
-        // first, clear the last notified date so we can get notified of new
-        // changes after this round of installs
-        clearLastNotifiedDate()
-    }
-
+func doInstallTasks(
+    doAppleUpdates: Bool = false,
+    onlyUnattended: Bool = false,
+    considerBlockingApps: Bool = true
+) async -> PostAction {
     var munkiItemsRestartAction = PostAction.none
-    var appleItemsRestartAction = PostAction.none
 
     if munkiUpdatesAvailable() > 0 {
         // install Munki updates
-        munkiItemsRestartAction = await doInstallsAndRemovals(onlyUnattended: onlyUnattended)
+        munkiItemsRestartAction = await doInstallsAndRemovals(
+            onlyUnattended: onlyUnattended,
+            considerBlockingApps: considerBlockingApps
+        )
         if !onlyUnattended {
             if munkiUpdatesContainItemWithInstallerType("startosinstall") {
                 Report.shared.save()
                 // install macOS
-                // TODO: implement this (install macOS via startOSInstall)
+                // TODO: implement this (install macOS via startOSInstall) (will likely never implement)
             }
         }
     }
@@ -353,7 +466,7 @@ func doInstallTasks(doAppleUpdates: Bool = false, onlyUnattended: Bool = false) 
 
     Report.shared.save()
 
-    return max(appleItemsRestartAction, munkiItemsRestartAction)
+    return munkiItemsRestartAction
 }
 
 /// Handle the need for a forced logout. Start our logouthelper

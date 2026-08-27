@@ -106,6 +106,9 @@
 /* Class = "NSMenuItem"; title = "Software"; ObjectID = "YIg-jD-AbB"; */
 "YIg-jD-AbB.title" = "Aplicaciones";
 
+/* Class = "NSMenuItem"; title = "Preferences…"; ObjectID = "clu-PK-oJu"; */
+"clu-PK-oJu.title" = "Preferencias…";
+
 /* Class = "NSMenuItem"; title = "Undo"; ObjectID = "dRJ-4n-Yzg"; */
 "dRJ-4n-Yzg.title" = "Deshacer";
 
@@ -128,7 +131,7 @@
 "hz9-B4-Xy5.title" = "Servicios";
 
 /* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "iem-kB-sic"; */
-"iem-kB-sic.title" = "Password:";
+"iem-kB-sic.title" = "Contraseña:";
 
 /* Class = "NSMenuItem"; title = "Forward"; ObjectID = "nIf-zM-816"; */
 "nIf-zM-816.title" = "Siguiente";

@@ -3,8 +3,7 @@
 //  manifestutil
 //
 //  Created by Greg Neagle on 4/15/25.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -219,7 +218,7 @@ func tabCompleter(_ text: UnsafePointer<CChar>?, _ state: Int32) -> UnsafeMutabl
 /// Sets up readline to use our tab completion function
 func setupTabCompleter() {
     rl_completion_entry_function = tabCompleter
-    // bind the tab key/character to to tab completion
+    // bind the tab key/character to tab completion
     rl_parse_and_bind("bind ^I rl_complete")
 }
 

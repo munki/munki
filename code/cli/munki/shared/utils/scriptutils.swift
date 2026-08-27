@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/5/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 
@@ -28,10 +40,12 @@ func createExecutableFile(
 class ScriptRunner: AsyncProcessRunner {
     private var remainingOutput = ""
     private var remainingError = ""
-    var combinedOutput = ""
 
     func linesAndRemainderOf(_ str: String) -> ([String], String) {
-        var lines = str.components(separatedBy: "\n")
+        var lines = str.trailingNewlineTrimmed.split(
+            omittingEmptySubsequences: false,
+            whereSeparator: \.isNewline
+        ).map(String.init)
         var remainder = ""
         if lines.count > 0, !str.hasSuffix("\n") {
             // last line of string did not end with a newline; might be a partial
@@ -43,7 +57,6 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processOutput(_ str: String) {
         super.processOutput(str)
-        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingOutput + str)
         remainingOutput = remainder
         for line in lines {
@@ -53,7 +66,6 @@ class ScriptRunner: AsyncProcessRunner {
 
     override func processError(_ str: String) {
         super.processError(str)
-        combinedOutput.append(str)
         let (lines, remainder) = linesAndRemainderOf(remainingError + str)
         remainingError = remainder
         for line in lines {
@@ -79,12 +91,27 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
     let result = proc.results
 
     if result.exitcode != 0, !suppressError {
-        display.error("Running \(scriptName) for \(itemName) failed.")
-        display.error(String(repeating: "-", count: 78))
-        for line in proc.combinedOutput.components(separatedBy: .newlines) {
-            display.error("    " + line)
+        display.error("Running \(scriptName) for \(itemName) failed with exitcode \(result.exitcode)")
+        if proc.results.error.isEmpty {
+            display.error("<no stderr output>")
+        } else {
+            display.error("stderr:")
+            display.error(String(repeating: "-", count: 78))
+            for line in proc.results.error.components(separatedBy: .newlines) {
+                display.error("    " + line)
+            }
+            display.error(String(repeating: "-", count: 78))
         }
-        display.error(String(repeating: "-", count: 78))
+        if proc.results.output.isEmpty {
+            display.error("<no stdout output>")
+        } else {
+            display.error("stdout:")
+            display.error(String(repeating: "-", count: 78))
+            for line in proc.results.output.components(separatedBy: .newlines) {
+                display.error("    " + line)
+            }
+            display.error(String(repeating: "-", count: 78))
+        }
     } else if !suppressError {
         munkiLog("Running \(scriptName) for \(itemName) was successful.")
     }
@@ -98,7 +125,7 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
 }
 
 /// Runs a script, Returns CLIResults.
-func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false) async -> CLIResults {
+func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false, timeout: Int = 60) async -> CLIResults {
     if suppressError {
         display.detail("Running \(scriptName) for \(itemName)")
     } else {
@@ -109,7 +136,13 @@ func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: Str
         munkiStatusPercent(-1)
     }
 
-    let results = await runCliAsync(path)
+    let results: CLIResults
+    do {
+        results = try await runCliAsync(path, timeout: timeout)
+    } catch {
+        // runCliAsync(timeout:) only ever throws ProcessError.timeout
+        results = CLIResults(exitcode: -1, error: "\(scriptName) timed out after \(timeout) seconds", timedOut: true)
+    }
 
     if DisplayOptions.munkistatusoutput {
         // clear indeterminate progress bar
@@ -145,7 +178,7 @@ func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = f
 
 /// Runs a script embedded in the pkginfo.
 /// Returns CLIResults
-func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppressError: Bool = false) async -> CLIResults {
+func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppressError: Bool = false, timeout: Int = 60) async -> CLIResults {
     // get the script text
     let itemName = pkginfo["name"] as? String ?? "<unknown>"
     guard let scriptText = pkginfo[name] as? String else {
@@ -158,7 +191,7 @@ func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppres
     }
     let scriptPath = (tempdir as NSString).appendingPathComponent(name)
     if createExecutableFile(atPath: scriptPath, withStringContents: scriptText) {
-        return await runScriptAndReturnResults(scriptPath, itemName: itemName, scriptName: name, suppressError: suppressError)
+        return await runScriptAndReturnResults(scriptPath, itemName: itemName, scriptName: name, suppressError: suppressError, timeout: timeout)
     } else {
         return CLIResults(exitcode: -1, error: "Failed to create executable file for \(name)")
     }

@@ -4,7 +4,7 @@
 //
 //  Created by Greg Neagle on 1/4/25.
 //
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ class FDEUtil {
         server.storedPassword = password
         if !username.isEmpty {
             server.storedUsername = username
+        } else {
+            server.log("No username was stored for authrestart")
         }
     }
 
@@ -64,6 +66,9 @@ class FDEUtil {
             server.log("Restart request from uid \(uid)")
             if uid == 0 {
                 server.log("Stored username for authrestart: \(server.storedUsername ?? "<none>")")
+                if server.storedPassword == nil {
+                    server.log("No stored password!")
+                }
                 let password = server.storedPassword ?? ""
                 let username = server.storedUsername ?? ""
                 doAuthorizedOrNormalRestart(username: username, password: password)
@@ -285,6 +290,40 @@ class AuthRestartServer: UNIXDomainSocketServer {
         )
         await connectionHandler.handle()
         clientSocket.close()
+    }
+
+    override func run(withTimeout timeout: Int = 0) async throws {
+        try listenOnSocket()
+        listening = true
+        var currentTimeout = timeout
+        while listening {
+            do {
+                try await waitForConnection(withTimeout: currentTimeout)
+            } catch let e as UNIXDomainSocketError {
+                switch e {
+                case .timeoutError:
+                    if debug {
+                        log("Timeout waiting for connection")
+                    }
+                    if let storedPassword, !storedPassword.isEmpty {
+                        // once we've stored a password we need to keep running;
+                        // we can't exit on idle
+                        if debug {
+                            log("Not exiting because we have a stored password")
+                        }
+                        currentTimeout = 0
+                    } else {
+                        // no connection for some time and we haven't stored
+                        // a password, so we can exit
+                        log("Exiting due to timeout")
+                        stop()
+                    }
+                default:
+                    stop()
+                    logError("\(e)")
+                }
+            }
+        }
     }
 
     override func log(_ message: String) {

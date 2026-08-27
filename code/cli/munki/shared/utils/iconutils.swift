@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/11/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -105,11 +104,11 @@ func convertIconToPNG(iconPath: String,
 
 /// Finds the icon file for app_path. Returns a path or nil
 func findIconForApp(_ appPath: String) -> String? {
-    guard pathIsDirectory(appPath) else { return nil }
+    guard pathIsDirectory(appPath, followSymlinks: true) else { return nil }
     let infoPlistPath = (appPath as NSString).appendingPathComponent("Contents/Info.plist")
     guard let info = try? readPlist(fromFile: infoPlistPath) as? PlistDict else { return nil }
     let appName = (appPath as NSString).lastPathComponent
-    var iconFilename = info["CFBundleIconName"] as? String ?? info["CFBundleIconFile"] as? String ?? appName
+    var iconFilename = info["CFBundleIconFile"] as? String ?? info["CFBundleIconName"] as? String ?? appName
     if (iconFilename as NSString).pathExtension.isEmpty {
         iconFilename += ".icns"
     }

@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/26/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,16 +17,17 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+// TODO: there is too much repetition in this module; consolidate
+// and/or eliminate some of this
+
 import Darwin
 import Foundation
 
-/// Removes a final newline character from a string if present
-func trimTrailingNewline(_ s: String) -> String {
-    var trimmedString = s
-    if trimmedString.last == "\n" {
-        trimmedString = String(trimmedString.dropLast())
-    }
-    return trimmedString
+/// Get system uptime in seconds. Uptime is paused while the device is sleeping.
+func get_uptime() -> Double {
+    let uptime = clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX)
+    let seconds = Double(uptime) / Double(NSEC_PER_SEC)
+    return seconds
 }
 
 struct CLIResults {
@@ -42,6 +42,8 @@ struct CLIResults {
 class ProcessRunner {
     let task = Process()
     var results = CLIResults()
+    var stdoutData = Data()
+    var stderrData = Data()
     // var delegate: ProcessDelegate?
 
     init(_ tool: String,
@@ -63,18 +65,30 @@ class ProcessRunner {
         outputPipe.fileHandleForReading.readabilityHandler = { fh in
             let data = fh.availableData
             if data.isEmpty { // EOF on the pipe
-                outputPipe.fileHandleForReading.readabilityHandler = nil
+                fh.readabilityHandler = nil
+                try? fh.close()
             } else {
-                self.processOutput(String(data: data, encoding: .utf8)!)
+                self.stdoutData.append(data)
+                // try to decode the data we've received as a string
+                if let outputString = String(data: self.stdoutData, encoding: .utf8) {
+                    self.processOutput(outputString)
+                    self.stdoutData.removeAll(keepingCapacity: false)
+                }
             }
         }
         let errorPipe = Pipe()
         errorPipe.fileHandleForReading.readabilityHandler = { fh in
             let data = fh.availableData
             if data.isEmpty { // EOF on the pipe
-                errorPipe.fileHandleForReading.readabilityHandler = nil
+                fh.readabilityHandler = nil
+                try? fh.close()
             } else {
-                self.processError(String(data: data, encoding: .utf8)!)
+                self.stderrData.append(data)
+                // try to decode the data we've received as a string
+                if let errorString = String(data: self.stderrData, encoding: .utf8) {
+                    self.processError(errorString)
+                    self.stderrData.removeAll(keepingCapacity: false)
+                }
             }
         }
         let inputPipe = Pipe()
@@ -84,8 +98,8 @@ class ProcessRunner {
                     fh.write(data)
                 }
             }
-            fh.closeFile()
-            inputPipe.fileHandleForWriting.writeabilityHandler = nil
+            try? fh.close()
+            fh.writeabilityHandler = nil
         }
         task.standardOutput = outputPipe
         task.standardError = errorPipe
@@ -121,9 +135,14 @@ class ProcessRunner {
             usleep(10000)
         }
 
+        let timestamp = get_uptime()
         while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
             (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
         {
+            // wait no more than 1 second for stdout and stderr to close
+            if get_uptime() >= timestamp + Double(1.0) {
+                break
+            }
             // loop until stdout and stderr pipes close
             usleep(10000)
         }
@@ -137,11 +156,11 @@ class ProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) throws {
-        var deadline: Date?
+        var deadline: Double?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                    deadline = get_uptime() + Double(timeout)
                 }
                 try task.run()
             } catch {
@@ -158,7 +177,7 @@ class ProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if Date() >= deadline {
+                if get_uptime() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
@@ -169,9 +188,14 @@ class ProcessRunner {
             usleep(10000)
         }
 
+        let timestamp = get_uptime()
         while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
             (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
         {
+            // wait no more than 1 second for stdout and stderr to close
+            if get_uptime() >= timestamp + Double(1.0) {
+                break
+            }
             // loop until stdout and stderr pipes close
             usleep(10000)
         }
@@ -194,17 +218,20 @@ class ProcessRunner {
 /// Runs a command line tool synchronously, returns CLIResults
 /// this implementation attempts to handle scenarios in which a large amount of stdout
 /// or stderr output is generated
+// TODO: reimplement this to use ProcessRunner
 func runCLI(_ tool: String,
             arguments: [String] = [],
             environment: [String: String] = [:],
             stdIn: String = "") -> CLIResults
 {
     var results = CLIResults()
+    var stdoutData = Data()
+    var stderrData = Data()
 
     let task = Process()
     task.executableURL = URL(fileURLWithPath: tool)
     task.arguments = arguments
-    if !environment.isEmpty == false {
+    if !environment.isEmpty {
         task.environment = environment
     }
 
@@ -213,18 +240,30 @@ func runCLI(_ tool: String,
     outputPipe.fileHandleForReading.readabilityHandler = { fh in
         let data = fh.availableData
         if data.isEmpty { // EOF on the pipe
-            outputPipe.fileHandleForReading.readabilityHandler = nil
+            fh.readabilityHandler = nil
+            try? fh.close()
         } else {
-            results.output.append(String(data: data, encoding: .utf8)!)
+            stdoutData.append(data)
+            // try to decode the data we've received as a string
+            if let outputString = String(data: stdoutData, encoding: .utf8) {
+                results.output.append(outputString)
+                stdoutData.removeAll(keepingCapacity: false)
+            }
         }
     }
     let errorPipe = Pipe()
     errorPipe.fileHandleForReading.readabilityHandler = { fh in
         let data = fh.availableData
         if data.isEmpty { // EOF on the pipe
-            errorPipe.fileHandleForReading.readabilityHandler = nil
+            fh.readabilityHandler = nil
+            try? fh.close()
         } else {
-            results.error.append(String(data: data, encoding: .utf8)!)
+            stderrData.append(data)
+            // try to decode the data we've received as a string
+            if let errString = String(data: stderrData, encoding: .utf8) {
+                results.error.append(errString)
+                stderrData.removeAll(keepingCapacity: false)
+            }
         }
     }
     let inputPipe = Pipe()
@@ -234,8 +273,8 @@ func runCLI(_ tool: String,
                 fh.write(data)
             }
         }
-        fh.closeFile()
-        inputPipe.fileHandleForWriting.writeabilityHandler = nil
+        try? fh.close()
+        fh.writeabilityHandler = nil
     }
     task.standardOutput = outputPipe
     task.standardError = errorPipe
@@ -254,17 +293,22 @@ func runCLI(_ tool: String,
         usleep(10000)
     }
 
+    let timestamp = get_uptime()
     while outputPipe.fileHandleForReading.readabilityHandler != nil ||
         errorPipe.fileHandleForReading.readabilityHandler != nil
     {
+        // wait no more than 1 second for stdout and stderr to close
+        if get_uptime() >= timestamp + Double(1.0) {
+            break
+        }
         // loop until stdout and stderr pipes close
         usleep(10000)
     }
 
     results.exitcode = Int(task.terminationStatus)
 
-    results.output = trimTrailingNewline(results.output)
-    results.error = trimTrailingNewline(results.error)
+    results.output = String(results.output.trailingNewlineTrimmed)
+    results.error = String(results.error.trailingNewlineTrimmed)
 
     return results
 }
@@ -313,6 +357,8 @@ class AsyncProcessRunner {
     var status = AsyncProcessStatus()
     var results = CLIResults()
     var delegate: AsyncProcessDelegate?
+    var stdoutData = Data()
+    var stderrData = Data()
 
     init(_ tool: String,
          arguments: [String] = [],
@@ -333,18 +379,30 @@ class AsyncProcessRunner {
         outputPipe.fileHandleForReading.readabilityHandler = { fh in
             let data = fh.availableData
             if data.isEmpty { // EOF on the pipe
-                outputPipe.fileHandleForReading.readabilityHandler = nil
+                fh.readabilityHandler = nil
+                fh.closeFile()
             } else {
-                self.processOutput(String(data: data, encoding: .utf8)!)
+                self.stdoutData.append(data)
+                // try to decode the data we've received as a string
+                if let outputString = String(data: self.stdoutData, encoding: .utf8) {
+                    self.processOutput(outputString)
+                    self.stdoutData.removeAll(keepingCapacity: false)
+                }
             }
         }
         let errorPipe = Pipe()
         errorPipe.fileHandleForReading.readabilityHandler = { fh in
             let data = fh.availableData
             if data.isEmpty { // EOF on the pipe
-                errorPipe.fileHandleForReading.readabilityHandler = nil
+                fh.readabilityHandler = nil
+                fh.closeFile()
             } else {
-                self.processError(String(data: data, encoding: .utf8)!)
+                self.stderrData.append(data)
+                // try to decode the data we've received as a string
+                if let errorString = String(data: self.stderrData, encoding: .utf8) {
+                    self.processError(errorString)
+                    self.stderrData.removeAll(keepingCapacity: false)
+                }
             }
         }
         let inputPipe = Pipe()
@@ -355,7 +413,7 @@ class AsyncProcessRunner {
                 }
             }
             fh.closeFile()
-            inputPipe.fileHandleForWriting.writeabilityHandler = nil
+            fh.writeabilityHandler = nil
         }
         task.standardOutput = outputPipe
         task.standardError = errorPipe
@@ -395,9 +453,14 @@ class AsyncProcessRunner {
             await Task.yield()
         }
 
+        let timestamp = get_uptime()
         while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
             (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
         {
+            // wait no more than 1 second for stdout and stderr to close
+            if get_uptime() >= timestamp + Double(1.0) {
+                break
+            }
             // loop until stdout and stderr pipes close
             await Task.yield()
         }
@@ -413,11 +476,11 @@ class AsyncProcessRunner {
     // NOTE: the timeout here is _not_ an idle timeout;
     // it's the maximum time the process can run
     func run(timeout: Int = -1) async throws {
-        var deadline: Date?
+        var deadline: Double?
         if !task.isRunning {
             do {
                 if timeout > 0 {
-                    deadline = Date().addingTimeInterval(TimeInterval(timeout))
+                    deadline = get_uptime() + Double(timeout)
                 }
                 try task.run()
             } catch {
@@ -436,7 +499,7 @@ class AsyncProcessRunner {
         while task.isRunning {
             // loop until process exits
             if let deadline {
-                if Date() >= deadline {
+                if get_uptime() >= deadline {
                     results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
                     task.terminate()
                     results.exitcode = Int.max // maybe we should define a specific code
@@ -447,9 +510,14 @@ class AsyncProcessRunner {
             await Task.yield()
         }
 
+        let timestamp = get_uptime()
         while (task.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler != nil ||
             (task.standardError as? Pipe)?.fileHandleForReading.readabilityHandler != nil
         {
+            // wait no more than 1 second for stdout and stderr to close
+            if get_uptime() >= timestamp + Double(1.0) {
+                break
+            }
             // loop until stdout and stderr pipes close
             await Task.yield()
         }
@@ -484,11 +552,15 @@ func runCliAsync(_ tool: String,
         stdIn: stdIn
     )
     await proc.run()
+
+    // trim trailing newlines in output and stderr to match behavior of runCLI
+    proc.results.output = String(proc.results.output.trailingNewlineTrimmed)
+    proc.results.error = String(proc.results.error.trailingNewlineTrimmed)
     return proc.results
 }
 
-/// a basic wrapper intended to be used just as you would runCLI, but async and with
-/// a timeout
+/// a basic wrapper intended to be used just as you would runCLI,
+/// but async and with a timeout
 /// throws ProcessError.timeout if the process times out
 func runCliAsync(_ tool: String,
                  arguments: [String] = [],
@@ -503,5 +575,9 @@ func runCliAsync(_ tool: String,
         stdIn: stdIn
     )
     try await proc.run(timeout: timeout)
+
+    // trim trailing newlines in output and stderr to match behavior of runCLI
+    proc.results.output = String(proc.results.output.trailingNewlineTrimmed)
+    proc.results.error = String(proc.results.error.trailingNewlineTrimmed)
     return proc.results
 }

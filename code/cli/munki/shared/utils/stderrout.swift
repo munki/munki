@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 1/1/25.
-//
-//  Copyright 2025 Greg Neagle.
+//  Copyright 2025-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -26,5 +25,7 @@ func printStderr(_ items: Any..., separator: String = " ", terminator: String = 
         .map { String(describing: $0) }
         .joined(separator: separator) + terminator
 
-    FileHandle.standardError.write(output.data(using: .utf8)!)
+    if let data = output.data(using: .utf8, allowLossyConversion: true) {
+        FileHandle.standardError.write(data)
+    }
 }

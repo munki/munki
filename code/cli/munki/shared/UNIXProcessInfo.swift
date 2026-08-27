@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 9/4/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -112,7 +113,7 @@ enum ParseError: Error {
 func parseArgumentData(_ data: Data) throws -> [String] {
     // Lifted from Quinn's work here: https://developer.apple.com/forums/thread/681817
 
-    // The algorithm here was was ‘stolen’ from the Darwin source for `ps`.
+    // The algorithm here was ‘stolen’ from the Darwin source for `ps`.
     //
     // <https://opensource.apple.com/source/adv_cmds/adv_cmds-176/ps/print.c.auto.html>
 

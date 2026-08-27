@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/6/18.
-//  Copyright © 2018-2025 The Munki Project. All rights reserved.
+//  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //
 
 import Foundation
@@ -42,10 +42,10 @@ func is_safe_to_use(_ pathname: String) -> Bool {
 }
 
 func setup_logging() {
-    if pythonishBool(pref("MSUDebugLogEnabled")) {
+    if pythonishBool(munkiPref("MSUDebugLogEnabled")) {
         MSUDEBUGLOGENABLED = true
     }
-    if pythonishBool(pref("MSULogEnabled")) {
+    if pythonishBool(munkiPref("MSULogEnabled")) {
         MSULOGENABLED = true
     }
     if !(MSULOGENABLED) {

@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/28/25.
-//  Copyright © 2025 The Munki Project. All rights reserved.
+//  Copyright © 2025-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -56,6 +56,7 @@ extension MainWindowController: NSOutlineViewDelegate {
 
         view.title.stringValue = sidebarItem.title.localized(withComment: "\(sidebarItem.title) label")
         view.title.textColor = isSelected ? .controlAccentColor : .labelColor
+        view.setAccessibilityLabel(sidebarItem.title.localized(withComment: "\(sidebarItem.title) label"))
 
         if let image = NSImage(named: NSImage.Name(sidebarItem.icon)) {
             image.isTemplate = true

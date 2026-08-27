@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/29/18.
-//  Copyright © 2018-2025 The Munki Project. All rights reserved.
+//  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -147,7 +147,7 @@ class MainWindowController: NSWindowController {
             // because SF Symbols only supported on 11.0 or later
             //
             // try preferences (includes managed prefs)
-            if let sidebarConfig = pref("CustomSidebarItems") as? [[String: Any]] {
+            if let sidebarConfig = munkiPref("CustomSidebarItems") as? [[String: Any]] {
                 return sidebarConfig
             }
             // try custom client resources
@@ -251,7 +251,12 @@ class MainWindowController: NSWindowController {
             } else {
                 msc_debug_log("Could not parse sidebar item page URL \(page)")
             }
+        } else if let components = URLComponents(string: page),
+                  ["https", "http"].contains(components.scheme)
+        {
+            load_url(page)
         } else {
+            // Treat as a relative page name in htmlDir.
             load_page(page)
         }
     }
@@ -269,13 +274,18 @@ class MainWindowController: NSWindowController {
     }
 
     @objc func sidebarItemClicked() {
-        let row = sidebarList.clickedRow
-        guard row >= 0 && row < sidebar_items.count else { return }
-        clearSearchField()
-        let item = sidebar_items[row]
-        loadSidebarItemPage(item.page)
+        // On macOS 27 the action can arrive before selectedRow is updated.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let row = self.sidebarList.selectedRow
+            guard row >= 0, row < self.sidebar_items.count else { return }
+            let page = self.sidebar_items[row].page
+            msc_debug_log("Sidebar route row \(row): \(page)")
+            self.clearSearchField()
+            self.loadSidebarItemPage(page)
+        }
     }
-    
+
     func appShouldTerminate() -> NSApplication.TerminateReply {
         // called by app delegate
         // when it receives applicationShouldTerminate:
@@ -283,13 +293,13 @@ class MainWindowController: NSWindowController {
             // no pending updates
             return .terminateNow
         }
-        if !shouldFilterAppleUpdates() && appleUpdatesMustBeDoneWithSystemPreferences() {
+        if !haveAlertedToAppleUpdates() {
             if shouldAggressivelyNotifyAboutAppleUpdates(days: 2) {
                 if !currentPageIsUpdatesPage() {
                     loadUpdatesPage(self)
                 }
-                alert_controller.alertToAppleUpdates()
-                setFilterAppleUpdates(true)
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
+                setAlertedToAppleUpdates(true)
                 return .terminateCancel
             }
         }
@@ -307,6 +317,15 @@ class MainWindowController: NSWindowController {
                 }
                 return .terminateNow
             }
+        }
+        if getAppleUpdates().count > 0, getEffectiveUpdateList().count == 0 {
+            // we have only Apple updates; remind the user they need to install them
+            if !haveAlertedToAppleUpdates() {
+                alert_controller.alertToAppleUpdates(skipAction: "quit")
+                setAlertedToAppleUpdates(true)
+                return .terminateCancel
+            }
+            return .terminateNow
         }
         // we have pending updates and we have not yet warned the user
         // about them
@@ -464,17 +483,21 @@ class MainWindowController: NSWindowController {
         return getUpdateCount() > 0 || !getProblemItems().isEmpty
     }
     
-    func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() {
+    @discardableResult
+    func determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode() -> Bool {
         // if we have no optional_items set MSC to show updates only
         // if updates available go right to update screen
         if optionalInstallsExist() {
             updatesAndOptionalWindowMode()
             if shouldMoveToUpdatesPage() {
                 loadUpdatesPage(self)
+                return true
             }
         } else {
             updatesOnlyWindowMode()
+            return true
         }
+        return false
     }
     
     func loadInitialView() {
@@ -485,7 +508,10 @@ class MainWindowController: NSWindowController {
                 loadUpdatesPage(self)
                 displayUpdateCount()
             } else {
-                loadAllSoftwarePage(self)
+                // load the page for the first sidebar item
+                let item = sidebar_items[0]
+                loadSidebarItemPage(item.page)
+
             }
         } else {
             updatesOnlyWindowMode()
@@ -525,7 +551,7 @@ class MainWindowController: NSWindowController {
         let tasktype = managedsoftwareupdate_task
         managedsoftwareupdate_task = ""
         _update_in_progress = false
-        
+
         // The managedsoftwareupdate run will have changed state preferences
         // in ManagedInstalls.plist. Load the new values.
         reloadPrefs()
@@ -534,7 +560,7 @@ class MainWindowController: NSWindowController {
             resetAndReload()
             return
         }
-        let lastCheckResult = pref("LastCheckResult") as? Int ?? 0
+        let lastCheckResult = munkiPref("LastCheckResult") as? Int ?? 0
         if sessionResult != 0 || lastCheckResult < 0 {
             var alertMessageText = NSLocalizedString(
                 "Update check failed", comment: "Update Check Failed title")
@@ -543,6 +569,10 @@ class MainWindowController: NSWindowController {
                 msc_log("MSC", "cant_update", msg: "Install session failed")
                 alertMessageText = NSLocalizedString(
                     "Install session failed", comment: "Install Session Failed title")
+                // Clear the blocking apps controller since install failed
+                if alert_controller.blockingAppsController != nil {
+                    alert_controller.clearBlockingAppsController()
+                }
             }
             if sessionResult == -1 {
                 // connection was dropped unexpectedly
@@ -604,10 +634,16 @@ class MainWindowController: NSWindowController {
             updateNow()
             return
         }
-        
+
+        // Install session completed successfully - reopen any apps that were closed
+        // (only if MSCOfferToQuitBlockingApps was enabled and the blocking apps controller was used)
+        if tasktype == "installwithnologout" && alert_controller.blockingAppsController != nil {
+            alert_controller.reopenAppsAfterUpdate()
+        }
+
         // all done checking and/or installing: display results
         resetAndReload()
-        
+
         if updateCheckNeeded() {
             // more stuff pending? Let's do it...
             updateNow()
@@ -626,29 +662,36 @@ class MainWindowController: NSWindowController {
         get_custom_resources()
         // pending updates may have changed
         _alertedUserToOutstandingUpdates = false
-        // enable/disable controls as needed
-        determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
-        // what page are we currently viewing?
-        let page_url = webView.url
-        let filename = page_url?.lastPathComponent ?? ""
+        // Record the current page before updating the window mode, since that
+        // update can intentionally navigate to Updates.
+        let pageURL = webView.url
+        let filename = pageURL?.lastPathComponent ?? ""
+        // Enable/disable controls as needed. If this selects Updates, it has
+        // already performed the one navigation this refresh needs.
         let name = (filename as NSString).deletingPathExtension
         let key = name.components(separatedBy: "-")[0]
-        switch key {
-        case "detail", "updatedetail":
-            // item detail page; just rebuild and reload it
-            load_page(filename)
-        case "category", "filter", "developer":
-            // optional item list page
-            updateListPage()
-        case "categories":
-            // categories page
-            updateCategoriesPage()
-        case "myitems":
-            // my items page
-            updateMyItemsPage()
-        case "updates":
-            // updates page; just rebuild and reload it
-            load_page("updates.html")
+        let didLoadUpdatesPage = determineIfUpdateOnlyWindowOrUpdateAndOptionalWindowMode()
+        if !didLoadUpdatesPage {
+            switch key {
+            case "detail", "updatedetail":
+                load_page(filename)
+            case "category", "filter", "developer":
+                updateListPage()
+            case "categories":
+                updateCategoriesPage()
+            case "myitems":
+                updateMyItemsPage()
+            case "updates":
+                load_page("updates.html")
+            default:
+                if pageURL != nil {
+                    webView.reload(self)
+                } else {
+                    msc_debug_log("Unexpected value for page name: \(filename)")
+                }
+            }
+        }
+        if didLoadUpdatesPage || key == "updates" {
             if !shouldAggressivelyNotifyAboutMunkiUpdates() {
                 _alertedUserToOutstandingUpdates = true
             }
@@ -660,11 +703,7 @@ class MainWindowController: NSWindowController {
                     makeUsUnobnoxious()
                 }
             }
-        default:
-            // should never get here
-            msc_debug_log("Unexpected value for page name: \(filename)")
         }
-        // update count might have changed
         displayUpdateCount()
     }
     
@@ -672,6 +711,7 @@ class MainWindowController: NSWindowController {
         // define messages JavaScript can send us
         wkContentController.add(self, name: "openExternalLink")
         wkContentController.add(self, name: "installButtonClicked")
+        wkContentController.add(self, name: "showButtonClicked")
         wkContentController.add(self, name: "myItemsButtonClicked")
         wkContentController.add(self, name: "actionButtonClicked")
         wkContentController.add(self, name: "changeSelectedCategory")
@@ -767,6 +807,8 @@ class MainWindowController: NSWindowController {
             // this is a bit of a hack since awakeFromNib gets called several times
             // but we only want this part of the config to run once
             mainWindowConfigurationComplete = true
+            sidebarList.target = self
+            sidebarList.action = #selector(sidebarItemClicked)
             setupSplitView()
             insertWebView()
             setNoPageCache()
@@ -856,7 +898,61 @@ class MainWindowController: NSWindowController {
     @objc func checkForUpdatesSkippingAppleUpdates() {
         checkForUpdates(suppress_apple_update_check: true)
     }
-        
+
+    func startUpdateWithoutLogout() {
+        // does lots of checks before (hopefully) starting an update run
+        if pythonishBool(munkiPref("MSCOfferToQuitBlockingApps")) {
+            // offer to quit enabled, lets do some magic
+            if !alert_controller.canContinueAfterHandlingBlockingApps() {
+                loadUpdatesPage(self)
+                return
+            }
+        } else {
+            // Fallback to existing logic if auto qutting isn't enabled
+            if alert_controller.alertedToBlockingAppsRunning() {
+                loadUpdatesPage(self)
+                return
+            }
+        }
+        if alert_controller.alertedToRunningOnBatteryAndCancelled() {
+            loadUpdatesPage(self)
+            return
+        }
+        if alert_controller.alertedToNotVolumeOwner() {
+            clearMunkiItemsCache()
+            setFilterStagedOSUpdate(true)
+            setAlertedToAppleUpdates(false)
+            loadUpdatesPage(self)
+            return
+        }
+        if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
+            clearMunkiItemsCache()
+            setFilterStagedOSUpdate(true)
+            setAlertedToAppleUpdates(false)
+            loadUpdatesPage(self)
+            return
+        }
+        managedsoftwareupdate_task = ""
+        msc_log("user", "install_without_logout")
+        _update_in_progress = true
+        displayUpdateCount()
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller._status_message = NSLocalizedString(
+                "Updating...", comment: "Updating message")
+        }
+        do {
+            try justUpdate()
+        } catch {
+            msc_debug_log("Error starting install session: \(error)")
+            munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
+        }
+        managedsoftwareupdate_task = "installwithnologout"
+        if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
+            status_controller.startMunkiStatusSession()
+        }
+        markPendingItemsAsInstalling()
+    }
+
     func kickOffInstallSession() {
         // start an update install/removal session
         
@@ -873,48 +969,8 @@ class MainWindowController: NSWindowController {
             }
             // warn about need to logout or restart
             alert_controller.confirmUpdatesAndInstall()
-        } else {
-            if alert_controller.alertedToBlockingAppsRunning() {
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToRunningOnBatteryAndCancelled() {
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToNotVolumeOwner() {
-                clearMunkiItemsCache()
-                setFilterStagedOSUpdate(true)
-                setFilterAppleUpdates(false)
-                loadUpdatesPage(self)
-                return
-            }
-            if alert_controller.alertedToStagedOSUpgradeAndCancelled() {
-                clearMunkiItemsCache()
-                setFilterStagedOSUpdate(true)
-                setFilterAppleUpdates(false)
-                loadUpdatesPage(self)
-                return
-            }
-            managedsoftwareupdate_task = ""
-            msc_log("user", "install_without_logout")
-            _update_in_progress = true
-            displayUpdateCount()
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller._status_message = NSLocalizedString(
-                    "Updating...", comment: "Updating message")
-            }
-            do {
-                try justUpdate()
-            } catch {
-                msc_debug_log("Error starting install session: \(error)")
-                munkiStatusSessionEnded(withStatus: -2, errorMessage: "\(error)")
-            }
-            managedsoftwareupdate_task = "installwithnologout"
-            if let status_controller = (NSApp.delegate as? AppDelegate)?.statusController {
-                status_controller.startMunkiStatusSession()
-            }
-            markPendingItemsAsInstalling()
+		} else {
+            startUpdateWithoutLogout()
         }
     }
     
@@ -1032,7 +1088,7 @@ class MainWindowController: NSWindowController {
         if _update_in_progress {
             return 0
         }
-        return getEffectiveUpdateList().count
+        return getEffectiveUpdateList().count + getAppleUpdates().count
     }
     
     func updatesSidebarItemView() -> MSCTableCellView? {
@@ -1122,55 +1178,67 @@ class MainWindowController: NSWindowController {
         setInnerHTML(items_html, elementID: "optional_installs_items")
     }
     
-    func load_page(_ url_fragment: String) {
-        // Tells the WebView to load the appropriate page
-        msc_debug_log("load_page request for \(url_fragment)")
-        var request: URLRequest
-        
-        if let components = URLComponents(string: url_fragment),
-           ["https", "http"].contains(components.scheme)
-        {
-            // url_fragment is http:// or https:// URL
-            request = URLRequest(
-                url: URL(string: url_fragment)!,
-                cachePolicy: .reloadIgnoringLocalCacheData,
-                timeoutInterval: TimeInterval(10.0)
-            )
-        } else {
-            // url_fragment is just a path (or filename)
-            let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
-            let requestURL = baseURL.appendingPathComponent(url_fragment).standardizedFileURL
-            
-            let baseComponents = baseURL.pathComponents
-            let requestComponents = requestURL.pathComponents
-            
-            guard requestComponents.starts(with: baseComponents) else {
-                msc_debug_log("Attempt to access file outside htmlDir: \(url_fragment)")
-                // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
-                let errorURL = baseURL.appendingPathComponent("error.html")
-                webView.load(URLRequest(url: errorURL))
-                return
-            }
-            
-            request = URLRequest(
-                url: requestURL,
-                cachePolicy: .reloadIgnoringLocalCacheData,
-                timeoutInterval: 10.0
-            )
+    func load_page(_ name: String) {
+        // Tells the WebView to load a Munki-internal HTML page from htmlDir.
+        // `name` should be a page name (with or without ".html"). Path traversal
+        // outside htmlDir is blocked. Will not navigate to remote URLs — callers
+        // that need to load an admin-configured http(s) URL must use load_url().
+        msc_debug_log("load_page request for \(name)")
+        let baseURL = URL(fileURLWithPath: htmlDir).standardizedFileURL
+        let requestURL = baseURL.appendingPathComponent(name).standardizedFileURL
+
+        let baseComponents = baseURL.pathComponents
+        let requestComponents = requestURL.pathComponents
+
+        guard requestComponents.starts(with: baseComponents) else {
+            msc_debug_log("Attempt to access file outside htmlDir: \(name)")
+            // since error.html doesn't exist, this ends up triggering buildItemNotFoundPage()
+            let errorURL = baseURL.appendingPathComponent("error.html")
+            webView.load(URLRequest(url: errorURL))
+            return
         }
 
+        let request = URLRequest(
+            url: requestURL,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 10.0
+        )
         webView.load(request)
-        
-        if url_fragment == "updates.html" {
+
+        if name == "updates.html" {
             if !_update_in_progress && NSApp.isActive {
                 // clear all earlier update notifications
-                removeAllDeliveredNotifications()
+                // we'll do this in a background queue so as not to delay
+                // the loading of the Updates view
+                DispatchQueue.global(qos: .background).async {
+                    self.removeAllDeliveredNotifications()
+                }
             }
             // record that the user has been presented pending updates
             if !_update_in_progress && !shouldAggressivelyNotifyAboutMunkiUpdates() && !thereAreUpdatesToBeForcedSoon() {
                 _alertedUserToOutstandingUpdates = true
             }
         }
+    }
+
+    func load_url(_ url_string: String) {
+        // Loads an arbitrary http(s) URL into the main webview. Used by
+        // loadSidebarItemPage to honor admin-configured CustomSidebarItems
+        // whose `page` value is a remote URL. Refuses any other scheme.
+        msc_debug_log("load_url request for \(url_string)")
+        guard let components = URLComponents(string: url_string),
+              ["https", "http"].contains(components.scheme),
+              let url = URL(string: url_string)
+        else {
+            msc_debug_log("load_url refused: \(url_string) is not an http(s) URL")
+            return
+        }
+        let request = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: TimeInterval(10.0)
+        )
+        webView.load(request)
     }
     
     func removeAllDeliveredNotifications() {
@@ -1208,6 +1276,17 @@ class MainWindowController: NSWindowController {
             return
         }
         var filename = unquote(host)
+        if filename == "appleupdates" {
+            openSoftwareUpdatePrefsPane()
+            return
+        }
+        if filename == "settings" {
+            // open settings/preferences window only if admin allows
+            if pythonishBool(munkiPref("MSCAllowNotificationWindow")) {
+                (NSApp.delegate as? AppDelegate)?.showPreferences(self)
+            }
+            return
+        }
         // append ".html" if absent
         if !(filename.hasSuffix(".html")) {
             filename += ".html"
@@ -1419,7 +1498,7 @@ class MainWindowController: NSWindowController {
         // update the updates-to-install header to reflect the new list of
         // updates to install
         setInnerText(updateCountMessage(getUpdateCount()), elementID: "update-count-string")
-        setInnerText(getWarningText(shouldFilterAppleUpdates()), elementID: "update-warning-text")
+        setInnerText(getWarningText(), elementID: "update-warning-text")
     
         // update text of Install All button
         setInnerText(getInstallAllButtonTextForCount(getUpdateCount()), elementID: "install-all-button-text")
@@ -1487,7 +1566,7 @@ class MainWindowController: NSWindowController {
     
     // MARK: IBActions
     @IBAction func showHelp(_ sender: Any) {
-        if let helpURL = pref("HelpURL") as? String {
+        if let helpURL = munkiPref("HelpURL") as? String {
             if let finalURL = URL(string: helpURL) {
                 NSWorkspace.shared.open(finalURL)
             }
@@ -1550,7 +1629,7 @@ class MainWindowController: NSWindowController {
     @IBAction func reloadPage(_ sender: Any) {
         // User selected Reload page menu item. Reload the page and kick off an updatecheck
         msc_log("user", "reload_page_menu_item_selected")
-        setFilterAppleUpdates(false)
+        setAlertedToAppleUpdates(false)
         setFilterStagedOSUpdate(false)
         checkForUpdates()
         URLCache.shared.removeAllCachedResponses()

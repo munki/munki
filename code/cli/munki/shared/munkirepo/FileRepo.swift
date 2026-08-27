@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 6/25/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -168,7 +167,7 @@ class FileRepo: Repo {
             }
         }
         // does root dir exist now?
-        if !pathIsDirectory(root) {
+        if !pathIsDirectory(root, followSymlinks: true) {
             throw MunkiError("Repo path does not exist")
         }
     }

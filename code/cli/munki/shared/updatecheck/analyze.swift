@@ -3,6 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/19/24.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -150,9 +151,9 @@ func processInstall(
 
     // have we processed this already?
     if let processedInstalls = installInfo["processed_installs"] as? [String],
-       processedInstalls.contains(manifestItemName)
+       processedInstalls.contains(manifestItemName) || processedInstalls.contains(manifestItemNameWithoutVersion)
     {
-        display.debug1("\(manifestItemName) has already been processed for install.")
+        display.debug1("\(manifestItemNameWithoutVersion) has already been processed for install.")
         return true
     }
     if let processedUninstalls = installInfo["processed_uninstalls"] as? [String],
@@ -207,7 +208,7 @@ func processInstall(
     //  requires can be a one to many relationship.
     //
     //  The second type of relationship is 'update_for'.
-    //  This signifies that that current package should be considered an update
+    //  This signifies that the current package should be considered an update
     //  for the packages listed in the 'update_for' array. When processing a
     //  package, we look through the catalogs for other packages that declare
     //  they are updates for the current package and install them if needed.
@@ -245,9 +246,9 @@ func processInstall(
 
     var processedItem = PlistDict()
     processedItem["name"] = name
-    let displayName = pkginfo["display_name"] as? String ?? name
+    let displayName = pkginfo.getString(for: "display_name", fallback: name)
     processedItem["display_name"] = displayName
-    processedItem["description"] = pkginfo["description"] as? String ?? ""
+    processedItem["description"] = pkginfo.getString(for: "description")
     processedItem["localized_strings"] = pkginfo["localized_strings"]
     processedItem["developer"] = pkginfo["developer"]
     processedItem["icon_name"] = pkginfo["icon_name"]
@@ -256,7 +257,7 @@ func processInstall(
     if installedState == .thisVersionNotInstalled {
         if !dependenciesMet {
             // we should not attempt to install
-            display.warning("Didn't attempt ro install \(manifestItemName) because could not resolve all dependencies.")
+            display.warning("Didn't attempt to install \(manifestItemName) because could not resolve all dependencies.")
             // add information to managed_installs so we have some feedback
             // to display in MSC.app
             processedItem["installed"] = false
@@ -379,6 +380,8 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
+            "blocking_applications_manual_quit_only",
+            "blocking_applications_quit_script",
         ]
 
         if isOptionalInstall {
@@ -518,7 +521,7 @@ func processInstall(
     if !isManagedUpdate {
         display.debug2("Adding \(manifestItemName) to the list of processed installs")
         var processedInstalls = installInfo["processed_installs"] as? [String] ?? []
-        processedInstalls.append(manifestItemName)
+        processedInstalls.append(manifestItemNameWithoutVersion)
         installInfo["processed_installs"] = processedInstalls
     }
     return true
@@ -647,7 +650,8 @@ func processOptionalInstall(
             if let installerType = pkginfo["installer_type"] as? String,
                installerType == "stage_os_installer"
             {
-                // .thisVersionNotInstalled means installer is staged, but not _installed_
+                // .thisVersionInstalled means installer is staged, but not _installed_
+                // (if it's installed, it will be .newerVersionInstalled
                 needsUpdate = installationState != .newerVersionInstalled
             } else {
                 needsUpdate = installationState == .thisVersionNotInstalled
@@ -731,7 +735,12 @@ func processOptionalInstall(
     {
         processedItem["note"] = pkgInfoNote
     } else if needsUpdate || !isCurrentlyInstalled {
-        if !enoughDiskSpaceFor(
+        if let installerType = pkginfo["installer_type"] as? String,
+           installerType == "stage_os_installer",
+           await installedState(pkginfo) == .thisVersionInstalled
+        {
+            // Install macOS app is already staged so there's nothing to download
+        } else if !enoughDiskSpaceFor(
             pkginfo,
             installList: installInfo["managed_installs"] as? [PlistDict] ?? [],
             warn: false
@@ -751,6 +760,8 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
+        "blocking_applications_manual_quit_only",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]
@@ -991,6 +1002,8 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
+        "blocking_applications_manual_quit_only",
+        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]

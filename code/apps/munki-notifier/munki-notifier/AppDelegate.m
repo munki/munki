@@ -3,7 +3,7 @@
 //  munki-notifier
 //
 //  Created by Greg Neagle on 2/23/17.
-//  Copyright © 2018-2025 The Munki Project. All rights reserved.
+//  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //  Much code lifted and adapted from https://github.com/julienXX/terminal-notifier
 //
 
@@ -199,6 +199,7 @@ long const DefaultUseNotificationCenterDays = 3;
     center.delegate = self;
     // First remove earlier notifications from us
     [center removeAllPendingNotificationRequests];
+    [center removeAllDeliveredNotifications];
     // request authorization
     [center requestAuthorizationWithOptions:(UNAuthorizationOptionProvisional + UNAuthorizationOptionAlert)
        completionHandler:^(BOOL granted, NSError * _Nullable error) {

@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 7/7/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -48,7 +47,6 @@ enum RestartAction: String, CaseIterable, ExpressibleByArgument {
 /// Supported installer types for --installer-type argument
 enum InstallerType: String, CaseIterable, ExpressibleByArgument {
     case copy_from_dmg
-    case startosinstall
     case stage_os_installer
 }
 
@@ -174,7 +172,8 @@ struct ApplePackageOptions: ParsableArguments {
     @Option(name: [.customShort("U"),
                    .long,
                    .customLong("uninstallerdmg"),
-                   .customLong("uninstallerpkg")],
+                   .customLong("uninstallerpkg"),
+                   .customLong("uninstallpkg")],
             help: "<uninstalleritem> is a path to an uninstall package or a disk image containing an uninstall package.")
     var uninstalleritem: String? = nil
 

@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/2/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -110,9 +109,16 @@ class LaunchdJob {
             // need to use a different tmpdir than the shared one,
             // which will get cleaned up when managedsoftwareupdate
             // exits
-            tmpdir = TempDir().path
+            tmpdir = "/private/tmp/munki-\(UUID().uuidString)"
+            if let tmpdir {
+                do {
+                    try FileManager.default.createDirectory(atPath: tmpdir, withIntermediateDirectories: true)
+                } catch {
+                    // will be dealt with later when we check for existence of the tmpdir
+                }
+            }
         }
-        guard let tmpdir else {
+        guard let tmpdir, pathExists(tmpdir) else {
             throw MunkiError("Could not allocate temp dir for launchd job")
         }
         // label this job

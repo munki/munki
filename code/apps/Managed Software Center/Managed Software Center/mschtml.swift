@@ -3,7 +3,7 @@
 //  Managed Software Center
 //
 //  Created by Greg Neagle on 6/15/18.
-//  Copyright © 2018-2025 The Munki Project. All rights reserved.
+//  Copyright © 2018-2026 The Munki Project. All rights reserved.
 //
 
 import Cocoa
@@ -162,7 +162,12 @@ extension GenericItem {
         if my["status"] as? String ?? "" == "will-be-removed" {
             my["display_version_escaped_and_size"] = ""
         } else {
-            my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + (my["size"] as? String ?? "")
+            let size = my["size"] as? String ?? ""
+            if size.isEmpty {
+                my["display_version_escaped_and_size"] = my["display_version_escaped"] as? String ?? ""
+            } else {
+                my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + size
+            }
         }
     }
 
@@ -464,38 +469,36 @@ func buildListPageItemsHTML(category: String = "",
         item_html = buildItemListHTML(items)
     } else {
         // no items; build appropriate alert messages
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
         if !filter.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "Your search had no results.",
                 comment: "No Search Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try searching again.", comment: "No Search Results secondary text")
         } else if !category.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no items in this category.",
                 comment: "No Category Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try selecting another category.",
                 comment: "No Category Results secondary text")
         } else if !developer.isEmpty {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no items from this developer.",
                 comment: "No Developer Results primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try selecting another developer.",
                 comment: "No Developer Results secondary text")
         } else {
-            alert["primary_status_text"] = NSLocalizedString(
+            alert["primary_results_text"] = NSLocalizedString(
                 "There are no available software items.",
                 comment: "No Items primary text")
-            alert["secondary_status_text"] = NSLocalizedString(
+            alert["secondary_results_text"] = NSLocalizedString(
                 "Try again later.",
                 comment: "No Items secondary text")
         }
-        alert["hide_progress_bar"] = "hidden"
-        alert["progress_bar_value"] = ""
         item_html = status_results_template.substitute(alert)
     }
     return item_html
@@ -546,16 +549,14 @@ func buildCategoryItemsHTML() -> String {
     }
     if all_items.isEmpty {
         // no items
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
-        alert["primary_status_text"] = NSLocalizedString(
+        alert["primary_results_text"] = NSLocalizedString(
             "There are no available software items.",
             comment: "No Items primary text")
-        alert["secondary_status_text"] = NSLocalizedString(
+        alert["secondary_results_text"] = NSLocalizedString(
             "Try again later.",
             comment: "No Items secondary text")
-        alert["hide_progress_bar"] = "hidden"
-        alert["progress_bar_value"] = ""
         item_html = status_results_template.substitute(alert)
     } else {
         let item_template = getTemplate("category_item_template.html")
@@ -615,17 +616,16 @@ func buildMyItemsRows() -> String {
         myitems_rows = buildItemListHTML(item_list,
                                          template: "myitems_item_template.html")
     } else {
-        let status_results_template = getTemplate("status_results_template.html")
+        let status_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
-        alert["primary_status_text"] = NSLocalizedString(
+        alert["primary_results_text"] = NSLocalizedString(
             "You have no selected software.",
             comment: "No Installed Software primary text")
         let select_software_msg = NSLocalizedString(
             "Select software to install.",
             comment: "No Installed Software secondary text")
-        alert["secondary_status_text"] = (
+        alert["secondary_results_text"] = (
             "<a href=\"munki://category-all.html\">\(select_software_msg)</a>" )
-        alert["hide_progress_bar"] = "hidden"
         myitems_rows = status_results_template.substitute(alert)
     }
     return myitems_rows
@@ -640,6 +640,15 @@ func buildUpdatesPage() throws {
     var show_additional_updates = true
     if (NSApp.delegate! as! AppDelegate).mainWindowController.weShouldBeObnoxious() {
         show_additional_updates = false
+    }
+    
+    var apple_update_list = [UpdateItem]()
+    for var item in getAppleUpdates() {
+        item["developer"] = "Apple"
+        item["status"] = "will-be-installed"
+        item["apple_update"] = true
+        item["note"] = ""
+        apple_update_list.append(UpdateItem(item))
     }
 
     let item_list = getEffectiveUpdateList()
@@ -683,12 +692,18 @@ func buildUpdatesPage() throws {
     }
     let page = GenericItem()
     page["update_rows"] = ""
+    page["apple_update_rows"] = ""
+    page["hide_apple_updates"] = "hidden"
     page["hide_progress_spinner"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
     page["install_all_button_classes"] = ""
     
-    if item_list.isEmpty && other_updates.isEmpty && problem_updates.isEmpty {
+    if apple_update_list.isEmpty,
+       item_list.isEmpty,
+       other_updates.isEmpty,
+       problem_updates.isEmpty
+    {
         let status_results_template = getTemplate("status_results_template.html")
         let alert = BaseItem()
         alert["primary_status_text"] = NSLocalizedString(
@@ -700,6 +715,15 @@ func buildUpdatesPage() throws {
         alert["progress_bar_value"] = ""
         page["update_rows"] = status_results_template.substitute(alert)
     } else {
+        if !apple_update_list.isEmpty {
+            page["apple_update_count"] = appleUpdateCountMessage(apple_update_list.count)
+            page["apple_update_warning_text"] = getWarningText(forAppleUpdates: true)
+            page["show_apple_updates_label"] = NSLocalizedString(
+                "Show", comment: "Show Apple updates button title")
+            page["hide_apple_updates"] = ""
+            page["apple_update_rows"] = buildItemListHTML(
+                apple_update_list, template: "apple_item_template.html", sort: false)
+        }
         if !item_list.isEmpty {
             page["update_rows"] = buildItemListHTML(
                 item_list, template: "update_item_template.html", sort: false)
@@ -708,9 +732,9 @@ func buildUpdatesPage() throws {
     
     let count = item_list.count
     // in Python was count = len([item for item in item_list if item['status'] != 'problem-item'])
-    page["update_count"] = updateCountMessage(count)
+    page["update_count"] = updateCountMessage(count, appleUpdateCount: apple_update_list.count)
     page["install_btn_label"] = getInstallAllButtonTextForCount(count)
-    page["warning_text"] = getWarningText(shouldFilterAppleUpdates())
+    page["warning_text"] = getWarningText()
     
     // build problem updates table
     page["problem_updates_header_message"] = NSLocalizedString(
@@ -747,6 +771,7 @@ func buildUpdateStatusPage() throws {
     let page = GenericItem()
     page["update_rows"] = ""
     page["hide_progress_spinner"] = ""
+    page["hide_apple_updates"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
     page["other_updates_header_message"] = ""
@@ -825,19 +850,27 @@ func getRestartActionForUpdateList(_ update_list: [GenericItem]) -> String {
     return ""
 }
 
-func getWarningText(_ filterAppleUpdates: Bool) -> String {
+func getWarningText(forAppleUpdates: Bool = false) -> String {
     // Return localized text warning about forced installs and/or
     // logouts and/or restarts
-    let item_list = getEffectiveUpdateList()
     var warning_text = ""
-    //if let forced_install_date = earliestForceInstallDate(item_list) {
-    if let forced_install_date = earliestForceInstallDate() {
+    let item_list = if forAppleUpdates {
+        getAppleUpdates().map {
+            GenericItem($0)
+        }
+    } else {
+        getEffectiveUpdateList()
+    }
+    
+    if !forAppleUpdates,
+       let forced_install_date = earliestForceInstallDate()
+    {
         let date_str = stringFromDate(forced_install_date)
         let forced_date_text = NSLocalizedString(
             "One or more items must be installed by %@",
             comment: "Forced Install Date summary")
         warning_text = NSString(format: forced_date_text as NSString, date_str) as String
-    } else if !filterAppleUpdates && shouldAggressivelyNotifyAboutAppleUpdates() {
+    } else if forAppleUpdates && shouldAggressivelyNotifyAboutAppleUpdates() {
         warning_text = NSLocalizedString(
             "One or more important Apple updates must be installed",
             comment: "Pending Apple Updates warning"

@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 8/19/24.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -128,7 +127,9 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
         return .thisVersionInstalled
     }
     // do we have installs items?
-    if let installItems = pkginfo["installs"] as? [PlistDict] {
+    if let installItems = pkginfo["installs"] as? [PlistDict],
+       !installItems.isEmpty
+    {
         for item in installItems {
             do {
                 let compareResult = try compareItem(item)
@@ -145,6 +146,8 @@ func installedState(_ pkginfo: PlistDict) async -> InstallationState {
             }
         }
     } else if let receipts = pkginfo["receipts"] as? [PlistDict] {
+        // if there are no 'installs' items, then we'll use receipt info
+        // to determine install status.
         for item in receipts {
             do {
                 let compareResult = try await compareReceipt(item)
@@ -209,7 +212,9 @@ func someVersionInstalled(_ pkginfo: PlistDict) async -> Bool {
         return true
     }
     // do we have installs items?
-    if let installItems = pkginfo["installs"] as? [PlistDict] {
+    if let installItems = pkginfo["installs"] as? [PlistDict],
+       !installItems.isEmpty
+    {
         for item in installItems {
             do {
                 let compareResult = try compareItem(item)
@@ -300,6 +305,7 @@ func evidenceThisIsInstalled(_ pkginfo: PlistDict) async -> Bool {
     }
     var foundAllInstallItems = false
     if let installItems = pkginfo["installs"] as? [PlistDict],
+       !installItems.isEmpty,
        (pkginfo["uninstall_method"] as? String ?? "") != "removepackages"
     {
         display.debug2("Checking 'installs' items...")

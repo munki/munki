@@ -3,7 +3,7 @@
 //  munkiCLItesting
 //
 //  Created by Greg Neagle on 5/4/25.
-// istXattrs
+//
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
@@ -30,18 +30,21 @@ struct xattrTests {
 
         var xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
         for xattr in xattrs {
-            try? removeXattr(xattr, atPath: unwrappedFilepath)
+            try removeXattr(xattr, atPath: unwrappedFilepath)
         }
         xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
         // #expect(xattrs.isEmpty)
 
         let xattrName = "com.googlecode.munki.test"
         let xattrValue = "Hello, World!".data(using: .utf8)!
-        try? setXattr(named: xattrName, data: xattrValue, atPath: unwrappedFilepath)
+
+        try setXattr(named: xattrName, data: xattrValue, atPath: unwrappedFilepath)
         xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []
         #expect(xattrs.contains(xattrName))
 
         let retrievedXattrValue = (try? getXattr(named: xattrName, atPath: unwrappedFilepath)) ?? Data()
         #expect(retrievedXattrValue == xattrValue)
+
+        try removeXattr(xattrName, atPath: unwrappedFilepath)
     }
 }

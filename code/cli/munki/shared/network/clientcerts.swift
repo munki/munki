@@ -3,7 +3,19 @@
 //  munki
 //
 //  Created by Greg Neagle on 4/9/25.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       https://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 import Foundation
 import Security
@@ -38,10 +50,26 @@ func getCertChainRefs(_ certRef: SecCertificate) -> [SecCertificate]? {
     return certRefs
 }
 
+/// Returns true if the given distinguished name matches either one of the
+/// server-advertised acceptable issuers, or one of the admin-configured
+/// acceptable CA strings (RFC 4514-style distinguished names, as produced by
+/// DistinguishedName.description, e.g. "CN=Munki Client CA,O=SomeOrg")
+func dnMatchesExpectedIssuers(
+    _ dn: DistinguishedName,
+    serverIssuers: [DistinguishedName],
+    configuredAcceptableCAs: [String]
+) -> Bool {
+    if serverIssuers.contains(dn) {
+        return true
+    }
+    return configuredAcceptableCAs.contains(dn.description)
+}
+
 /// Attempts to find an appropriate identity for the protectionSpace and return a credential
 /// for client certificate authentication
 func getClientCertCredential(
     protectionSpace: URLProtectionSpace,
+    configuredAcceptableCAs: [String] = [],
     log: (String) -> Void
 ) -> URLCredential? {
     var expectedIssuers = [DistinguishedName]()
@@ -59,6 +87,12 @@ func getClientCertCredential(
     }
     if expectedIssuers.isEmpty {
         log("The server didn't send the list of acceptable certificate-issuing authorities")
+    }
+    for acceptableCA in configuredAcceptableCAs {
+        log("Configured acceptable certificate-issuing authority: \(acceptableCA)")
+    }
+    if expectedIssuers.isEmpty, configuredAcceptableCAs.isEmpty {
+        log("No acceptable certificate-issuing authorities are available, either sent by the server or configured via the ClientCertificateAcceptableCAs preference")
         return nil
     }
     // search for a matching identity (cert paired with private key)
@@ -76,7 +110,7 @@ func getClientCertCredential(
     }
     var certChainRefs: [SecCertificate]?
     // loop through results to find cert that matches issuer
-    for identityRef in identityRefs as! [SecIdentity] {
+    for identityRef in identityRefs as? [SecIdentity] ?? [] {
         var certRef: SecCertificate?
         let status = SecIdentityCopyCertificate(identityRef, &certRef)
         guard status == errSecSuccess, let certRef else { continue }
@@ -93,7 +127,11 @@ func getClientCertCredential(
             }
         }
         for certSubject in certSubjects {
-            if expectedIssuers.contains(certSubject) {
+            if dnMatchesExpectedIssuers(
+                certSubject,
+                serverIssuers: expectedIssuers,
+                configuredAcceptableCAs: configuredAcceptableCAs
+            ) {
                 log("Found matching identity")
                 return URLCredential(
                     identity: identityRef,
@@ -102,7 +140,9 @@ func getClientCertCredential(
                 )
             }
         }
+        log("Identity with subject \(certificate.subject.description) does not match any acceptable certificate-issuing authority; candidate issuers: \(certSubjects.map(\.description).joined(separator: " | "))")
     }
     // no matching identity found
+    log("No keychain identity matches any acceptable certificate-issuing authority")
     return nil
 }

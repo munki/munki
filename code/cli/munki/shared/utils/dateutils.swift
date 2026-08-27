@@ -3,8 +3,7 @@
 //  munki
 //
 //  Created by Greg Neagle on 1/6/25.
-//
-//  Copyright 2024-2025 Greg Neagle.
+//  Copyright 2024-2026 The Munki Project. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -52,4 +51,20 @@ func addTZOffsetToDate(_ date: Date) -> Date {
     let secondsOffset = Double(timezone.secondsFromGMT(for: date))
     // return new Date plus the offset
     return Date(timeInterval: secondsOffset, since: date)
+}
+
+/// Returns an ISO 8601-formatted string in UTC for given date
+func ISO8601String(for date: Date) -> String {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter.string(from: date)
+}
+
+/// Retutns an RFC 3339-formatted string in the current time zone for given date
+func RFC3339String(for date: Date) -> String {
+    // RFC 3339 date format like `2024-07-01 17:30:32-08:00`
+    let formatter = ISO8601DateFormatter()
+    formatter.timeZone = TimeZone.current
+    formatter.formatOptions = [.withInternetDateTime, .withSpaceBetweenDateAndTime]
+    return formatter.string(from: date)
 }
