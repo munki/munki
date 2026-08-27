@@ -149,7 +149,13 @@
 "Download paused — low data connection" = "Download paused — low data connection";
 
 /* Download Anyway alert title */
-"Download anyway?" = "Download anyway?";
+"Low data connection detected" = "Low data connection detected";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
+
+/* Low data More Info button title */
+"More Info" = "More Info";
 
 /* Downloading status text */
 "Downloading" = "Downloading";
