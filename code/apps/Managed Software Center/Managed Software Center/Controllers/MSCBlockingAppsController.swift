@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import UniformTypeIdentifiers
 
 /// A flipped NSClipView that positions content from top to bottom.
 /// Used in scroll views to ensure content aligns to the top rather than the bottom.
@@ -23,6 +24,29 @@ private struct BlockingAppRowData {
     var forceQuitButton: NSButton?
     var forceQuitButtonWidthConstraint: NSLayoutConstraint?
     var quitInitiatedTime: Date?
+}
+
+private struct AppToReopen {
+    let path: String
+    let arguments: [String]
+}
+
+private func recordLaunchArguments(
+    _ arguments: [String],
+    for appPaths: [String],
+    in configurations: inout [String: [String]]
+) -> [String] {
+    var conflicts = [String]()
+    for appPath in appPaths {
+        if let existingArguments = configurations[appPath] {
+            if existingArguments != arguments {
+                conflicts.append(appPath)
+            }
+        } else {
+            configurations[appPath] = arguments
+        }
+    }
+    return conflicts
 }
 
 /// Controller that manages the blocking apps sheet UI.
@@ -57,13 +81,19 @@ class MSCBlockingAppsController: NSObject {
     // Custom quit script tracking - maps app names to their quit scripts
     private var appQuitScripts: [String: String] = [:] // keyed by app name (e.g. "Safari.app")
 
+    // Launch arguments for reopening apps, keyed by resolved app bundle path
+    private var appLaunchArguments: [String: [String]] = [:]
+
     // Removal tracking - apps being removed shouldn't be reopened
     private var appsBeingRemovedNames: Set<String> = [] // app names being removed
     private var appsBeingRemovedPaths: Set<String> = [] // app paths being removed
 
+    // Non-bundle executable tracking - executables that are not .app bundles
+    private var nonBundleExecutablePaths: Set<String> = []
+
     // Reopen apps after update
     private var reopenCheckbox: NSButton?
-    private(set) var appsToReopenAfterUpdate: [String] = []
+    private var appsToReopenAfterUpdate: [AppToReopen] = []
 
     // Layout constants
     private var sheetWidth: CGFloat = 320 // can grow
@@ -106,7 +136,9 @@ class MSCBlockingAppsController: NSObject {
         appsToCheck = []
         manualQuitAppNames = []
         appQuitScripts = [:]
+        appLaunchArguments = [:]
         appsBeingRemovedNames = []
+        nonBundleExecutablePaths = []
 
         var running_apps: [BlockingAppInfo] = []
         for update_item in getUpdateList() {
@@ -157,6 +189,43 @@ class MSCBlockingAppsController: NSObject {
                     msc_debug_log("Found blocking_applications_quit_script for \(appName)")
                 }
             }
+
+            if let launchArgumentMappings = update_item["blocking_applications_launch_args"] as? [String: Any] {
+                let itemAppPaths = Set(runningBlockingApps.map(\.pathname).filter {
+                    $0.hasSuffix(".app")
+                })
+                for appIdentifier in launchArgumentMappings.keys.sorted() {
+                    guard let launchArguments = launchArgumentMappings[appIdentifier] as? [String] else {
+                        msc_debug_log(
+                            "Ignoring invalid blocking_applications_launch_args for \(appIdentifier)"
+                        )
+                        continue
+                    }
+                    let appPaths = Array(Set(
+                        getRunningBlockingApps([appIdentifier]).map(\.pathname)
+                    ).intersection(itemAppPaths)).sorted()
+                    if appPaths.isEmpty {
+                        msc_debug_log(
+                            "Ignoring blocking_applications_launch_args for non-blocking application \(appIdentifier)"
+                        )
+                        continue
+                    }
+                    let configuredApps = appPaths.filter { appLaunchArguments[$0] == nil }
+                    let conflicts = recordLaunchArguments(
+                        launchArguments,
+                        for: appPaths,
+                        in: &appLaunchArguments
+                    )
+                    for appPath in configuredApps {
+                        msc_debug_log("Found blocking_applications_launch_args for \(appPath)")
+                    }
+                    for appPath in conflicts {
+                        msc_debug_log(
+                            "Ignoring conflicting blocking_applications_launch_args for \(appPath)"
+                        )
+                    }
+                }
+            }
         }
 
         if running_apps.isEmpty {
@@ -191,8 +260,13 @@ class MSCBlockingAppsController: NSObject {
                 seenNames.insert(displayName)
                 var appPath = app.pathname
                 if !appPath.isEmpty {
-                    while !appPath.isEmpty, !appPath.hasSuffix(".app") {
+                    while !appPath.isEmpty, appPath != "/", !appPath.hasSuffix(".app") {
                         appPath = (appPath as NSString).deletingLastPathComponent
+                    }
+                    if !appPath.hasSuffix(".app") {
+                        // this is a non-bundle executable; reset the path
+                        appPath = app.pathname
+                        nonBundleExecutablePaths.insert(appPath)
                     }
                 }
                 uniqueApps.append((displayName: displayName, path: appPath))
@@ -251,7 +325,15 @@ class MSCBlockingAppsController: NSObject {
         // Save apps to reopen if checkbox is checked, visible, and user didn't cancel
         // Exclude apps that are being removed as they won't exist after the update
         if canContinue, reopenCheckbox?.state == .on, reopenCheckbox?.isHidden == false {
-            appsToReopenAfterUpdate = closedApps.filter { !appsBeingRemovedPaths.contains($0) }
+            appsToReopenAfterUpdate = closedApps.compactMap { appPath in
+                guard !appsBeingRemovedPaths.contains(appPath),
+                      !nonBundleExecutablePaths.contains(appPath)
+                else { return nil }
+                return AppToReopen(
+                    path: appPath,
+                    arguments: appLaunchArguments[appPath] ?? []
+                )
+            }
         } else {
             appsToReopenAfterUpdate = []
         }
@@ -517,8 +599,8 @@ class MSCBlockingAppsController: NSObject {
             iconView.translatesAutoresizingMaskIntoConstraints = false
             iconView.imageScaling = .scaleProportionallyUpOrDown
             if !app.path.isEmpty {
-                // grab icon from app bundle if possible
                 if FileManager.default.fileExists(atPath: app.path) {
+                    // grab icon from app bundle if possible
                     iconView.image = NSWorkspace.shared.icon(forFile: app.path)
                 } else {
                     // use the icon from the repo
@@ -529,9 +611,26 @@ class MSCBlockingAppsController: NSObject {
                     }
                 }
             }
-            // if no icon, use generic app icon
+            // if no icon, use generic icon
+            if #available(macOS 11.0, *) {
+                if iconView.image == nil {
+                    let utType: UTType?
+                    if app.path.hasSuffix(".app") {
+                        utType = UTType(filenameExtension: "app")
+                    } else {
+                        utType = UTType.unixExecutable
+                    }
+                    if let utType {
+                        iconView.image = NSWorkspace.shared.icon(for: utType)
+                    }
+                }
+            }
+            // if we're running on pre-macOS 11 or can't get an icon via UTType
             if iconView.image == nil {
-                iconView.image = NSImage(named: NSImage.applicationIconName)
+                // Fallback on earlier versions
+                iconView.image = NSImage(contentsOf: URL(
+                    fileURLWithPath: "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns")
+                )
             }
 
             // App name label
@@ -828,6 +927,26 @@ class MSCBlockingAppsController: NSObject {
         }
     }
 
+    /// Finds all processes whose executable path exactly matches `executablePath`
+    /// and sends them `signal`. Used for non-bundle executables (CLI tools, scripts)
+    /// that do not appear in NSWorkspace.shared.runningApplications.
+    private func terminateNonBundleProcess(at executablePath: String, signal: Int32 = SIGTERM) {
+        let ps_out = exec("/bin/ps", args: ["-axo", "pid=,comm="])
+        for line in ps_out.split(separator: "\n") {
+            let parts = line.split(
+                maxSplits: 1,
+                omittingEmptySubsequences: true,
+                whereSeparator: { " \t".contains($0) }
+            )
+            guard parts.count == 2 else { continue }
+            let pidString = String(parts[0]).trimmingCharacters(in: .whitespaces)
+            let comm = String(parts[1]).trimmingCharacters(in: .whitespaces)
+            guard comm == executablePath, let pid = pid_t(pidString) else { continue }
+            msc_debug_log("Sending signal \(signal) to PID \(pid) (\(executablePath))")
+            kill(pid, signal)
+        }
+    }
+
     @objc private func forceQuitButtonClicked(_ sender: NSButton) {
         guard let appPath = sender.identifier?.rawValue,
               let appInfo = appsToQuit.first(where: { $0.path == appPath }),
@@ -859,12 +978,16 @@ class MSCBlockingAppsController: NSObject {
     }
 
     private func performForceQuit(for appPath: String) {
-        let runningApps = getRunningApps(forBundlePath: appPath)
-
-        msc_debug_log("Force terminating \(runningApps.count) app(s) for bundle: \(appPath)")
-        for runningApp in runningApps {
-            msc_debug_log("  - Force terminating: \(runningApp.bundleURL?.path ?? "unknown")")
-            _ = runningApp.forceTerminate()
+        if nonBundleExecutablePaths.contains(appPath) {
+            msc_debug_log("Force terminating non-bundle process at: \(appPath)")
+            terminateNonBundleProcess(at: appPath, signal: SIGKILL)
+        } else {
+            let runningApps = getRunningApps(forBundlePath: appPath)
+            msc_debug_log("Force terminating \(runningApps.count) app(s) for bundle: \(appPath)")
+            for runningApp in runningApps {
+                msc_debug_log("  - Force terminating: \(runningApp.bundleURL?.path ?? "unknown")")
+                _ = runningApp.forceTerminate()
+            }
         }
 
         // Hide the force quit button and show spinner while we wait for it to close
@@ -895,6 +1018,7 @@ class MSCBlockingAppsController: NSObject {
         appQuitScripts = [:]
         appsBeingRemovedNames = []
         appsBeingRemovedPaths = []
+        nonBundleExecutablePaths = []
         reopenCheckbox = nil
         // Note: appsToReopenAfterUpdate is intentionally NOT cleared here
         // so the caller can access it after the sheet is dismissed
@@ -914,25 +1038,25 @@ class MSCBlockingAppsController: NSObject {
         let apps = appsToReopenAfterUpdate
         appsToReopenAfterUpdate = []
 
-        let config = NSWorkspace.OpenConfiguration()
-        config.activates = false // Open apps in background without bringing to foreground
-
         // Stagger app launches to give the system time to settle
         // after package installations.
         let initialDelay: TimeInterval = 2.0
         let staggerDelay: TimeInterval = 1.0
 
-        for (index, appPath) in apps.enumerated() {
+        for (index, app) in apps.enumerated() {
             let delay = initialDelay + (Double(index) * staggerDelay)
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                msc_debug_log("Reopening app in background: \(appPath)")
+                let config = NSWorkspace.OpenConfiguration()
+                config.activates = false
+                config.arguments = app.arguments
+                msc_debug_log("Reopening app in background: \(app.path)")
                 NSWorkspace.shared.openApplication(
-                    at: URL(fileURLWithPath: appPath),
+                    at: URL(fileURLWithPath: app.path),
                     configuration: config
                 ) { _, error in
                     if let error {
                         msc_debug_log(
-                            "Failed to reopen app at \(appPath): \(error.localizedDescription)"
+                            "Failed to reopen app at \(app.path): \(error.localizedDescription)"
                         )
                     }
                 }
@@ -1011,6 +1135,9 @@ class MSCBlockingAppsController: NSObject {
                             }
                         }
                     }
+                } else if nonBundleExecutablePaths.contains(app.path) {
+                    msc_debug_log("Terminating non-bundle process at: \(app.path)")
+                    terminateNonBundleProcess(at: app.path)
                 } else {
                     // Use default termination logic
                     let runningApps = getRunningApps(forBundlePath: app.path)

@@ -301,6 +301,9 @@
 /* Mandatory Updates Pending detail */
 "One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "One or more updates must be installed by %@. A logout may be forced if you wait too long to update.";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Suggested removals";
+
 /* Other Available Updates label */
 "Other available updates" = "Other available updates";
 

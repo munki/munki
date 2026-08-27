@@ -24,6 +24,18 @@
 
 import Foundation
 
+let assistedQuitPkginfoKeys = [
+    "blocking_applications_manual_quit_only",
+    "blocking_applications_quit_script",
+    "blocking_applications_launch_args",
+]
+
+func copyAssistedQuitMetadata(from pkginfo: PlistDict, to item: inout PlistDict) {
+    for key in assistedQuitPkginfoKeys {
+        item[key] = pkginfo[key]
+    }
+}
+
 private let display = DisplayAndLog.main
 
 /// Determines if an item is in a list of processed items.
@@ -103,6 +115,7 @@ func alreadyProcessed(_ itemName: String, installInfo: PlistDict, sections: [Str
         "processed_uninstalls": "uninstall",
         "managed_updates": "update",
         "optional_installs": "optional install",
+        "optional_uninstalls": "optional uninstall",
     ]
     for section in sections {
         if let listOfNames = installInfo[section] as? [String],
@@ -124,6 +137,55 @@ func alreadyProcessed(_ itemName: String, installInfo: PlistDict, sections: [Str
     return false
 }
 
+/// True if the item's force_install_after_date has been reached (in local time,
+/// matching the forced-install logic in installinfo.swift). Such an item is due
+/// to be force-installed, so it must download regardless of connection.
+func forceInstallDeadlinePassed(_ pkginfo: PlistDict) -> Bool {
+    guard let forceDate = pkginfo["force_install_after_date"] as? Date else {
+        return false
+    }
+    return Date() >= subtractTZOffsetFromDate(forceDate)
+}
+
+/// Returns true if downloading this item should be deferred because we are on
+/// a low data connection (see isOnLowDataConnection()). The connection state
+/// and the MaxSizeOverLowDataConnection threshold are passed in so this stays a
+/// pure function that is easy to test.
+///
+/// A reached force_install_after_date always wins: an item that is due to be
+/// force-installed must download regardless of connection. A negative
+/// MaxSizeOverLowDataConnection disables low-data deferrals. Otherwise, the
+/// per-item download_on_low_data key ("always"/"never") overrides the size
+/// threshold; "auto" (or an absent/unrecognized value) follows the threshold.
+/// With a threshold of 0, auto/default items defer while explicit "always"
+/// items still download.
+func shouldDeferDownloadForLowData(
+    _ pkginfo: PlistDict,
+    installerItemSize: Int,
+    onLowDataConnection: Bool,
+    maxSizeOverLowDataConnection: Int
+) -> Bool {
+    if !onLowDataConnection {
+        return false
+    }
+    if forceInstallDeadlinePassed(pkginfo) {
+        // deadline reached; item will be force-installed, so it must download
+        return false
+    }
+    if maxSizeOverLowDataConnection < 0 {
+        return false
+    }
+    switch pkginfo["download_on_low_data"] as? String {
+    case "always":
+        return false
+    case "never":
+        return true
+    default:
+        // "auto", absent, or an unrecognized value: follow the size threshold
+        return installerItemSize > maxSizeOverLowDataConnection
+    }
+}
+
 /// Processes a manifest item for install. Determines if it needs to be
 /// installed, and if so, if any items it is dependent on need to
 /// be installed first.  Installation detail is added to
@@ -136,7 +198,8 @@ func processInstall(
     catalogList: [String],
     installInfo: inout PlistDict,
     isManagedUpdate: Bool = false,
-    isOptionalInstall: Bool = false
+    isOptionalInstall: Bool = false,
+    lowDataExempt: Bool = false
 ) async -> Bool {
     /// helper function
     func appendToProcessedManagedInstalls(_ item: PlistDict) {
@@ -230,6 +293,9 @@ func processInstall(
     } else if let requires = pkginfo["requires"] as? String {
         dependencies = [requires]
     }
+    // A forced item past its deadline (or a dependency of one) must download
+    // even on low data, so propagate that exemption to its required items.
+    let lowDataExemptForDependencies = lowDataExempt || forceInstallDeadlinePassed(pkginfo)
     for item in dependencies {
         display.detail("\(name)-\(version) requires \(item). Getting info on \(item)...")
         let success = await processInstall(
@@ -237,7 +303,8 @@ func processInstall(
             catalogList: catalogList,
             installInfo: &installInfo,
             isManagedUpdate: isManagedUpdate,
-            isOptionalInstall: isOptionalInstall
+            isOptionalInstall: isOptionalInstall,
+            lowDataExempt: lowDataExemptForDependencies
         )
         if !success {
             dependenciesMet = false
@@ -280,6 +347,39 @@ func processInstall(
             // "install" that has no actual download
             filename = "packageless_install"
         } else {
+            // Skip deferral if the item is exempt (forced/dependency of forced)
+            // or already fully cached (installing it transfers no data).
+            let installerLocation = pkginfo["installer_item_location"] as? String ?? ""
+            // ponytail: presence check, not a hash check; a partial cache would
+            // still resume on low data. Full-cache is the case that matters here.
+            let alreadyCached = !installerLocation.isEmpty && pathExists(getDownloadCachePath(installerLocation))
+            let maxSizeOverLowDataConnection = pref("MaxSizeOverLowDataConnection") as? Int ?? -1
+            if !lowDataExempt, !alreadyCached,
+               shouldDeferDownloadForLowData(
+                   pkginfo,
+                   installerItemSize: installerItemSize,
+                   onLowDataConnection: onLowDataConnection(),
+                   maxSizeOverLowDataConnection: maxSizeOverLowDataConnection
+               )
+            {
+                let allowOverride = pref("AllowLowDataOverride") as? Bool ?? true
+                if allowOverride, lowDataOverrideItems().contains(name) {
+                    display.detail("Downloading \(manifestItemName) anyway on a low data connection due to a user override.")
+                } else {
+                    display.detail("Deferring download of \(manifestItemName) because this Mac is on a low data connection.")
+                    processedItem["installed"] = false
+                    processedItem["low_data_deferred"] = true
+                    processedItem["note"] = "Download of \(displayName) was paused because this Mac is on a low data connection."
+                    appendToProcessedManagedInstalls(processedItem)
+                    return false
+                }
+            }
+            // We're downloading this item, so a one-time low-data override (if
+            // any) has served its purpose; consume it now so it can't later
+            // authorize a newer version over low data.
+            if lowDataOverrideItems().contains(name) {
+                removeLowDataOverrides(names: [name])
+            }
             do {
                 // record starttime
                 let startTime = Date()
@@ -380,8 +480,6 @@ func processInstall(
             "display_name_staged", // used w/ stage_os_installer
             "description_staged",
             "installed_size_staged",
-            "blocking_applications_manual_quit_only",
-            "blocking_applications_quit_script",
         ]
 
         if isOptionalInstall {
@@ -398,6 +496,7 @@ func processInstall(
         for key in optionalKeys {
             processedItem[key] = pkginfo[key]
         }
+        copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
 
         if pkginfo["apple_item"] == nil {
             // admin did not explicitly mark this item; let's determine if
@@ -578,7 +677,7 @@ func processOptionalInstall(
     if alreadyProcessed(
         manifestItemName,
         installInfo: installInfo,
-        sections: ["optional_installs", "processed_installs", "processed_uninstalls"]
+        sections: ["optional_installs", "optional_uninstalls", "processed_installs", "processed_uninstalls"]
     ) {
         return
     }
@@ -760,17 +859,98 @@ func processOptionalInstall(
         "minimum_os_version",
         "update_available",
         "localized_strings",
-        "blocking_applications_manual_quit_only",
-        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = pkginfo[key]
     }
+    copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
     let itemName = processedItem["name"] as? String ?? "<unknown>"
     display.debug1("Adding \(itemName) to the optional install list")
     var optionalInstalls = installInfo["optional_installs"] as? [PlistDict] ?? []
     optionalInstalls.append(processedItem)
     installInfo["optional_installs"] = optionalInstalls
+}
+
+/// Process an optional uninstall item to see if it should be added to
+/// the list of optional uninstalls. Only items that are currently installed
+/// are added; items not installed are silently skipped.
+func processOptionalUninstall(
+    _ manifestItem: String,
+    catalogList: [String],
+    installInfo: inout PlistDict
+) async {
+    let manifestItemName = (manifestItem as NSString).lastPathComponent
+    display.debug1("* Processing manifest item \(manifestItemName) for optional uninstall")
+
+    if alreadyProcessed(
+        manifestItemName,
+        installInfo: installInfo,
+        sections: ["optional_uninstalls", "processed_installs"]
+    ) {
+        return
+    }
+
+    // check to see if item (any version) is already in the optional_uninstalls list
+    if let existingItems = installInfo["optional_uninstalls"] as? [PlistDict] {
+        for item in existingItems {
+            if let name = item["name"] as? String, name == manifestItemName {
+                display.debug1("\(manifestItemName) has already been processed for optional uninstall.")
+                return
+            }
+        }
+    }
+
+    guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
+        display.warning("Could not process item \(manifestItemName) for optional uninstall. No pkginfo found in catalogs: \(catalogList)")
+        return
+    }
+
+    let isCurrentlyInstalled = await someVersionInstalled(pkginfo)
+    if !isCurrentlyInstalled {
+        display.debug1("\(manifestItemName) is not installed, so skipping optional uninstall.")
+        return
+    }
+
+    var processedItem = PlistDict()
+    processedItem["name"] = pkginfo["name"] as? String ?? manifestItemName
+    processedItem["display_name"] = pkginfo["display_name"] ?? ""
+    processedItem["description"] = pkginfo["description"] ?? ""
+    processedItem["version_to_install"] = pkginfo["version"] ?? "UNKNOWN"
+    for key in [
+        "category",
+        "developer",
+        "featured",
+        "icon_name",
+        "icon_hash",
+        "requires",
+        "RestartAction",
+    ] {
+        processedItem[key] = pkginfo[key]
+    }
+    processedItem["installed"] = true
+    processedItem["needs_update"] = false
+    processedItem["licensed_seat_info_available"] = pkginfo["licensed_seat_info_available"] as? Bool ?? false
+    processedItem["uninstallable"] = (pkginfo["uninstallable"] as? Bool ?? false) && !(pkginfo["uninstall_method"] as? String ?? "").isEmpty
+    let installerSize = pkginfo["installer_item_size"] as? Int ?? 0
+    processedItem["installer_item_size"] = installerSize
+    processedItem["installed_size"] = pkginfo["installed_size"] as? Int ?? installerSize
+    if let pkgInfoNote = pkginfo["note"] as? String {
+        processedItem["note"] = pkgInfoNote
+    }
+    let optionalKeys = [
+        "preuninstall_alert",
+        "minimum_os_version",
+        "localized_strings",
+    ]
+    for key in optionalKeys {
+        processedItem[key] = pkginfo[key]
+    }
+    copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
+    let itemName = processedItem["name"] as? String ?? "<unknown>"
+    display.debug1("Adding \(itemName) to the optional uninstall list")
+    var optionalUninstalls = installInfo["optional_uninstalls"] as? [PlistDict] ?? []
+    optionalUninstalls.append(processedItem)
+    installInfo["optional_uninstalls"] = optionalUninstalls
 }
 
 /// Processes a manifest item; attempts to determine if it
@@ -1002,12 +1182,11 @@ func processRemoval(
         "developer",
         "icon_name",
         "PayloadIdentifier",
-        "blocking_applications_manual_quit_only",
-        "blocking_applications_quit_script",
     ]
     for key in optionalKeys {
         processedItem[key] = uninstallItem[key]
     }
+    copyAssistedQuitMetadata(from: uninstallItem, to: &processedItem)
 
     if processedItem["apple_item"] == nil {
         // admin did not explicitly mark this item; let's determine if

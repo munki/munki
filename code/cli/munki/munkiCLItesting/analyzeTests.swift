@@ -16,7 +16,170 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import Foundation
 import Testing
+
+struct assistedQuitMetadataTests {
+    @Test func copiesLaunchArguments() {
+        let pkginfo: PlistDict = [
+            "blocking_applications_launch_args": [
+                "Google Chrome.app": [
+                    "--restore-last-session",
+                    "--profile-directory=Profile With Spaces",
+                ],
+            ],
+        ]
+        var processedItem = PlistDict()
+
+        copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
+
+        let launchArguments = processedItem["blocking_applications_launch_args"] as? PlistDict
+        #expect(launchArguments?["Google Chrome.app"] as? [String] == [
+            "--restore-last-session",
+            "--profile-directory=Profile With Spaces",
+        ])
+    }
+
+    @Test func copiesAllAssistedQuitMetadata() {
+        let pkginfo: PlistDict = [
+            "blocking_applications_manual_quit_only": true,
+            "blocking_applications_quit_script": "#!/bin/sh\nexit 0",
+            "blocking_applications_launch_args": [
+                "Google Chrome.app": ["--restore-last-session"],
+            ],
+        ]
+        var processedItem = PlistDict()
+
+        copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
+
+        #expect(processedItem["blocking_applications_manual_quit_only"] as? Bool == true)
+        #expect(processedItem["blocking_applications_quit_script"] as? String == "#!/bin/sh\nexit 0")
+        let launchArguments = processedItem["blocking_applications_launch_args"] as? PlistDict
+        #expect(launchArguments?["Google Chrome.app"] as? [String] == ["--restore-last-session"])
+    }
+
+    @Test func ignoresAbsentMetadata() {
+        var processedItem: PlistDict = ["name": "GoogleChrome"]
+
+        copyAssistedQuitMetadata(from: [:], to: &processedItem)
+
+        #expect(processedItem["blocking_applications_launch_args"] == nil)
+        #expect(processedItem["name"] as? String == "GoogleChrome")
+    }
+}
+
+struct shouldDeferDownloadForLowDataTests {
+    /// Not on a low data connection: never defer, even a large "never" item
+    @Test func notOnLowDataNeverDefers() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "never"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 999_999,
+            onLowDataConnection: false, maxSizeOverLowDataConnection: 1
+        ) == false)
+    }
+
+    /// download_on_low_data "always" does not defer when the threshold is positive
+    @Test func alwaysDoesNotDefer() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "always"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 999_999,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 1
+        ) == false)
+    }
+
+    /// download_on_low_data "never" always defers on a low data connection
+    @Test func neverDefers() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "never"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 1,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 1
+        ) == true)
+    }
+
+    /// a negative threshold disables low-data deferrals
+    @Test func autoThresholdDisabledDownloads() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "auto"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 999_999,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: -1
+        ) == false)
+    }
+
+    /// a negative threshold disables even explicit low-data pkginfo rules
+    @Test func disabledThresholdIgnoresNever() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "never"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 999_999,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: -1
+        ) == false)
+    }
+
+    /// a zero threshold defers auto/default downloads
+    @Test func zeroThresholdDefersAutoDownloads() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "auto"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 1,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0
+        ) == true)
+    }
+
+    /// download_on_low_data "always" can override a zero threshold
+    @Test func alwaysOverridesZeroThreshold() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "always"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 1,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0
+        ) == false)
+    }
+
+    /// auto, item larger than the threshold, defers
+    @Test func autoOverThresholdDefers() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "auto"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 250_001,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == true)
+    }
+
+    /// auto, item at or under the threshold, downloads
+    @Test func autoUnderThresholdDownloads() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "auto"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 250_000,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == false)
+    }
+
+    /// An absent key is treated as auto (follows the threshold)
+    @Test func absentKeyFollowsThreshold() async throws {
+        let pkginfo = PlistDict()
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 300_000,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == true)
+    }
+
+    /// An unrecognized value is treated as auto (follows the threshold)
+    @Test func unknownValueFollowsThreshold() async throws {
+        let pkginfo: PlistDict = ["download_on_low_data": "bogus"]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 100,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 250_000
+        ) == false)
+    }
+
+    /// A reached force_install_after_date wins over "never"
+    @Test func passedDeadlineDownloads() async throws {
+        let pkginfo: PlistDict = [
+            "download_on_low_data": "never",
+            "force_install_after_date": Date(timeIntervalSinceNow: -86400),
+        ]
+        #expect(shouldDeferDownloadForLowData(
+            pkginfo, installerItemSize: 999_999,
+            onLowDataConnection: true, maxSizeOverLowDataConnection: 0
+        ) == false)
+    }
+}
 
 struct itemInInstallInfoTests {
     let installInfo: [PlistDict] = [
