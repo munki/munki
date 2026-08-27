@@ -508,7 +508,7 @@ class GenericItem: BaseItem {
                                   comment: "Unavailable status text")
         ]
         let status = my["status"] as? String ?? ""
-        return custom_action_label(forStatus: status) ?? text_for[status] ?? status
+        return custom_action_label(forStatus: status) ?? escapeHTML(text_for[status] ?? status)
     }
     
     func long_action_text() -> String {
@@ -573,7 +573,7 @@ class GenericItem: BaseItem {
                                   comment: "Unavailable long action text")
         ]
         let status = my["status"] as? String ?? ""
-        return custom_action_label(forStatus: status) ?? text_for[status] ?? status
+        return custom_action_label(forStatus: status) ?? escapeHTML(text_for[status] ?? status)
     }
     
     func myitem_action_text() -> String {
@@ -631,7 +631,7 @@ class GenericItem: BaseItem {
                                   comment: "Install Required action text"),
         ]
         let status = my["status"] as? String ?? ""
-        return custom_action_label(forStatus: status) ?? text_for[status] ?? status
+        return custom_action_label(forStatus: status) ?? escapeHTML(text_for[status] ?? status)
     }
     
     func version_label() -> String {
