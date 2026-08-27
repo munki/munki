@@ -1017,13 +1017,16 @@ class UpdateItem: GenericItem {
             // Show a localized "paused" message instead of the plain-English
             // note recorded by managedsoftwareupdate on the CLI side.
             my["note"] = lowDataPausedNote()
-            // Offer a "Download anyway" button unless the admin disabled
-            // user overrides via AllowLowDataOverride.
+            // Offer a neutral "More Info" button (unless the admin disabled
+            // user overrides via AllowLowDataOverride). It opens a dialog that
+            // explains the deferral and offers the actual "Download anyway"
+            // action, so the compact row button stays short and doesn't imply
+            // an action on its own.
             if munkiPref("AllowLowDataOverride") as? Bool ?? true {
                 my["hide_low_data_button"] = ""
                 my["low_data_action_text"] = NSLocalizedString(
-                    "Download anyway",
-                    comment: "Download anyway button title")
+                    "More Info",
+                    comment: "Low data More Info button title")
             }
         }
     }

@@ -152,7 +152,10 @@
 "Low data connection detected" = "Låg dataförbrukning upptäckt";
 
 /* Download Anyway alert informative text */
-"Are you sure you want to download it now?" = "Är du säker på att du vill ladda ner det nu?";
+"This item was not downloaded because this Mac is on a low data connection." = "Det här objektet laddades inte ner eftersom denna Mac har en anslutning med låg dataförbrukning.";
+
+/* Low data More Info button title */
+"More Info" = "Mer info";
 
 /* Downloading status text */
 "Downloading" = "Hämtar";

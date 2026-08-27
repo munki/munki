@@ -152,7 +152,10 @@
 "Low data connection detected" = "Low data connection detected";
 
 /* Download Anyway alert informative text */
-"Are you sure you want to download it now?" = "Are you sure you want to download it now?";
+"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
+
+/* Low data More Info button title */
+"More Info" = "More Info";
 
 /* Downloading status text */
 "Downloading" = "Downloading";
