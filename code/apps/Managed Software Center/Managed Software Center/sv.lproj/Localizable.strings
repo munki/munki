@@ -149,7 +149,7 @@
 "Download paused — low data connection" = "Nerladdning pausad — låg dataförbrukning";
 
 /* Download Anyway alert title */
-"Low data connection detected and item size exceeds limit" = "Låg dataförbrukning upptäckt och objektets storlek överskrider gränsen";
+"Low data connection detected" = "Låg dataförbrukning upptäckt";
 
 /* Download Anyway alert informative text */
 "Are you sure you want to download it now?" = "Är du säker på att du vill ladda ner det nu?";

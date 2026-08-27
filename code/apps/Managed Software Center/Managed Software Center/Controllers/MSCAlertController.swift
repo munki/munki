@@ -331,7 +331,7 @@ class MSCAlertController: NSObject {
         }
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
-            "Low data connection detected and item size exceeds limit",
+            "Low data connection detected",
             comment: "Download Anyway alert title")
         alert.informativeText = NSLocalizedString(
             "Are you sure you want to download it now?",
