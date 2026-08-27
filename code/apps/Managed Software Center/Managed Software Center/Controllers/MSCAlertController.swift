@@ -322,23 +322,31 @@ class MSCAlertController: NSObject {
     }
     
     func confirmDownloadAnyway(_ itemName: String) {
-        // Confirm the user wants to download a low-data-deferred item over
-        // their low data connection, record the override, then kick off a
-        // check so it downloads now rather than silently waiting for the next
-        // scheduled run.
+        // Explain why the item was not downloaded and offer to download it
+        // anyway over the low data connection. "OK" is the default (dismiss);
+        // "Download anyway" records the override and kicks off a check so it
+        // downloads now rather than waiting for the next scheduled run.
         guard let mainWindow = window else {
             return
         }
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
-            "Download anyway?",
+            "Low data connection detected",
             comment: "Download Anyway alert title")
+        alert.informativeText = NSLocalizedString(
+            "This item was not downloaded because this Mac is on a low data connection.",
+            comment: "Download Anyway alert informative text")
+        // "OK" first, so it is the default button and simply dismisses. Only
+        // offer the "Download anyway" action if the admin allows user
+        // overrides; otherwise the dialog is purely informational.
         alert.addButton(withTitle: NSLocalizedString(
-            "Download anyway", comment: "Download anyway button title"))
-        alert.addButton(withTitle: NSLocalizedString(
-            "Cancel", comment: "Cancel button title/short action text"))
+            "OK", comment: "OK button title"))
+        if munkiPref("AllowLowDataOverride") as? Bool ?? true {
+            alert.addButton(withTitle: NSLocalizedString(
+                "Download anyway", comment: "Download anyway button title"))
+        }
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
-            if modalResponse == .alertFirstButtonReturn {
+            if modalResponse == .alertSecondButtonReturn {
                 if addLowDataOverride(itemName) {
                     if let mainWindowController = (NSApp.delegate as? AppDelegate)?.mainWindowController {
                         mainWindowController.checkForUpdates()
