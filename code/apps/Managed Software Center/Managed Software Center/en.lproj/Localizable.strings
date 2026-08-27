@@ -149,7 +149,10 @@
 "Download paused — low data connection" = "Download paused — low data connection";
 
 /* Download Anyway alert title */
-"Download anyway?" = "Download anyway?";
+"Low data connection detected and item size exceeds limit" = "Low data connection detected and item size exceeds limit";
+
+/* Download Anyway alert informative text */
+"Are you sure you want to download it now?" = "Are you sure you want to download it now?";
 
 /* Downloading status text */
 "Downloading" = "Downloading";
