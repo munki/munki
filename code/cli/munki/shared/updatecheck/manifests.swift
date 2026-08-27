@@ -17,6 +17,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import Darwin.C
 import Foundation
 
 private let PRIMARY_MANIFEST_TAG = "_primary_manifest_"
@@ -75,6 +76,47 @@ class Manifests {
     }
 }
 
+/// Makes a local directory available for a manifest download. A cached
+/// manifest may occupy this path when a repository changes a manifest name
+/// into a directory prefix.
+func prepareManifestDirectory(_ path: String, cacheRoot: String) -> Bool {
+    let standardizedPath = (path as NSString).standardizingPath
+    let standardizedRoot = (cacheRoot as NSString).standardizingPath
+    if standardizedPath != standardizedRoot,
+       !standardizedPath.hasPrefix(standardizedRoot + "/")
+    {
+        display.error("Manifest directory is outside the manifest cache: \(path)")
+        return false
+    }
+
+    let relativePath = String(standardizedPath.dropFirst(standardizedRoot.count + 1))
+    var candidatePath = standardizedRoot
+    for component in relativePath.split(separator: "/") {
+        candidatePath = (candidatePath as NSString).appendingPathComponent(String(component))
+        if pathIsSymlink(candidatePath) {
+            display.error("Symlink blocks manifest directory creation at \(candidatePath)")
+            return false
+        }
+        if !pathExists(candidatePath) {
+            break
+        }
+        if pathIsDirectory(candidatePath) {
+            continue
+        }
+        if !pathIsRegularFile(candidatePath) {
+            display.error("Unsupported file type blocks manifest directory creation at \(candidatePath)")
+            return false
+        }
+        if unlink(candidatePath) != 0 {
+            let description = String(cString: strerror(errno))
+            display.error("Could not remove manifest blocking directory creation at \(candidatePath): \(description)")
+            return false
+        }
+        break
+    }
+    return createMissingDirs(path)
+}
+
 /// Gets a manifest from the server.
 ///
 /// Returns:
@@ -87,10 +129,11 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
         return manifestLocalPath
     }
 
+    let manifestCacheRoot = managedInstallsDir(subpath: "manifests")
     let manifestLocalPath = managedInstallsDir(subpath: "manifests/\(name)")
     // make sure the directory exists to store it
     let manifestLocalPathDir = (manifestLocalPath as NSString).deletingLastPathComponent
-    if !createMissingDirs(manifestLocalPathDir) {
+    if !prepareManifestDirectory(manifestLocalPathDir, cacheRoot: manifestCacheRoot) {
         throw ManifestError.notRetrieved(
             "Could not create a local directory to store manifest")
     }
