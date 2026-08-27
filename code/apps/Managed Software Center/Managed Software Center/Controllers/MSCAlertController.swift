@@ -336,11 +336,15 @@ class MSCAlertController: NSObject {
         alert.informativeText = NSLocalizedString(
             "This item was not downloaded because this Mac is on a low data connection.",
             comment: "Download Anyway alert informative text")
-        // "OK" first, so it is the default button and simply dismisses.
+        // "OK" first, so it is the default button and simply dismisses. Only
+        // offer the "Download anyway" action if the admin allows user
+        // overrides; otherwise the dialog is purely informational.
         alert.addButton(withTitle: NSLocalizedString(
             "OK", comment: "OK button title"))
-        alert.addButton(withTitle: NSLocalizedString(
-            "Download anyway", comment: "Download anyway button title"))
+        if munkiPref("AllowLowDataOverride") as? Bool ?? true {
+            alert.addButton(withTitle: NSLocalizedString(
+                "Download anyway", comment: "Download anyway button title"))
+        }
         alert.beginSheetModal(for: mainWindow, completionHandler: { (modalResponse) -> Void in
             if modalResponse == .alertSecondButtonReturn {
                 if addLowDataOverride(itemName) {
