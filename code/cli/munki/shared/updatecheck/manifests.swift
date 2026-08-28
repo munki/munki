@@ -93,8 +93,13 @@ func prepareManifestDestination(_ path: String, cacheRoot: String) -> Bool {
     for component in relativePath.split(separator: "/") {
         candidatePath = (candidatePath as NSString).appendingPathComponent(String(component))
         if pathIsSymlink(candidatePath) {
-            display.error("Symlink blocks manifest directory creation at \(candidatePath)")
-            return false
+            do {
+                try FileManager.default.removeItem(atPath: candidatePath)
+            } catch {
+                display.error("Could not remove symlink blocking manifest directory creation at \(candidatePath): \(error.localizedDescription)")
+                return false
+            }
+            break
         }
         if !pathExists(candidatePath) {
             break
@@ -119,8 +124,12 @@ func prepareManifestDestination(_ path: String, cacheRoot: String) -> Bool {
     }
 
     if pathIsSymlink(standardizedPath) {
-        display.error("Symlink blocks manifest download at \(standardizedPath)")
-        return false
+        do {
+            try FileManager.default.removeItem(atPath: standardizedPath)
+        } catch {
+            display.error("Could not remove symlink blocking manifest download at \(standardizedPath): \(error.localizedDescription)")
+            return false
+        }
     }
     if !pathExists(standardizedPath) || pathIsRegularFile(standardizedPath) {
         return true

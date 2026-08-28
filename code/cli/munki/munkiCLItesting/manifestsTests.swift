@@ -48,25 +48,29 @@ struct manifestsTests {
         #expect(pathIsDirectory(manifestDirectory))
     }
 
-    @Test func prepareManifestDestinationDoesNotRemoveParentSymlink() throws {
+    @Test func prepareManifestDestinationReplacesParentSymlink() throws {
         let testDirectoryPath = try #require(
             TempDir.shared.path, "Can't get temp directory path"
         )
-        let targetPath = testDirectoryPath + "/target-file-\(UUID().uuidString)"
+        let targetPath = testDirectoryPath + "/target-directory-\(UUID().uuidString)"
         let manifestDirectory = testDirectoryPath + "/manifest-link-\(UUID().uuidString)"
+        let targetContents = targetPath + "/preserved"
+        try FileManager.default.createDirectory(
+            atPath: targetPath, withIntermediateDirectories: false
+        )
         try #require(
-            FileManager.default.createFile(
-                atPath: targetPath, contents: nil, attributes: nil
-            ),
-            "Can't create symlink target"
+            FileManager.default.createFile(atPath: targetContents, contents: nil),
+            "Can't create file in symlink target"
         )
         try FileManager.default.createSymbolicLink(
             atPath: manifestDirectory, withDestinationPath: targetPath
         )
 
         let manifestPath = manifestDirectory + "/child"
-        #expect(!prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
-        #expect(pathIsSymlink(manifestDirectory))
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
+        #expect(pathIsDirectory(manifestDirectory))
+        #expect(!pathIsSymlink(manifestDirectory))
+        #expect(pathIsRegularFile(targetContents))
     }
 
     @Test func prepareManifestDestinationRemovesCachedDirectory() throws {
@@ -116,24 +120,39 @@ struct manifestsTests {
         #expect(try Data(contentsOf: URL(fileURLWithPath: manifestPath)) == contents)
     }
 
-    @Test func prepareManifestDestinationDoesNotRemoveFinalSymlink() throws {
+    @Test func prepareManifestDestinationReplacesFinalSymlink() throws {
         let testDirectoryPath = try #require(
             TempDir.shared.path, "Can't get temp directory path"
         )
         let targetPath = testDirectoryPath + "/target-file-\(UUID().uuidString)"
         let manifestPath = testDirectoryPath + "/manifest-link-\(UUID().uuidString)"
         try #require(
-            FileManager.default.createFile(
-                atPath: targetPath, contents: nil, attributes: nil
-            ),
+            FileManager.default.createFile(atPath: targetPath, contents: nil),
             "Can't create symlink target"
         )
         try FileManager.default.createSymbolicLink(
             atPath: manifestPath, withDestinationPath: targetPath
         )
 
-        #expect(!prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
-        #expect(pathIsSymlink(manifestPath))
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
+        #expect(!pathExists(manifestPath))
+        #expect(pathIsRegularFile(targetPath))
+    }
+
+    @Test func prepareManifestDestinationReplacesDanglingSymlink() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        let missingTargetPath = testDirectoryPath + "/missing-\(UUID().uuidString)"
+        let manifestPath = testDirectoryPath + "/manifest-link-\(UUID().uuidString)"
+        try FileManager.default.createSymbolicLink(
+            atPath: manifestPath, withDestinationPath: missingTargetPath
+        )
+
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
+        #expect(!pathIsSymlink(manifestPath))
+        #expect(!pathExists(manifestPath))
+        #expect(!pathExists(missingTargetPath))
     }
 
     @Test func prepareManifestDestinationRejectsCacheRoot() throws {
