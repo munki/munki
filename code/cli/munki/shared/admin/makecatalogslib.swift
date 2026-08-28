@@ -91,8 +91,14 @@ struct CatalogsMaker {
                     print("Hashing \(icon)...")
                 }
                 do {
-                    let icondata = try await repo.get("icons/" + icon)
-                    iconHashes[icon] = sha256hash(data: icondata)
+                    // try to use sha256hash(file:) first as it's more
+                    // memory efficient
+                    if let filepath = repo.pathFor("icons/" + icon) {
+                        iconHashes[icon] = sha256hash(file: filepath)
+                    } else {
+                        let icondata = try await repo.get("icons/" + icon)
+                        iconHashes[icon] = sha256hash(data: icondata)
+                    }
                 } catch let error as MunkiError {
                     errors.append("Error reading icons/\(icon): \(error.description)")
                 } catch {
@@ -166,16 +172,21 @@ struct CatalogsMaker {
                     }
                     do {
                         // Get the actual installer hash
-                        let pkgData = try await repo.get("pkgs/" + installeritemlocation)
-                        let actualHash = sha256hash(data: pkgData)
-                        
+                        let actualHash: String
+                        if let filepath = repo.pathFor("pkgs/" + installeritemlocation) {
+                            actualHash = sha256hash(file: filepath)
+                        } else {
+                            let pkgData = try await repo.get("pkgs/" + installeritemlocation)
+                            actualHash = sha256hash(data: pkgData)
+                        }
+
                         if actualHash != expectedHash {
                             warnings.append("WARNING: \(identifier) installer_item_hash (\(expectedHash)) does not match actual file hash (\(actualHash))")
                             return false
-                            }
+                        }
                     } catch let error as MunkiError {
                         warnings.append("WARNING: error reading \(installeritemlocation) to verify hash for \(identifier): \(error.description)")
-                            return false
+                        return false
                     } catch {
                         warnings.append("WARNING: Unexpected error reading \(installeritemlocation) to verify hash for \(identifier): \(error)")
                         return false
