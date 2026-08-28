@@ -170,6 +170,30 @@ struct pathIsDirectoryTests {
     }
 }
 
+struct createMissingDirsTests {
+    @Test func existingDirectoryReturnsTrue() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        #expect(createMissingDirs(testDirectoryPath))
+    }
+
+    @Test func existingFileReturnsFalse() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        let filePath = testDirectoryPath + "/not-a-directory-\(UUID().uuidString)"
+        try #require(
+            FileManager.default.createFile(
+                atPath: filePath, contents: nil, attributes: nil
+            ),
+            "Can't create test file"
+        )
+
+        #expect(!createMissingDirs(filePath))
+    }
+}
+
 struct pathIsRegularFileTests {
     @Test func nonExistentPathReturnsFalse() {
         #expect(!pathIsRegularFile("/this/path/does/not/exist"))
