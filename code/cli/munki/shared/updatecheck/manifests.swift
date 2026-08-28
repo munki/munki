@@ -17,7 +17,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Darwin.C
 import Foundation
 
 private let PRIMARY_MANIFEST_TAG = "_primary_manifest_"
@@ -76,20 +75,20 @@ class Manifests {
     }
 }
 
-/// Makes a local directory available for a manifest download. A cached
-/// manifest may occupy this path when a repository changes a manifest name
-/// into a directory prefix.
-func prepareManifestDirectory(_ path: String, cacheRoot: String) -> Bool {
+/// Prepares a local destination for a manifest download. Cached manifests and
+/// directories may conflict when repository manifest paths change shape.
+func prepareManifestDestination(_ path: String, cacheRoot: String) -> Bool {
     let standardizedPath = (path as NSString).standardizingPath
     let standardizedRoot = (cacheRoot as NSString).standardizingPath
-    if standardizedPath != standardizedRoot,
-       !standardizedPath.hasPrefix(standardizedRoot + "/")
+    if standardizedPath == standardizedRoot ||
+        !standardizedPath.hasPrefix(standardizedRoot + "/")
     {
         display.error("Manifest directory is outside the manifest cache: \(path)")
         return false
     }
 
-    let relativePath = String(standardizedPath.dropFirst(standardizedRoot.count + 1))
+    let parentPath = (standardizedPath as NSString).deletingLastPathComponent
+    let relativePath = String(parentPath.dropFirst(standardizedRoot.count + 1))
     var candidatePath = standardizedRoot
     for component in relativePath.split(separator: "/") {
         candidatePath = (candidatePath as NSString).appendingPathComponent(String(component))
@@ -107,14 +106,36 @@ func prepareManifestDirectory(_ path: String, cacheRoot: String) -> Bool {
             display.error("Unsupported file type blocks manifest directory creation at \(candidatePath)")
             return false
         }
-        if unlink(candidatePath) != 0 {
-            let description = String(cString: strerror(errno))
-            display.error("Could not remove manifest blocking directory creation at \(candidatePath): \(description)")
+        do {
+            try FileManager.default.removeItem(atPath: candidatePath)
+        } catch {
+            display.error("Could not remove manifest blocking directory creation at \(candidatePath): \(error.localizedDescription)")
             return false
         }
         break
     }
-    return createMissingDirs(path)
+    if !createMissingDirs(parentPath) {
+        return false
+    }
+
+    if pathIsSymlink(standardizedPath) {
+        display.error("Symlink blocks manifest download at \(standardizedPath)")
+        return false
+    }
+    if !pathExists(standardizedPath) || pathIsRegularFile(standardizedPath) {
+        return true
+    }
+    if !pathIsDirectory(standardizedPath) {
+        display.error("Unsupported file type blocks manifest download at \(standardizedPath)")
+        return false
+    }
+    do {
+        try FileManager.default.removeItem(atPath: standardizedPath)
+    } catch {
+        display.error("Could not remove directory blocking manifest download at \(standardizedPath): \(error.localizedDescription)")
+        return false
+    }
+    return true
 }
 
 /// Gets a manifest from the server.
@@ -131,11 +152,10 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
 
     let manifestCacheRoot = managedInstallsDir(subpath: "manifests")
     let manifestLocalPath = managedInstallsDir(subpath: "manifests/\(name)")
-    // make sure the directory exists to store it
-    let manifestLocalPathDir = (manifestLocalPath as NSString).deletingLastPathComponent
-    if !prepareManifestDirectory(manifestLocalPathDir, cacheRoot: manifestCacheRoot) {
+    // make sure the destination is available to store it
+    if !prepareManifestDestination(manifestLocalPath, cacheRoot: manifestCacheRoot) {
         throw ManifestError.notRetrieved(
-            "Could not create a local directory to store manifest")
+            "Could not prepare local storage for manifest")
     }
 
     // try to get the manifest from the server

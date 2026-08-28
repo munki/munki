@@ -9,7 +9,7 @@ import Testing
 
 @Suite(.serialized)
 struct manifestsTests {
-    @Test func prepareManifestDirectoryReplacesCachedManifestFile() throws {
+    @Test func prepareManifestDestinationReplacesCachedManifestFile() throws {
         let testDirectoryPath = try #require(
             TempDir.shared.path, "Can't get temp directory path"
         )
@@ -23,11 +23,12 @@ struct manifestsTests {
             "Can't create cached manifest file"
         )
 
-        #expect(prepareManifestDirectory(manifestDirectory, cacheRoot: testDirectoryPath))
+        let manifestPath = manifestDirectory + "/child"
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
         #expect(pathIsDirectory(manifestDirectory))
     }
 
-    @Test func prepareManifestDirectoryReplacesCachedAncestorManifest() throws {
+    @Test func prepareManifestDestinationReplacesCachedAncestorManifest() throws {
         let testDirectoryPath = try #require(
             TempDir.shared.path, "Can't get temp directory path"
         )
@@ -42,11 +43,12 @@ struct manifestsTests {
             "Can't create cached ancestor manifest"
         )
 
-        #expect(prepareManifestDirectory(manifestDirectory, cacheRoot: testDirectoryPath))
+        let manifestPath = manifestDirectory + "/child"
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
         #expect(pathIsDirectory(manifestDirectory))
     }
 
-    @Test func prepareManifestDirectoryDoesNotRemoveSymlink() throws {
+    @Test func prepareManifestDestinationDoesNotRemoveParentSymlink() throws {
         let testDirectoryPath = try #require(
             TempDir.shared.path, "Can't get temp directory path"
         )
@@ -62,8 +64,102 @@ struct manifestsTests {
             atPath: manifestDirectory, withDestinationPath: targetPath
         )
 
-        #expect(!prepareManifestDirectory(manifestDirectory, cacheRoot: testDirectoryPath))
+        let manifestPath = manifestDirectory + "/child"
+        #expect(!prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
         #expect(pathIsSymlink(manifestDirectory))
+    }
+
+    @Test func prepareManifestDestinationRemovesCachedDirectory() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        let manifestPath = testDirectoryPath + "/manifest-directory-\(UUID().uuidString)"
+        let cachedChildPath = manifestPath + "/cached-child"
+        try FileManager.default.createDirectory(
+            atPath: manifestPath, withIntermediateDirectories: false
+        )
+        try #require(
+            FileManager.default.createFile(
+                atPath: cachedChildPath,
+                contents: Data("cached manifest".utf8),
+                attributes: nil
+            ),
+            "Can't create cached child manifest"
+        )
+
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
+        #expect(!pathExists(manifestPath))
+        #expect(
+            FileManager.default.createFile(
+                atPath: manifestPath,
+                contents: Data("new parent manifest".utf8),
+                attributes: nil
+            )
+        )
+        #expect(pathIsRegularFile(manifestPath))
+    }
+
+    @Test func prepareManifestDestinationPreservesCachedManifestFile() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        let manifestPath = testDirectoryPath + "/cached-manifest-\(UUID().uuidString)"
+        let contents = Data("cached manifest".utf8)
+        try #require(
+            FileManager.default.createFile(
+                atPath: manifestPath, contents: contents, attributes: nil
+            ),
+            "Can't create cached manifest"
+        )
+
+        #expect(prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
+        #expect(try Data(contentsOf: URL(fileURLWithPath: manifestPath)) == contents)
+    }
+
+    @Test func prepareManifestDestinationDoesNotRemoveFinalSymlink() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        let targetPath = testDirectoryPath + "/target-file-\(UUID().uuidString)"
+        let manifestPath = testDirectoryPath + "/manifest-link-\(UUID().uuidString)"
+        try #require(
+            FileManager.default.createFile(
+                atPath: targetPath, contents: nil, attributes: nil
+            ),
+            "Can't create symlink target"
+        )
+        try FileManager.default.createSymbolicLink(
+            atPath: manifestPath, withDestinationPath: targetPath
+        )
+
+        #expect(!prepareManifestDestination(manifestPath, cacheRoot: testDirectoryPath))
+        #expect(pathIsSymlink(manifestPath))
+    }
+
+    @Test func prepareManifestDestinationRejectsCacheRoot() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+
+        #expect(!prepareManifestDestination(testDirectoryPath, cacheRoot: testDirectoryPath))
+        #expect(pathIsDirectory(testDirectoryPath))
+    }
+
+    @Test func prepareManifestDestinationRejectsPathOutsideCache() throws {
+        let testDirectoryPath = try #require(
+            TempDir.shared.path, "Can't get temp directory path"
+        )
+        let cacheRoot = testDirectoryPath + "/cache-\(UUID().uuidString)"
+        let outsidePath = testDirectoryPath + "/outside-\(UUID().uuidString)"
+        try FileManager.default.createDirectory(
+            atPath: cacheRoot, withIntermediateDirectories: false
+        )
+        try FileManager.default.createDirectory(
+            atPath: outsidePath, withIntermediateDirectories: false
+        )
+
+        #expect(!prepareManifestDestination(outsidePath, cacheRoot: cacheRoot))
+        #expect(pathIsDirectory(outsidePath))
     }
 
     /// Test that we can read a (plist) manifest file
