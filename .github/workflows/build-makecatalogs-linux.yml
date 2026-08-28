@@ -2,7 +2,7 @@
 
   on:
     push:
-      branches: [linux_makecatalogs]
+      branches: [Munki7_4dev]
     workflow_dispatch:
 
   jobs:
