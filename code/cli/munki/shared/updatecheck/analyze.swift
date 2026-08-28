@@ -208,6 +208,21 @@ func processInstall(
         installInfo["managed_installs"] = managedInstalls
     }
 
+    /// True if the named dependency was recorded as deferred on a low data
+    /// connection (rather than genuinely unavailable). Used to decide whether a
+    /// parent blocked only by low-data-deferred requirements should itself be
+    /// presented as deferred/overridable.
+    func dependencyWasLowDataDeferred(_ depItem: String) -> Bool {
+        let depName = (depItem as NSString).lastPathComponent
+        let (depNameNoVersion, _) = nameAndVersion(depName, onlySplitOnHyphens: true)
+        let managedInstalls = installInfo["managed_installs"] as? [PlistDict] ?? []
+        return managedInstalls.contains { entry in
+            guard entry["low_data_deferred"] as? Bool ?? false else { return false }
+            let entryName = entry["name"] as? String ?? ""
+            return entryName == depName || entryName == depNameNoVersion
+        }
+    }
+
     let manifestItemName = (manifestItem as NSString).lastPathComponent
     display.debug1("* Processing manifest item \(manifestItemName) for install")
     let (manifestItemNameWithoutVersion, includedVersion) = nameAndVersion(manifestItemName, onlySplitOnHyphens: true)
@@ -294,8 +309,15 @@ func processInstall(
         dependencies = [requires]
     }
     // A forced item past its deadline (or a dependency of one) must download
-    // even on low data, so propagate that exemption to its required items.
-    let lowDataExemptForDependencies = lowDataExempt || forceInstallDeadlinePassed(pkginfo)
+    // even on low data, so propagate that exemption to its required items. A
+    // user "Download anyway" override does the same: choosing to download an
+    // item over a low data connection must also pull the items it requires,
+    // otherwise the parent can never install (its dependencies stay deferred).
+    let allowLowDataOverride = pref("AllowLowDataOverride") as? Bool ?? true
+    let hasLowDataOverride = allowLowDataOverride && lowDataOverrideItems().contains(name)
+    let lowDataExemptForDependencies = lowDataExempt || forceInstallDeadlinePassed(pkginfo) || hasLowDataOverride
+    var someDepDeferredForLowData = false
+    var someDepFailedOtherwise = false
     for item in dependencies {
         display.detail("\(name)-\(version) requires \(item). Getting info on \(item)...")
         let success = await processInstall(
@@ -308,6 +330,11 @@ func processInstall(
         )
         if !success {
             dependenciesMet = false
+            if dependencyWasLowDataDeferred(item) {
+                someDepDeferredForLowData = true
+            } else {
+                someDepFailedOtherwise = true
+            }
         }
     }
 
@@ -323,6 +350,24 @@ func processInstall(
     let installedState = await installedState(pkginfo)
     if installedState == .thisVersionNotInstalled {
         if !dependenciesMet {
+            if someDepDeferredForLowData, !someDepFailedOtherwise {
+                // The only thing blocking this item is a required item that was
+                // deferred on a low data connection. Present this item as
+                // deferred too, so the user can override the whole chain from a
+                // single "Download anyway": the override cascades the exemption
+                // to its requirements (see lowDataExemptForDependencies above).
+                display.detail("Deferring \(manifestItemName) on a low data connection because a required item was deferred.")
+                processedItem["installed"] = false
+                processedItem["low_data_deferred"] = true
+                // Set version_to_install so the "already processed" guard
+                // (itemInInstallInfo) recognizes this deferred entry; otherwise
+                // an item reached via multiple dependency paths is appended once
+                // per visit, duplicating it in problem_items.
+                processedItem["version_to_install"] = version
+                processedItem["note"] = "Download of \(displayName) was paused because this Mac is on a low data connection."
+                appendToProcessedManagedInstalls(processedItem)
+                return false
+            }
             // we should not attempt to install
             display.warning("Didn't attempt to install \(manifestItemName) because could not resolve all dependencies.")
             // add information to managed_installs so we have some feedback
@@ -362,8 +407,7 @@ func processInstall(
                    maxSizeOverLowDataConnection: maxSizeOverLowDataConnection
                )
             {
-                let allowOverride = pref("AllowLowDataOverride") as? Bool ?? true
-                if allowOverride, lowDataOverrideItems().contains(name) {
+                if hasLowDataOverride {
                     display.detail("Downloading \(manifestItemName) anyway on a low data connection due to a user override.")
                 } else {
                     display.detail("Deferring download of \(manifestItemName) because this Mac is on a low data connection.")
