@@ -17,8 +17,18 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import CryptoKit
+#if canImport(CryptoKit)
+    import CryptoKit
+#else
+    import Crypto
+#endif
 import Foundation
+
+#if !canImport(ObjectiveC)
+    // Linux has no Obj-C runtime; autoreleasepool is a no-op shim
+    @inline(__always)
+    func autoreleasepool<T>(_ body: () -> T) -> T { body() }
+#endif
 
 // put all the hashing functions here
 
@@ -28,17 +38,47 @@ func sha256hash(data: Data) -> String {
 }
 
 func sha256hash(file: String) -> String {
-    if let data = NSData(contentsOfFile: file) {
-        let hashed = SHA256.hash(data: data)
-        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+    guard let handle = FileHandle(forReadingAtPath: file) else {
+        return "N/A"
     }
-    return "N/A"
+    defer { handle.closeFile() }
+    var hasher = SHA256()
+    let chunkSize = 1024 * 1024 // 1 MB
+    var done = false
+    while !done {
+        // autoreleasepool drains NSData-backed chunks each iteration,
+        // preventing all chunks from accumulating until the pool drains
+        autoreleasepool {
+            let chunk = handle.readData(ofLength: chunkSize)
+            if chunk.isEmpty {
+                done = true
+            } else {
+                hasher.update(data: chunk)
+            }
+        }
+    }
+    let digest = hasher.finalize()
+    return digest.compactMap { String(format: "%02x", $0) }.joined()
 }
 
 func md5hash(file: String) -> String {
-    if let data = NSData(contentsOfFile: file) {
-        let hashed = Insecure.MD5.hash(data: data)
-        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+    guard let handle = FileHandle(forReadingAtPath: file) else {
+        return ""
     }
-    return ""
+    defer { handle.closeFile() }
+    var hasher = Insecure.MD5()
+    let chunkSize = 1024 * 1024 // 1 MB
+    var done = false
+    while !done {
+        autoreleasepool {
+            let chunk = handle.readData(ofLength: chunkSize)
+            if chunk.isEmpty {
+                done = true
+            } else {
+                hasher.update(data: chunk)
+            }
+        }
+    }
+    let digest = hasher.finalize()
+    return digest.compactMap { String(format: "%02x", $0) }.joined()
 }

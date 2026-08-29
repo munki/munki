@@ -50,10 +50,26 @@ func getCertChainRefs(_ certRef: SecCertificate) -> [SecCertificate]? {
     return certRefs
 }
 
+/// Returns true if the given distinguished name matches either one of the
+/// server-advertised acceptable issuers, or one of the admin-configured
+/// acceptable CA strings (RFC 4514-style distinguished names, as produced by
+/// DistinguishedName.description, e.g. "CN=Munki Client CA,O=SomeOrg")
+func dnMatchesExpectedIssuers(
+    _ dn: DistinguishedName,
+    serverIssuers: [DistinguishedName],
+    configuredAcceptableCAs: [String]
+) -> Bool {
+    if serverIssuers.contains(dn) {
+        return true
+    }
+    return configuredAcceptableCAs.contains(dn.description)
+}
+
 /// Attempts to find an appropriate identity for the protectionSpace and return a credential
 /// for client certificate authentication
 func getClientCertCredential(
     protectionSpace: URLProtectionSpace,
+    configuredAcceptableCAs: [String] = [],
     log: (String) -> Void
 ) -> URLCredential? {
     var expectedIssuers = [DistinguishedName]()
@@ -71,6 +87,12 @@ func getClientCertCredential(
     }
     if expectedIssuers.isEmpty {
         log("The server didn't send the list of acceptable certificate-issuing authorities")
+    }
+    for acceptableCA in configuredAcceptableCAs {
+        log("Configured acceptable certificate-issuing authority: \(acceptableCA)")
+    }
+    if expectedIssuers.isEmpty, configuredAcceptableCAs.isEmpty {
+        log("No acceptable certificate-issuing authorities are available, either sent by the server or configured via the ClientCertificateAcceptableCAs preference")
         return nil
     }
     // search for a matching identity (cert paired with private key)
@@ -105,7 +127,11 @@ func getClientCertCredential(
             }
         }
         for certSubject in certSubjects {
-            if expectedIssuers.contains(certSubject) {
+            if dnMatchesExpectedIssuers(
+                certSubject,
+                serverIssuers: expectedIssuers,
+                configuredAcceptableCAs: configuredAcceptableCAs
+            ) {
                 log("Found matching identity")
                 return URLCredential(
                     identity: identityRef,
@@ -114,7 +140,9 @@ func getClientCertCredential(
                 )
             }
         }
+        log("Identity with subject \(certificate.subject.description) does not match any acceptable certificate-issuing authority; candidate issuers: \(certSubjects.map(\.description).joined(separator: " | "))")
     }
     // no matching identity found
+    log("No keychain identity matches any acceptable certificate-issuing authority")
     return nil
 }

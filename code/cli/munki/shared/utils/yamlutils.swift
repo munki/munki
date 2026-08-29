@@ -47,9 +47,9 @@ import Yams
 /// Usage:
 ///   ```swift
 ///   // Instead of: item["minimum_os_version"] as? String
-///   // Use: getString(from: item, forKey: "minimum_os_version")
+///   // Use: yamlStringValue(from: item, forKey: "minimum_os_version")
 ///   ```
-func getString(from dict: [String: Any], forKey key: String) -> String? {
+func yamlStringValue(from dict: [String: Any], forKey key: String) -> String? {
     guard let value = dict[key] else { return nil }
     
     // Try String first (most common case)
@@ -83,7 +83,7 @@ extension Dictionary where Key == String, Value == Any {
     /// Get a string value, automatically converting numeric types to strings.
     /// This allows YAML files to omit quotes on version-like values.
     func stringValue(forKey key: String) -> String? {
-        return getString(from: self, forKey: key)
+        return yamlStringValue(from: self, forKey: key)
     }
 }
 
@@ -373,6 +373,22 @@ private func sortKeysForDict(_ dict: [String: Any]) -> [String] {
 /// - Parameters:
 ///   - value: The value to convert
 ///   - key: Optional key name for context-aware string styling (block scalars for scripts)
+/// Would this string be read back as something other than a string?
+///
+/// The read path uses `munkiYamlResolver`, which has the float rule removed, so
+/// Munki's own tools recover `10.10` from a plain scalar. Nothing else does:
+/// PyYAML, ruamel and libyaml all apply the standard resolver, so a plain
+/// `minimum_os_version: 10.10` written by Munki reads back as the float 10.1 in
+/// MunkiAdmin, mwa2, AutoPkg or any CI script. The same applies to `version: 1.0`,
+/// a `yes`/`no`/`on`/`off` string, `null`, and integer-looking values.
+///
+/// Resolving against `Resolver.default` — deliberately not `munkiYamlResolver` —
+/// asks the question every other parser will ask, and anything that does not come
+/// back as `.str` gets quoted on the way out.
+private func isAmbiguousYamlString(_ string: String) -> Bool {
+    return Resolver.default.resolveTag(of: Node(string)) != .str
+}
+
 private func toNode(_ value: Any, forKey key: String? = nil) -> Node {
     switch value {
     case is NSNull:
@@ -397,11 +413,13 @@ private func toNode(_ value: Any, forKey key: String? = nil) -> Node {
             return Node("", Tag(.str), .singleQuoted)
         }
         // Use appropriate block scalar style based on key and content
-        if let key = key {
-            let style = scalarStyleForString(key: key, value: string)
-            return Node(string, .implicit, style)
+        let style = key.map { scalarStyleForString(key: $0, value: string) } ?? .any
+        // A block scalar (script or prose) always reads back as a string, so the
+        // ambiguity check only applies to scalars Yams would emit plain.
+        if style == .any, isAmbiguousYamlString(string) {
+            return Node(string, Tag(.str), .singleQuoted)
         }
-        return Node(string)
+        return Node(string, .implicit, style)
     case let dict as [String: Any]:
         // Sort keys using context-aware ordering (receipts, installs, or pkginfo)
         let sortedKeys = sortKeysForDict(dict)

@@ -20,6 +20,7 @@ let INSTALLWITHOUTLOGOUTFILE = "/private/tmp/.com.googlecode.munki.managedinstal
 let BUNDLE_ID = "ManagedInstalls" as CFString
 let DEFAULT_GUI_CACHE_AGE_SECS = 3600
 let WRITEABLE_SELF_SERVICE_MANIFEST_PATH = "/Users/Shared/.SelfServeManifest"
+let WRITEABLE_LOW_DATA_OVERRIDES_PATH = "/Users/Shared/.low_data_overrides.plist"
 
 func exec(_ command: String, args: [String] = []) -> String {
     // runs a UNIX command and returns stdout as a string
@@ -197,6 +198,27 @@ func writeSelfServiceManifest(_ optional_install_choices: PlistDict) -> Bool {
     }
 }
 
+func addLowDataOverride(_ item_name: String) -> Bool {
+    /* Record that the user wants to download a low-data-deferred item anyway.
+     Appends the item name to a user-writable plist that managedsoftwareupdate
+     copies into place on its next run. Returns true on success. */
+    var overrides = PlistDict()
+    if FileManager.default.isReadableFile(atPath: WRITEABLE_LOW_DATA_OVERRIDES_PATH) {
+        overrides = ((try? readPlist(WRITEABLE_LOW_DATA_OVERRIDES_PATH)) as? PlistDict) ?? PlistDict()
+    }
+    var items = overrides["items"] as? [String] ?? [String]()
+    if !items.contains(item_name) {
+        items.append(item_name)
+    }
+    overrides["items"] = items
+    do {
+        try writePlist(overrides, toFile: WRITEABLE_LOW_DATA_OVERRIDES_PATH)
+        return true
+    } catch {
+        return false
+    }
+}
+
 func userSelfServiceChoicesChanged() -> Bool {
     /* Is WRITEABLE_SELF_SERVICE_MANIFEST_PATH different from
      the 'system' version of this file? */
@@ -361,7 +383,16 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     }
 }
 
+/// Returns number of days that macOS has been out-of-date, pulling from the cache if available
 func macOSOutOfDateDays() -> Int {
+    if !Cache.shared.keys.contains("macOSOutOfDateDays") {
+      Cache.shared["macOSOutOfDateDays"] = _macOSOutOfDateDays()
+    }
+    return Cache.shared["macOSOutOfDateDays"] as? Int ?? 0
+}
+
+/// Returns number of days that macOS has been out-of-date (not cached)
+private func _macOSOutOfDateDays() -> Int {
     guard let managedinstallbase = munkiPref("ManagedInstallDir") as? String else {
         return 0
     }
@@ -436,7 +467,7 @@ func discardTimeZoneFromDate(_ theDate: Date) -> Date {
 func thereAreUpdatesToBeForcedSoon(hours: Int = 72) -> Bool {
     // Return True if any updates need to be installed within the next
     // X hours, false otherwise
-    var installinfo = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
+    var installinfo = cachedInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
     installinfo = installinfo + getAppleUpdates()
     let now_xhours = Date(timeIntervalSinceNow: TimeInterval(hours * 3600))
     for item in installinfo {
@@ -456,7 +487,7 @@ func earliestForceInstallDate(_ installinfo: [PlistDict]? = nil) -> Date? {
     var installinfo = installinfo
     var earliest_date: Date?
     if installinfo == nil {
-        let managed_installs = getInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
+        let managed_installs = cachedInstallInfo()["managed_installs"] as? [PlistDict] ?? [PlistDict]()
         installinfo = managed_installs + getAppleUpdates()
     }
     for install in installinfo! {
@@ -717,7 +748,7 @@ func getRunningBlockingApps(_ appnames: [String]) -> [BlockingAppInfo] {
             let filterterm = "/\(appname)/Contents/MacOS/"
             matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]!.contains(filterterm) }
         } else {
-            // check executable name
+            // check executable name -- does an executable path end with this name?
             let filterterm = "/\(appname)"
             matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]!.hasSuffix(filterterm) }
         }
@@ -725,6 +756,10 @@ func getRunningBlockingApps(_ appnames: [String]) -> [BlockingAppInfo] {
             // try adding '.app' to the name and check again
             let filterterm = "/\(appname).app/Contents/MacOS/"
             matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]!.contains(filterterm) }
+        }
+        if matching_items.count == 0 && !appname.contains("/") {
+            // Still no matches. If no slash, check bare-naked name
+            matching_items = proc_list.filter { $0["pathname"] != nil && $0["pathname"]! == appname }
         }
         for index in 0 ..< matching_items.count {
             if var path = matching_items[index]["pathname"] {

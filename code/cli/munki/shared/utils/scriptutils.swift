@@ -125,7 +125,7 @@ func runScript(_ path: String, itemName: String, scriptName: String, suppressErr
 }
 
 /// Runs a script, Returns CLIResults.
-func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false) async -> CLIResults {
+func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: String, suppressError: Bool = false, timeout: Int = 60) async -> CLIResults {
     if suppressError {
         display.detail("Running \(scriptName) for \(itemName)")
     } else {
@@ -136,7 +136,13 @@ func runScriptAndReturnResults(_ path: String, itemName: String, scriptName: Str
         munkiStatusPercent(-1)
     }
 
-    let results = await runCliAsync(path)
+    let results: CLIResults
+    do {
+        results = try await runCliAsync(path, timeout: timeout)
+    } catch {
+        // runCliAsync(timeout:) only ever throws ProcessError.timeout
+        results = CLIResults(exitcode: -1, error: "\(scriptName) timed out after \(timeout) seconds", timedOut: true)
+    }
 
     if DisplayOptions.munkistatusoutput {
         // clear indeterminate progress bar
@@ -172,7 +178,7 @@ func runEmbeddedScript(name: String, pkginfo: PlistDict, suppressError: Bool = f
 
 /// Runs a script embedded in the pkginfo.
 /// Returns CLIResults
-func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppressError: Bool = false) async -> CLIResults {
+func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppressError: Bool = false, timeout: Int = 60) async -> CLIResults {
     // get the script text
     let itemName = pkginfo["name"] as? String ?? "<unknown>"
     guard let scriptText = pkginfo[name] as? String else {
@@ -185,7 +191,7 @@ func runEmbeddedScriptAndReturnResults(name: String, pkginfo: PlistDict, suppres
     }
     let scriptPath = (tempdir as NSString).appendingPathComponent(name)
     if createExecutableFile(atPath: scriptPath, withStringContents: scriptText) {
-        return await runScriptAndReturnResults(scriptPath, itemName: itemName, scriptName: name, suppressError: suppressError)
+        return await runScriptAndReturnResults(scriptPath, itemName: itemName, scriptName: name, suppressError: suppressError, timeout: timeout)
     } else {
         return CLIResults(exitcode: -1, error: "Failed to create executable file for \(name)")
     }

@@ -70,6 +70,14 @@ func clearMunkiItemsCache() {
     Cache.shared.clear()
 }
 
+/// Localized text shown for an item whose download is paused on a low-data
+/// connection.
+func lowDataPausedNote() -> String {
+    return NSLocalizedString(
+        "Download paused — low data connection",
+        comment: "Low data connection deferred download note")
+}
+
 class BaseItem {
     // Base class for our types of Munki items
     var my = [String: Any]()
@@ -186,6 +194,10 @@ class GenericItem: BaseItem {
             my["size_sort"] = 0
             my["size"] = "-"
         }
+        // Low-data "Download anyway" button defaults; populated for
+        // low_data_deferred UpdateItems (see UpdateItem.init).
+        my["hide_low_data_button"] = "hidden"
+        my["low_data_action_text"] = ""
     }
 
     func description() -> String {
@@ -324,6 +336,9 @@ class GenericItem: BaseItem {
     
     func status_text() -> String {
         // Return localized status display text
+        if my["low_data_deferred"] as? Bool ?? false {
+            return lowDataPausedNote()
+        }
         let status = my["status"] as? String ?? ""
         if status == "unavailable" {
             return unavailable_reason_text()
@@ -766,6 +781,11 @@ class OptionalItem: GenericItem {
         my["user_directed_action"] = false
         let name = my["name"] as? String ?? ""
         let installed = my["installed"] as? Bool ?? false
+        let uninstall_only = my["uninstall_only"] as? Bool ?? false
+        // uninstall_only items that are not installed should not appear at all
+        if uninstall_only && !installed {
+            return ""
+        }
         let dependent_items = my["dependent_items"] as? [String] ?? [String]()
         var status = ""
         if installed {
@@ -956,7 +976,12 @@ class OptionalItem: GenericItem {
                 my["updatecheck_needed"] = false
             }
         case "not-installed":
-            // mark for install
+            // mark for install (blocked for uninstall_only items)
+            let uninstall_only = my["uninstall_only"] as? Bool ?? false
+            if uninstall_only {
+                my["updatecheck_needed"] = false
+                return false
+            }
             my["status"] = "install-requested"
             self_service_change_success = subscribe(self)
         case "installed":
@@ -1005,6 +1030,20 @@ class UpdateItem: GenericItem {
         my["hide_cancel_button"]  = "hidden"
         my["dependent_items"] = dependentItems(name)
         my["days_available"] = getDaysPending(name)
+        if my["low_data_deferred"] as? Bool ?? false {
+            // Show a localized "paused" message instead of the plain-English
+            // note recorded by managedsoftwareupdate on the CLI side.
+            my["note"] = lowDataPausedNote()
+            // Always offer a neutral "More Info" button. It opens a dialog that
+            // explains the deferral; whether that dialog offers the actual
+            // "Download anyway" action is gated on AllowLowDataOverride there.
+            // Keeping the button visible even when overrides are disabled means
+            // the user can still see why the item was not downloaded.
+            my["hide_low_data_button"] = ""
+            my["low_data_action_text"] = NSLocalizedString(
+                "More Info",
+                comment: "Low data More Info button title")
+        }
     }
     
     override func description() -> String {
@@ -1168,7 +1207,11 @@ func shouldAggressivelyNotifyAboutAppleUpdates(days: Int = -1) -> Bool {
 
 func optionalInstallsExist() -> Bool {
     let optional_items = cachedInstallInfo()["optional_installs"] as? [[String : Any]] ?? [[String : Any]]()
-    return optional_items.count > 0
+    if optional_items.count > 0 {
+        return true
+    }
+    let optional_uninstall_items = cachedInstallInfo()["optional_uninstalls"] as? [[String : Any]] ?? [[String : Any]]()
+    return optional_uninstall_items.contains { $0["installed"] as? Bool ?? false }
 }
 
 func getOptionalInstallItems() -> [OptionalItem] {
@@ -1193,6 +1236,14 @@ func getOptionalInstallItems() -> [OptionalItem] {
                 if featured_items.contains(name) {
                     optional_install_items[index]["featured"] = true
                 }
+            }
+        }
+        // append optional_uninstalls items that are currently installed
+        let optional_uninstall_items = cachedInstallInfo()["optional_uninstalls"] as? [[String : Any]] ?? [[String : Any]]()
+        for var itemDict in optional_uninstall_items {
+            if itemDict["installed"] as? Bool ?? false {
+                itemDict["uninstall_only"] = true
+                optional_install_items.append(OptionalItem(itemDict))
             }
         }
         Cache.shared["optional_install_items"] = optional_install_items
