@@ -258,4 +258,36 @@ struct yamlFloatResolverTests {
         let installs = try #require(parsed["installs"] as? [[String: Any]])
         #expect(installs.first?["CFBundleShortVersionString"] as? String == "3.20")
     }
+
+    /// Versions must be quoted on the way out, not just tolerated on the way in.
+    /// Munki's own reader strips the float rule, but MunkiAdmin, mwa2, AutoPkg and
+    /// any CI script use a standard resolver, where a plain `10.10` becomes 10.1.
+    @Test func ambiguousScalarsQuotedOnWrite() async throws {
+        let pkginfo: [String: Any] = [
+            "name": "TestApp",
+            "version": "126.0",
+            "minimum_os_version": "10.10",
+        ]
+        let output = try yamlToString(pkginfo)
+        #expect(output.contains("version: '126.0'"),
+                "Float-looking version must be quoted. Got:\n\(output)")
+        #expect(output.contains("minimum_os_version: '10.10'"),
+                "Trailing-zero version must be quoted. Got:\n\(output)")
+    }
+
+    /// Quoting applies only to values that would resolve to a non-string type.
+    /// Genuine Ints and Bools stay native, and scripts stay block scalars.
+    @Test func unambiguousValuesLeftAlone() async throws {
+        let pkginfo: [String: Any] = [
+            "name": "TestApp",
+            "installer_item_size": 1024,
+            "unattended_install": true,
+            "postinstall_script": "#!/bin/bash\nexit 0",
+        ]
+        let output = try yamlToString(pkginfo)
+        #expect(output.contains("name: TestApp"))
+        #expect(output.contains("installer_item_size: 1024"))
+        #expect(output.contains("unattended_install: true"))
+        #expect(output.contains("postinstall_script: |"))
+    }
 }

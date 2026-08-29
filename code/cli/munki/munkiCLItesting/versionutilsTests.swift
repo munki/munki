@@ -33,7 +33,7 @@ struct MunkiVersionTests {
         #expect(version1 < version2)
     }
 
-    /// Test that other comparsions return expected results
+    /// Test that other comparisons return expected results
     @Test func testOtherComparisons() async throws {
         let versionPairs = [
             ("1.0", "1.0b1"),
@@ -47,6 +47,8 @@ struct MunkiVersionTests {
             ("1.0.0", "1.0.0rc6"),
             ("1.0.0-rc6", "1.0.0"),
             ("8.0 (build 6300)", "8.0.1 (build 6301)"),
+            ("8.0 (build 6300)", "8.0 (build 6301)"),
+            ("1.1-9", "1.1-10")
         ]
         for (versionA, versionB) in versionPairs {
             #expect(MunkiVersion(versionA) < MunkiVersion(versionB))

@@ -56,6 +56,13 @@ enum SupportedArchitecture: String, CaseIterable, ExpressibleByArgument {
     case arm64
 }
 
+/// Supported values for the download_on_low_data pkginfo key
+enum DownloadOnLowData: String, CaseIterable, ExpressibleByArgument {
+    case auto
+    case always
+    case never
+}
+
 /// Pkginfo Override Options
 struct OverrideOptions: ParsableArguments {
     @Option(help: "Name to be used to refer to the installer item.")
@@ -308,6 +315,10 @@ struct AdditionalPkginfoOptions: ParsableArguments {
 
     @Option(help: ArgumentHelp("Specifies administrator provided notes to be embedded into the pkginfo. Can be a path to a file.", valueName: "text|path"))
     var notes: String? = nil
+
+    @Option(name: [.long, .customLong("download_on_low_data")],
+            help: "Specify whether this item should be downloaded on a low-data connection (cellular, personal hotspot, or an interface in Low Data Mode): 'always' (regardless of size), 'never', or 'auto' (follow the MaxSizeOverLowDataConnection size threshold). Defaults to 'auto' when omitted.")
+    var downloadOnLowData: DownloadOnLowData? = nil
 
     mutating func validate() throws {
         // validate options with version strings actually start with a digit

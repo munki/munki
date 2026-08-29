@@ -230,6 +230,7 @@ func getURL(
     }
 
     let ignoreSystemProxy = pref("IgnoreSystemProxies") as? Bool ?? false
+    let clientCertificateAcceptableCAs = pref("ClientCertificateAcceptableCAs") as? [String] ?? []
 
     let options = GurlOptions(
         url: request.url,
@@ -240,6 +241,7 @@ func getURL(
         canResume: resume,
         downloadOnlyIfChanged: onlyIfNewer,
         cacheData: cacheData,
+        clientCertificateAcceptableCAs: clientCertificateAcceptableCAs,
         log: DisplayAndLog.main.debug2
     )
 
@@ -557,7 +559,7 @@ func getResourceIfChangedAtomically(
             let data = try getXattr(named: XATTR_SHA, atPath: destinationPath)
             xattrHash = String(data: data, encoding: .utf8)
         } catch {
-            // no hahs stored in xattrs, so generate one and store it
+            // no hash stored in xattrs, so generate one and store it
             xattrHash = storeCachedChecksum(toPath: destinationPath)
         }
         if let xattrHash, xattrHash == expectedHash {

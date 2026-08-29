@@ -28,14 +28,8 @@ struct MakeCatalogOptions {
     var skipPkgCheck: Bool = false
     var force: Bool = false
     var verbose: Bool = false
+    var checkHashes: Bool = false
     var yamlOutput: Bool = false
-    
-    init(skipPkgCheck: Bool = false, force: Bool = false, verbose: Bool = false, yamlOutput: Bool = false) {
-        self.skipPkgCheck = skipPkgCheck
-        self.force = force
-        self.verbose = verbose
-        self.yamlOutput = yamlOutput
-    }
 }
 
 /// Struct that handles building catalogs
@@ -98,8 +92,14 @@ struct CatalogsMaker {
                     print("Hashing \(icon)...")
                 }
                 do {
-                    let icondata = try await repo.get("icons/" + icon)
-                    iconHashes[icon] = sha256hash(data: icondata)
+                    // try to use sha256hash(file:) first as it's more
+                    // memory efficient
+                    if let filepath = repo.pathFor("icons/" + icon) {
+                        iconHashes[icon] = sha256hash(file: filepath)
+                    } else {
+                        let icondata = try await repo.get("icons/" + icon)
+                        iconHashes[icon] = sha256hash(data: icondata)
+                    }
                 } catch let error as MunkiError {
                     errors.append("Error reading icons/\(icon): \(error.description)")
                 } catch {
@@ -121,7 +121,13 @@ struct CatalogsMaker {
     }
 
     /// Returns true if referenced installer items are present, false otherwise. Updates list of errors.
-    mutating func verify(_ identifier: String, _ pkginfo: PlistDict) -> Bool {
+    mutating func verify(_ identifier: String, _ pkginfo: PlistDict) async -> Bool {
+        if let downloadOnLowData = pkginfo["download_on_low_data"] as? String,
+           !["auto", "always", "never"].contains(downloadOnLowData)
+        {
+            warnings.append(
+                "WARNING: \(identifier) has an invalid download_on_low_data value: \(downloadOnLowData). Valid values are auto, always, never.")
+        }
         if let installer_type = pkginfo["installer_type"] as? String {
             if ["nopkg", "apple_update_metadata"].contains(installer_type) {
                 // no associated installer item (pkg) for these types
@@ -157,6 +163,36 @@ struct CatalogsMaker {
                     "WARNING: \(identifier) refers to missing installer item: \(installeritemlocation)"
                 )
                 return false
+            }
+        } else {
+            // If the --check-hashes argument is present, double-check the hashes match
+            if options.checkHashes {
+                if let expectedHash = pkginfo["installer_item_hash"] as? String {
+                    if options.verbose {
+                        print("Verifying hash match for \(installeritemlocation)...")
+                    }
+                    do {
+                        // Get the actual installer hash
+                        let actualHash: String
+                        if let filepath = repo.pathFor("pkgs/" + installeritemlocation) {
+                            actualHash = sha256hash(file: filepath)
+                        } else {
+                            let pkgData = try await repo.get("pkgs/" + installeritemlocation)
+                            actualHash = sha256hash(data: pkgData)
+                        }
+
+                        if actualHash != expectedHash {
+                            warnings.append("WARNING: \(identifier) installer_item_hash (\(expectedHash)) does not match actual file hash (\(actualHash))")
+                            return false
+                        }
+                    } catch let error as MunkiError {
+                        warnings.append("WARNING: error reading \(installeritemlocation) to verify hash for \(identifier): \(error.description)")
+                        return false
+                    } catch {
+                        warnings.append("WARNING: Unexpected error reading \(installeritemlocation) to verify hash for \(identifier): \(error)")
+                        return false
+                    }
+                }
             }
         }
 
@@ -220,7 +256,7 @@ struct CatalogsMaker {
             }
             // sanity checking
             if !options.skipPkgCheck {
-                let verified = verify(pkginfoIdentifier, pkginfo)
+                let verified = await verify(pkginfoIdentifier, pkginfo)
                 if !verified, !options.force {
                     // Skip this pkginfo unless we're running with force flag
                     continue

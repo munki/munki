@@ -75,6 +75,78 @@ class Manifests {
     }
 }
 
+/// Prepares a local destination for a manifest download. Cached manifests and
+/// directories may conflict when repository manifest paths change shape.
+func prepareManifestDestination(_ path: String, cacheRoot: String) -> Bool {
+    let standardizedPath = (path as NSString).standardizingPath
+    let standardizedRoot = (cacheRoot as NSString).standardizingPath
+    if standardizedPath == standardizedRoot ||
+        !standardizedPath.hasPrefix(standardizedRoot + "/")
+    {
+        display.error("Manifest directory is outside the manifest cache: \(path)")
+        return false
+    }
+
+    let parentPath = (standardizedPath as NSString).deletingLastPathComponent
+    let relativePath = String(parentPath.dropFirst(standardizedRoot.count + 1))
+    var candidatePath = standardizedRoot
+    for component in relativePath.split(separator: "/") {
+        candidatePath = (candidatePath as NSString).appendingPathComponent(String(component))
+        if pathIsSymlink(candidatePath) {
+            do {
+                try FileManager.default.removeItem(atPath: candidatePath)
+            } catch {
+                display.error("Could not remove symlink blocking manifest directory creation at \(candidatePath): \(error.localizedDescription)")
+                return false
+            }
+            break
+        }
+        if !pathExists(candidatePath) {
+            break
+        }
+        if pathIsDirectory(candidatePath) {
+            continue
+        }
+        if !pathIsRegularFile(candidatePath) {
+            display.error("Unsupported file type blocks manifest directory creation at \(candidatePath)")
+            return false
+        }
+        do {
+            try FileManager.default.removeItem(atPath: candidatePath)
+        } catch {
+            display.error("Could not remove manifest blocking directory creation at \(candidatePath): \(error.localizedDescription)")
+            return false
+        }
+        break
+    }
+    if !createMissingDirs(parentPath) {
+        return false
+    }
+
+    if pathIsSymlink(standardizedPath) {
+        do {
+            try FileManager.default.removeItem(atPath: standardizedPath)
+        } catch {
+            display.error("Could not remove symlink blocking manifest download at \(standardizedPath): \(error.localizedDescription)")
+            return false
+        }
+    }
+    if !pathExists(standardizedPath) || pathIsRegularFile(standardizedPath) {
+        return true
+    }
+    if !pathIsDirectory(standardizedPath) {
+        display.error("Unsupported file type blocks manifest download at \(standardizedPath)")
+        return false
+    }
+    do {
+        try FileManager.default.removeItem(atPath: standardizedPath)
+    } catch {
+        display.error("Could not remove directory blocking manifest download at \(standardizedPath): \(error.localizedDescription)")
+        return false
+    }
+    return true
+}
+
 /// Gets a manifest from the server.
 /// The manifest name is used as-is — no file extension fallback is attempted.
 ///
@@ -88,12 +160,12 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
         return manifestLocalPath
     }
 
+    let manifestCacheRoot = managedInstallsDir(subpath: "manifests")
     let manifestLocalPath = managedInstallsDir(subpath: "manifests/\(name)")
-    // make sure the directory exists to store it
-    let manifestLocalPathDir = (manifestLocalPath as NSString).deletingLastPathComponent
-    if !createMissingDirs(manifestLocalPathDir) {
+    // make sure the destination is available to store it
+    if !prepareManifestDestination(manifestLocalPath, cacheRoot: manifestCacheRoot) {
         throw ManifestError.notRetrieved(
-            "Could not create a local directory to store manifest")
+            "Could not prepare local storage for manifest")
     }
 
     let message = "Retrieving list of software for this machine..."
@@ -385,6 +457,13 @@ func processManifest(
             }
             if key == "optional_installs" {
                 _ = await processOptionalInstall(
+                    item,
+                    catalogList: catalogList,
+                    installInfo: &installInfo
+                )
+            }
+            if key == "optional_uninstalls" {
+                await processOptionalUninstall(
                     item,
                     catalogList: catalogList,
                     installInfo: &installInfo

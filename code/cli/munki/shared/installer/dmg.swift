@@ -176,7 +176,7 @@ func copyItemsFromMountpoint(_ mountpoint: String, itemList: [PlistDict]) async 
             // setPermissions already displayed an error
             return permsresult
         }
-        // remove any previously exiting item at destinationPath
+        // remove any previously existing item at destinationPath
         if pathExists(destinationPath) {
             do {
                 try FileManager.default.removeItem(atPath: destinationPath)
@@ -233,8 +233,8 @@ func copyFromDmg(dmgPath: String, itemList: [PlistDict]) async -> Int {
 func createMissingDirs(_ path: String) -> Bool {
     let filemanager = FileManager.default
     if filemanager.fileExists(atPath: path) {
-        // the path exists; don't need to create anything
-        return true
+        // An existing non-directory cannot contain the requested path.
+        return pathIsDirectory(path, followSymlinks: true)
     }
     var parentPath = path
     // find a parent path that actually exists
