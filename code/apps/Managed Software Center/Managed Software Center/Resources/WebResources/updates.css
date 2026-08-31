@@ -516,6 +516,7 @@ div.lockup .row2 {
 
 div.lockup .row1 .list {
     flex-grow: 1;
+    min-width: 0;
     border-bottom: 0;
 }
 

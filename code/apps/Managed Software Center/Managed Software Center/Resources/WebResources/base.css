@@ -682,6 +682,7 @@ div.msc-button-inner {
     -webkit-border-radius: 12px;
     background: var(--small-btn-background);
     text-transform: uppercase;
+    white-space: nowrap;
     color: var(--small-button-text-color-enabled);
     font: normal normal bold 10px/14px 'Helvetica';
     padding-left: 10px;
