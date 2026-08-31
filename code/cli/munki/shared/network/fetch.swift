@@ -292,8 +292,18 @@ func getURL(
             errorDescription = urlError.localizedDescription
             display.detail("Download error \(errorCode): \(errorDescription)")
         } else {
+            // not a URLError -- most usefully a POSIX errno from the socket
+            // layer, so report the domain and code and not just the
+            // description, which on its own can be very misleading
+            errorCode = error.code
             errorDescription = error.localizedDescription
-            display.detail("Download error: \(errorDescription)")
+            display.detail("Download error \(error.domain) \(errorCode): \(errorDescription)")
+        }
+        if let underlyingError = error.userInfo[NSUnderlyingErrorKey] as? NSError {
+            display.detail(
+                "Underlying error \(underlyingError.domain) \(underlyingError.code): " +
+                    "\(underlyingError.localizedDescription)"
+            )
         }
         if session.SSLerror != 0 {
             errorCode = session.SSLerror
