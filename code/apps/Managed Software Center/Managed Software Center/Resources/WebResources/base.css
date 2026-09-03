@@ -1084,6 +1084,17 @@ div.logout-needed-icon {
     top: 2px;
 }
 
+div.more-info-icon {
+    display: inline-block;
+    margin-left: 4px;
+    width: 16px;
+    height: 16px;
+    background:url('info.svg') no-repeat;
+    background-size: 16px 16px;
+    position: relative;
+    top: 2px;
+}
+
 div.title div.select {
     float: right;
     position: relative;

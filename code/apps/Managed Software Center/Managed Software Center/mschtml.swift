@@ -777,6 +777,10 @@ func buildUpdatesPage() throws {
     page["optional_uninstalls_header_message"] = NSLocalizedString(
         "Suggested removals",
         comment: "Optional Uninstalls label")
+    page["optional_uninstalls_more_info_text"] = NSLocalizedString(
+        "These items are no longer recommended or supported by your organization. You should consider removing them.",
+        comment: "Optional Uninstalls more info text"
+    )
     if !optional_uninstall_items.isEmpty {
         page["hide_optional_uninstalls"] = ""
         page["optional_uninstall_rows"] = buildItemListHTML(
