@@ -333,7 +333,7 @@ div.os-updates p.note {
     color: #d30
 }
 .installation .description a {
-    color: #3E6397
+    color: var(--install-btn-background);
 }
 .installation [data-text-truncate-lines] a.text-truncate-toggle {
     padding: 0;
@@ -591,6 +591,10 @@ div.lockup .row2 a {
   padding: 10px;
   border-radius: 8px;
   width: 50%;
+}
+
+.modal-content a {
+    color: var(--install-btn-background);
 }
 
 /* modal close button */
