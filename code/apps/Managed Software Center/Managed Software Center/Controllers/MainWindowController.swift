@@ -1565,13 +1565,13 @@ class MainWindowController: NSWindowController {
                 }
                 if btn_classes.contains("install-updates") {
                     //(btn as! DOMHTMLElement).innerText = item["myitem_action_text"] as? String ?? ""
-                    self.setInnerText(item["myitem_action_text"] as? String ?? "", elementID: btn_id)
+                    self.setInnerHTML(item["myitem_action_text"] as? String ?? "", elementID: btn_id)
                 } else if btn_classes.contains("long_action_text") {
                     //(btn as! DOMHTMLElement).innerText = item["long_action_text"] as? String ?? ""
-                    self.setInnerText(item["long_action_text"] as? String ?? "", elementID: btn_id)
+                    self.setInnerHTML(item["long_action_text"] as? String ?? "", elementID: btn_id)
                 } else {
                     //(btn as! DOMHTMLElement).innerText = item["short_action_text"] as? String ?? ""
-                    self.setInnerText(item["short_action_text"] as? String ?? "", elementID: btn_id)
+                    self.setInnerHTML(item["short_action_text"] as? String ?? "", elementID: btn_id)
                 }
                 // use innerHTML instead of innerText because sometimes the status
                 // text contains html, like '<span class="warning">Some warning</span>'
