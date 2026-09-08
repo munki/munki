@@ -469,7 +469,7 @@ func buildListPageItemsHTML(category: String = "",
         item_html = buildItemListHTML(items)
     } else {
         // no items; build appropriate alert messages
-        let status_results_template = getTemplate("no_results_template.html")
+        let no_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
         if !filter.isEmpty {
             alert["primary_results_text"] = NSLocalizedString(
@@ -499,7 +499,7 @@ func buildListPageItemsHTML(category: String = "",
                 "Try again later.",
                 comment: "No Items secondary text")
         }
-        item_html = status_results_template.substitute(alert)
+        item_html = no_results_template.substitute(alert)
     }
     return item_html
 }
