@@ -27,7 +27,7 @@ import Foundation
 let assistedQuitPkginfoKeys = [
     "blocking_applications_manual_quit_only",
     "blocking_applications_quit_script",
-    "blocking_applications_launch_args",
+    "blocking_applications_with_launch_args",
 ]
 
 func copyAssistedQuitMetadata(from pkginfo: PlistDict, to item: inout PlistDict) {

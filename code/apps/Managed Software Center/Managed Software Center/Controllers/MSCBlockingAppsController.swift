@@ -75,17 +75,15 @@ class MSCBlockingAppsController: NSObject {
     private let forceQuitDelay: TimeInterval = 5.0
 
     // Manual quit tracking - apps that cannot/should not be quit by us
-    private var manualQuitAppNames: Set<String> = [] // app names that require manual quit
     private var manualQuitAppPaths: Set<String> = [] // app paths that require manual quit
 
-    // Custom quit script tracking - maps app names to their quit scripts
-    private var appQuitScripts: [String: String] = [:] // keyed by app name (e.g. "Safari.app")
+    // Custom quit script tracking - maps resolved app paths to their quit scripts
+    private var appQuitScripts: [String: String] = [:]
 
     // Launch arguments for reopening apps, keyed by resolved app bundle path
     private var appLaunchArguments: [String: [String]] = [:]
 
     // Removal tracking - apps being removed shouldn't be reopened
-    private var appsBeingRemovedNames: Set<String> = [] // app names being removed
     private var appsBeingRemovedPaths: Set<String> = [] // app paths being removed
 
     // Non-bundle executable tracking - executables that are not .app bundles
@@ -134,10 +132,10 @@ class MSCBlockingAppsController: NSObject {
 
         // Gather apps to check from update list
         appsToCheck = []
-        manualQuitAppNames = []
+        manualQuitAppPaths = []
         appQuitScripts = [:]
         appLaunchArguments = [:]
-        appsBeingRemovedNames = []
+        appsBeingRemovedPaths = []
         nonBundleExecutablePaths = []
 
         var running_apps: [BlockingAppInfo] = []
@@ -164,49 +162,51 @@ class MSCBlockingAppsController: NSObject {
                 // this item has no blocking apps or none are running
                 nonBlockedItemsPending = true
             } else {
-                running_apps += runningBlockingApps
+                for app in runningBlockingApps where !running_apps.contains(where: {
+                    $0.user == app.user && $0.pathname == app.pathname
+                }) {
+                    running_apps.append(app)
+                }
             }
 
             // Track apps that require manual quit
             if manualQuit {
-                for appName in itemBlockingApps {
-                    manualQuitAppNames.insert(appName)
+                for app in runningBlockingApps {
+                    manualQuitAppPaths.insert(app.pathname)
                 }
             }
 
             // Track apps that are being removed (shouldn't be reopened)
             if isBeingRemoved {
-                for appName in itemBlockingApps {
-                    appsBeingRemovedNames.insert(appName)
-                    msc_debug_log("App is being removed, won't reopen: \(appName)")
+                for app in runningBlockingApps {
+                    appsBeingRemovedPaths.insert(app.pathname)
+                    msc_debug_log("App is being removed, won't reopen: \(app.pathname)")
                 }
             }
 
             // Track custom quit scripts for blocking apps
             if let quitScript = update_item["blocking_applications_quit_script"] as? String {
-                for appName in itemBlockingApps {
-                    appQuitScripts[appName] = quitScript
-                    msc_debug_log("Found blocking_applications_quit_script for \(appName)")
+                for app in runningBlockingApps {
+                    appQuitScripts[app.pathname] = quitScript
+                    msc_debug_log("Found blocking_applications_quit_script for \(app.pathname)")
                 }
             }
 
-            if let launchArgumentMappings = update_item["blocking_applications_launch_args"] as? [String: Any] {
-                let itemAppPaths = Set(runningBlockingApps.map(\.pathname).filter {
-                    $0.hasSuffix(".app")
-                })
+            if let launchArgumentMappings = update_item["blocking_applications_with_launch_args"] as? [String: Any] {
                 for appIdentifier in launchArgumentMappings.keys.sorted() {
                     guard let launchArguments = launchArgumentMappings[appIdentifier] as? [String] else {
                         msc_debug_log(
-                            "Ignoring invalid blocking_applications_launch_args for \(appIdentifier)"
+                            "Ignoring invalid blocking_applications_with_launch_args for \(appIdentifier)"
                         )
                         continue
                     }
                     let appPaths = Array(Set(
                         getRunningBlockingApps([appIdentifier]).map(\.pathname)
-                    ).intersection(itemAppPaths)).sorted()
+                            .filter { $0.hasSuffix(".app") }
+                    )).sorted()
                     if appPaths.isEmpty {
                         msc_debug_log(
-                            "Ignoring blocking_applications_launch_args for non-blocking application \(appIdentifier)"
+                            "Ignoring blocking_applications_with_launch_args for non-application blocker \(appIdentifier)"
                         )
                         continue
                     }
@@ -217,11 +217,11 @@ class MSCBlockingAppsController: NSObject {
                         in: &appLaunchArguments
                     )
                     for appPath in configuredApps {
-                        msc_debug_log("Found blocking_applications_launch_args for \(appPath)")
+                        msc_debug_log("Found blocking_applications_with_launch_args for \(appPath)")
                     }
                     for appPath in conflicts {
                         msc_debug_log(
-                            "Ignoring conflicting blocking_applications_launch_args for \(appPath)"
+                            "Ignoring conflicting blocking_applications_with_launch_args for \(appPath)"
                         )
                     }
                 }
@@ -251,13 +251,11 @@ class MSCBlockingAppsController: NSObject {
 
         // Build a set of unique apps with their paths for icon lookup
         var uniqueApps = [(displayName: String, path: String)]()
-        var seenNames = Set<String>()
-        manualQuitAppPaths = []
-        appsBeingRemovedPaths = []
+        var seenPaths = Set<String>()
         for app in my_apps {
             let displayName = (app.display_name as NSString).deletingPathExtension
-            if !displayName.isEmpty, !seenNames.contains(displayName) {
-                seenNames.insert(displayName)
+            if !displayName.isEmpty, !seenPaths.contains(app.pathname) {
+                seenPaths.insert(app.pathname)
                 var appPath = app.pathname
                 if !appPath.isEmpty {
                     while !appPath.isEmpty, appPath != "/", !appPath.hasSuffix(".app") {
@@ -271,17 +269,11 @@ class MSCBlockingAppsController: NSObject {
                 }
                 uniqueApps.append((displayName: displayName, path: appPath))
 
-                // Check if this app requires manual quit or is being removed
-                if !appPath.isEmpty {
-                    let appFileName = (appPath as NSString).lastPathComponent
-                    if manualQuitAppNames.contains(appFileName) {
-                        manualQuitAppPaths.insert(appPath)
-                        msc_debug_log("App requires manual quit: \(displayName) at \(appPath)")
-                    }
-                    if appsBeingRemovedNames.contains(appFileName) {
-                        appsBeingRemovedPaths.insert(appPath)
-                        msc_debug_log("App is being removed: \(displayName) at \(appPath)")
-                    }
+                if manualQuitAppPaths.contains(appPath) {
+                    msc_debug_log("App requires manual quit: \(displayName) at \(appPath)")
+                }
+                if appsBeingRemovedPaths.contains(appPath) {
+                    msc_debug_log("App is being removed: \(displayName) at \(appPath)")
                 }
             }
         }
@@ -1013,10 +1005,8 @@ class MSCBlockingAppsController: NSObject {
         appsToCheck = []
         blockingAppsStackView = nil
         closedApps = []
-        manualQuitAppNames = []
         manualQuitAppPaths = []
         appQuitScripts = [:]
-        appsBeingRemovedNames = []
         appsBeingRemovedPaths = []
         nonBundleExecutablePaths = []
         reopenCheckbox = nil
@@ -1121,8 +1111,7 @@ class MSCBlockingAppsController: NSObject {
                 }
 
                 // Check for custom quit script
-                let appFileName = (app.path as NSString).lastPathComponent
-                if let quitScript = appQuitScripts[appFileName] {
+                if let quitScript = appQuitScripts[app.path] {
                     // Run the custom quit script instead of default termination
                     msc_debug_log("Running blocking_applications_quit_script for \(app.displayName)")
                     DispatchQueue.global(qos: .userInitiated).async {

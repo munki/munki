@@ -784,20 +784,20 @@ func getRunningBlockingApps(_ appnames: [String]) -> [BlockingAppInfo] {
 
 /// returns a list of blocking_applications for pkginfo item
 func blockingApplicationsForItem(_ pkginfo: PlistDict) -> [String] {
-    if let blockingApplications = pkginfo["blocking_applications"] as? [String] {
-        return blockingApplications
-    } else {
-        // if no blocking_applications specified, get appnames
-        // from 'installs' list if it exists
-        if let installs = pkginfo["installs"] as? [PlistDict] {
-            let apps = installs.filter {
-                $0["type"] as? String ?? "" == "application"
-            }
-            let appNames = apps.map {
-                ($0["path"] as? NSString)?.lastPathComponent ?? ""
-            }.filter { !$0.isEmpty }
-            return appNames
+    let blockingApplications = pkginfo["blocking_applications"] as? [String]
+    let configuredApplications = pkginfo["blocking_applications_with_launch_args"] as? [String: Any]
+    if blockingApplications != nil || configuredApplications != nil {
+        return Array(Set((blockingApplications ?? []) + (configuredApplications?.keys.map { $0 } ?? []))).sorted()
+    }
+    // if no explicit blocking applications are specified, get appnames
+    // from 'installs' list if it exists
+    if let installs = pkginfo["installs"] as? [PlistDict] {
+        let apps = installs.filter {
+            $0["type"] as? String ?? "" == "application"
         }
+        return apps.map {
+            ($0["path"] as? NSString)?.lastPathComponent ?? ""
+        }.filter { !$0.isEmpty }
     }
     return []
 }

@@ -47,6 +47,7 @@ let package = Package(
                 "shared/authrestart.swift",
                 "shared/authrestartclient.swift",
                 "shared/BlockingApplications.swift",
+                "shared/BlockingApplicationMetadata.swift",
                 "shared/bootstrapping.swift",
                 "shared/display.swift",
                 "shared/facts.swift",

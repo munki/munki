@@ -55,21 +55,7 @@ func isAppRunning(_ appName: String) -> Bool {
 /// or, if there is no blocking_applications list, true if any application in the installs list is running.
 func blockingApplicationsRunning(_ pkginfo: PlistDict) -> Bool {
     let display = DisplayAndLog.main
-    var appNames = [String]()
-    if let blockingApplications = pkginfo["blocking_applications"] as? [String] {
-        appNames = blockingApplications
-    } else {
-        // if no blocking_applications specified, get appnames
-        // from 'installs' list if it exists
-        if let installs = pkginfo["installs"] as? [PlistDict] {
-            let apps = installs.filter {
-                $0["type"] as? String ?? "" == "application"
-            }
-            appNames = apps.map {
-                ($0["path"] as? NSString)?.lastPathComponent ?? ""
-            }.filter { !$0.isEmpty }
-        }
-    }
+    let appNames = blockingApplicationsForItem(pkginfo)
     display.debug1("Checking for \(appNames)")
     let runningApps = appNames.filter { isAppRunning($0) }
     if !runningApps.isEmpty {
