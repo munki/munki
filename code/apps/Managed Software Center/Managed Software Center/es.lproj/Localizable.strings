@@ -142,6 +142,21 @@
 /* managedsoftwareupdate message */
 "Done." = "Hecho.";
 
+/* Download anyway button title */
+"Download anyway" = "Descargar de todos modos";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Descarga en pausa - conexión de ahorro de datos";
+
+/* Download Anyway alert title */
+"Low data connection detected" = "Conexión de ahorro de datos detectada";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Este artículo no fue descargado porque esta Mac está en una conexión de ahorro de datos.";
+
+/* Low data More Info button title */
+"More Info" = "Más información";
+
 /* Downloading status text */
 "Downloading" = "Descargando";
 
@@ -300,6 +315,9 @@
 
 /* Mandatory Updates Pending detail */
 "One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Una o más actualizaciones tienen que ser instaladas para el %@. Se forzará el cierre de sesión si esperas demasiado en actualizar.";
+
+/* Optional Uninstalls label */
+"Suggested removals" = "Desinstalaciones sugeridas";
 
 /* Other Available Updates label */
 "Other available updates" = "Otras actualizaciones disponibles";
