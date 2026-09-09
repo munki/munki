@@ -481,6 +481,9 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "There is not enough disk space to download and install this item.";
 
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "These items are no longer recommended or supported by your organization. You should consider removing them.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "This item is required by:";
 
