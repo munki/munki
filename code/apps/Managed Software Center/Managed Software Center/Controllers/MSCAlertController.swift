@@ -591,15 +591,7 @@ class MSCAlertController: NSObject {
         }
         var apps_to_check = [String]()
         for update_item in getUpdateList() {
-            if let blocking_apps = update_item["blocking_applications"] as? [String] {
-                apps_to_check += blocking_apps
-            } else if let installs_items = update_item["installs"] as? [PlistDict] {
-                let installs_apps = installs_items.filter(
-                    { ($0["type"] as? String ?? "" == "application" &&
-                        !($0["path"] as? String ?? "").isEmpty) }).map(
-                            { ($0["path"] as? NSString ?? "").lastPathComponent })
-                apps_to_check += installs_apps
-            }
+            apps_to_check += blockingApplicationsForItem(update_item.my)
         }
         let running_apps = getRunningBlockingApps(apps_to_check)
         if running_apps.isEmpty {

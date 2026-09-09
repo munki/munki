@@ -270,6 +270,9 @@
 		C0684E3B2DC131750091E774 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
 		C0684E3D2DC19C7A0091E774 /* BlockingApplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */; };
 		C0684E3E2DC19C7A0091E774 /* BlockingApplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */; };
+		C0AD97002F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
+		C0AD97012F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
+		C0AD97022F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
 		C0684E432DC580850091E774 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
 		C0684E442DC585560091E774 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C0684E452DC585FC0091E774 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
@@ -805,6 +808,7 @@
 		C0684DD12DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = precache_agent; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0684E2D2DC040450091E774 /* installhelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = installhelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplications.swift; sourceTree = "<group>"; };
+		C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplicationMetadata.swift; sourceTree = "<group>"; };
 		C0684E472DC586660091E774 /* osinstallerinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstallerinfo.swift; sourceTree = "<group>"; };
 		C0684E542DC735960091E774 /* Testing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Testing.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework; sourceTree = DEVELOPER_DIR; };
 		C0684E5C2DC736EE0091E774 /* munkiCLItesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = munkiCLItesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1255,6 +1259,7 @@
 				C0B7FA002D288C2700CC14F0 /* authrestart.swift */,
 				C005199A2D2A28510060DDB6 /* authrestartclient.swift */,
 				C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */,
+				C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */,
 				C06C21332C8793720023E9D9 /* bootstrapping.swift */,
 				C07A6FB12C2B22D300090743 /* constants.swift */,
 				C01364572C3265D6008DB215 /* display.swift */,
@@ -2201,6 +2206,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0AD97002F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */,
 				C0684E9B2DC7E5700091E774 /* manifests.swift in Sources */,
 				C0684E6C2DC73C150091E774 /* plistutils.swift in Sources */,
 				C058EF7F2DCF9FB0002775E0 /* MiddlewareProtocol.swift in Sources */,
@@ -2311,6 +2317,7 @@
 				C00519A92D2A5C180060DDB6 /* authrestartclient.swift in Sources */,
 				C01792D32C6BC81B008CBC22 /* fetch.swift in Sources */,
 				C0684E3D2DC19C7A0091E774 /* BlockingApplications.swift in Sources */,
+				C0AD97012F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */,
 				C07AED662C66D0A000DE6119 /* facts.swift in Sources */,
 				C030A98F2C39C135007F0B34 /* munkihash.swift in Sources */,
 				C07AED722C67F77000DE6119 /* sslerrors.swift in Sources */,
@@ -2432,6 +2439,7 @@
 				C07AED6C2C66F56C00DE6119 /* manifests.swift in Sources */,
 				C07074E62C34910F00B86310 /* osutils.swift in Sources */,
 				C0684E3E2DC19C7A0091E774 /* BlockingApplications.swift in Sources */,
+				C0AD97022F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */,
 				C030A9C12C419565007F0B34 /* osinstaller.swift in Sources */,
 				C06C21352C8793720023E9D9 /* bootstrapping.swift in Sources */,
 				C0D9C2B12C62D4120019A067 /* powermanager.swift in Sources */,

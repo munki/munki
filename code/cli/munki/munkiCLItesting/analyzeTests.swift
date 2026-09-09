@@ -22,7 +22,7 @@ import Testing
 struct assistedQuitMetadataTests {
     @Test func copiesLaunchArguments() {
         let pkginfo: PlistDict = [
-            "blocking_applications_launch_args": [
+            "blocking_applications_with_launch_args": [
                 "Google Chrome.app": [
                     "--restore-last-session",
                     "--profile-directory=Profile With Spaces",
@@ -33,7 +33,7 @@ struct assistedQuitMetadataTests {
 
         copyAssistedQuitMetadata(from: pkginfo, to: &processedItem)
 
-        let launchArguments = processedItem["blocking_applications_launch_args"] as? PlistDict
+        let launchArguments = processedItem["blocking_applications_with_launch_args"] as? PlistDict
         #expect(launchArguments?["Google Chrome.app"] as? [String] == [
             "--restore-last-session",
             "--profile-directory=Profile With Spaces",
@@ -44,7 +44,7 @@ struct assistedQuitMetadataTests {
         let pkginfo: PlistDict = [
             "blocking_applications_manual_quit_only": true,
             "blocking_applications_quit_script": "#!/bin/sh\nexit 0",
-            "blocking_applications_launch_args": [
+            "blocking_applications_with_launch_args": [
                 "Google Chrome.app": ["--restore-last-session"],
             ],
         ]
@@ -54,7 +54,7 @@ struct assistedQuitMetadataTests {
 
         #expect(processedItem["blocking_applications_manual_quit_only"] as? Bool == true)
         #expect(processedItem["blocking_applications_quit_script"] as? String == "#!/bin/sh\nexit 0")
-        let launchArguments = processedItem["blocking_applications_launch_args"] as? PlistDict
+        let launchArguments = processedItem["blocking_applications_with_launch_args"] as? PlistDict
         #expect(launchArguments?["Google Chrome.app"] as? [String] == ["--restore-last-session"])
     }
 
@@ -63,8 +63,85 @@ struct assistedQuitMetadataTests {
 
         copyAssistedQuitMetadata(from: [:], to: &processedItem)
 
-        #expect(processedItem["blocking_applications_launch_args"] == nil)
+        #expect(processedItem["blocking_applications_with_launch_args"] == nil)
         #expect(processedItem["name"] as? String == "GoogleChrome")
+    }
+}
+
+struct blockingApplicationsForItemTests {
+    @Test func combinesExplicitBlockerSources() {
+        let pkginfo: PlistDict = [
+            "blocking_applications": ["Firefox.app", "Google Chrome.app"],
+            "blocking_applications_with_launch_args": [
+                "Google Chrome.app": ["--restore-last-session"],
+                "Safari.app": [],
+            ],
+        ]
+
+        #expect(blockingApplicationsForItem(pkginfo) == [
+            "Firefox.app",
+            "Google Chrome.app",
+            "Safari.app",
+        ])
+    }
+
+    @Test func malformedArgumentsStillDeclareBlocker() {
+        let pkginfo: PlistDict = [
+            "blocking_applications_with_launch_args": [
+                "Google Chrome.app": "--restore-last-session",
+            ],
+        ]
+
+        #expect(blockingApplicationsForItem(pkginfo) == ["Google Chrome.app"])
+    }
+
+    @Test func explicitBlockersSuppressInstallsInference() {
+        let pkginfo: PlistDict = [
+            "blocking_applications_with_launch_args": [
+                "Google Chrome.app": ["--restore-last-session"],
+            ],
+            "installs": [[
+                "type": "application",
+                "path": "/Applications/Safari.app",
+            ]],
+        ]
+
+        #expect(blockingApplicationsForItem(pkginfo) == ["Google Chrome.app"])
+    }
+
+    @Test func infersBlockersWhenExplicitSourcesAreAbsent() {
+        let pkginfo: PlistDict = [
+            "installs": [[
+                "type": "application",
+                "path": "/Applications/Safari.app",
+            ]],
+        ]
+
+        #expect(blockingApplicationsForItem(pkginfo) == ["Safari.app"])
+    }
+
+    @Test func emptyExplicitSourceSuppressesInstallsInference() {
+        let pkginfo: PlistDict = [
+            "blocking_applications_with_launch_args": [:],
+            "installs": [[
+                "type": "application",
+                "path": "/Applications/Safari.app",
+            ]],
+        ]
+
+        #expect(blockingApplicationsForItem(pkginfo).isEmpty)
+    }
+
+    @Test func invalidConfiguredBlockersAllowInstallsInference() {
+        let pkginfo: PlistDict = [
+            "blocking_applications_with_launch_args": ["Google Chrome.app"],
+            "installs": [[
+                "type": "application",
+                "path": "/Applications/Safari.app",
+            ]],
+        ]
+
+        #expect(blockingApplicationsForItem(pkginfo) == ["Safari.app"])
     }
 }
 
