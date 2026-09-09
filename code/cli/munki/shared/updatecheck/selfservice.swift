@@ -45,7 +45,7 @@ func promoteUserWritablePlist(from userPath: String, to systemPath: String, labe
     // read the user-generated file to ensure it's valid, then write it
     // to the system location
     do {
-        if let plist = try readPlist(fromFile: userPath) {
+        if let plist = try detectFileContent(fromFile: userPath) {
             try writePlist(plist, toFile: systemPath)
             try? FileManager.default.removeItem(atPath: userPath)
         } else {
@@ -148,7 +148,7 @@ func processDefaultInstalls(_ defaultItems: [String]) {
     var manifest = PlistDict()
     if pathExists(selfServeManifest) {
         do {
-            manifest = try readPlist(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
+            manifest = try detectFileContent(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
         } catch {
             display.error("Could not read \(selfServeManifest): \(error.localizedDescription)")
             return
@@ -197,7 +197,7 @@ func cleanUpSelfServeManagedUninstalls(_ installInfoRemovals: [PlistDict]) {
     }
     var plist: PlistDict
     do {
-        plist = try readPlist(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
+        plist = try detectFileContent(fromFile: selfServeManifest) as? PlistDict ?? PlistDict()
     } catch {
         display.error("Could not read \(selfServeManifest): \(error.localizedDescription)")
         return

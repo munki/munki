@@ -39,9 +39,13 @@ extension PlistError: LocalizedError {
 func deserialize(_ data: Data?) throws -> Any? {
     if data != nil {
         do {
+            // Use immutable containers to avoid memory corruption issues
+            // when bridging between Objective-C NSDictionary/NSArray and Swift types.
+            // The mutableContainers option can cause ARC reference counting issues
+            // when Swift code accesses values from the returned dictionaries.
             let dataObject = try PropertyListSerialization.propertyList(
                 from: data!,
-                options: PropertyListSerialization.MutabilityOptions.mutableContainers,
+                options: [],
                 format: nil
             )
             return dataObject
@@ -53,18 +57,46 @@ func deserialize(_ data: Data?) throws -> Any? {
 }
 
 /// Attempt to read a PropertyList from a file
+/// Now supports both plist and yaml files based on file extension
 func readPlist(fromFile filepath: String) throws -> Any? {
+    if isYamlFile(filepath) {
+        return try readYaml(fromFile: filepath)
+    }
     return try deserialize(NSData(contentsOfFile: filepath) as Data?)
 }
 
 /// Attempt to read a PropertyList from data
+/// Tries plist first, then yaml if that fails
 func readPlist(fromData data: Data) throws -> Any? {
-    return try deserialize(data)
+    // Try plist first
+    do {
+        return try deserialize(data)
+    } catch {
+        // Try yaml as fallback
+        do {
+            return try readYaml(fromData: data)
+        } catch {
+            // Throw the original plist error if both fail
+            throw PlistError.readError(description: "Failed to parse as plist or yaml: \(error)")
+        }
+    }
 }
 
 /// Attempt to read a PropertyList from a string
+/// Tries plist first, then yaml if that fails
 func readPlist(fromString string: String) throws -> Any? {
-    return try deserialize(string.data(using: String.Encoding.utf8))
+    // Try plist first
+    do {
+        return try deserialize(string.data(using: String.Encoding.utf8))
+    } catch {
+        // Try yaml as fallback
+        do {
+            return try readYaml(fromString: string)
+        } catch {
+            // Throw the original plist error if both fail
+            throw PlistError.readError(description: "Failed to parse as plist or yaml: \(error)")
+        }
+    }
 }
 
 /// Attempt to convert a PropertyList object into a data representation
@@ -82,7 +114,13 @@ func serialize(_ plist: Any) throws -> Data {
 }
 
 /// Attempt to write a PropertyList object to a file
+/// Writes yaml if filepath has .yaml/.yml extension, otherwise writes plist
 func writePlist(_ dataObject: Any, toFile filepath: String) throws {
+    if isYamlFile(filepath) {
+        try writeYaml(dataObject, toFile: filepath)
+        return
+    }
+    
     do {
         let data = try serialize(dataObject) as NSData
         if !(data.write(toFile: filepath, atomically: true)) {
@@ -98,8 +136,24 @@ func plistToData(_ dataObject: Any) throws -> Data {
     return try serialize(dataObject)
 }
 
+/// Creates a deep copy of a plist dictionary by serializing and deserializing.
+/// This ensures complete memory independence from the source dictionary,
+/// which is important when the source may contain Objective-C bridged objects.
+func independentCopy(of dict: PlistDict) -> PlistDict? {
+    do {
+        let data = try serialize(dict)
+        return try deserialize(data) as? PlistDict
+    } catch {
+        return nil
+    }
+}
+
 /// Attempt to convert a PropertyList object to string
-func plistToString(_ dataObject: Any) throws -> String {
+/// If yamlOutput is true, returns yaml format; otherwise returns plist format
+func plistToString(_ dataObject: Any, yamlOutput: Bool = false) throws -> String {
+    if yamlOutput {
+        return try yamlToString(dataObject)
+    }
     do {
         let data = try serialize(dataObject)
         return String(data: data, encoding: String.Encoding.utf8)!
