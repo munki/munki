@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Fatto.";
 
+/* TODO: TRANSLATE: Download anyway button title */
+"Download anyway" = "Download anyway";
+
+/* TODO: TRANSLATE: Low data connection deferred download note */
+"Download paused — low data connection" = "Download paused — low data connection";
+
 /* Downloading status text */
 "Downloading" = "Download in corso";
 
@@ -226,6 +232,9 @@
 /* Logout Required title */
 "Logout Required" = "Logout Necessario";
 
+/* TODO: TRANSLATE: Download Anyway alert title */
+"Low data connection detected" = "Low data connection detected";
+
 /* macOS Install Pending text */
 "macOS install pending" = "Installazione di macOS in sospeso";
 
@@ -258,6 +267,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Altri in %@";
+
+/* TODO: TRANSLATE: Low data More Info button title */
+"More Info" = "More Info";
 
 /* My Items label */
 "My Items" = "I Miei Elementi";
@@ -427,6 +439,9 @@
 /* Sidebar Status label */
 "Status:" = "Stato:";
 
+/* TODO: TRANSLATE: Optional Uninstalls label */
+"Suggested removals" = "Suggested removals";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Problema di configurazione di sistema";
 
@@ -466,11 +481,17 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Non c'è abbastanza spazio su disco per scaricare e installare questo elemento.";
 
+/* TODO: TRANSLATE: Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "These items are no longer recommended or supported by your organization. You should consider removing them.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Questo elemento è richiesto da:";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Questo elemento deve essere installato da %@";
+
+/* TODO: TRANSLATE: Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Questo aggiornamento è in sospeso da %@ giorni.";

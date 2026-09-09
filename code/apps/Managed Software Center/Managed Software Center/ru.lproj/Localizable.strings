@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Готово.";
 
+/* TODO: TRANSLATE: Download anyway button title */
+"Download anyway" = "Download anyway";
+
+/* TODO: TRANSLATE: Low data connection deferred download note */
+"Download paused — low data connection" = "Download paused — low data connection";
+
 /* Downloading status text */
 "Downloading" = "Загрузка";
 
@@ -226,6 +232,9 @@
 /* Logout Required title */
 "Logout Required" = "Необходимо выйти из системы";
 
+/* TODO: TRANSLATE: Download Anyway alert title */
+"Low data connection detected" = "Low data connection detected";
+
 /* macOS Install Pending text */
 "macOS install pending" = "Ожидание установки macOS";
 
@@ -258,6 +267,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Еще в %@";
+
+/* TODO: TRANSLATE: Low data More Info button title */
+"More Info" = "More Info";
 
 /* My Items label */
 "My Items" = "Мои элементы";
@@ -427,6 +439,9 @@
 /* Sidebar Status label */
 "Status:" = "Статус:";
 
+/* TODO: TRANSLATE: Optional Uninstalls label */
+"Suggested removals" = "Suggested removals";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Проблема с конфигурацией системы";
 
@@ -448,9 +463,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Нет элементов в этой категории.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Вам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другие пользователи сейчас в системе.\nОбновление может привести к потере их несохраненных документов.\n\nПовторите попытку после выхода других пользователей из системы.";
 
@@ -469,8 +481,14 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Недостаточно места на диске для загрузки и установки этого элемента.";
 
+/* TODO: TRANSLATE: Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "These items are no longer recommended or supported by your organization. You should consider removing them.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Этот элемент необходим для:";
+
+/* TODO: TRANSLATE: Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Этот элемент должен быть установлен до %@";
