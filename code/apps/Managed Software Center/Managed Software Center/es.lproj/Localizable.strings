@@ -148,15 +148,6 @@
 /* Low data connection deferred download note */
 "Download paused — low data connection" = "Descarga en pausa - conexión de ahorro de datos";
 
-/* Download Anyway alert title */
-"Low data connection detected" = "Conexión de ahorro de datos detectada";
-
-/* Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "Este artículo no fue descargado porque esta Mac está en una conexión de ahorro de datos.";
-
-/* Low data More Info button title */
-"More Info" = "Más información";
-
 /* Downloading status text */
 "Downloading" = "Descargando";
 
@@ -241,6 +232,9 @@
 /* Logout Required title */
 "Logout Required" = "Es necesario cerrar sesión";
 
+/* Download Anyway alert title */
+"Low data connection detected" = "Conexión de ahorro de datos detectada";
+
 /* macOS Install Pending text */
 "macOS install pending" = "Instalación de macOS pendiente";
 
@@ -273,6 +267,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Otros en %@";
+
+/* Low data More Info button title */
+"More Info" = "Más información";
 
 /* My Items label */
 "My Items" = "Mis ítems";
@@ -315,9 +312,6 @@
 
 /* Mandatory Updates Pending detail */
 "One or more updates must be installed by %@. A logout may be forced if you wait too long to update." = "Una o más actualizaciones tienen que ser instaladas para el %@. Se forzará el cierre de sesión si esperas demasiado en actualizar.";
-
-/* Optional Uninstalls label */
-"Suggested removals" = "Desinstalaciones sugeridas";
 
 /* Other Available Updates label */
 "Other available updates" = "Otras actualizaciones disponibles";
@@ -445,6 +439,9 @@
 /* Sidebar Status label */
 "Status:" = "Estado:";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Desinstalaciones sugeridas";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Problema en la configuración del sistema";
 
@@ -489,6 +486,9 @@
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Tiene que estar instalado para el %@";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Este artículo no fue descargado porque esta Mac está en una conexión de ahorro de datos.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Esta actualización ha estado pendiente durante %@ días.";
