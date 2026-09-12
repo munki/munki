@@ -318,11 +318,11 @@ class GenericItem: BaseItem {
     }
     
     func custom_label(forSubKey sub_key: String) -> String? {
-        // Return the admin-defined label for one action_labels sub-key, or nil
+        // Return the admin-defined label for one custom_action_labels sub-key, or nil
         // if the pkginfo doesn't supply a usable one. add_localizations() has
         // already swapped in a translation if the pkginfo provided one for the
         // user's preferred language.
-        guard let action_labels = my["action_labels"] as? [String: Any],
+        guard let action_labels = my["custom_action_labels"] as? [String: Any],
               let label = action_labels[sub_key] as? String,
               !label.isEmpty
         else {
@@ -741,7 +741,7 @@ class GenericItem: BaseItem {
         let language_code = _get_preferred_locale(available_locales)
         if language_code != fallback_locale {
             if let locale_dict = localized_strings[language_code] as? [String: Any] {
-                let localized_keys = ["action_labels",
+                let localized_keys = ["custom_action_labels",
                                       "category",
                                       "description",
                                       "display_name",
