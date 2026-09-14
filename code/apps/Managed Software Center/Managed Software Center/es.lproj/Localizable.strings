@@ -481,6 +481,7 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "No hay espacio suficiente en el disco para descargar e instalar esta actualización.";
 
+/* Optional Uninstalls more info text */
 "These items are no longer recommended or supported by your organization. You should consider removing them." = "Tu organización ya no recomienda ni ofrece soporte para estas aplicaciones. Deberías considerar eliminarlas.";
 
 /* Dependency List prologue text */
