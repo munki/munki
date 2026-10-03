@@ -6,6 +6,8 @@
 
 Roll a new pkginfo version out to a growing percentage of the fleet over time, instead of to every machine at once.
 
+The core mechanism: a version the machine isn't eligible for is rejected during catalog lookup, the same way a failed `installable_condition` is. Munki then falls back to the next-highest version in the catalogs that the machine *is* eligible for. Everything below follows from that.
+
 ## 1. pkginfo schema
 
 Everything lives under one `deployment` dict. The keys present decide the mode.
