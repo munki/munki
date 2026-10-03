@@ -76,7 +76,7 @@ Static:
 
 ## 2. Schedule rules
 
-- **Local Time:** dates are read the same way as `force_install_after_date` (via `subtractTZOffsetFromDate`), so `12:00:00Z` means noon local time on every machine.
+- **Local Time:** dates are read the same way as `force_install_after_date` (via `subtractTZOffsetFromDate`), so `12:00:00Z` means noon local time on each machine.
 - **Before start:** current_deploy_percent is 0, so no machine is eligible.
 - **Day 1:** opens at the start timestamp and counts as a full day. There are no partial days: a noon start still gets day 1's full share for the rest of that day, and the schedule is never shortened or prorated to make up for it.
 - **Days 2 and later:** each opens at local midnight on the next weekday.
