@@ -142,8 +142,8 @@
 /* managedsoftwareupdate message */
 "Done." = "Valmis.";
 
-/* TODO: TRANSLATE: Download anyway button title */
-"Download anyway" = "Download anyway";
+/* Download anyway button title */
+"Download anyway" = "Lataa kuitenkin";
 
 /* TODO: TRANSLATE: Low data connection deferred download note */
 "Download paused — low data connection" = "Download paused — low data connection";
@@ -232,8 +232,8 @@
 /* Logout Required title */
 "Logout Required" = "Vaatii uloskirjautumisen";
 
-/* TODO: TRANSLATE: Download Anyway alert title */
-"Low data connection detected" = "Low data connection detected";
+/* Download Anyway alert title */
+"Low data connection detected" = "Hidas datayhteys";
 
 /* macOS Install Pending text */
 "macOS install pending" = "macOS-asennus odottaa";
@@ -268,8 +268,8 @@
 /* Sidebar More In Category label */
 "More in %@" = "Lisää kategoriassa %@";
 
-/* TODO: TRANSLATE: Low data More Info button title */
-"More Info" = "More Info";
+/* Low data More Info button title */
+"More Info" = "Lisätietoja";
 
 /* My Items label */
 "My Items" = "Omat ohjelmistot";
@@ -490,8 +490,8 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Asennettava ennen %@";
 
-/* TODO: TRANSLATE: Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Kohdetta ei ladattu, koska tämä Mac käyttää hidasta datayhteyttä";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Päivitys on ollut saatavilla %@ päivää.";
