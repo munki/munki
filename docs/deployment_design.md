@@ -19,11 +19,11 @@ Everything lives under one `deployment` dict. The keys present decide the mode.
 | Percent per day | `start`, `percent_per_day` | Same as percent per hour at a rate of `percent_per_day / 24`. With 20, it reaches 100 in about 5 weekdays. |
 | Static | `percent` | fixed current_deploy_percent, no dates; the admin raises it by hand |
 
-**`step_hours` (optional, dated modes only):** how many weekday hours each step lasts. It defaults to 1, so the value ticks up every hour. With 24, it ticks up once a day. It must be a whole number of 1 or more. It changes how often the value updates, not how long the deployment takes.
+**`step_hours` (optional, dated modes only):** how many weekday hours each step lasts. It defaults to 1, so the value ticks up every hour. With 24, it ticks up once a day. It must be an `<integer>` of 1 or more. On a static `percent` it has nothing to step, so the client ignores it and `makecatalogs` warns. It changes how often the value updates, not how long the deployment takes.
 
 **The modes are mutually exclusive.** `end`, `percent_per_hour`, `percent_per_day`, and `percent` can't be combined. A `deployment` with more than one of them is invalid, and the admin tools reject or flag it (see section 5).
 
-**Invalid deployments fail closed.** If a `deployment` is malformed (more than one mode, no mode, a dated mode missing `start`, an `end` at or before `start`, bad dates, a percent or rate outside 1–100, or a `step_hours` that isn't a whole number of 1 or more, or is set on a static `percent`), the client holds that version back on every machine and logs an error, rather than letting it go out to everyone.
+**Invalid deployments fail closed.** If a `deployment` is malformed (more than one mode, no mode, a dated mode missing `start`, an `end` at or before `start`, bad dates, a percent or rate outside 1–100, or a `step_hours` that isn't an `<integer>` of 1 or more), the client holds that version back on every machine and logs an error, rather than letting it go out to everyone.
 
 ### Strategies
 
@@ -242,8 +242,10 @@ Pick one mode per pkginfo. If the flags would create an invalid `deployment` (tw
 
 `makecatalogs` prints a warning for each pkginfo whose `deployment` has a problem. It still builds the catalogs, so the admin sees the warning but the repo isn't blocked. Warnings:
 
-- **Invalid (held back on every machine):** more than one mode, no mode (e.g. only `start`), a dated mode without `start`, an end at or before the start, a `percent` / `percent_per_hour` / `percent_per_day` outside 1–100, or a `step_hours` that isn't a whole number of 1 or more, or is set on a static `percent`.
-- **Valid, but probably not what was meant:** a start or end date on a weekend. The client moves a weekend start to Monday 00:00 and a weekend end to Saturday 00:00 (the end of Friday).
+- **Invalid (held back on every machine):** more than one mode, no mode (e.g. only `start`), a dated mode without `start`, an end at or before the start, a `percent` / `percent_per_hour` / `percent_per_day` outside 1–100, or a `step_hours` that isn't an `<integer>` of 1 or more.
+- **Valid, but probably not what was meant:**
+  - A start or end date on a weekend. The client moves a weekend start to Monday 00:00 and a weekend end to Saturday 00:00 (the end of Friday).
+  - A `step_hours` on a static `percent`. The client ignores it.
 
 ### Seeing deployment status: `deploymentutil` (new tool)
 
