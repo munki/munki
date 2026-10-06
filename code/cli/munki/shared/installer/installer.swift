@@ -125,11 +125,21 @@ func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]
     return matchedPrereqs
 }
 
-/// Returns boolean to indicate if the item needs a restart
-func requiresRestart(_ item: PlistDict) -> Bool {
+/// Returns boolean to indicate if the item needs a restart after installation
+func requiresRestartForInstall(_ item: PlistDict) -> Bool {
     let restartAction = item["RestartAction"] as? String ?? ""
     return ["RequireRestart", "RecommendRestart"].contains(restartAction)
 }
+
+/// Returns boolean to indicate if the item needs a restart after uninstalling
+func requiresRestartForUninstall(_ item: PlistDict) -> Bool {
+    if let restartAction = item["RestartActionForUninstall"] as? String {
+        return ["RequireRestart", "RecommendRestart"].contains(restartAction)
+    }
+    let restartAction = item["RestartAction"] as? String ?? ""
+    return ["RequireRestart", "RecommendRestart"].contains(restartAction)
+}
+
 
 /// Process an Apple package for install. Returns retcode, needs_restart
 func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (Int, Bool) {
@@ -161,7 +171,7 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             let fullPkgPath = (mountpoint as NSString).appendingPathComponent(pkgPath)
             if pathExists(fullPkgPath) {
                 let (retcode, needToRestart) = await install(fullPkgPath, options: pkginfo)
-                return (retcode, needToRestart || requiresRestart(pkginfo))
+                return (retcode, needToRestart || requiresRestartForInstall(pkginfo))
             } else {
                 display.error("Did not find \(pkgPath) on disk image \(dmgName)")
                 return (-99, false)
@@ -171,11 +181,11 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             // pkg found at the root of the mountpoint
             // (hopefully there's only one)
             let (retcode, needToRestart) = await installFromDirectory(mountpoint, options: pkginfo)
-            return (retcode, needToRestart || requiresRestart(pkginfo))
+            return (retcode, needToRestart || requiresRestartForInstall(pkginfo))
         }
     } else if hasValidPackageExt(itemPath) {
         let (retcode, needToRestart) = await install(itemPath, options: pkginfo)
-        return (retcode, needToRestart || requiresRestart(pkginfo))
+        return (retcode, needToRestart || requiresRestartForInstall(pkginfo))
     }
     // we didn't find anything we know how to install
     munkiLog("Found nothing we know how to install in \(itemPath)")
@@ -221,7 +231,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     case "copy_from_dmg":
         if let itemList = item["items_to_copy"] as? [PlistDict] {
             retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
-            if retcode == 0, requiresRestart(item) {
+            if retcode == 0, requiresRestartForInstall(item) {
                 needToRestart = true
             }
         }
@@ -233,7 +243,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
             }
         }
     case "nopkg":
-        needToRestart = requiresRestart(item)
+        needToRestart = requiresRestartForInstall(item)
     default:
         // unknown or no longer supported installer type
         if ["appdmg", "apple_update_metadata", "startosinstall", "profile"].contains(installerType) ||
@@ -465,7 +475,7 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
 /// returns an exitcode for the attempted install and a flag to indicate the need to restart
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
     // get initial need to restart from the pkginfo
-    var needToRestart = requiresRestart(item)
+    var needToRestart = requiresRestartForUninstall(item)
     let itemName = item.getString(for: "name", fallback: "<unknown>")
     let displayName = item.getString(for: "display_name", fallback: itemName)
 
