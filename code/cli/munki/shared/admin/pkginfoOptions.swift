@@ -39,6 +39,7 @@ struct PkginfoOptions {
 
 /// Supported restart actions
 enum RestartAction: String, CaseIterable, ExpressibleByArgument {
+    case None
     case RequireRestart
     case RecommendRestart
     case RequireLogout
