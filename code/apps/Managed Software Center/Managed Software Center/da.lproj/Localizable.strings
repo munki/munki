@@ -142,11 +142,11 @@
 /* managedsoftwareupdate message */
 "Done." = "Færdig.";
 
-/* TODO: TRANSLATE: Download anyway button title */
-"Download anyway" = "Download anyway";
+/* Download anyway button title */
+"Download anyway" = "Download alligevel";
 
-/* TODO: TRANSLATE: Low data connection deferred download note */
-"Download paused — low data connection" = "Download paused — low data connection";
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Download på pause — langsom dataforbindelse";
 
 /* Downloading status text */
 "Downloading" = "Henter";
@@ -232,8 +232,8 @@
 /* Logout Required title */
 "Logout Required" = "Log ud krævet";
 
-/* TODO: TRANSLATE: Download Anyway alert title */
-"Low data connection detected" = "Low data connection detected";
+/* Download Anyway alert title */
+"Low data connection detected" = "Langsom dataforbindelse registreret";
 
 /* macOS Install Pending text */
 "macOS install pending" = "Ventende macOS-installation";
@@ -268,8 +268,8 @@
 /* Sidebar More In Category label */
 "More in %@" = "Mere i %@";
 
-/* TODO: TRANSLATE: Low data More Info button title */
-"More Info" = "More Info";
+/* Low data More Info button title */
+"More Info" = "Mere info";
 
 /* My Items label */
 "My Items" = "Mine emner";
@@ -439,8 +439,8 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
-/* TODO: TRANSLATE: Optional Uninstalls label */
-"Suggested removals" = "Suggested removals";
+/* Optional Uninstalls label */
+"Suggested removals" = "Foreslåede fjernelser";
 
 /* System configuration problem alert title */
 "System configuration problem" = "Problem med systemkonfigurationen";
@@ -481,8 +481,8 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Der er ikke nok ledig plads på disken til at downloade og installere dette emne.";
 
-/* TODO: TRANSLATE: Optional Uninstalls more info text */
-"These items are no longer recommended or supported by your organization. You should consider removing them." = "These items are no longer recommended or supported by your organization. You should consider removing them.";
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Disse emner er ikke længere anbefalet eller understøttet af din organisation. Du bør overveje at fjerne dem.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Dette emne kræves af:";
@@ -490,8 +490,8 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Dette emne skal installeres senest %@";
 
-/* TODO: TRANSLATE: Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Emnet blev ikke downloadet, fordi denne Mac er på en langsom dataforbindelse.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Denne opdatering har afventet i %@ dage.";
