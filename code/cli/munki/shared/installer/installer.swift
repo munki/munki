@@ -601,10 +601,18 @@ func processRemovals(
                 display.info("Skipping removal of \(itemName) because blocking applications are running.")
                 continue
             }
-            let restartAction = item["RestartAction"] as? String ?? "None"
+            let restartAction: String
+            let restartActionLabel: String
+            if let restartActionForUninstall = item["RestartActionForUninstall"] as? String {
+                restartAction = restartActionForUninstall
+                restartActionLabel = "RestartActionForUninstall"
+            } else {
+                restartAction = item["RestartAction"] as? String ?? "None"
+                restartActionLabel = "RestartAction"
+            }
             if restartAction != "None" {
                 skippedRemovals.append(item)
-                display.warning("Skipping removal of \(itemName) because RestartAction is \(restartAction).")
+                display.warning("Skipping removal of \(itemName) because \(restartActionLabel) is \(restartAction).")
                 continue
             }
         }
