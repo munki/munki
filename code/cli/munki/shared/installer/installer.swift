@@ -142,10 +142,14 @@ func requiresRestartForUninstall(_ item: PlistDict) -> Bool {
 
 
 /// Process an Apple package for install. Returns retcode, needs_restart
-func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (Int, Bool) {
+func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String, isUninstallPkg: Bool = false) async -> (Int, Bool) {
     if pkginfo["suppress_bundle_relocation"] as? Bool ?? false {
         display.warning("Item has 'suppress_bundle_relocation' attribute. This feature is no longer supported.")
     }
+    // get the relevant RestartRequired value from the pkginfo
+    // (which may be different for install vs uninstall)
+    let pkginfoRestartRequired = isUninstallPkg ? requiresRestartForUninstall(pkginfo) : requiresRestartForInstall(pkginfo)
+
     if hasValidDiskImageExt(itemPath) {
         let dmgName = (itemPath as NSString).lastPathComponent
         display.minorStatus("Mounting disk image \(dmgName)")
@@ -171,7 +175,7 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             let fullPkgPath = (mountpoint as NSString).appendingPathComponent(pkgPath)
             if pathExists(fullPkgPath) {
                 let (retcode, needToRestart) = await install(fullPkgPath, options: pkginfo)
-                return (retcode, needToRestart || requiresRestartForInstall(pkginfo))
+                return (retcode, needToRestart || pkginfoRestartRequired)
             } else {
                 display.error("Did not find \(pkgPath) on disk image \(dmgName)")
                 return (-99, false)
@@ -181,11 +185,11 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             // pkg found at the root of the mountpoint
             // (hopefully there's only one)
             let (retcode, needToRestart) = await installFromDirectory(mountpoint, options: pkginfo)
-            return (retcode, needToRestart || requiresRestartForInstall(pkginfo))
+            return (retcode, needToRestart || pkginfoRestartRequired)
         }
     } else if hasValidPackageExt(itemPath) {
         let (retcode, needToRestart) = await install(itemPath, options: pkginfo)
-        return (retcode, needToRestart || requiresRestartForInstall(pkginfo))
+        return (retcode, needToRestart || pkginfoRestartRequired)
     }
     // we didn't find anything we know how to install
     munkiLog("Found nothing we know how to install in \(itemPath)")
@@ -523,7 +527,8 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             display.error("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
             return (-99, false)
         }
-        (retcode, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: uninstallerItemPath)
+        (retcode, needToRestart) = await handleApplePackageInstall(
+            pkginfo: item, itemPath: uninstallerItemPath, isUninstallPkg: true)
     case "remove_copied_items":
         if let itemsToRemove = item["items_to_remove"] as? [PlistDict] {
             if !removeCopiedItems(itemsToRemove) {
