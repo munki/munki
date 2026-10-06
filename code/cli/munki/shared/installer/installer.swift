@@ -464,7 +464,8 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
 /// Attempts to uninstall a single item from the removalList
 /// returns an exitcode for the attempted install and a flag to indicate the need to restart
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
-    var needToRestart = false
+    // get initial need to restart from the pkginfo
+    var needToRestart = requiresRestart(item)
     let itemName = item.getString(for: "name", fallback: "<unknown>")
     let displayName = item.getString(for: "display_name", fallback: itemName)
 
