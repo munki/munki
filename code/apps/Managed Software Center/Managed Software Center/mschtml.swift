@@ -867,14 +867,14 @@ func getRestartActionForUpdateList(_ update_list: [GenericItem]) -> String {
         return ""
     }
     let restart_items = update_list.filter(
-        { ($0["RestartAction"] as? String ?? "").contains("Restart") }
+        { ($0["effective_restart_action"] as? String ?? "").contains("Restart") }
     )
     if !restart_items.isEmpty {
         // found at least one item containing 'Restart' in its RestartAction
         return NSLocalizedString("Restart Required", comment: "Restart Required title")
     }
     let logout_items = update_list.filter(
-        { ($0["RestartAction"] as? String ?? "").contains("Logout") }
+        { ($0["effective_restart_action"] as? String ?? "").contains("Logout") }
     )
     if !logout_items.isEmpty {
         // found at least one item containing 'Logout' in its RestartAction

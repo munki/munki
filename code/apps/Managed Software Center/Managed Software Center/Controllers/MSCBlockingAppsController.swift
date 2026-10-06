@@ -140,7 +140,7 @@ class MSCBlockingAppsController: NSObject {
 
         var running_apps: [BlockingAppInfo] = []
         for update_item in getUpdateList() {
-            if let restartAction = update_item["RestartAction"] as? String {
+            if let restartAction = update_item["effective_restart_action"] as? String {
                 if restartAction.hasSuffix("Logout") || restartAction.hasSuffix("Restart") {
                     // user chose to skip items that require logout or restart
                     // so we should ignore these

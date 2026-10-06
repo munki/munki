@@ -151,7 +151,15 @@ class GenericItem: BaseItem {
         // sort items that need restart highest, then logout, then other
         my["restart_action_text"] = ""
         my["restart_sort"] = 2
-        let restartAction = my["RestartAction"] as? String ?? ""
+        let isRemoval = (my["will_be_removed"] as? Bool ?? false)
+            || (my["status"] as? String ?? "").contains("remov")
+        let restartAction: String
+        if isRemoval, let rfu = my["RestartActionForUninstall"] as? String {
+            restartAction = rfu
+        } else {
+            restartAction = my["RestartAction"] as? String ?? ""
+        }
+        my["effective_restart_action"] = restartAction
         if ["RequireRestart", "RecommendRestart"].contains(restartAction) {
             my["restart_sort"] = 0
             var restartActionText = NSLocalizedString(
@@ -1437,7 +1445,7 @@ func updatesRequireLogout() -> Bool {
         return true
     }
     let requiresLogout = getUpdateList().filter(
-            { ($0["RestartAction"] as? String ?? "").hasSuffix("Logout") }
+            { ($0["effective_restart_action"] as? String ?? "").hasSuffix("Logout") }
         ).count > 0
     return requiresLogout
 }
@@ -1445,7 +1453,7 @@ func updatesRequireLogout() -> Bool {
 func updatesRequireRestart() -> Bool {
     // Return true if any item in the update list requires a restart
     let requiresRestart = getUpdateList().filter(
-            { ($0["RestartAction"] as? String ?? "").hasSuffix("Restart") }
+            { ($0["effective_restart_action"] as? String ?? "").hasSuffix("Restart") }
         ).count > 0
     return requiresRestart
 }
@@ -1453,8 +1461,8 @@ func updatesRequireRestart() -> Bool {
 func someUpdatesDontRequireLogoutOrRestart() -> Bool {
     // return true if some updates in the list don't require a logout or restart
     let filteredUpdates = getUpdateList().filter {
-        !($0["RestartAction"] as? String ?? "").hasSuffix("Logout") &&
-        !($0["RestartAction"] as? String ?? "").hasSuffix("Restart")
+        !($0["effective_restart_action"] as? String ?? "").hasSuffix("Logout") &&
+        !($0["effective_restart_action"] as? String ?? "").hasSuffix("Restart")
     }
     return filteredUpdates.count > 0
 }
