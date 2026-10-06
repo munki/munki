@@ -269,8 +269,13 @@ func savePendingUpdateTimes() {
 func displayUpdateInfo() {
     //
     /// Displays logout/restart info for item if present and also updates our report
-    func displayAndRecordRestartInfo(_ item: PlistDict) {
-        let restartAction = item["RestartAction"] as? String ?? ""
+    func displayAndRecordRestartInfo(_ item: PlistDict, isRemoval: Bool = false) {
+        let restartAction: String
+        if isRemoval, let restartActionForUninstall = item["RestartActionForUninstall"] as? String {
+            restartAction = restartActionForUninstall
+        } else {
+            restartAction = item["RestartAction"] as? String ?? ""
+        }
         if ["RequireRestart", "RecommendRestart"].contains(restartAction) {
             display.info("       *Restart required")
             Report.shared.record(true, to: "RestartRequired")
@@ -326,7 +331,7 @@ func displayUpdateInfo() {
         if let installed = item["installed"] as? Bool, installed {
             let name = item["name"] as? String ?? "UNKNOWN"
             display.info("    - \(name)")
-            displayAndRecordRestartInfo(item)
+            displayAndRecordRestartInfo(item, isRemoval: true)
         }
     }
 }

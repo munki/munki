@@ -85,6 +85,10 @@ struct OverrideOptions: ParsableArguments {
             help: "Specify a 'RestartAction' for the installer item.")
     var restartAction: RestartAction? = nil
 
+    @Option(name: [.customLong("RestartActionForUninstall")],
+            help: "Specify a 'RestartAction' for the installer item specific to uninstalling.")
+    var restartActionForUninstall: RestartAction? = nil
+
     @Option(name: [.long, .customLong("uninstall_method")],
             help: "Specify an 'uninstall_method' for the installer item.  Default method depends on the package type: i.e.  drag-n-drop, Apple package, or an embedded uninstall script. Can be a path to a script on the client computer.")
     var uninstallMethod: String? = nil

@@ -845,6 +845,7 @@ func processOptionalInstall(
         "icon_hash",
         "requires",
         "RestartAction",
+        "RestartActionForUninstall",
     ] {
         processedItem[key] = pkginfo[key]
     }
@@ -969,6 +970,7 @@ func processOptionalUninstall(
         "icon_hash",
         "requires",
         "RestartAction",
+        "RestartActionForUninstall",
     ] {
         processedItem[key] = pkginfo[key]
     }
@@ -1205,9 +1207,17 @@ func processRemoval(
     // we will ignore the unattended_uninstall key if the item needs a restart
     // or logout...
     if (uninstallItem["unattended_uninstall"] as? Bool ?? false) || (uninstallItem["forced_uninstall"] as? Bool ?? false) {
-        let restartAction = uninstallItem["RestartAction"] as? String ?? "None"
+        let restartAction: String
+        let restartActionLabel: String
+        if let restartActionForUninstall = uninstallItem["RestartActionForUninstall"] as? String {
+            restartAction = restartActionForUninstall
+            restartActionLabel = "RestartActionForUninstall"
+        } else {
+            restartAction = uninstallItem["RestartAction"] as? String ?? "None"
+            restartActionLabel = "RestartAction"
+        }
         if restartAction != "None" {
-            display.warning("Ignoring unattended_uninstall key for \(uninstallItemName) because RestartAction is \(restartAction).")
+            display.warning("Ignoring unattended_uninstall key for \(uninstallItemName) because \(restartActionLabel) is \(restartAction).")
         } else {
             processedItem["unattended_uninstall"] = true
         }
@@ -1216,6 +1226,7 @@ func processRemoval(
     // some keys we'll copy if they exist
     let optionalKeys = [
         "RestartAction",
+        "RestartActionForUninstall",
         "blocking_applications",
         "installs",
         "requires",
