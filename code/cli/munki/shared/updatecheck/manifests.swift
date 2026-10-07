@@ -148,6 +148,7 @@ func prepareManifestDestination(_ path: String, cacheRoot: String) -> Bool {
 }
 
 /// Gets a manifest from the server.
+/// The manifest name is used as-is — no file extension fallback is attempted.
 ///
 /// Returns:
 ///    string local path to the downloaded manifest
@@ -167,9 +168,9 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
             "Could not prepare local storage for manifest")
     }
 
-    // try to get the manifest from the server
-    display.detail("Getting manifest \(name)...")
     let message = "Retrieving list of software for this machine..."
+    display.detail("Getting manifest \(name)...")
+
     do {
         _ = try fetchMunkiResource(
             kind: .manifest,
@@ -177,34 +178,33 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
             destinationPath: manifestLocalPath,
             message: message
         )
-    } catch let FetchError.connection(errorCode, description) {
-        throw ManifestError.connection(errorCode: errorCode, description: description)
+        // Success - validate
+        do {
+            _ = try detectFileContent(fromFile: manifestLocalPath)
+        } catch {
+            display.error("Manifest returned for \(name) is invalid.")
+            try? FileManager.default.removeItem(atPath: manifestLocalPath)
+            throw ManifestError.invalid(
+                "Manifest returned for \(name) is invalid: \(error.localizedDescription)")
+        }
+
+        display.detail("Retrieved manifest \(name)")
+        Manifests.shared.set(name, path: manifestLocalPath)
+        return manifestLocalPath
+
     } catch let FetchError.http(errorCode, description) {
         if !suppressErrors {
             display.error("Could not retrieve manifest \(name) from the server. HTTP error \(errorCode): \(description)")
         }
         throw ManifestError.http(errorCode: errorCode, description: description)
+    } catch let FetchError.connection(errorCode, description) {
+        throw ManifestError.connection(errorCode: errorCode, description: description)
     } catch {
         if !suppressErrors {
             display.error("Could not retrieve manifest \(name) from the server: \(error.localizedDescription)")
         }
         throw ManifestError.notRetrieved(error.localizedDescription)
     }
-
-    // validate the plist
-    do {
-        _ = try readPlist(fromFile: manifestLocalPath)
-    } catch {
-        display.error("Manifest returned for \(name) is invalid.")
-        try? FileManager.default.removeItem(atPath: manifestLocalPath)
-        throw ManifestError.invalid(
-            "Manifest returned for \(name) is invalid: \(error.localizedDescription)")
-    }
-
-    // got a valid plist
-    display.detail("Retrieved manifest \(name)")
-    Manifests.shared.set(name, path: manifestLocalPath)
-    return manifestLocalPath
 }
 
 /// Gets the primary client manifest from the server.
@@ -283,7 +283,7 @@ func cleanUpManifests() {
 func manifestData(_ path: String) -> PlistDict? {
     if pathExists(path) {
         do {
-            if let plist = try readPlist(fromFile: path) as? PlistDict {
+            if let plist = try detectFileContent(fromFile: path) as? PlistDict {
                 return plist
             } else {
                 // could not coerce to correct format

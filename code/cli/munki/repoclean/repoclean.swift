@@ -181,7 +181,10 @@ class RepoCleaner {
             var pkginfoSize = 0
             do {
                 let data = try await repo.get(pkginfoIdentifier)
-                pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
+                // Use file format detection for pkginfo files
+                // Some repos may have extensionless pkginfo files or mixed yaml/plist formats
+                let shouldPreferYaml = adminPref("use_yaml") as? Bool ?? false
+                pkginfo = try readData(data, preferYaml: shouldPreferYaml, filepath: pkginfoIdentifier) as? PlistDict ?? PlistDict()
                 pkginfoSize = data.count
             } catch {
                 errors.append("Unexpected error for \(pkginfoName): \(error.localizedDescription)")

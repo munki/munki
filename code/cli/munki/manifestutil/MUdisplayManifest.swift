@@ -23,7 +23,10 @@ import Foundation
 func getManifest(repo: Repo, name: String) async -> PlistDict? {
     do {
         let data = try await repo.get("manifests/\(name)")
-        return try readPlist(fromData: data) as? PlistDict
+        // run a file content detection since manifests don't have extensions
+        let shouldPreferYaml = adminPref("use_yaml") as? Bool ?? false
+        let manifest = try readData(data, preferYaml: shouldPreferYaml, filepath: "manifests/\(name)")
+        return manifest as? PlistDict
     } catch {
         printStderr("Could not retrieve manifest: \(error.localizedDescription)")
         return nil
@@ -108,9 +111,7 @@ extension ManifestUtil {
         func run() async throws {
             guard let repo = RepoConnection.shared.repo else { return }
             if var manifest = await getManifest(repo: repo, name: manifestName) {
-                if expand {
-                    manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
-                }
+                manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
                 } else {
@@ -133,6 +134,17 @@ extension ManifestUtil {
               help: "Display manifest in XML format.")
         var xml: Bool = false
 
+        @Flag(help: "Display manifest in YAML format.")
+        var yaml: Bool = false
+        
+        /// Determine if YAML output should be used based on flag or global preference
+        private var shouldUseYaml: Bool {
+            if yaml {
+                return true
+            }
+            return adminPref("use_yaml") as? Bool ?? false
+        }
+
         @Argument(help: ArgumentHelp(
             "Prints the contents of the specified manifest",
             valueName: "manifest-name"
@@ -145,6 +157,8 @@ extension ManifestUtil {
                 manifest = await expandIncludedManifests(repo: repo, manifest: manifest)
                 if xml {
                     print((try? plistToString(manifest)) ?? "")
+                } else if shouldUseYaml {
+                    print((try? yamlToString(manifest)) ?? "")
                 } else {
                     printPlist(manifest)
                 }

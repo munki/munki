@@ -422,7 +422,7 @@ struct MunkiImport: AsyncParsableCommand {
         // Now upload pkginfo
         var pkginfoPath = ""
         do {
-            pkginfoPath = try await copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir)
+            pkginfoPath = try await copyPkgInfoToRepo(repo, pkginfo: pkginfo, subdirectory: subdir, yamlOutput: munkiImportOptions.shouldUseYaml)
             print("Saved pkginfo to \(pkginfoPath).")
 
             // rebuild catalogs if --rebuild-catalogs was specified
