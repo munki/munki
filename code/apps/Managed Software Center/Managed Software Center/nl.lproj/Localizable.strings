@@ -146,7 +146,7 @@
 "Download anyway" = "Toch Downloaden";
 
 /* TODO: VERIFY: Low data connection deferred download note */
-"Download paused — low data connection" = "Download gepauseerd — connectie met beperkte bandbreedte";
+"Download paused — low data connection" = "Download gepauzeerd — connectie met beperkte bandbreedte";
 
 /* Downloading status text */
 "Downloading" = "Aan het downloaden";
