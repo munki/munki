@@ -585,3 +585,24 @@
 
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "macOS non è aggiornato da %@ giorni.";
+
+/* Low data More Info button title */
+"More Info" = "Ulteriori informazioni";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Download in pausa — connessione di rete lenta";
+
+/* Download Anyway alert title */
+"Low data connection detected" = "Rilevata connessione di rete lenta";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Questo elemento non è stato scaricato perché questo Mac è connesso ad una rete lenta.";
+
+/* Download anyway button title */
+"Download anyway" = "Scarica comunque";
+
+/* Optional Uninstalls label */
+"Suggested removals" = "Rimozioni consigliate";
+
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Questi elementi non sono più consigliati né supportati dalla tua organizzazione. Considera la loro rimozione.";
