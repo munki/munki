@@ -146,7 +146,7 @@
 "Download anyway" = "Toch Downloaden";
 
 /* TODO: VERIFY: Low data connection deferred download note */
-"Download paused — low data connection" = "Download gepauzeerd — connectie met beperkte bandbreedte";
+"Download paused — low data connection" = "Download gepauzeerd — netwerkverbinding met datalimiet";
 
 /* Downloading status text */
 "Downloading" = "Aan het downloaden";
@@ -233,7 +233,7 @@
 "Logout Required" = "Uitloggen vereist";
 
 /* TODO: VERIFY: Download Anyway alert title */
-"Low data connection detected" = "Connectie met beperkte bandbreedte gedetecteerd";
+"Low data connection detected" = "Netwerkverbinding met datalimiet gedetecteerd";
 
 /* macOS Install Pending text */
 "macOS install pending" = "macOS installatie in afwachting";
@@ -482,7 +482,7 @@
 "There is not enough disk space to download and install this item." = "Er is onvoldoende schijfruimte om dit onderdeel te downloaden en te installeren.";
 
 /* TODO: VERIFY: Optional Uninstalls more info text */
-"These items are no longer recommended or supported by your organization. You should consider removing them." = "Deze items zijn niet langer aangeraden of ondersteund door uw organisatie. Het is aangeraden om ze te verwijderen.";
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Deze items zijn niet langer aangeraden of ondersteund door jouw organisatie. Het is aangeraden om ze te verwijderen.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Dit item is benodigd voor:";
@@ -491,7 +491,7 @@
 "This item must be installed by %@" = "Dit item moet geïnstalleerd zijn voor %@";
 
 /* TODO: VERIFY: Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "Dit item is niet gedownload omdat u gebruik maakt van een connectie met beperkte bandbreedte";
+"This item was not downloaded because this Mac is on a low data connection." = "Dit item is niet gedownload omdat je gebruik maakt van een netwerkverbinding met datalimiet";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Deze update wacht al %@ dagen.";
