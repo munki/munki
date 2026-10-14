@@ -588,3 +588,24 @@
 
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "macOS устарела %@ дней назад.";
+
+/* Low data More Info button title */
+"More Info" = "Подробнее";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Загрузка приостановлена — режим экономии данных";
+
+/* Download Anyway alert title */
+"Low data connection detected" = "Обнаружен режим экономии данных";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Этот элемент не был загружен, так как этот Mac подключен к сети в режиме экономии данных.";
+
+/* Download anyway button title */
+"Download anyway" = "Все равно загрузить";
+
+/* Optional Uninstalls label */
+"Suggested removals" = "Рекомендуемые к удалению";
+
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Эти элементы больше не рекомендуются и не поддерживаются Вашей организацией. Вам следует рассмотреть возможность их удаления.";
