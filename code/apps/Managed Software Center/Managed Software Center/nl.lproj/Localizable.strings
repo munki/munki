@@ -142,10 +142,10 @@
 /* managedsoftwareupdate message */
 "Done." = "Klaar.";
 
-/* TODO: VERIFY: Download anyway button title */
+/* Download anyway button title */
 "Download anyway" = "Toch Downloaden";
 
-/* TODO: VERIFY: Low data connection deferred download note */
+/* Low data connection deferred download note */
 "Download paused — low data connection" = "Download gepauzeerd — netwerkverbinding met datalimiet";
 
 /* Downloading status text */
@@ -232,7 +232,7 @@
 /* Logout Required title */
 "Logout Required" = "Uitloggen vereist";
 
-/* TODO: VERIFY: Download Anyway alert title */
+/* Download Anyway alert title */
 "Low data connection detected" = "Netwerkverbinding met datalimiet gedetecteerd";
 
 /* macOS out-of-date days message */
@@ -271,7 +271,7 @@
 /* Sidebar More In Category label */
 "More in %@" = "Meer in %@";
 
-/* TODO: VERIFY: Low data More Info button title */
+/* Low data More Info button title */
 "More Info" = "Meer Informatie";
 
 /* My Items label */
@@ -442,7 +442,7 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
-/* TODO: VERIFY: Optional Uninstalls label */
+/* Optional Uninstalls label */
 "Suggested removals" = "Optionele verwijderingen";
 
 /* System configuration problem alert title */
@@ -484,7 +484,7 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Er is onvoldoende schijfruimte om dit onderdeel te downloaden en te installeren.";
 
-/* TODO: VERIFY: Optional Uninstalls more info text */
+/* Optional Uninstalls more info text */
 "These items are no longer recommended or supported by your organization. You should consider removing them." = "Deze items zijn niet langer aangeraden of ondersteund door jouw organisatie. Het is aangeraden om ze te verwijderen.";
 
 /* Dependency List prologue text */
@@ -493,7 +493,7 @@
 /* Forced Date warning */
 "This item must be installed by %@" = "Dit item moet geïnstalleerd zijn voor %@";
 
-/* TODO: VERIFY: Download Anyway alert informative text */
+/* Download Anyway alert informative text */
 "This item was not downloaded because this Mac is on a low data connection." = "Dit item is niet gedownload omdat je gebruik maakt van een netwerkverbinding met datalimiet";
 
 /* Pending days message */
