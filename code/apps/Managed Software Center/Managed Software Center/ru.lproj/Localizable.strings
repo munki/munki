@@ -142,11 +142,11 @@
 /* managedsoftwareupdate message */
 "Done." = "Готово.";
 
-/* TODO: TRANSLATE: Download anyway button title */
-"Download anyway" = "Download anyway";
+/* Download anyway button title */
+"Download anyway" = "Все равно загрузить";
 
-/* TODO: TRANSLATE: Low data connection deferred download note */
-"Download paused — low data connection" = "Download paused — low data connection";
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Загрузка приостановлена — режим экономии данных";
 
 /* Downloading status text */
 "Downloading" = "Загрузка";
@@ -232,8 +232,11 @@
 /* Logout Required title */
 "Logout Required" = "Необходимо выйти из системы";
 
-/* TODO: TRANSLATE: Download Anyway alert title */
-"Low data connection detected" = "Low data connection detected";
+/* Download Anyway alert title */
+"Low data connection detected" = "Обнаружен режим экономии данных";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS устарела %@ дней назад.";
 
 /* macOS Install Pending text */
 "macOS install pending" = "Ожидание установки macOS";
@@ -268,8 +271,8 @@
 /* Sidebar More In Category label */
 "More in %@" = "Еще в %@";
 
-/* TODO: TRANSLATE: Low data More Info button title */
-"More Info" = "More Info";
+/* Low data More Info button title */
+"More Info" = "Подробнее";
 
 /* My Items label */
 "My Items" = "Мои элементы";
@@ -439,8 +442,8 @@
 /* Sidebar Status label */
 "Status:" = "Статус:";
 
-/* TODO: TRANSLATE: Optional Uninstalls label */
-"Suggested removals" = "Suggested removals";
+/* Optional Uninstalls label */
+"Suggested removals" = "Рекомендуемые к удалению";
 
 /* System configuration problem alert title */
 "System configuration problem" = "Проблема с конфигурацией системы";
@@ -481,14 +484,14 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Недостаточно места на диске для загрузки и установки этого элемента.";
 
-/* TODO: TRANSLATE: Optional Uninstalls more info text */
-"These items are no longer recommended or supported by your organization. You should consider removing them." = "These items are no longer recommended or supported by your organization. You should consider removing them.";
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Эти элементы больше не рекомендуются и не поддерживаются Вашей организацией. Вам следует рассмотреть возможность их удаления.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Этот элемент необходим для:";
 
-/* TODO: TRANSLATE: Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "This item was not downloaded because this Mac is on a low data connection.";
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Этот элемент не был загружен, так как этот Mac подключен к сети в режиме экономии данных.";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Этот элемент должен быть установлен до %@";
@@ -603,27 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nОбновление macOS в настоящий момент невозможно.\n\nОбратитесь к администратору системы.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS устарела %@ дней назад.";
-
-/* Low data More Info button title */
-"More Info" = "Подробнее";
-
-/* Low data connection deferred download note */
-"Download paused — low data connection" = "Загрузка приостановлена — режим экономии данных";
-
-/* Download Anyway alert title */
-"Low data connection detected" = "Обнаружен режим экономии данных";
-
-/* Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "Этот элемент не был загружен, так как этот Mac подключен к сети в режиме экономии данных.";
-
-/* Download anyway button title */
-"Download anyway" = "Все равно загрузить";
-
-/* Optional Uninstalls label */
-"Suggested removals" = "Рекомендуемые к удалению";
-
-/* Optional Uninstalls more info text */
-"These items are no longer recommended or supported by your organization. You should consider removing them." = "Эти элементы больше не рекомендуются и не поддерживаются Вашей организацией. Вам следует рассмотреть возможность их удаления.";
