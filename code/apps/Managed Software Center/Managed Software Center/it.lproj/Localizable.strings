@@ -235,11 +235,11 @@
 /* Download Anyway alert title */
 "Low data connection detected" = "Rilevata connessione di rete lenta";
 
-/* macOS Install Pending text */
-"macOS install pending" = "Installazione di macOS in sospeso";
-
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "macOS non è aggiornato da %@ giorni.";
+
+/* macOS Install Pending text */
+"macOS install pending" = "Installazione di macOS in sospeso";
 
 /* macOS update required text */
 "macOS update required" = "È richiesto un aggiornamento di Mac OS";
