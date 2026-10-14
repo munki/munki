@@ -235,6 +235,9 @@
 /* TODO: TRANSLATE: Download Anyway alert title */
 "Low data connection detected" = "Low data connection detected";
 
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS ist seit %@ Tagen veraltet.";
+
 /* macOS Install Pending text */
 "macOS install pending" = "macOS Installation steht aus";
 
@@ -603,6 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können macOS derzeit nicht aktualisieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS ist seit %@ Tagen veraltet.";

@@ -235,6 +235,9 @@
 /* Download Anyway alert title */
 "Low data connection detected" = "省データモードが検出されました";
 
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOSのアップデート期限を%@日過ぎています。";
+
 /* macOS Install Pending text */
 "macOS install pending" = "MacOS のインストール保留中";
 
@@ -603,6 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "お使いのユーザーアカウントは、現在の起動ボリュームの所有者ではありません。\n現時点では MacOS をアップグレードできません。\n\nシステム管理者にお問い合わせください。";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOSのアップデート期限を%@日過ぎています。";
