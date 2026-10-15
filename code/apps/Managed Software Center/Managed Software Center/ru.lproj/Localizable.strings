@@ -485,7 +485,7 @@
 "There is not enough disk space to download and install this item." = "Недостаточно места на диске для загрузки и установки этого элемента.";
 
 /* Optional Uninstalls more info text */
-"These items are no longer recommended or supported by your organization. You should consider removing them." = "Эти элементы больше не рекомендуются и не поддерживаются Вашей организацией. Вам следует рассмотреть возможность их удаления.";
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Эти элементы больше не рекомендуются и не поддерживаются Вашей организацией. Рассмотрите возможность их удаления.";
 
 /* Dependency List prologue text */
 "This item is required by:" = "Этот элемент необходим для:";
