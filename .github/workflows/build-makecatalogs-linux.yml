@@ -2,7 +2,8 @@
 
   on:
     push:
-      branches: [Munki7_4dev]
+      tags:
+        - '*'
     workflow_dispatch:
 
   jobs:
