@@ -332,7 +332,7 @@
 "Password:" = "Passwort:";
 
 /* Pending Updates alert title */
-"Pending updates" = "Anstehende updates";
+"Pending updates" = "Anstehende Updates";
 
 /* managedsoftwareupdate message */
 "Performing postflight tasks..." = "Führe postflight Aufgaben aus...";
@@ -347,7 +347,7 @@
 "Preparing to run macOS Installer..." = "Bereite das Ausführen des macOS Installers vor...";
 
 /* Problem Updates label */
-"Problem updates" = "Problematische updates";
+"Problem updates" = "Problematische Updates";
 
 /* Quit button title */
 "Quit" = "Beenden";
