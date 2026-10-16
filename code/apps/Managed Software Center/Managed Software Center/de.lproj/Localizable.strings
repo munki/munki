@@ -146,7 +146,7 @@
 "Download anyway" = "Trotzdem herunterladen";
 
 /* Low data connection deferred download note */
-"Download paused — low data connection" = "Herunterladen pausiert — volumenbasierte Verbindung";
+"Download paused — low data connection" = "Herunterladen pausiert — Datensparmodus";
 
 /* Downloading status text */
 "Downloading" = "Lädt gerade herunter...";
@@ -233,7 +233,7 @@
 "Logout Required" = "Abmelden erforderlich";
 
 /* Download Anyway alert title */
-"Low data connection detected" = "Volumenbasierte Verbindung erkannt";
+"Low data connection detected" = "Datensparmodus erkannt";
 
 /* macOS out-of-date days message */
 "macOS has been out-of-date for %@ days." = "macOS ist seit %@ Tagen veraltet.";
@@ -494,7 +494,7 @@
 "This item must be installed by %@" = "Dieses Objekt muss bis %@ installiert sein";
 
 /* Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "Dieses Objekt wurde nicht heruntergeladen, da dieser Mac eine volumenbasierte Verbindung verwendet.";
+"This item was not downloaded because this Mac is on a low data connection." = "Dieses Objekt wurde nicht heruntergeladen, da sich dieser Mac im Datensparmodus befindet.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Dieses Update ist seit %@ Tagen ausstehend.";
