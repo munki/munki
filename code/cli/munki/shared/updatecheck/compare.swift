@@ -51,7 +51,7 @@ func compareVersions(_ thisVersion: String, _ thatVersion: String) -> MunkiCompa
 
 func compareUsingVersionScript(_ item: PlistDict) async -> MunkiComparisonResult {
     let itemName = item["name"] as? String ?? "<unknown>"
-    let itemVersion = item["version"] as? String ?? "0"
+    let itemVersion = item.stringValue(forKey: "version") ?? "0"
     let results = await runEmbeddedScriptAndReturnResults(name: "version_script", pkginfo: item, suppressError: true)
     if results.exitcode != 0 {
         if results.timedOut {
@@ -81,11 +81,11 @@ func compareUsingVersionScript(_ item: PlistDict) async -> MunkiComparisonResult
 func comparePlistVersion(_ item: PlistDict) throws -> MunkiComparisonResult {
     let versionComparisonKey = item["version_comparison_key"] as? String ?? "CFBundleShortVersionString"
     guard let path = item["path"] as? String,
-          let versionString = item[versionComparisonKey] as? String
+          let versionString = item.stringValue(forKey: versionComparisonKey)
     else {
         throw MunkiError("Missing plist path or version!")
     }
-    let minimumUpdateVersion = item["minimum_update_version"] as? String
+    let minimumUpdateVersion = item.stringValue(forKey: "minimum_update_version")
     display.debug1("\tChecking \(path) for \(versionComparisonKey) \(versionString)...")
     if !pathExists(path) {
         display.debug1("\tNo file found at \(path)")
@@ -164,7 +164,7 @@ func compareApplicationVersion(_ appItem: PlistDict) throws -> MunkiComparisonRe
     let bundleName = appItem["CFBundleName"] as? String ?? ""
     let bundleID = appItem["CFBundleIdentifier"] as? String ?? ""
     let versionComparisonKey = appItem["version_comparison_key"] as? String ?? "CFBundleShortVersionString"
-    let versionString = appItem[versionComparisonKey] as? String ?? ""
+    let versionString = appItem.stringValue(forKey: versionComparisonKey) ?? ""
 
     if bundleName.isEmpty, bundleID.isEmpty {
         // we have no path, no bundleName, no bundle identifier. Error!
@@ -282,7 +282,7 @@ func compareReceipt(_ item: PlistDict) async throws -> MunkiComparisonResult {
         return .same
     }
     guard let pkgid = item["packageid"] as? String,
-          let receiptVersion = item["version"] as? String
+          let receiptVersion = item.stringValue(forKey: "version")
     else {
         throw MunkiError("Receipt item is missing packageid or version info!")
     }
@@ -347,7 +347,7 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
     }
 
     let itemName = pkginfo["name"] as? String ?? "<unknown>"
-    let itemVersion = pkginfo["version"] as? String ?? "-1"
+    let itemVersion = pkginfo.stringValue(forKey: "version") ?? "-1"
 
     // try receipts
     let receipts = pkginfo["receipts"] as? [PlistDict] ?? []
@@ -356,7 +356,7 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
         // (there is no guarantee at all that a receipt/pkg version matches
         //  the version of the software installed by the package)
         if let pkgid = receipt["packageid"] as? String,
-           let receiptVersion = receipt["version"] as? String,
+           let receiptVersion = receipt.stringValue(forKey: "version"),
            compareVersions(receiptVersion, itemVersion) == .same
         {
             display.debug2("Using receipt \(pkgid) to determine installed version of \(itemName)")
@@ -374,7 +374,7 @@ func getInstalledVersion(_ pkginfo: PlistDict) -> String {
         for installItem in installItemsWithVersions {
             // look for an installs item whose version matches the pkginfo version
             guard let itemType = installItem["type"] as? String,
-                  let installItemVersion = installItem["CFBundleShortVersionString"] as? String
+                  let installItemVersion = installItem.stringValue(forKey: "CFBundleShortVersionString")
             else {
                 continue
             }

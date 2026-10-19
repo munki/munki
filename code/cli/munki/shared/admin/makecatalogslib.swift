@@ -29,6 +29,7 @@ struct MakeCatalogOptions {
     var force: Bool = false
     var verbose: Bool = false
     var checkHashes: Bool = false
+    var yamlOutput: Bool = false
 }
 
 /// Struct that handles building catalogs
@@ -231,7 +232,10 @@ struct CatalogsMaker {
             let pkginfoIdentifier = "pkgsinfo/" + pkginfoName
             do {
                 let data = try await repo.get(pkginfoIdentifier)
-                pkginfo = try readPlist(fromData: data) as? PlistDict ?? PlistDict()
+                // Use file format detection for pkginfo files
+                // Some repos may have extensionless pkginfo files or mixed yaml/plist formats
+                let shouldPreferYaml = adminPref("use_yaml") as? Bool ?? false
+                pkginfo = try readData(data, preferYaml: shouldPreferYaml, filepath: pkginfoIdentifier) as? PlistDict ?? PlistDict()
             } catch {
                 errors.append("Unexpected error reading \(pkginfoIdentifier): \(error)")
                 continue
@@ -324,12 +328,13 @@ struct CatalogsMaker {
         await cleanupCatalogs()
 
         // write the new catalogs
+        // Catalogs are always written extensionless
         for key in catalogs.keys {
             if !(catalogs[key]?.isEmpty ?? true) {
                 let catalogIdentifier = "catalogs/" + key
                 do {
                     if let value = catalogs[key] {
-                        let data = try plistToData(value)
+                        let data = options.yamlOutput ? try yamlToData(value) : try plistToData(value)
                         try await repo.put(catalogIdentifier, content: data)
                         if options.verbose {
                             print("Created \(catalogIdentifier)...")
@@ -337,6 +342,8 @@ struct CatalogsMaker {
                     }
                 } catch let PlistError.writeError(description) {
                     errors.append("Could not serialize catalog \(key): \(description)")
+                } catch let YamlError.writeError(description) {
+                    errors.append("Could not serialize catalog \(key) as YAML: \(description)")
                 } catch let error as MunkiError {
                     errors.append("Failed to create catalog \(key): \(error.description)")
                 } catch {
