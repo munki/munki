@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Hecho.";
 
+/* Download anyway button title */
+"Download anyway" = "Descargar de todos modos";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Descarga en pausa - conexión de ahorro de datos";
+
 /* Downloading status text */
 "Downloading" = "Descargando";
 
@@ -226,6 +232,12 @@
 /* Logout Required title */
 "Logout Required" = "Es necesario cerrar sesión";
 
+/* Download Anyway alert title */
+"Low data connection detected" = "Conexión de ahorro de datos detectada";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS lleva %@ días desactualizado.";
+
 /* macOS Install Pending text */
 "macOS install pending" = "Instalación de macOS pendiente";
 
@@ -258,6 +270,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Otros en %@";
+
+/* Low data More Info button title */
+"More Info" = "Más información";
 
 /* My Items label */
 "My Items" = "Mis ítems";
@@ -427,6 +442,9 @@
 /* Sidebar Status label */
 "Status:" = "Estado:";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Desinstalaciones sugeridas";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Problema en la configuración del sistema";
 
@@ -466,11 +484,17 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "No hay espacio suficiente en el disco para descargar e instalar esta actualización.";
 
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Tu organización ya no recomienda ni ofrece soporte para estas aplicaciones. Deberías considerar eliminarlas.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Requerido por:";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Tiene que estar instalado para el %@";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Este artículo no fue descargado porque esta Mac está en una conexión de ahorro de datos.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Esta actualización ha estado pendiente durante %@ días.";
@@ -582,6 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Tu cuenta de usuario no es propietaria del volumen de inicio.\nNo puedes actualizar macOS en este momento.\n\nContacta con tu administrador de sistemas.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS lleva %@ días desactualizado.";

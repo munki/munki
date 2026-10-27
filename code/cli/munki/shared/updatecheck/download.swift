@@ -380,6 +380,12 @@ func precache() {
         // nothing to do
         return
     }
+    if onLowDataConnection() {
+        // don't pull speculative background downloads over a metered/low-data
+        // connection
+        display.info("Skipping precaching: on a low data connection.")
+        return
+    }
     display.info("###   Beginning precaching session   ###")
     for item in itemsToPrecache(installInfo) {
         do {

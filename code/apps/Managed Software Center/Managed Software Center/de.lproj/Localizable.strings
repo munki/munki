@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Fertig";
 
+/* Download anyway button title */
+"Download anyway" = "Trotzdem herunterladen";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Herunterladen pausiert — Datensparmodus";
+
 /* Downloading status text */
 "Downloading" = "Lädt gerade herunter...";
 
@@ -226,6 +232,12 @@
 /* Logout Required title */
 "Logout Required" = "Abmelden erforderlich";
 
+/* Download Anyway alert title */
+"Low data connection detected" = "Datensparmodus erkannt";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS ist seit %@ Tagen veraltet.";
+
 /* macOS Install Pending text */
 "macOS install pending" = "macOS Installation steht aus";
 
@@ -258,6 +270,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Mehr aus %@";
+
+/* Low data More Info button title */
+"More Info" = "Weitere Informationen";
 
 /* My Items label */
 "My Items" = "Meine Objekte";
@@ -317,7 +332,7 @@
 "Password:" = "Passwort:";
 
 /* Pending Updates alert title */
-"Pending updates" = "Anstehende updates";
+"Pending updates" = "Anstehende Updates";
 
 /* managedsoftwareupdate message */
 "Performing postflight tasks..." = "Führe postflight Aufgaben aus...";
@@ -332,7 +347,7 @@
 "Preparing to run macOS Installer..." = "Bereite das Ausführen des macOS Installers vor...";
 
 /* Problem Updates label */
-"Problem updates" = "Problematische updates";
+"Problem updates" = "Problematische Updates";
 
 /* Quit button title */
 "Quit" = "Beenden";
@@ -427,6 +442,9 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Empfohlene Deinstallationen";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Problem mit der Systemkonfiguration";
 
@@ -466,11 +484,17 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Es ist nicht genügend Speicherplatz vorhanden, um dieses Update herunterzuladen und zu installieren.";
 
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Diese Objekte werden von Ihrer Organisation nicht länger empfohlen oder unterstützt. Sie sollten darüber nachdenken, diese zu entfernen.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Dieses Objekt wird benötigt von:";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Dieses Objekt muss bis %@ installiert sein";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Dieses Objekt wurde nicht heruntergeladen, da sich dieser Mac im Datensparmodus befindet.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Dieses Update ist seit %@ Tagen ausstehend.";
@@ -582,6 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ihr Benutzerkonto ist nicht Eigentümer des aktuellen Startvolumes.\nSie können macOS derzeit nicht aktualisieren.\n\nWenden Sie sich an Ihren Systemadministrator.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS ist seit %@ Tagen veraltet.";

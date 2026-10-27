@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Готово.";
 
+/* Download anyway button title */
+"Download anyway" = "Все равно загрузить";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Загрузка приостановлена — режим экономии данных";
+
 /* Downloading status text */
 "Downloading" = "Загрузка";
 
@@ -226,6 +232,12 @@
 /* Logout Required title */
 "Logout Required" = "Необходимо выйти из системы";
 
+/* Download Anyway alert title */
+"Low data connection detected" = "Обнаружен режим экономии данных";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS устарела %@ дней назад.";
+
 /* macOS Install Pending text */
 "macOS install pending" = "Ожидание установки macOS";
 
@@ -258,6 +270,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Еще в %@";
+
+/* Low data More Info button title */
+"More Info" = "Подробнее";
 
 /* My Items label */
 "My Items" = "Мои элементы";
@@ -427,6 +442,9 @@
 /* Sidebar Status label */
 "Status:" = "Статус:";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Рекомендуемые к удалению";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Проблема с конфигурацией системы";
 
@@ -448,9 +466,6 @@
 /* No Category Results primary text */
 "There are no items in this category." = "Нет элементов в этой категории.";
 
-/* Apple Software Updates Pending detail */
-"You must install these updates using Software Update in System Preferences." = "Вам необходимо установить их через раздел «Обновление ПО» в Системных настройках.";
-
 /* Other Users Logged In detail */
 "There are other users logged into this computer.\nUpdating now could cause other users to lose their work.\n\nPlease try again later after the other users have logged out." = "Другие пользователи сейчас в системе.\nОбновление может привести к потере их несохраненных документов.\n\nПовторите попытку после выхода других пользователей из системы.";
 
@@ -469,8 +484,14 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Недостаточно места на диске для загрузки и установки этого элемента.";
 
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Эти элементы больше не рекомендуются и не поддерживаются Вашей организацией. Рассмотрите возможность их удаления.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Этот элемент необходим для:";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Этот элемент не был загружен, так как этот Mac подключен к сети в режиме экономии данных.";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Этот элемент должен быть установлен до %@";
@@ -585,6 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Ваш пользователь не является владельцем загрузочного диска.\nОбновление macOS в настоящий момент невозможно.\n\nОбратитесь к администратору системы.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS устарела %@ дней назад.";

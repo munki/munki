@@ -33,10 +33,14 @@ let EXIT_STATUS_ROOT_REQUIRED: Int32 = 201
 
 let MSU_MAX_RUNTIME_SECS = 43200 // 12 hours
 
-#if DEBUG
-    let BUNDLE_ID = (ProcessInfo.processInfo.environment["MUNKI_BUNDLE_ID"] ?? "ManagedInstalls") as CFString
+#if os(macOS)
+    #if DEBUG
+        let BUNDLE_ID = (ProcessInfo.processInfo.environment["MUNKI_BUNDLE_ID"] ?? "ManagedInstalls") as CFString
+    #else
+        let BUNDLE_ID = "ManagedInstalls" as CFString
+    #endif
 #else
-    let BUNDLE_ID = "ManagedInstalls" as CFString
+    let BUNDLE_ID = "ManagedInstalls"
 #endif
 
 let MSC_BUNDLE_ID = "com.googlecode.munki.ManagedSoftwareCenter"

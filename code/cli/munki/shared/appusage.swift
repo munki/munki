@@ -233,7 +233,7 @@ class ApplicationUsageQuery {
         do {
             try conn = SQL3Connection(db)
         } catch {
-            logger.error("Error connecting to \(db): \(error.localizedDescription)")
+            logger.error("Error connecting to \(db): \(error)")
             conn = nil
         }
     }
@@ -242,6 +242,29 @@ class ApplicationUsageQuery {
     deinit {
         if let conn {
             try? conn.close()
+        }
+    }
+
+    /// Returns true if the error is sqlite3 reporting that a table does not exist.
+    /// Both tables in this database are created lazily by ApplicationUsageRecorder:
+    /// application_usage the first time an app launch or quit is recorded, and
+    /// install_requests the first time the user makes a self-service install or
+    /// removal request. A table that has not been created yet means "nothing has
+    /// been recorded", not "the database is broken".
+    func isMissingTableError(_ error: Error) -> Bool {
+        guard let sqlError = error as? SQL3Error else { return false }
+        return sqlError.description.hasPrefix("Could not prepare statement: no such table:")
+    }
+
+    /// Log a failed query. A table that does not exist yet is an expected state
+    /// and not worth an error-level message.
+    /// SQL3Error does not adopt LocalizedError, so localizedDescription would
+    /// discard the message sqlite3 gave us; interpolate the error instead.
+    func logQueryFailure(_ error: Error) {
+        if isMissingTableError(error) {
+            logger.debug("No data yet in \(db): \(error)")
+        } else {
+            logger.error("Error querying \(db): \(error)")
         }
     }
 
@@ -260,14 +283,16 @@ class ApplicationUsageQuery {
                 return Int(timeDiff / dayInSeconds)
             }
         } catch {
-            logger.error("Error querying \(db): \(error.localizedDescription)")
+            logQueryFailure(error)
         }
         return 0
     }
 
     /// Perform db query and return the number of days since the last event
     /// occurred for bundle_id.
-    /// Returns -2 if database is missing or broken;
+    /// Returns -2 if database is missing or broken, which includes the
+    /// application_usage table not existing yet -- no usage has been recorded
+    /// at all, so we report "no data" rather than "not used recently";
     /// Returns -1 if there is no event record for the bundle_id
     /// Returns int number of days since last event otherwise
     func daysSinceLastUsageEvent(_ event: String, bundleID: String) -> Int {
@@ -288,7 +313,7 @@ class ApplicationUsageQuery {
                 return -1
             }
         } catch {
-            logger.error("Error querying \(db): \(error.localizedDescription)")
+            logQueryFailure(error)
             return -2
         }
     }
@@ -296,7 +321,10 @@ class ApplicationUsageQuery {
     /// Perform db query and return the number of days since the last
     /// install request occurred for itemName..
     /// Returns -2 if database is missing or broken;
-    /// Returns -1 if there are no matching records for the itemName
+    /// Returns -1 if there are no matching records for the itemName, which
+    /// includes the install_requests table not existing yet -- it is created
+    /// the first time the user makes a self-service request, so its absence
+    /// means no install requests have ever been made;
     /// Returns int number of days since last event otherwise
     func daysSinceLastInstallEvent(_ event: String, itemName: String) -> Int {
         guard let connection = conn else { return -2 }
@@ -316,8 +344,8 @@ class ApplicationUsageQuery {
                 return -1
             }
         } catch {
-            logger.error("Error querying \(db): \(error.localizedDescription)")
-            return -2
+            logQueryFailure(error)
+            return isMissingTableError(error) ? -1 : -2
         }
     }
 }

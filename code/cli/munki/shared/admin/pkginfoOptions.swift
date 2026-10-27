@@ -39,6 +39,7 @@ struct PkginfoOptions {
 
 /// Supported restart actions
 enum RestartAction: String, CaseIterable, ExpressibleByArgument {
+    case None
     case RequireRestart
     case RecommendRestart
     case RequireLogout
@@ -54,6 +55,13 @@ enum InstallerType: String, CaseIterable, ExpressibleByArgument {
 enum SupportedArchitecture: String, CaseIterable, ExpressibleByArgument {
     case x86_64
     case arm64
+}
+
+/// Supported values for the download_on_low_data pkginfo key
+enum DownloadOnLowData: String, CaseIterable, ExpressibleByArgument {
+    case auto
+    case always
+    case never
 }
 
 /// Pkginfo Override Options
@@ -77,6 +85,10 @@ struct OverrideOptions: ParsableArguments {
     @Option(name: [.customLong("RestartAction")],
             help: "Specify a 'RestartAction' for the installer item.")
     var restartAction: RestartAction? = nil
+
+    @Option(name: [.customLong("RestartActionForUninstall")],
+            help: "Specify a 'RestartAction' for the installer item specific to uninstalling.")
+    var restartActionForUninstall: RestartAction? = nil
 
     @Option(name: [.long, .customLong("uninstall_method")],
             help: "Specify an 'uninstall_method' for the installer item.  Default method depends on the package type: i.e.  drag-n-drop, Apple package, or an embedded uninstall script. Can be a path to a script on the client computer.")
@@ -308,6 +320,10 @@ struct AdditionalPkginfoOptions: ParsableArguments {
 
     @Option(help: ArgumentHelp("Specifies administrator provided notes to be embedded into the pkginfo. Can be a path to a file.", valueName: "text|path"))
     var notes: String? = nil
+
+    @Option(name: [.long, .customLong("download_on_low_data")],
+            help: "Specify whether this item should be downloaded on a low-data connection (cellular, personal hotspot, or an interface in Low Data Mode): 'always' (regardless of size), 'never', or 'auto' (follow the MaxSizeOverLowDataConnection size threshold). Defaults to 'auto' when omitted.")
+    var downloadOnLowData: DownloadOnLowData? = nil
 
     mutating func validate() throws {
         // validate options with version strings actually start with a digit

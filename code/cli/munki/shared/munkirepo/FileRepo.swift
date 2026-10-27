@@ -18,83 +18,87 @@
 //  limitations under the License.
 
 import Foundation
-import NetFS
+#if os(macOS)
+    import NetFS
+#endif
 
 // MARK: share mounting functions
 
-// NetFS error codes
-/*
- *    ENETFSPWDNEEDSCHANGE           -5045
- *    ENETFSPWDPOLICY                -5046
- *    ENETFSACCOUNTRESTRICTED        -5999
- *    ENETFSNOSHARESAVAIL            -5998
- *    ENETFSNOAUTHMECHSUPP           -5997
- *    ENETFSNOPROTOVERSSUPP          -5996
- *
- *  from <NetAuth/NetAuthErrors.h>
- *    kNetAuthErrorInternal          -6600
- *    kNetAuthErrorMountFailed       -6602
- *    kNetAuthErrorNoSharesAvailable -6003
- *    kNetAuthErrorGuestNotSupported -6004
- *    kNetAuthErrorAlreadyClosed     -6005
- */
+#if os(macOS)
+    // NetFS error codes
+    /*
+     *    ENETFSPWDNEEDSCHANGE           -5045
+     *    ENETFSPWDPOLICY                -5046
+     *    ENETFSACCOUNTRESTRICTED        -5999
+     *    ENETFSNOSHARESAVAIL            -5998
+     *    ENETFSNOAUTHMECHSUPP           -5997
+     *    ENETFSNOPROTOVERSSUPP          -5996
+     *
+     *  from <NetAuth/NetAuthErrors.h>
+     *    kNetAuthErrorInternal          -6600
+     *    kNetAuthErrorMountFailed       -6602
+     *    kNetAuthErrorNoSharesAvailable -6003
+     *    kNetAuthErrorGuestNotSupported -6004
+     *    kNetAuthErrorAlreadyClosed     -6005
+     */
 
-enum ShareMountError: Error {
-    case generalError(Int32)
-    case authorizationNeeded(Int32)
-}
-
-/// Mounts a share at /Volumes, optionally using credentials.
-/// Returns the mount point or throws an error
-func mountShare(_ shareURL: String, username: String = "", password: String = "") throws -> String {
-    let cfShareURL = CFURLCreateWithString(nil, shareURL as CFString, nil)
-    // Set UI to reduced interaction
-    let open_options: NSMutableDictionary = [kNAUIOptionKey: kNAUIOptionNoUI]
-    // Allow mounting sub-directories of root shares
-    let mount_options: NSMutableDictionary = [kNetFSAllowSubMountsKey: true]
-    var mountpoints: Unmanaged<CFArray>? = nil
-    var result: Int32 = 0
-    if !username.isEmpty {
-        result = NetFSMountURLSync(cfShareURL, nil, username as CFString, password as CFString, open_options as CFMutableDictionary, mount_options as CFMutableDictionary, &mountpoints)
-    } else {
-        result = NetFSMountURLSync(cfShareURL, nil, nil, nil, open_options as CFMutableDictionary, mount_options as CFMutableDictionary, &mountpoints)
+    enum ShareMountError: Error {
+        case generalError(Int32)
+        case authorizationNeeded(Int32)
     }
-    // Check if it worked
-    if result != 0 {
-        if [-6600, EINVAL, ENOTSUP, EAUTH].contains(result) {
-            // -6600 is kNetAuthErrorInternal in NetFS.h 10.9+
-            // EINVAL is returned if an afp share needs a login in some versions of macOS
-            // ENOTSUP is returned if an afp share needs a login in some versions of macOS
-            // EAUTH is returned if authentication fails (SMB for sure)
-            throw ShareMountError.authorizationNeeded(result)
+
+    /// Mounts a share at /Volumes, optionally using credentials.
+    /// Returns the mount point or throws an error
+    func mountShare(_ shareURL: String, username: String = "", password: String = "") throws -> String {
+        let cfShareURL = CFURLCreateWithString(nil, shareURL as CFString, nil)
+        // Set UI to reduced interaction
+        let open_options: NSMutableDictionary = [kNAUIOptionKey: kNAUIOptionNoUI]
+        // Allow mounting sub-directories of root shares
+        let mount_options: NSMutableDictionary = [kNetFSAllowSubMountsKey: true]
+        var mountpoints: Unmanaged<CFArray>? = nil
+        var result: Int32 = 0
+        if !username.isEmpty {
+            result = NetFSMountURLSync(cfShareURL, nil, username as CFString, password as CFString, open_options as CFMutableDictionary, mount_options as CFMutableDictionary, &mountpoints)
+        } else {
+            result = NetFSMountURLSync(cfShareURL, nil, nil, nil, open_options as CFMutableDictionary, mount_options as CFMutableDictionary, &mountpoints)
         }
-        throw ShareMountError.generalError(result)
+        // Check if it worked
+        if result != 0 {
+            if [-6600, EINVAL, ENOTSUP, EAUTH].contains(result) {
+                // -6600 is kNetAuthErrorInternal in NetFS.h 10.9+
+                // EINVAL is returned if an afp share needs a login in some versions of macOS
+                // ENOTSUP is returned if an afp share needs a login in some versions of macOS
+                // EAUTH is returned if authentication fails (SMB for sure)
+                throw ShareMountError.authorizationNeeded(result)
+            }
+            throw ShareMountError.generalError(result)
+        }
+        let mounts = (mountpoints?.takeUnretainedValue()) as! [CFString]
+        return mounts[0] as String
     }
-    let mounts = (mountpoints?.takeUnretainedValue()) as! [CFString]
-    return mounts[0] as String
-}
 
-/// A wrapper for mountShare that first attempts without credentials, and if that fails
-///  with .authorizationNeeded, prompts for credentials and tries again
-func mountShareURL(_ share_url: String) throws -> String {
-    do {
-        return try mountShare(share_url)
-    } catch ShareMountError.authorizationNeeded {
-        // pass
-    } catch {
-        throw error
+    /// A wrapper for mountShare that first attempts without credentials, and if that fails
+    ///  with .authorizationNeeded, prompts for credentials and tries again
+    func mountShareURL(_ share_url: String) throws -> String {
+        do {
+            return try mountShare(share_url)
+        } catch ShareMountError.authorizationNeeded {
+            // pass
+        } catch {
+            throw error
+        }
+        var username = ""
+        print("Username: ", terminator: "")
+        if let input = readLine(strippingNewline: true) {
+            username = input
+        }
+        var password = ""
+        if let input = getpass("Password: ") {
+            password = String(cString: input, encoding: .utf8) ?? ""
+        }
+        return try mountShare(share_url, username: username, password: password)
     }
-    var username = ""
-    print("Username: ", terminator: "")
-    if let input = readLine(strippingNewline: true) {
-        username = input
-    }
-    var password = ""
-    if let input = getpass("Password: ") {
-        password = String(cString: input, encoding: .utf8) ?? ""
-    }
-    return try mountShare(share_url, username: username, password: password)
-}
+#endif
 
 // MARK: File repo class
 
@@ -158,13 +162,17 @@ class FileRepo: Repo {
             return
         }
         if urlScheme != "file" {
-            do {
-                print("Attempting to mount fileshare \(baseurl)...")
-                root = try mountShareURL(baseurl)
-                weMountedTheRepo = true
-            } catch is ShareMountError {
-                throw MunkiError("Error mounting repo file share")
-            }
+            #if os(macOS)
+                do {
+                    print("Attempting to mount fileshare \(baseurl)...")
+                    root = try mountShareURL(baseurl)
+                    weMountedTheRepo = true
+                } catch is ShareMountError {
+                    throw MunkiError("Error mounting repo file share")
+                }
+            #else
+                throw MunkiError("Network share mounting is not supported on Linux; use a file:// URL")
+            #endif
         }
         // does root dir exist now?
         if !pathIsDirectory(root, followSymlinks: true) {

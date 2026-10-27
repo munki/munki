@@ -129,7 +129,7 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
             localOnlyManifest[key] = nil
         }
     }
-    for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "default_installs", "featured_items"] {
+    for key in ["managed_installs", "managed_uninstalls", "managed_updates", "optional_installs", "optional_uninstalls", "default_installs", "featured_items"] {
         display.info("Processing \(key) in \(localOnlyManifestName)")
         _ = try await processManifest(
             localOnlyManifest,
@@ -224,6 +224,18 @@ func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistD
         }
         installInfo["optional_installs"] = optionalInstalls
     }
+
+    // update optional_uninstalls with removal info
+    if var optionalUninstalls = installInfo["optional_uninstalls"] as? [PlistDict] {
+        let removals = installInfo["removals"] as? [PlistDict] ?? []
+        for (index, item) in optionalUninstalls.enumerated() {
+            let installed = item["installed"] as? Bool ?? false
+            if installed, itemInInstallInfo(item, theList: removals) {
+                optionalUninstalls[index]["will_be_removed"] = true
+            }
+        }
+        installInfo["optional_uninstalls"] = optionalUninstalls
+    }
 }
 
 enum UpdateCheckResult: Int {
@@ -299,6 +311,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         "managed_installs": [PlistDict](),
         "managed_updates": [String](),
         "optional_installs": [PlistDict](),
+        "optional_uninstalls": [PlistDict](),
         "problem_items": [PlistDict](),
         "processed_installs": [String](),
         "processed_uninstalls": [String](),
@@ -308,6 +321,10 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     // remove any staged os installer info we have; we'll check and
     // recreate if still valid
     removeStagedOSInstallerInfo()
+
+    // copy any user-approved low-data download overrides into place before we
+    // process installs, so deferral decisions honour them for every item
+    updateLowDataOverrides()
 
     do {
         // check managed_installs
@@ -370,6 +387,17 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         // process LocalOnlyManifest (if defined and present)
         try await processLocalOnlyManifest(
             catalogList: mainManifestCatalogsList, installInfo: &installInfo
+        )
+        if stopRequested() {
+            return .noUpdatesAvailable
+        }
+
+        // build list of optional uninstalls (must run before optional_installs
+        // so that processOptionalInstall can skip items already in optional_uninstalls)
+        _ = try await processManifest(
+            mainManifest,
+            forKey: "optional_uninstalls",
+            installInfo: &installInfo
         )
         if stopRequested() {
             return .noUpdatesAvailable

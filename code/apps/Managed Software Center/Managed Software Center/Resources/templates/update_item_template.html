@@ -10,13 +10,20 @@
             <li class="genre">${developer_escaped}</li>
             <li class="version_and_size">${version_label} ${display_version_escaped_and_size}</li>
             <li class="warning">${restart_action_text}</li>
-            <li class="warning">${note}</li>
         </ul>
         <div class="msc-button small ${hide_cancel_button}">
             <button class="button-area uppercase"
                     onClick="window.webkit.messageHandlers.updateOptionalInstallButtonClicked.postMessage('${name_quoted}');">
                 <div class="msc-button-inner ${status}" id="${name_escaped}_action_button_text">
                     ${short_action_text}
+                </div>
+            </button>
+        </div>
+        <div class="msc-button small ${hide_low_data_button}">
+            <button class="button-area uppercase"
+                    onClick="window.webkit.messageHandlers.downloadAnywayButtonClicked.postMessage('${name_quoted}');">
+                <div class="msc-button-inner install">
+                    ${low_data_action_text}
                 </div>
             </button>
         </div>

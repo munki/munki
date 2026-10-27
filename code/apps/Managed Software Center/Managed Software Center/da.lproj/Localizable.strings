@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Færdig.";
 
+/* Download anyway button title */
+"Download anyway" = "Download alligevel";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Download på pause — langsom dataforbindelse";
+
 /* Downloading status text */
 "Downloading" = "Henter";
 
@@ -226,7 +232,13 @@
 /* Logout Required title */
 "Logout Required" = "Log ud krævet";
 
-/* macOS Install Pending text */
+/* Download Anyway alert title */
+"Low data connection detected" = "Langsom dataforbindelse registreret";
+
+//* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS har været forældet i %@ dage.";
+
+* macOS Install Pending text */
 "macOS install pending" = "Ventende macOS-installation";
 
 /* macOS update required text */
@@ -258,6 +270,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Mere i %@";
+
+/* Low data More Info button title */
+"More Info" = "Mere info";
 
 /* My Items label */
 "My Items" = "Mine emner";
@@ -427,6 +442,9 @@
 /* Sidebar Status label */
 "Status:" = "Status:";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Foreslåede fjernelser";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Problem med systemkonfigurationen";
 
@@ -466,11 +484,17 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Der er ikke nok ledig plads på disken til at downloade og installere dette emne.";
 
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Disse emner er ikke længere anbefalet eller understøttet af din organisation. Du bør overveje at fjerne dem.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Dette emne kræves af:";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Dette emne skal installeres senest %@";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Emnet blev ikke downloadet, fordi denne Mac er på en langsom dataforbindelse.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Denne opdatering har afventet i %@ dage.";
@@ -582,6 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Din brugerkonto er ikke ejer af denne startdisk.\nDu kan derfor ikke opgradere macOS lige nu.\n\nKontakt din systemadministrator.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS har været forældet i %@ dage.";

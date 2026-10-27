@@ -26,7 +26,7 @@ private func loadRepoPlugin(at path: String) throws -> RepoPluginBuilder {
     typealias InitFunction = @convention(c) () -> UnsafeMutableRawPointer
 
     let openRes = dlopen(path, RTLD_NOW | RTLD_LOCAL)
-    if openRes != nil {
+    if let openRes {
         defer {
             dlclose(openRes)
         }

@@ -58,6 +58,7 @@ class TabCompleter {
         "managed_uninstalls",
         "managed_updates",
         "optional_installs",
+        "optional_uninstalls",
         "featured_items",
         "default_installs",
     ]

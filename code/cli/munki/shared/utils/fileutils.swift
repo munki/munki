@@ -26,9 +26,10 @@ func pathExists(_ path: String) -> Bool {
 
 /// Returns type of file at path
 func fileType(_ path: String) -> FileAttributeType? {
-    if let fileTypeString = try? (FileManager.default.attributesOfItem(atPath: path) as NSDictionary).fileType() {
-        // convert string to FileAttributeType
-        return FileAttributeType(rawValue: fileTypeString)
+    if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+       let fileTypeString = attrs[.type] as? FileAttributeType
+    {
+        return fileTypeString
     }
     return nil
 }
@@ -79,8 +80,8 @@ func pathIsExecutableFile(_ path: String) -> Bool {
         return false
     }
     do {
-        let attributes = try FileManager.default.attributesOfItem(atPath: path) as NSDictionary
-        let mode = attributes.filePosixPermissions()
+        let attributes = try FileManager.default.attributesOfItem(atPath: path)
+        let mode = attributes[.posixPermissions] as? Int ?? 0
         return Int32(mode) & X_OK != 0
     } catch {
         // fall through
@@ -91,7 +92,7 @@ func pathIsExecutableFile(_ path: String) -> Bool {
 /// Returns size of file in bytes
 func getSizeOfFile(_ path: String) -> Int {
     if let attributes = try? FileManager.default.attributesOfItem(atPath: path) {
-        return Int((attributes as NSDictionary).fileSize())
+        return attributes[.size] as? Int ?? 0
     }
     return 0
 }
@@ -107,8 +108,8 @@ func getSizeOfDirectory(_ path: String) -> Int {
         if pathIsRegularFile(fullpath),
            let attributes = try? filemanager.attributesOfItem(atPath: fullpath)
         {
-            let filesize = (attributes as NSDictionary).fileSize()
-            totalSize += Int(filesize)
+            let filesize = attributes[.size] as? Int ?? 0
+            totalSize += filesize
         }
     }
     return totalSize
@@ -199,16 +200,16 @@ func currentExecutableDir(appendingPathComponent: String = "") -> String {
 /// escalated execution of arbitrary code.
 func verifyPathOwnershipAndPermissions(_ path: String) -> Bool {
     let filemanager = FileManager.default
-    var attributes: NSDictionary
+    var attributes: [FileAttributeKey: Any]
     do {
-        attributes = try filemanager.attributesOfItem(atPath: path) as NSDictionary
+        attributes = try filemanager.attributesOfItem(atPath: path)
     } catch {
         printStderr("\(path): could not get filesystem attributes")
         return false
     }
-    let owner = attributes.fileOwnerAccountName()
-    let group = attributes.fileGroupOwnerAccountName()
-    let mode = attributes.filePosixPermissions()
+    let owner = attributes[.ownerAccountName] as? String
+    let group = attributes[.groupOwnerAccountName] as? String
+    let mode = attributes[.posixPermissions] as? Int ?? 0
     if owner != "root" {
         printStderr("\(path) owner is not root!")
         return false
@@ -217,7 +218,7 @@ func verifyPathOwnershipAndPermissions(_ path: String) -> Bool {
         printStderr("\(path) group is not in wheel or admin!")
         return false
     }
-    if UInt16(mode) & S_IWOTH != 0 {
+    if mode_t(mode) & S_IWOTH != 0 {
         printStderr("\(path) is world writable!")
         return false
     }

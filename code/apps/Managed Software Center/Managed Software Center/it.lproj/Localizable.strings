@@ -142,6 +142,12 @@
 /* managedsoftwareupdate message */
 "Done." = "Fatto.";
 
+/* Download anyway button title */
+"Download anyway" = "Scarica comunque";
+
+/* Low data connection deferred download note */
+"Download paused — low data connection" = "Download in pausa — connessione di rete lenta";
+
 /* Downloading status text */
 "Downloading" = "Download in corso";
 
@@ -226,6 +232,12 @@
 /* Logout Required title */
 "Logout Required" = "Logout Necessario";
 
+/* Download Anyway alert title */
+"Low data connection detected" = "Rilevata connessione di rete lenta";
+
+/* macOS out-of-date days message */
+"macOS has been out-of-date for %@ days." = "macOS non è aggiornato da %@ giorni.";
+
 /* macOS Install Pending text */
 "macOS install pending" = "Installazione di macOS in sospeso";
 
@@ -258,6 +270,9 @@
 
 /* Sidebar More In Category label */
 "More in %@" = "Altri in %@";
+
+/* Low data More Info button title */
+"More Info" = "Ulteriori informazioni";
 
 /* My Items label */
 "My Items" = "I Miei Elementi";
@@ -427,6 +442,9 @@
 /* Sidebar Status label */
 "Status:" = "Stato:";
 
+/* Optional Uninstalls label */
+"Suggested removals" = "Rimozioni consigliate";
+
 /* System configuration problem alert title */
 "System configuration problem" = "Problema di configurazione di sistema";
 
@@ -466,11 +484,17 @@
 /* Long Not Enough Disk Space display text */
 "There is not enough disk space to download and install this item." = "Non c'è abbastanza spazio su disco per scaricare e installare questo elemento.";
 
+/* Optional Uninstalls more info text */
+"These items are no longer recommended or supported by your organization. You should consider removing them." = "Questi elementi non sono più consigliati né supportati dalla tua organizzazione. Considera la loro rimozione.";
+
 /* Dependency List prologue text */
 "This item is required by:" = "Questo elemento è richiesto da:";
 
 /* Forced Date warning */
 "This item must be installed by %@" = "Questo elemento deve essere installato da %@";
+
+/* Download Anyway alert informative text */
+"This item was not downloaded because this Mac is on a low data connection." = "Questo elemento non è stato scaricato perché questo Mac è connesso ad una rete lenta.";
 
 /* Pending days message */
 "This update has been pending for %@ days." = "Questo aggiornamento è in sospeso da %@ giorni.";
@@ -582,27 +606,3 @@
 
 /* Not volume owner detail */
 "Your user account is not an owner of the current startup volume.\nYou cannot upgrade macOS at this time.\n\nContact your systems administrator." = "Il tuo utente di sistema non è il proprietario del volume di boot.\nNon puoi aggiornare macOS.\n\nContatta l'amministratore di sistema.";
-
-/* macOS out-of-date days message */
-"macOS has been out-of-date for %@ days." = "macOS non è aggiornato da %@ giorni.";
-
-/* Low data More Info button title */
-"More Info" = "Ulteriori informazioni";
-
-/* Low data connection deferred download note */
-"Download paused — low data connection" = "Download in pausa — connessione di rete lenta";
-
-/* Download Anyway alert title */
-"Low data connection detected" = "Rilevata connessione di rete lenta";
-
-/* Download Anyway alert informative text */
-"This item was not downloaded because this Mac is on a low data connection." = "Questo elemento non è stato scaricato perché questo Mac è connesso ad una rete lenta.";
-
-/* Download anyway button title */
-"Download anyway" = "Scarica comunque";
-
-/* Optional Uninstalls label */
-"Suggested removals" = "Rimozioni consigliate";
-
-/* Optional Uninstalls more info text */
-"These items are no longer recommended or supported by your organization. You should consider removing them." = "Questi elementi non sono più consigliati né supportati dalla tua organizzazione. Considera la loro rimozione.";

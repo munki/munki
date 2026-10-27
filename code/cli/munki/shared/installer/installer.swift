@@ -125,17 +125,31 @@ func itemPrereqsInSkippedItems(currentItem: PlistDict, skippedItems: [PlistDict]
     return matchedPrereqs
 }
 
-/// Returns boolean to indicate if the item needs a restart
-func requiresRestart(_ item: PlistDict) -> Bool {
+/// Returns boolean to indicate if the item needs a restart after installation
+func requiresRestartForInstall(_ item: PlistDict) -> Bool {
     let restartAction = item["RestartAction"] as? String ?? ""
     return ["RequireRestart", "RecommendRestart"].contains(restartAction)
 }
 
+/// Returns boolean to indicate if the item needs a restart after uninstalling
+func requiresRestartForUninstall(_ item: PlistDict) -> Bool {
+    if let restartAction = item["RestartActionForUninstall"] as? String {
+        return ["RequireRestart", "RecommendRestart"].contains(restartAction)
+    }
+    let restartAction = item["RestartAction"] as? String ?? ""
+    return ["RequireRestart", "RecommendRestart"].contains(restartAction)
+}
+
+
 /// Process an Apple package for install. Returns retcode, needs_restart
-func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (Int, Bool) {
+func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String, isUninstallPkg: Bool = false) async -> (Int, Bool) {
     if pkginfo["suppress_bundle_relocation"] as? Bool ?? false {
         display.warning("Item has 'suppress_bundle_relocation' attribute. This feature is no longer supported.")
     }
+    // get the relevant RestartRequired value from the pkginfo
+    // (which may be different for install vs uninstall)
+    let pkginfoRestartRequired = isUninstallPkg ? requiresRestartForUninstall(pkginfo) : requiresRestartForInstall(pkginfo)
+
     if hasValidDiskImageExt(itemPath) {
         let dmgName = (itemPath as NSString).lastPathComponent
         display.minorStatus("Mounting disk image \(dmgName)")
@@ -161,7 +175,7 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             let fullPkgPath = (mountpoint as NSString).appendingPathComponent(pkgPath)
             if pathExists(fullPkgPath) {
                 let (retcode, needToRestart) = await install(fullPkgPath, options: pkginfo)
-                return (retcode, needToRestart || requiresRestart(pkginfo))
+                return (retcode, needToRestart || pkginfoRestartRequired)
             } else {
                 display.error("Did not find \(pkgPath) on disk image \(dmgName)")
                 return (-99, false)
@@ -171,11 +185,11 @@ func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String) async -> (I
             // pkg found at the root of the mountpoint
             // (hopefully there's only one)
             let (retcode, needToRestart) = await installFromDirectory(mountpoint, options: pkginfo)
-            return (retcode, needToRestart || requiresRestart(pkginfo))
+            return (retcode, needToRestart || pkginfoRestartRequired)
         }
     } else if hasValidPackageExt(itemPath) {
         let (retcode, needToRestart) = await install(itemPath, options: pkginfo)
-        return (retcode, needToRestart || requiresRestart(pkginfo))
+        return (retcode, needToRestart || pkginfoRestartRequired)
     }
     // we didn't find anything we know how to install
     munkiLog("Found nothing we know how to install in \(itemPath)")
@@ -221,7 +235,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
     case "copy_from_dmg":
         if let itemList = item["items_to_copy"] as? [PlistDict] {
             retcode = await copyFromDmg(dmgPath: installerItemPath, itemList: itemList)
-            if retcode == 0, requiresRestart(item) {
+            if retcode == 0, requiresRestartForInstall(item) {
                 needToRestart = true
             }
         }
@@ -233,7 +247,7 @@ func installItem(_ item: PlistDict) async -> (Int, Bool) {
             }
         }
     case "nopkg":
-        needToRestart = requiresRestart(item)
+        needToRestart = requiresRestartForInstall(item)
     default:
         // unknown or no longer supported installer type
         if ["appdmg", "apple_update_metadata", "startosinstall", "profile"].contains(installerType) ||
@@ -464,7 +478,8 @@ func skippedItemsThatRequire(_ thisItem: PlistDict, skippedItems: [PlistDict]) -
 /// Attempts to uninstall a single item from the removalList
 /// returns an exitcode for the attempted install and a flag to indicate the need to restart
 func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
-    var needToRestart = false
+    // get initial need to restart from the pkginfo
+    var needToRestart = requiresRestartForUninstall(item)
     let itemName = item.getString(for: "name", fallback: "<unknown>")
     let displayName = item.getString(for: "display_name", fallback: itemName)
 
@@ -512,7 +527,8 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             display.error("Uninstall package \(uninstallerItem) for \(itemName) was missing from the cache.")
             return (-99, false)
         }
-        (retcode, needToRestart) = await handleApplePackageInstall(pkginfo: item, itemPath: uninstallerItemPath)
+        (retcode, needToRestart) = await handleApplePackageInstall(
+            pkginfo: item, itemPath: uninstallerItemPath, isUninstallPkg: true)
     case "remove_copied_items":
         if let itemsToRemove = item["items_to_remove"] as? [PlistDict] {
             if !removeCopiedItems(itemsToRemove) {
@@ -590,10 +606,18 @@ func processRemovals(
                 display.info("Skipping removal of \(itemName) because blocking applications are running.")
                 continue
             }
-            let restartAction = item["RestartAction"] as? String ?? "None"
+            let restartAction: String
+            let restartActionLabel: String
+            if let restartActionForUninstall = item["RestartActionForUninstall"] as? String {
+                restartAction = restartActionForUninstall
+                restartActionLabel = "RestartActionForUninstall"
+            } else {
+                restartAction = item["RestartAction"] as? String ?? "None"
+                restartActionLabel = "RestartAction"
+            }
             if restartAction != "None" {
                 skippedRemovals.append(item)
-                display.warning("Skipping removal of \(itemName) because RestartAction is \(restartAction).")
+                display.warning("Skipping removal of \(itemName) because \(restartActionLabel) is \(restartAction).")
                 continue
             }
         }
@@ -784,6 +808,28 @@ func doInstallsAndRemovals(
                 }
             }
             updatedInstallInfo["optional_installs"] = optionalInstalls
+        }
+        // update optional_uninstalls with new removal status
+        var optionalUninstalls = installInfo["optional_uninstalls"] as? [PlistDict] ?? [PlistDict]()
+        if !optionalUninstalls.isEmpty {
+            if let removalResults = Report.shared.retrieve(key: "RemovalResults") as? [PlistDict] {
+                for (index, optionalUninstall) in optionalUninstalls.enumerated() {
+                    let optionalUninstallName = optionalUninstall["name"] as? String ?? "<unknown>"
+                    for removal in removalResults {
+                        let removalName = removal["name"] as? String ?? "<unknown>"
+                        if optionalUninstallName == removalName {
+                            if (removal["status"] as? Int ?? 0) != 0 {
+                                optionalUninstalls[index]["removal_error"] = true
+                                optionalUninstalls[index]["will_be_removed"] = false
+                            } else {
+                                optionalUninstalls[index]["installed"] = false
+                                optionalUninstalls[index]["will_be_removed"] = false
+                            }
+                        }
+                    }
+                }
+            }
+            updatedInstallInfo["optional_uninstalls"] = optionalUninstalls
         }
         // write updated installinfo back to disk to reflect current state
         do {

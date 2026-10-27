@@ -72,6 +72,18 @@ function registerWindowClicks() {
                 setTimeout(function(){modal.style.opacity = 1;}, 10);
                 e.preventDefault();
             }
+            if (e.target.classList.contains('more-info-icon')) {
+                // clicked moreinfo glyph
+                optional_uninstalls_more_info_text = document.getElementById("optional_uninstalls_more_info_text")
+                modal_description = document.getElementById("fullDescription")
+                modal_version_and_size = document.getElementById("versionAndSize")
+                modal_description.innerHTML = optional_uninstalls_more_info_text.innerHTML
+                modal_version_and_size.innerHTML = ""
+                modal = document.getElementById("moreInfoModal");
+                modal.style.display = "block";
+                setTimeout(function(){modal.style.opacity = 1;}, 10);
+                e.preventDefault();
+            }
             if (e.target.classList.contains('close')) {
                 // clicked the modal close button
                 modal = document.getElementById("moreInfoModal");

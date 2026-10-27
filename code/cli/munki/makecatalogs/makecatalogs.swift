@@ -38,6 +38,10 @@ struct MakeCatalogs: AsyncParsableCommand {
           help: "Skip checking of pkg existence. Useful when pkgs aren't on the same server as pkginfo, catalogs and manifests.")
     var skipPkgCheck = false
 
+    @Flag(name: .customLong("check-hashes"),
+          help: "Check installer item hashes against the actual hashes of installers specified in installer item locations.")
+    var checkHashes = false
+    
     @Option(name: [.customLong("repo-url"), .customLong("repo_url")],
             help: "Optional repo URL that takes precedence over the default repo_url specified via preferences.")
     var repoURL = ""
@@ -65,9 +69,7 @@ struct MakeCatalogs: AsyncParsableCommand {
         }
         if !repo_path.isEmpty {
             // convert path to file URL
-            if let repo_url_string = NSURL(fileURLWithPath: repo_path).absoluteString {
-                actual_repo_url = repo_url_string
-            }
+            actual_repo_url = URL(fileURLWithPath: repo_path).absoluteString
         } else if !repoURL.isEmpty {
             actual_repo_url = repoURL
         } else if let pref_repo_url = adminPref("repo_url") as? String {
@@ -88,7 +90,8 @@ struct MakeCatalogs: AsyncParsableCommand {
         let options = MakeCatalogOptions(
             skipPkgCheck: skipPkgCheck,
             force: force,
-            verbose: true
+            verbose: true,
+            checkHashes: checkHashes
         )
 
         do {

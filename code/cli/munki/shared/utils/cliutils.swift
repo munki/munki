@@ -20,15 +20,36 @@
 // TODO: there is too much repetition in this module; consolidate
 // and/or eliminate some of this
 
-import Darwin
 import Foundation
+#if canImport(Darwin)
+    import Darwin
 
-/// Get system uptime in seconds. Uptime is paused while the device is sleeping.
-func get_uptime() -> Double {
-    let uptime = clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX)
-    let seconds = Double(uptime) / Double(NSEC_PER_SEC)
-    return seconds
-}
+    /// Get system uptime in seconds. Uptime is paused while the device is sleeping.
+    func get_uptime() -> Double {
+        let uptime = clock_gettime_nsec_np(CLOCK_UPTIME_RAW_APPROX)
+        return Double(uptime) / Double(NSEC_PER_SEC)
+    }
+
+#elseif canImport(Glibc)
+    import Glibc
+
+    /// Get system uptime in seconds using CLOCK_MONOTONIC.
+    func get_uptime() -> Double {
+        var ts = timespec()
+        clock_gettime(CLOCK_MONOTONIC, &ts)
+        return Double(ts.tv_sec) + Double(ts.tv_nsec) / 1_000_000_000.0
+    }
+
+#elseif canImport(Musl)
+    import Musl
+
+    /// Get system uptime in seconds using CLOCK_MONOTONIC.
+    func get_uptime() -> Double {
+        var ts = timespec()
+        clock_gettime(CLOCK_MONOTONIC, &ts)
+        return Double(ts.tv_sec) + Double(ts.tv_nsec) / 1_000_000_000.0
+    }
+#endif
 
 struct CLIResults {
     var exitcode: Int = 0

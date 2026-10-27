@@ -51,6 +51,11 @@ extension MainWindowController: WKScriptMessageHandler {
                 updateOptionalInstallButtonFinishAction(item_name)
             }
         }
+        if message.name == "downloadAnywayButtonClicked" {
+            if let item_name = message.body as? String {
+                downloadAnywayButtonClicked(item_name)
+            }
+        }
         if message.name == "openExternalLink" {
             if let link = message.body as? String {
                 openExternalLink(link)
@@ -146,6 +151,13 @@ extension MainWindowController: WKScriptMessageHandler {
     
     func updateOptionalInstallButtonBeginAction(_ item_name: String) {
         webView.evaluateJavaScript("fadeOutAndRemove('\(item_name)')")
+    }
+
+    func downloadAnywayButtonClicked(_ item_name: String) {
+        // called from JavaScript when the user clicks "Download anyway" on a
+        // low-data-deferred update; confirm, then record the override
+        msc_debug_log("User clicked Download anyway for \(item_name)")
+        alert_controller.confirmDownloadAnyway(item_name)
     }
     
     func myItemsActionButtonClicked(_ item_name: String) {

@@ -469,7 +469,7 @@ func buildListPageItemsHTML(category: String = "",
         item_html = buildItemListHTML(items)
     } else {
         // no items; build appropriate alert messages
-        let status_results_template = getTemplate("no_results_template.html")
+        let no_results_template = getTemplate("no_results_template.html")
         let alert = BaseItem()
         if !filter.isEmpty {
             alert["primary_results_text"] = NSLocalizedString(
@@ -499,7 +499,7 @@ func buildListPageItemsHTML(category: String = "",
                 "Try again later.",
                 comment: "No Items secondary text")
         }
-        item_html = status_results_template.substitute(alert)
+        item_html = no_results_template.substitute(alert)
     }
     return item_html
 }
@@ -657,6 +657,9 @@ func buildUpdatesPage() throws {
         if item["note"] == nil {
             item["note"] = ""
         }
+        if item["uninstall_only"] as? Bool ?? false {
+            item["hide_cancel_button"] = ""
+        }
     }
     let update_names = item_list.map({$0["name"] as? String ?? ""})
     let problem_updates = getProblemItems()
@@ -690,6 +693,16 @@ func buildUpdatesPage() throws {
             item["added_class"] = ""
         }
     }
+    var optional_uninstall_items = [OptionalItem]()
+    if show_additional_updates {
+        optional_uninstall_items = getOptionalInstallItems().filter(
+            { ($0["uninstall_only"] as? Bool ?? false) &&
+              ($0["status"] as? String ?? "") == "installed" }
+        )
+        for item in optional_uninstall_items {
+            item["added_class"] = ""
+        }
+    }
     let page = GenericItem()
     page["update_rows"] = ""
     page["apple_update_rows"] = ""
@@ -697,12 +710,15 @@ func buildUpdatesPage() throws {
     page["hide_progress_spinner"] = "hidden"
     page["hide_problem_updates"] = "hidden"
     page["hide_other_updates"] = "hidden"
+    page["hide_optional_uninstalls"] = "hidden"
+    page["optional_uninstall_rows"] = ""
     page["install_all_button_classes"] = ""
     
     if apple_update_list.isEmpty,
        item_list.isEmpty,
        other_updates.isEmpty,
-       problem_updates.isEmpty
+       problem_updates.isEmpty,
+       optional_uninstall_items.isEmpty
     {
         let status_results_template = getTemplate("status_results_template.html")
         let alert = BaseItem()
@@ -756,7 +772,21 @@ func buildUpdatesPage() throws {
         page["other_update_rows"] = buildItemListHTML(
             other_updates, template: "update_item_template.html")
     }
-    
+
+    // build suggested removals (optional_uninstalls) table
+    page["optional_uninstalls_header_message"] = NSLocalizedString(
+        "Suggested removals",
+        comment: "Optional Uninstalls label")
+    page["optional_uninstalls_more_info_text"] = NSLocalizedString(
+        "These items are no longer recommended or supported by your organization. You should consider removing them.",
+        comment: "Optional Uninstalls more info text"
+    )
+    if !optional_uninstall_items.isEmpty {
+        page["hide_optional_uninstalls"] = ""
+        page["optional_uninstall_rows"] = buildItemListHTML(
+            optional_uninstall_items, template: "update_item_template.html")
+    }
+
     let additional_templates = BaseItem(["footer": getRawTemplate("footer_template.html")])
     try generatePage(named: "updates.html",
                      fromTemplate: "updates_template.html",
@@ -776,6 +806,9 @@ func buildUpdateStatusPage() throws {
     page["hide_other_updates"] = "hidden"
     page["other_updates_header_message"] = ""
     page["other_update_rows"] = ""
+    page["hide_optional_uninstalls"] = "hidden"
+    page["optional_uninstalls_header_message"] = ""
+    page["optional_uninstall_rows"] = ""
     
     // don't like this bit as it ties us to a different object
     guard let status_controller = (NSApp.delegate as? AppDelegate)?.statusController else {
@@ -834,14 +867,14 @@ func getRestartActionForUpdateList(_ update_list: [GenericItem]) -> String {
         return ""
     }
     let restart_items = update_list.filter(
-        { ($0["RestartAction"] as? String ?? "").contains("Restart") }
+        { ($0["effective_restart_action"] as? String ?? "").contains("Restart") }
     )
     if !restart_items.isEmpty {
         // found at least one item containing 'Restart' in its RestartAction
         return NSLocalizedString("Restart Required", comment: "Restart Required title")
     }
     let logout_items = update_list.filter(
-        { ($0["RestartAction"] as? String ?? "").contains("Logout") }
+        { ($0["effective_restart_action"] as? String ?? "").contains("Logout") }
     )
     if !logout_items.isEmpty {
         // found at least one item containing 'Logout' in its RestartAction
