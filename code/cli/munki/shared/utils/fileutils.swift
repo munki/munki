@@ -65,8 +65,7 @@ func pathIsDirectory(_ path: String, followSymlinks: Bool = false) -> Bool {
                     // need to convert to standardized absolute path
                     let parentDir = dirName(path)
                     let fullPath = (parentDir as NSString).appendingPathComponent(target)
-                    let standardizedPath = (fullPath as NSString).standardizingPath
-                    return pathIsDirectory(standardizedPath, followSymlinks: true)
+                    return pathIsDirectory(fullPath, followSymlinks: true)
                 }
             }
         }
