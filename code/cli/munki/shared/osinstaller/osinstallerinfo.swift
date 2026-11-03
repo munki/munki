@@ -106,11 +106,11 @@ func generateInstallableCondition(_ models: [String]) -> String {
     let boardIDs = models.filter { $0.hasPrefix("Mac-") }
     let deviceIDs = models.filter { !$0.hasPrefix("Mac-") }
     if !boardIDs.isEmpty {
-        let boardIDList = boardIDs.joined(separator: ", ")
+        let boardIDList = boardIDs.map { "\"\($0)\"" }.joined(separator: ", ")
         predicates.append("board_id IN {\(boardIDList)}")
     }
     if !deviceIDs.isEmpty {
-        let deviceIDList = deviceIDs.joined(separator: ", ")
+        let deviceIDList = deviceIDs.map { "\"\($0)\"" }.joined(separator: ", ")
         predicates.append("device_id IN {\(deviceIDList)}")
     }
     return predicates.joined(separator: " OR ")
