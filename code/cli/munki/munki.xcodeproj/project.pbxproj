@@ -270,9 +270,6 @@
 		C0684E3B2DC131750091E774 /* UNIXProcessInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06C21392C88CA1F0023E9D9 /* UNIXProcessInfo.swift */; };
 		C0684E3D2DC19C7A0091E774 /* BlockingApplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */; };
 		C0684E3E2DC19C7A0091E774 /* BlockingApplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */; };
-		C0AD97002F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
-		C0AD97012F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
-		C0AD97022F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
 		C0684E432DC580850091E774 /* dmgutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01364532C321FE7008DB215 /* dmgutils.swift */; };
 		C0684E442DC585560091E774 /* osutils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07074E42C34910F00B86310 /* osutils.swift */; };
 		C0684E452DC585FC0091E774 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0209B882C63DDF1007664A0 /* info.swift */; };
@@ -433,7 +430,6 @@
 		C0AD96302F3E58D80029A293 /* appleupdatesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96192F3E58D80029A293 /* appleupdatesTests.swift */; };
 		C0AD96312F3E58D80029A293 /* cliutilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961A2F3E58D80029A293 /* cliutilsTests.swift */; };
 		C0AD96322F3E58D80029A293 /* compareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961B2F3E58D80029A293 /* compareTests.swift */; };
-		C0AD96FE2F3E58D80029A293 /* clientcertsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */; };
 		C0AD96332F3E58D80029A293 /* downloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961C2F3E58D80029A293 /* downloadTests.swift */; };
 		C0AD96342F3E58D80029A293 /* factsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961D2F3E58D80029A293 /* factsTests.swift */; };
 		C0AD96352F3E58D80029A293 /* fetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD961E2F3E58D80029A293 /* fetchTests.swift */; };
@@ -451,6 +447,10 @@
 		C0AD96412F3E58D80029A293 /* xattrTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD962A2F3E58D80029A293 /* xattrTests.swift */; };
 		C0AD96452F3E58F90029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96422F3E58F90029A293 /* main.swift */; };
 		C0AD96482F3E590E0029A293 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96462F3E590E0029A293 /* main.swift */; };
+		C0AD96FE2F3E58D80029A293 /* clientcertsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */; };
+		C0AD97002F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
+		C0AD97012F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
+		C0AD97022F61A0000029A293 /* BlockingApplicationMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */; };
 		C0B3A8562CCC59C10057BA0E /* unusedsoftware.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */; };
 		C0B3A8582CCFED330057BA0E /* appusage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D9C2582C5D4E570019A067 /* appusage.swift */; };
 		C0B3A85A2CD04D380057BA0E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = C0B3A8592CD04D380057BA0E /* ArgumentParser */; };
@@ -808,7 +808,6 @@
 		C0684DD12DBFDBD20091E774 /* precache_agent */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = precache_agent; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0684E2D2DC040450091E774 /* installhelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = installhelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0684E3C2DC19C7A0091E774 /* BlockingApplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplications.swift; sourceTree = "<group>"; };
-		C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplicationMetadata.swift; sourceTree = "<group>"; };
 		C0684E472DC586660091E774 /* osinstallerinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osinstallerinfo.swift; sourceTree = "<group>"; };
 		C0684E542DC735960091E774 /* Testing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Testing.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework; sourceTree = DEVELOPER_DIR; };
 		C0684E5C2DC736EE0091E774 /* munkiCLItesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = munkiCLItesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -870,7 +869,6 @@
 		C0AD961F2F3E58D80029A293 /* fileUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileUtilsTests.swift; sourceTree = "<group>"; };
 		C0AD96202F3E58D80029A293 /* installationstateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = installationstateTests.swift; sourceTree = "<group>"; };
 		C0AD96212F3E58D80029A293 /* keychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keychainTests.swift; sourceTree = "<group>"; };
-		C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcertsTests.swift; sourceTree = "<group>"; };
 		C0AD96222F3E58D80029A293 /* makepkginfolibTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = makepkginfolibTests.swift; sourceTree = "<group>"; };
 		C0AD96232F3E58D80029A293 /* manifestsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = manifestsTests.swift; sourceTree = "<group>"; };
 		C0AD96242F3E58D80029A293 /* pkgutilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pkgutilsTests.swift; sourceTree = "<group>"; };
@@ -883,6 +881,8 @@
 		C0AD96422F3E58F90029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C0AD96432F3E58F90029A293 /* precache_agent.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = precache_agent.entitlements; sourceTree = "<group>"; };
 		C0AD96462F3E590E0029A293 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C0AD96FD2F3E58D80029A293 /* clientcertsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = clientcertsTests.swift; sourceTree = "<group>"; };
+		C0AD97032F61A0000029A293 /* BlockingApplicationMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingApplicationMetadata.swift; sourceTree = "<group>"; };
 		C0B3A8552CCC59C10057BA0E /* unusedsoftware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = unusedsoftware.swift; sourceTree = "<group>"; };
 		C0B7FA002D288C2700CC14F0 /* authrestart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = authrestart.swift; sourceTree = "<group>"; };
 		C0BF62CD2CEC00E90030885D /* repoclean */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = repoclean; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2661,7 +2661,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.authrestartd;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2679,7 +2679,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.authrestartd;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2695,7 +2695,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.launchapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2711,7 +2711,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.launchapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2723,7 +2723,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -2735,7 +2735,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -2753,7 +2753,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "";
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.makepkginfo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2771,7 +2771,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "";
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.makepkginfo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2791,7 +2791,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "";
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.munkiimport;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2813,7 +2813,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "";
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.munkiimport;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2830,7 +2830,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.manifestutil;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2847,7 +2847,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.manifestutil;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2864,7 +2864,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.precache-agent";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2880,7 +2880,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.precache-agent";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2894,7 +2894,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.installhelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2908,7 +2908,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.installhelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3007,7 +3007,7 @@
 					"@executable_path/../lib",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3072,7 +3072,7 @@
 					"@executable_path/../lib",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -3092,7 +3092,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.managedsoftwareupdate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3113,7 +3113,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.managedsoftwareupdate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3132,7 +3132,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = munkitester/Info.plist;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "shared/headers/munkitester-Bridging-Header.h";
@@ -3151,7 +3151,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = munkitester/Info.plist;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "shared/headers/munkitester-Bridging-Header.h";
@@ -3171,7 +3171,7 @@
 				INFOPLIST_FILE = "";
 				"INFOPLIST_FILE[sdk=*]" = "";
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.makecatalogs;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3191,7 +3191,7 @@
 				INFOPLIST_FILE = "";
 				"INFOPLIST_FILE[sdk=*]" = "";
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.makecatalogs;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3208,7 +3208,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.iconimporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3225,7 +3225,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.iconimporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3242,7 +3242,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.repoclean;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3259,7 +3259,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.repoclean;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3275,7 +3275,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.logouthelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3291,7 +3291,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.logouthelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3307,7 +3307,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.app-usage-monitor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3323,7 +3323,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.munki.app-usage-monitor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3339,7 +3339,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.appusaged;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3355,7 +3355,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.appusaged;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3371,7 +3371,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.removepackages;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3387,7 +3387,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INSTALL_PATH = /usr/local/munki;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.munki.removepackages;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

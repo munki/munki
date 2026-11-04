@@ -186,6 +186,22 @@ func recordUpdateCheckResult(_ result: UpdateCheckResult) {
     setPref("LastCheckResult", result.rawValue)
 }
 
+/// If this run recorded no errors, store its end time as LastRunWithNoErrors.
+/// The value is kept as a preference so it persists across runs, and is
+/// also included in the report so that reporting tools can tell when
+/// Munki last completed a run without errors, even if the current run
+/// had errors. Warnings do not count as errors. Note that installonly
+/// runs inherit the Errors from the preceding check run's report.
+func recordLastRunWithNoErrors(endTime: Date) {
+    let errors = Report.shared.retrieve(key: "Errors") as? [String] ?? []
+    if errors.isEmpty {
+        setPref("LastRunWithNoErrors", endTime)
+    }
+    if let lastRunWithNoErrors = datePref("LastRunWithNoErrors") {
+        Report.shared.record(lastRunWithNoErrors, to: "LastRunWithNoErrors")
+    }
+}
+
 /// Detect if there is an app actively making an idle sleep assertion, e.g.
 /// Keynote, PowerPoint, Zoom, Webex, etc
 /// See: https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes
@@ -481,7 +497,8 @@ func startLogoutHelper() {
 /// A collection of tasks to do as we finish up
 func doFinishingTasks(runtype: String = "") async {
     // finish our report
-    Report.shared.record(Date(), to: "EndTime")
+    let endTime = Date()
+    Report.shared.record(endTime, to: "EndTime")
     Report.shared.record(getVersion(), to: "ManagedInstallVersion")
     Report.shared.record(availableDiskSpace(), to: "AvailableDiskSpace")
     var consoleUser = getConsoleUser()
@@ -489,6 +506,7 @@ func doFinishingTasks(runtype: String = "") async {
         consoleUser = "<None>"
     }
     Report.shared.record(consoleUser, to: "ConsoleUser")
+    recordLastRunWithNoErrors(endTime: endTime)
     Report.shared.save()
 
     // store the current pending update count and other data for munki-notifier
