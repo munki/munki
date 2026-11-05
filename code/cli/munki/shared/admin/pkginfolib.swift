@@ -456,11 +456,11 @@ func getMinimumOSVersionFromInstallsApps(_ pkginfo: PlistDict) -> String? {
     }
     var minimumOSVersions = [MunkiVersion]()
     for install in installs {
-        if let version = install["minosversion"] as? String {
+        if let version = install.stringValue(forKey: "minosversion") {
             minimumOSVersions.append(MunkiVersion(version))
         }
     }
-    if let pkgInfoMinimumOSVersion = pkginfo["minimum_os_version"] as? String {
+    if let pkgInfoMinimumOSVersion = pkginfo.stringValue(forKey: "minimum_os_version") {
         minimumOSVersions.append(MunkiVersion(pkgInfoMinimumOSVersion))
     }
     return minimumOSVersions.max()?.value
@@ -527,7 +527,7 @@ func makepkginfo(_ filepath: String?,
         if let uninstalleritem = options.pkg.uninstalleritem {
             pkginfo["uninstallable"] = true
             pkginfo["uninstall_method"] = "uninstall_package"
-            let minMunkiVers = pkginfo["minimum_munki_version"] as? String ?? "0"
+            let minMunkiVers = pkginfo.stringValue(forKey: "minimum_munki_version") ?? "0"
             if MunkiVersion(minMunkiVers) > MunkiVersion("6.2") {
                 pkginfo["minimum_munki_version"] = "6.2"
             }
@@ -639,7 +639,9 @@ func makepkginfo(_ filepath: String?,
     // more options and pkginfo bits
     if !installeritem.isEmpty || options.type.nopkg {
         pkginfo["_metadata"] = pkginfoMetadata()
-        pkginfo["autoremove"] = options.other.autoremove
+        if options.other.autoremove {
+            pkginfo["autoremove"] = true
+        }
         if pkginfo["catalogs"] == nil {
             pkginfo["catalogs"] = ["testing"]
         }
