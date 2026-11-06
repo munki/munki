@@ -357,7 +357,10 @@ func removeFromSelfServeUninstalls(_ itemName: String) {
 /// remove.
 ///
 /// Can be recursive if manifests include other manifests.
-/// Probably doesn't handle circular manifest references well.
+/// parentManifestPaths holds the local paths of the manifest files currently
+/// being processed (this one and those that included it); an included
+/// manifest that is already in that list is a circular reference, so it is
+/// skipped with a warning.
 ///
 /// manifest can be a path to a manifest file or a dictionary object.
 func processManifest(
@@ -365,7 +368,8 @@ func processManifest(
     forKey key: String,
     installInfo: inout PlistDict,
     parentCatalogs: [String] = [],
-    manifestName: String = "embedded manifest"
+    manifestName: String = "embedded manifest",
+    parentManifestPaths: [String] = []
 ) async throws {
     let manifestCatalogs = manifestdata["catalogs"] as? [String] ?? []
     var catalogList = [String]()
@@ -390,11 +394,16 @@ func processManifest(
         if stopRequested() {
             return // maybe should throw a StopRequestedException?
         }
+        if parentManifestPaths.contains(nestedManifestPath) {
+            display.warning("Manifest \(manifestName) includes \(includedManifestName), which is already being processed (circular reference). Skipping it.")
+            continue
+        }
         try await processManifest(
             atPath: nestedManifestPath,
             forKey: key,
             installInfo: &installInfo,
-            parentCatalogs: catalogList
+            parentCatalogs: catalogList,
+            parentManifestPaths: parentManifestPaths
         )
     }
 
@@ -419,7 +428,9 @@ func processManifest(
                     item,
                     forKey: key,
                     installInfo: &installInfo,
-                    parentCatalogs: catalogList
+                    parentCatalogs: catalogList,
+                    manifestName: manifestName,
+                    parentManifestPaths: parentManifestPaths
                 )
             }
         }
@@ -485,7 +496,8 @@ func processManifest(
     atPath manifestPath: String,
     forKey key: String,
     installInfo: inout PlistDict,
-    parentCatalogs: [String] = []
+    parentCatalogs: [String] = [],
+    parentManifestPaths: [String] = []
 ) async throws {
     display.debug1("** Processing manifest \(baseName(manifestPath)) for \(key)")
     if let manifestdata = manifestData(manifestPath) {
@@ -494,7 +506,8 @@ func processManifest(
             forKey: key,
             installInfo: &installInfo,
             parentCatalogs: parentCatalogs,
-            manifestName: baseName(manifestPath)
+            manifestName: baseName(manifestPath),
+            parentManifestPaths: parentManifestPaths + [manifestPath]
         )
     }
 }
