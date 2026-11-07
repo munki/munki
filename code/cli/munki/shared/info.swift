@@ -137,6 +137,20 @@ func hidIdleTime() -> Int {
     return nanoSeconds as! Int
 }
 
+/// Returns the hardware UUID of this Mac
+func hardwareUUID() -> String {
+    let uuid = IORegistryEntryCreateCFProperty(
+        serviceMatching("IOPlatformExpertDevice"),
+        kIOPlatformUUIDKey as CFString,
+        kCFAllocatorDefault,
+        0
+    )
+    if let uuid = uuid?.takeRetainedValue() {
+        return (uuid as! CFString) as String
+    }
+    return ""
+}
+
 /// Returns the serial number of this Mac
 func serialNumber() -> String {
     let serial = IORegistryEntryCreateCFProperty(
