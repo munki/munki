@@ -199,8 +199,7 @@ func processInstall(
     installInfo: inout PlistDict,
     isManagedUpdate: Bool = false,
     isOptionalInstall: Bool = false,
-    lowDataExempt: Bool = false,
-    requiredByDeployment: String? = nil
+    lowDataExempt: Bool = false
 ) async -> Bool {
     /// helper function
     func appendToProcessedManagedInstalls(_ item: PlistDict) {
@@ -242,21 +241,8 @@ func processInstall(
         return false
     }
 
-    var foundPkginfo = await getItemDetail(manifestItemName, catalogList: catalogList)
-    if foundPkginfo == nil,
-       let requiredByDeployment,
-       DeploymentRecords.shared.isOnlyRejectedByDeployment(manifestItemName)
-    {
-        // a gated version this machine can use brings along what it requires
-        foundPkginfo = await getItemDetail(manifestItemName, catalogList: catalogList, acceptNotEligible: true)
-        if foundPkginfo != nil {
-            display.info("Using \(manifestItemName) even though this machine isn't eligible for it, because \(requiredByDeployment) requires it")
-        }
-    }
-    guard let pkginfo = foundPkginfo else {
-        if !DeploymentRecords.shared.isOnlyRejectedByDeployment(manifestItemName) {
-            display.warning("Could not process item \(manifestItemName) for install. No pkginfo found in catalogs: \(catalogList)")
-        }
+    guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
+        display.warning("Could not process item \(manifestItemName) for install. No pkginfo found in catalogs: \(catalogList)")
         return false
     }
 
@@ -340,8 +326,7 @@ func processInstall(
             installInfo: &installInfo,
             isManagedUpdate: isManagedUpdate,
             isOptionalInstall: isOptionalInstall,
-            lowDataExempt: lowDataExemptForDependencies,
-            requiredByDeployment: requiredByDeployment ?? (pkginfo["deployment"] != nil ? name : nil)
+            lowDataExempt: lowDataExemptForDependencies
         )
         if !success {
             dependenciesMet = false
@@ -701,9 +686,7 @@ func processManagedUpdate(
     ) { return }
 
     guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
-        if !DeploymentRecords.shared.isOnlyRejectedByDeployment(manifestItemName) {
-            display.warning("Could not process item \(manifestItemName) for update. No pkginfo found in catalogs: \(catalogList) ")
-        }
+        display.warning("Could not process item \(manifestItemName) for update. No pkginfo found in catalogs: \(catalogList) ")
         return
     }
 
@@ -781,9 +764,7 @@ func processOptionalInstall(
     }
     if pkginfo.isEmpty {
         // could not find anything that matches and is applicable
-        if !DeploymentRecords.shared.isOnlyRejectedByDeployment(manifestItemName) {
-            display.warning("Could not process item \(manifestItemName) for optional install. No pkginfo found in catalogs: \(catalogList)")
-        }
+        display.warning("Could not process item \(manifestItemName) for optional install. No pkginfo found in catalogs: \(catalogList)")
         return
     }
 
@@ -965,7 +946,7 @@ func processOptionalUninstall(
         }
     }
 
-    guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList, skipDeploymentCheck: true) else {
+    guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
         display.warning("Could not process item \(manifestItemName) for optional uninstall. No pkginfo found in catalogs: \(catalogList)")
         return
     }
@@ -1084,7 +1065,7 @@ func processRemoval(
     var pkginfos = [PlistDict]()
     if !manifestItemVersion.isEmpty {
         // a specific version was specified
-        if let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList, version: manifestItemVersion, skipDeploymentCheck: true) {
+        if let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList, version: manifestItemVersion) {
             pkginfos.append(pkginfo)
         }
     } else {

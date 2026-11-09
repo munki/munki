@@ -51,10 +51,6 @@ class DeploymentRecords {
 
     /// one time for the whole run, so a step can't open partway through
     var now = Date()
-    /// versions already logged as not usable, since an item can be looked up many times in a run
-    var logged = Set<String>()
-    /// items with no available version only because of a deployment
-    var rejectedByDeployment = Set<String>()
     /// entries for the report's Deployments key, by item name and version
     var reportEntries = [String: PlistDict]()
     /// --deploy-percent, for this run only
@@ -64,18 +60,8 @@ class DeploymentRecords {
 
     func reset() {
         now = Date()
-        logged = []
-        rejectedByDeployment = []
         reportEntries = [:]
         commandLineDeployPercent = nil
-    }
-
-    /// True if a deployment is the only reason a name from a manifest or `requires`,
-    /// which can have a path and a version, has no available version
-    func isOnlyRejectedByDeployment(_ manifestItem: String) -> Bool {
-        let itemName = (manifestItem as NSString).lastPathComponent
-        let name = nameAndVersion(itemName, onlySplitOnHyphens: true).0
-        return rejectedByDeployment.contains((name as NSString).precomposedStringWithCanonicalMapping)
     }
 }
 
@@ -133,19 +119,13 @@ func deploymentReportEntries() -> [PlistDict] {
     return entries.keys.sorted().compactMap { entries[$0] }
 }
 
-/// Why an item's deployment stops this machine from using it
-enum DeploymentRejection {
-    case notEligible(String)
-    case invalid(String)
-}
-
 /// Checks an item's deployment for this machine. The rejection is nil if there's no deployment or
-/// the machine is eligible. The report entry is nil if there's no deployment or it's invalid,
+/// it includes this machine. The report entry is nil if there's no deployment or it's invalid,
 /// since an invalid one has no percents to report.
 func evaluateDeployment(
     _ item: PlistDict,
     machine: PlistDict
-) -> (rejection: DeploymentRejection?, reportEntry: PlistDict?) {
+) -> (rejection: String?, reportEntry: PlistDict?) {
     guard item["deployment"] != nil else {
         return (nil, nil)
     }
@@ -155,7 +135,8 @@ func evaluateDeployment(
     do {
         deployment = try Deployment(item["deployment"])
     } catch {
-        return (.invalid("\(name) \(version) has an invalid deployment: \(error)"), nil)
+        display.error("\(name) \(version) has an invalid deployment: \(error)")
+        return ("Rejected item \(name), version \(version) with an invalid deployment", nil)
     }
     let state = deployment.state(at: DeploymentRecords.shared.now, toRealDate: subtractTZOffsetFromDate)
     let packagePercent = currentDeployPercentOverride()?.value ??
@@ -172,13 +153,13 @@ func evaluateDeployment(
         return (nil, reportEntry)
     }
     reportEntry["eligible"] = false
-    var message = "\(name) \(version) not eligible: package_deploy_percent \(packagePercent) > current_deploy_percent \(state.currentPercent)"
+    var message = "Rejected item \(name), version \(version) with deployment: package_deploy_percent \(packagePercent) > current_deploy_percent \(state.currentPercent)"
     if let nextStep = state.nextStepDate {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
         message += " (next step \(formatter.string(from: nextStep)))"
     }
-    return (.notEligible(message), reportEntry)
+    return (message, reportEntry)
 }
 
 typealias CatalogDBTable = [String: [String: [Int]]]
@@ -619,14 +600,10 @@ func getItemDetail(
     catalogList: [String],
     version itemVersion: String = "",
     skipMinimumOSCheck: Bool = false,
-    suppressWarnings: Bool = false,
-    skipDeploymentCheck: Bool = false,
-    acceptNotEligible: Bool = false
+    suppressWarnings: Bool = false
 ) async -> PlistDict? {
     var rejectedItems = [String]()
-    var foundDeploymentRejection = false
     let machine = await getMachineFacts()
-    let records = DeploymentRecords.shared
 
     /// Returns a boolean to indicate if the current Munki version is high
     /// enough to install this item. If not, also adds the failure reason to
@@ -752,38 +729,19 @@ func getItemDetail(
     }
 
     /// Returns a boolean to indicate if this machine can use the item under
-    /// its deployment, if any. Not being eligible is the feature working as intended,
-    /// so it's logged at info level. An invalid deployment is logged as an error.
-    /// Neither adds to the rejected_items list. If acceptNotEligible is true, a machine
-    /// that isn't eligible can use the item anyway. An invalid deployment still fails.
+    /// its deployment, if any. If not, also adds the failure reason to the
+    /// rejected_items list.
     func deploymentOK(_ item: PlistDict) -> Bool {
-        if skipDeploymentCheck {
-            return true
-        }
         let (rejection, reportEntry) = evaluateDeployment(item, machine: machine)
-        let entryKey = "\(item["name"] as? String ?? "") \(item["version"] as? String ?? "")"
-        if acceptNotEligible, case .notEligible = rejection {
-            records.reportEntries[entryKey]?["eligible"] = true
-            return true
+        if let reportEntry {
+            let entryKey = "\(item["name"] as? String ?? "") \(item["version"] as? String ?? "")"
+            DeploymentRecords.shared.reportEntries[entryKey] = reportEntry
         }
-        // the first entry stays, so a later lookup doesn't undo the line above
-        if let reportEntry, records.reportEntries[entryKey] == nil {
-            records.reportEntries[entryKey] = reportEntry
-        }
-        guard let rejection else {
-            return true
-        }
-        foundDeploymentRejection = true
-        if !records.logged.insert(entryKey).inserted {
+        if let rejection {
+            rejectedItems.append(rejection)
             return false
         }
-        switch rejection {
-        case let .notEligible(message):
-            display.info(message)
-        case let .invalid(message):
-            display.error(message)
-        }
-        return false
+        return true
     }
 
     var version = itemVersion
@@ -838,7 +796,6 @@ func getItemDetail(
                        deploymentOK(item)
                     {
                         display.debug1("Found \(item["name"] as? String ?? "<unknown>"), version \(item["version"] as? String ?? "<unknown>") in catalog \(catalogName)")
-                        records.rejectedByDeployment.remove(name)
                         return item
                     }
                 }
@@ -847,11 +804,6 @@ func getItemDetail(
     }
     // if we got this far, we didn't find it
     display.debug1("No applicable item found for name '\(name)'")
-    if foundDeploymentRejection, rejectedItems.isEmpty {
-        records.rejectedByDeployment.insert(name)
-    } else {
-        records.rejectedByDeployment.remove(name)
-    }
     for reason in rejectedItems {
         if suppressWarnings {
             display.debug1(reason)

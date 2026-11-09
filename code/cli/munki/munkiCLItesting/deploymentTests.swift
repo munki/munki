@@ -696,15 +696,13 @@ private func item(
 
 private func lookup(
     _ name: String,
-    skipMinimumOSCheck: Bool = false,
-    skipDeploymentCheck: Bool = false
+    skipMinimumOSCheck: Bool = false
 ) async -> String? {
     let pkginfo = await getItemDetail(
         name,
         catalogList: testCatalogs,
         skipMinimumOSCheck: skipMinimumOSCheck,
-        suppressWarnings: true,
-        skipDeploymentCheck: skipDeploymentCheck
+        suppressWarnings: true
     )
     return pkginfo?["version"] as? String
 }
@@ -736,7 +734,7 @@ extension manifestsTests {
             #expect(await lookup("Firefox") == "2.0")
         }
 
-        @Test func noEligibleVersionIsWaitingNotAProblem() async {
+        @Test func noEligibleVersionFindsNothing() async {
             seedCatalog([item("Firefox", "2.0", percent: 1)])
             #expect(await lookup("Firefox") == nil)
         }
@@ -766,7 +764,7 @@ extension manifestsTests {
                 item("Firefox", "1.0"),
             ])
             #expect(await lookup("Firefox") == "1.0")
-            #expect(DeploymentRecords.shared.logged.isEmpty)
+            #expect(deploymentReportEntries().isEmpty)
         }
 
         @Test func anotherRejectionStillCountsAsAProblem() async {
@@ -777,7 +775,7 @@ extension manifestsTests {
             #expect(await lookup("Firefox") == nil)
         }
 
-        /// The "Requires macOS X" lookup: a machine that isn't eligible doesn't see the version.
+        /// The "Requires macOS X" lookup: a machine the deployment doesn't include doesn't see the version.
         @Test func skippingMinimumOSDoesNotSkipTheDeployment() async {
             seedCatalog([item("Firefox", "2.0", percent: 1, extra: ["minimum_os_version": "99.0"])])
             #expect(await lookup("Firefox", skipMinimumOSCheck: true) == nil)
@@ -983,11 +981,25 @@ extension manifestsTests {
             return (Report.shared.retrieve(key: key) as? [String] ?? []).filter { $0.contains(text) }
         }
 
-        @Test func noEligibleVersionIsNotAWarning() async {
+        /// The same two warnings as a failed installable_condition, and no error.
+        @Test func noEligibleVersionWarnsLikeAFailedCondition() async {
             seedCatalog([item("LogNoFallback", "2.0", percent: 1)])
             _ = await install("LogNoFallback")
-            #expect(reported("Warnings", containing: "LogNoFallback").isEmpty)
+            #expect(reported("Warnings", containing: "Rejected item LogNoFallback, version 2.0 with deployment").count == 1)
+            #expect(reported("Warnings", containing: "Could not process item LogNoFallback").count == 1)
             #expect(reported("Errors", containing: "LogNoFallback").isEmpty)
+
+            seedCatalog([item("LogNoFallback2", "2.0", extra: ["installable_condition": "FALSEPREDICATE"])])
+            _ = await install("LogNoFallback2")
+            #expect(reported("Warnings", containing: "Rejected item LogNoFallback2, version 2.0 with installable_condition").count == 1)
+            #expect(reported("Warnings", containing: "Could not process item LogNoFallback2").count == 1)
+        }
+
+        /// A rejection isn't logged at all if another version is used, as with installable_condition.
+        @Test func aFallbackIsNotAWarning() async {
+            seedCatalog([item("LogFallback", "2.0", percent: 1), item("LogFallback", "1.0")])
+            _ = await install("LogFallback")
+            #expect(reported("Warnings", containing: "LogFallback").isEmpty)
         }
 
         @Test func anItemThatDoesNotExistStillWarns() async {
@@ -1003,15 +1015,17 @@ extension manifestsTests {
             ])
             _ = await install("LogOtherReason")
             #expect(reported("Warnings", containing: "Could not process item LogOtherReason").count == 1)
-            #expect(reported("Warnings", containing: "Rejected item LogOtherReason, version 2.0").isEmpty)
+            #expect(reported("Warnings", containing: "Rejected item LogOtherReason, version 2.0 with deployment").count == 1)
+            #expect(reported("Warnings", containing: "Rejected item LogOtherReason, version 1.0").count == 1)
         }
 
-        @Test func invalidIsAnErrorLoggedOnce() async {
+        /// Like a predicate that raises an exception: an error, then the same warnings as any rejection.
+        @Test func invalidIsAnErrorAndARejection() async {
             seedCatalog([item("LogInvalid", "2.0", deployment: ["percent": 0])])
             _ = await install("LogInvalid")
-            _ = await lookup("LogInvalid")
-            #expect(reported("Errors", containing: "LogInvalid").count == 1)
-            #expect(reported("Warnings", containing: "LogInvalid").isEmpty)
+            #expect(reported("Errors", containing: "LogInvalid 2.0 has an invalid deployment").count == 1)
+            #expect(reported("Warnings", containing: "Rejected item LogInvalid, version 2.0 with an invalid deployment").count == 1)
+            #expect(reported("Warnings", containing: "Could not process item LogInvalid").count == 1)
         }
 
         @Test func unavailableRequirementWarnsLikeAFailedCondition() async {
@@ -1171,16 +1185,6 @@ extension manifestsTests {
             #expect(entry(installInfo, "Firefox")?["note"] != nil)
         }
 
-        @Test func itemWithoutADeploymentDoesNotBringAnythingAlong() async {
-            seedCatalog([
-                item("Firefox", "1.0", extra: ["requires": ["Zoom"]]),
-                item("Zoom", "2.0", percent: 1),
-                item("Zoom", "1.0"),
-            ])
-            let (_, installInfo) = await install("Firefox")
-            #expect(entry(installInfo, "Zoom")?["version_to_install"] as? String == "1.0")
-        }
-
         @Test func updateForDoesNotFollow() async {
             seedCatalog([
                 item("Firefox", "2.0", percent: 36),
@@ -1209,145 +1213,49 @@ extension manifestsTests {
             #expect(entry(installInfo, "Top")?["note"] != nil)
         }
 
-        // MARK: requirements of a gated item
+        // MARK: requirements of an item with a deployment
 
-        private func versionToInstall(_ installInfo: PlistDict, _ name: String) -> String? {
-            return entry(installInfo, name)?["version_to_install"] as? String
-        }
-
-        /// A gated version this machine can use brings along a requirement with no available version.
-        @Test func gatedItemBringsAlongAnUnavailableRequirement() async {
-            for zoom in [item("LogBroughtBase", "2.0", percent: 1), item("LogBroughtBase", "2.0", deployment: notStarted)] {
-                seedCatalog([item("Firefox", "2.0", percent: 100, extra: ["requires": ["LogBroughtBase"]]), zoom])
+        /// A's deployment doesn't change B's, and B has no other version available.
+        @Test func aRequirementTheDeploymentDoesNotIncludeIsAProblemItem() async {
+            for (requirement, zoom1) in [("Zoom", nil), ("apps/Zoom", nil), ("Zoom--2.0", item("Zoom", "1.0"))] as [(String, PlistDict?)] {
+                seedCatalog([
+                    item("Firefox", "2.0", percent: 36, extra: ["requires": [requirement]]),
+                    item("Zoom", "2.0", percent: 1),
+                ] + (zoom1.map { [$0] } ?? []))
                 let (result, installInfo) = await install("Firefox")
-                #expect(result)
-                #expect(versionToInstall(installInfo, "LogBroughtBase") == "2.0")
-                #expect(versionToInstall(installInfo, "Firefox") == "2.0")
-                #expect(reported("Warnings", containing: "LogBroughtBase").isEmpty)
+                #expect(!result)
+                #expect(entry(installInfo, "Zoom") == nil)
+                #expect(entry(installInfo, "Firefox")?["note"] != nil)
             }
         }
 
-        @Test func gatedItemBringsAlongARequirementWithAPathOrPinnedVersion() async {
-            for requirement in ["apps/Zoom", "Zoom--2.0"] {
-                seedCatalog([item("Firefox", "2.0", percent: 36, extra: ["requires": [requirement]]), item("Zoom", "2.0", percent: 1)])
-                let (result, installInfo) = await install("Firefox")
-                #expect(result)
-                #expect(versionToInstall(installInfo, "Zoom") == "2.0")
-            }
-        }
-
-        /// `requires Zoom-2.0` with only Zoom 1.0 available counts as no usable version.
-        @Test func gatedItemBringsAlongAPinnedVersionOverAnAvailableOne() async {
-            seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom--2.0"]]),
-                item("Zoom", "2.0", percent: 1),
-                item("Zoom", "1.0"),
-            ])
-            let (result, installInfo) = await install("Firefox")
-            #expect(result)
-            #expect(versionToInstall(installInfo, "Zoom") == "2.0")
-        }
-
-        @Test func gatedItemBringsAlongAWholeChain() async {
+        /// The whole chain stops at the requirement with no available version.
+        @Test func aProblemCarriesUpAChainOfDeployments() async {
             seedCatalog([
                 item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Zoom", "2.0", percent: 1, extra: ["requires": ["Chrome"]]),
+                item("Zoom", "2.0", percent: 100, extra: ["requires": ["Chrome"]]),
                 item("Chrome", "2.0", deployment: notStarted),
             ])
             let (result, installInfo) = await install("Firefox")
-            #expect(result)
-            let order = (installInfo["managed_installs"] as? [PlistDict] ?? []).map { $0["name"] as? String }
-            #expect(order == ["Chrome", "Zoom", "Firefox"])
+            #expect(!result)
+            #expect(entry(installInfo, "Chrome") == nil)
+            #expect(entry(installInfo, "Zoom")?["note"] != nil)
+            #expect(entry(installInfo, "Firefox")?["note"] != nil)
         }
 
-        /// The chain continues through a required item that has no deployment of its own.
-        @Test func gatedItemBringsAlongAChainThroughAnUngatedItem() async {
+        /// Machines keep the installed version of A, and A is still reported as a problem.
+        @Test func anInstalledVersionStaysWhenTheNewOnesRequirementIsUnavailable() async {
             seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Zoom", "2.0", extra: ["requires": ["Chrome"]]),
-                item("Chrome", "2.0", percent: 1),
-            ])
-            let (result, installInfo) = await install("Firefox")
-            #expect(result)
-            #expect(versionToInstall(installInfo, "Chrome") == "2.0")
-        }
-
-        /// A version this machine can use always comes first, using that item's own deployment.
-        @Test func aGatedItemUsesAnAvailableVersionFirst() async {
-            seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Zoom", "3.0", percent: 1),
-                item("Zoom", "2.0", percent: 100),
-            ])
-            let (_, installInfo) = await install("Firefox")
-            #expect(versionToInstall(installInfo, "Zoom") == "2.0")
-            #expect(reportEntry("Zoom", "3.0")?["eligible"] as? Bool == false)
-        }
-
-        @Test func aGatedItemTakesTheHighestVersionWhenNoneAreAvailable() async {
-            seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Zoom", "3.0", percent: 1),
-                item("Zoom", "2.0", percent: 1),
-            ])
-            let (_, installInfo) = await install("Firefox")
-            #expect(versionToInstall(installInfo, "Zoom") == "3.0")
-        }
-
-        /// An invalid deployment is never brought along, even with a lower version to take instead.
-        @Test func aGatedItemSkipsAnInvalidVersion() async {
-            seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Zoom", "3.0", deployment: ["percent": 0]),
-                item("Zoom", "2.0", percent: 1),
-            ])
-            let (result, installInfo) = await install("Firefox")
-            #expect(result)
-            #expect(versionToInstall(installInfo, "Zoom") == "2.0")
-        }
-
-        /// Only a deployment is bypassed. Anything else that rejected a version still stops it.
-        @Test func aGatedItemDoesNotBringAlongAVersionRejectedForAnotherReason() async {
-            seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Zoom", "3.0", extra: ["installable_condition": "FALSEPREDICATE"]),
+                item("Firefox", "2.0", percent: 36, extra: otherVersionInstalled.merging(["requires": ["Zoom"]]) { _, new in new }),
+                item("Firefox", "1.0", path: installedPath),
                 item("Zoom", "2.0", percent: 1),
             ])
             let (result, installInfo) = await install("Firefox")
             #expect(!result)
-            #expect(entry(installInfo, "Zoom") == nil)
             #expect(entry(installInfo, "Firefox")?["note"] != nil)
         }
 
-        /// The report says the machine can use what it's installing, and a later lookup keeps that.
-        @Test func aRequirementBroughtAlongIsReportedEligible() async {
-            seedCatalog([item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]), item("Zoom", "2.0", percent: 1)])
-            _ = await install("Firefox")
-            #expect(reportEntry("Zoom", "2.0")?["eligible"] as? Bool == true)
-            #expect(reportEntry("Zoom", "2.0")?["current_deploy_percent"] as? Int == 1)
-            _ = await lookup("Zoom")
-            #expect(reportEntry("Zoom", "2.0")?["eligible"] as? Bool == true)
-        }
-
-        /// The first one processed wins, as with any requirement. An ungated item processed
-        /// later is met too, but one processed earlier fails until the requirement is available.
-        @Test func anUngatedItemIsMetOnceARequirementWasBroughtAlong() async {
-            seedCatalog([
-                item("Firefox", "2.0", percent: 36, extra: ["requires": ["Zoom"]]),
-                item("Chrome", "1.0", extra: ["requires": ["Zoom"]]),
-                item("Zoom", "2.0", percent: 1),
-            ])
-            var installInfo = PlistDict()
-            _ = await processInstall("Firefox", catalogList: testCatalogs, installInfo: &installInfo)
-            #expect(await processInstall("Chrome", catalogList: testCatalogs, installInfo: &installInfo))
-
-            var chromeFirst = PlistDict()
-            #expect(await !processInstall("Chrome", catalogList: testCatalogs, installInfo: &chromeFirst))
-            #expect(await processInstall("Firefox", catalogList: testCatalogs, installInfo: &chromeFirst))
-            #expect(entry(chromeFirst, "Chrome")?["note"] != nil)
-        }
-
-        @Test func aNotEligibleGatedItemBringsNothingAlong() async {
+        @Test func aRejectedVersionsRequirementsAreNotProcessed() async {
             seedCatalog([
                 item("Firefox", "2.0", percent: 1, extra: ["requires": ["Zoom"]]),
                 item("Firefox", "1.0"),
@@ -1355,10 +1263,10 @@ extension manifestsTests {
             ])
             let (_, installInfo) = await install("Firefox")
             #expect(entry(installInfo, "Zoom") == nil)
-            #expect(versionToInstall(installInfo, "Firefox") == "1.0")
+            #expect(entry(installInfo, "Firefox")?["version_to_install"] as? String == "1.0")
         }
 
-        @Test func updateForWithNoAvailableVersionIsNotBroughtAlong() async {
+        @Test func updateForWithNoAvailableVersionIsSkipped() async {
             seedCatalog([
                 item("Firefox", "2.0", percent: 36),
                 item("Zoom", "2.0", percent: 1, extra: ["update_for": ["Firefox"]]),
@@ -1418,7 +1326,6 @@ extension manifestsTests {
             _ = await processInstall("Zoom", catalogList: testCatalogs, installInfo: &installInfo)
             // existing behavior: any processed version counts as meeting a pinned requirement
             #expect(await processInstall("Firefox", catalogList: testCatalogs, installInfo: &installInfo))
-            #expect(DeploymentRecords.shared.logged.isEmpty)
             #expect(deploymentReportEntries().isEmpty)
             #expect(getAutoRemovalItems(installInfo: PlistDict(), catalogList: testCatalogs) == ["Firefox"])
         }
@@ -1445,11 +1352,23 @@ extension manifestsTests {
             "uninstallable": true, "uninstall_method": "uninstall_script", "uninstall_script": "#!/bin/sh\n",
         ]
 
-        /// Removals are never gated, even for a version this machine isn't eligible for.
-        @Test func removingASpecificVersionIgnoresItsDeployment() async {
+        /// A specific version is looked up like any other, as with installable_condition.
+        @Test func removingASpecificVersionFollowsItsDeployment() async {
             seedCatalog([item("Firefox", "2.0", percent: 1, path: installedPath, extra: removable)])
             var installInfo = PlistDict()
-            _ = await processRemoval("Firefox--2.0", catalogList: testCatalogs, installInfo: &installInfo)
+            #expect(await !processRemoval("Firefox--2.0", catalogList: testCatalogs, installInfo: &installInfo))
+            #expect((installInfo["removals"] as? [PlistDict] ?? []).isEmpty)
+
+            seedCatalog([item("Firefox", "2.0", path: installedPath, extra: removable.merging(["installable_condition": "FALSEPREDICATE"]) { _, new in new })])
+            var viaCondition = PlistDict()
+            #expect(await !processRemoval("Firefox--2.0", catalogList: testCatalogs, installInfo: &viaCondition))
+        }
+
+        /// Without a version, removal looks at every version by name and checks nothing.
+        @Test func removingByNameIgnoresDeployments() async {
+            seedCatalog([item("Firefox", "2.0", percent: 1, path: installedPath, extra: removable)])
+            var installInfo = PlistDict()
+            _ = await processRemoval("Firefox", catalogList: testCatalogs, installInfo: &installInfo)
             let removals = installInfo["removals"] as? [PlistDict] ?? []
             #expect(removals.contains { $0["name"] as? String == "Firefox" })
         }
@@ -1499,12 +1418,13 @@ extension manifestsTests {
             #expect(entry(installInfo, "Zoom")?["version_to_install"] as? String == "2.0")
         }
 
-        @Test func optionalUninstallIgnoresTheDeployment() async {
+        /// No available version means it isn't offered, as with installable_condition.
+        @Test func optionalUninstallFollowsTheDeployment() async {
             seedCatalog([item("Firefox", "2.0", percent: 1, path: installedPath, extra: removable)])
             var installInfo = PlistDict()
             await processOptionalUninstall("Firefox", catalogList: testCatalogs, installInfo: &installInfo)
-            let entries = (installInfo["optional_uninstalls"] as? [PlistDict] ?? []) + (installInfo["optional_installs"] as? [PlistDict] ?? [])
-            #expect(entries.contains { $0["name"] as? String == "Firefox" && $0["version_to_install"] as? String == "2.0" })
+            #expect(installInfo["optional_uninstalls"] == nil)
+            #expect(installInfo["optional_installs"] == nil)
         }
 
         // MARK: managed updates
