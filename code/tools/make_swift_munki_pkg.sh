@@ -547,7 +547,7 @@ mkdir -m 755 "$ADMINROOT/usr/local"
 mkdir -m 755 "$ADMINROOT/usr/local/munki"
 # Copy command line admin utilities.
 # edit this if list of tools changes!
-for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean 
+for TOOL in makecatalogs makepkginfo manifestutil munkiimport iconimporter repoclean deploymentutil
 do
     cp -X "$MUNKIROOT/code/build/binaries/$TOOL" "$ADMINROOT/usr/local/munki/" 2>&1
     # sign tool

@@ -45,6 +45,142 @@ class Catalogs {
     }
 }
 
+/// a Singleton class to track what deployments decided during this run
+class DeploymentRecords {
+    static let shared = DeploymentRecords()
+
+    /// one time for the whole run, so a step can't open partway through
+    var now = Date()
+    /// versions already logged as not usable, since an item can be looked up many times in a run
+    var logged = Set<String>()
+    /// items with no available version only because of a deployment
+    var rejectedByDeployment = Set<String>()
+    /// entries for the report's Deployments key, by item name and version
+    var reportEntries = [String: PlistDict]()
+    /// --deploy-percent, for this run only
+    var commandLineDeployPercent: Int?
+
+    private init() {}
+
+    func reset() {
+        now = Date()
+        logged = []
+        rejectedByDeployment = []
+        reportEntries = [:]
+        commandLineDeployPercent = nil
+    }
+
+    /// True if a deployment is the only reason a name from a manifest or `requires`,
+    /// which can have a path and a version, has no available version
+    func isOnlyRejectedByDeployment(_ manifestItem: String) -> Bool {
+        let itemName = (manifestItem as NSString).lastPathComponent
+        let name = nameAndVersion(itemName, onlySplitOnHyphens: true).0
+        return rejectedByDeployment.contains((name as NSString).precomposedStringWithCanonicalMapping)
+    }
+}
+
+/// Picks the deploy_percent override in effect, if any. --deploy-percent wins over the
+/// preference, and a preference outside 1-100 is ignored. The values are passed in so this
+/// stays a pure function that is easy to test.
+func deployPercentOverride(commandLine: Int?, preference: Int?) -> (value: Int, source: String)? {
+    if let commandLine {
+        return (commandLine, "command_line")
+    }
+    if let preference, (1 ... 100).contains(preference) {
+        return (preference, "preference")
+    }
+    return nil
+}
+
+/// Returns the deploy_percent override in effect for this run, if any
+func currentDeployPercentOverride() -> (value: Int, source: String)? {
+    return deployPercentOverride(
+        commandLine: DeploymentRecords.shared.commandLineDeployPercent,
+        preference: intPref("DeployPercentOverride")
+    )
+}
+
+/// Logs the override in effect, once per run, along with a preference we're ignoring
+func logDeployPercentOverride() {
+    if let preference = intPref("DeployPercentOverride"), !(1 ... 100).contains(preference) {
+        display.warning("Ignoring DeployPercentOverride preference of \(preference): it must be from 1 to 100")
+    }
+    if let override = currentDeployPercentOverride() {
+        let source = override.source == "command_line" ? "--deploy-percent" : "DeployPercentOverride preference"
+        display.info("deploy_percent overridden to \(override.value) by \(source)")
+    }
+}
+
+/// Returns the identifier this machine's deploy_percent is based on
+private func deployPercentIdentifier(machine: PlistDict) -> String? {
+    let serial = machine["serial_number"] as? String
+    if let identifier = deployPercentIdentifier(serial: serial, hardwareUUID: nil) {
+        return identifier
+    }
+    // not a machine fact, so it stays out of reports. Tests can supply it there.
+    return deployPercentIdentifier(serial: nil, hardwareUUID: machine["hardware_uuid"] as? String ?? hardwareUUID())
+}
+
+/// The deploy_percent fact for predicates: the machine's unsalted value, or the override
+func deployPercentFact(machine: PlistDict) -> Int {
+    return currentDeployPercentOverride()?.value ??
+        machineDeployPercent(identifier: deployPercentIdentifier(machine: machine))
+}
+
+/// Returns the entries for the report's Deployments key
+func deploymentReportEntries() -> [PlistDict] {
+    let entries = DeploymentRecords.shared.reportEntries
+    return entries.keys.sorted().compactMap { entries[$0] }
+}
+
+/// Why an item's deployment stops this machine from using it
+enum DeploymentRejection {
+    case notEligible(String)
+    case invalid(String)
+}
+
+/// Checks an item's deployment for this machine. The rejection is nil if there's no deployment or
+/// the machine is eligible. The report entry is nil if there's no deployment or it's invalid,
+/// since an invalid one has no percents to report.
+func evaluateDeployment(
+    _ item: PlistDict,
+    machine: PlistDict
+) -> (rejection: DeploymentRejection?, reportEntry: PlistDict?) {
+    guard item["deployment"] != nil else {
+        return (nil, nil)
+    }
+    let name = item["name"] as? String ?? "<unknown>"
+    let version = item["version"] as? String ?? "<unknown>"
+    let deployment: Deployment
+    do {
+        deployment = try Deployment(item["deployment"])
+    } catch {
+        return (.invalid("\(name) \(version) has an invalid deployment: \(error)"), nil)
+    }
+    let state = deployment.state(at: DeploymentRecords.shared.now, toRealDate: subtractTZOffsetFromDate)
+    let packagePercent = currentDeployPercentOverride()?.value ??
+        packageDeployPercent(identifier: deployPercentIdentifier(machine: machine), itemName: name)
+    var reportEntry: PlistDict = [
+        "name": name,
+        "version": version,
+        "package_deploy_percent": packagePercent,
+        "current_deploy_percent": state.currentPercent,
+        "eligible": true,
+    ]
+    reportEntry["next_step_date"] = state.nextIncreaseDate
+    if packagePercent <= state.currentPercent {
+        return (nil, reportEntry)
+    }
+    reportEntry["eligible"] = false
+    var message = "\(name) \(version) not eligible: package_deploy_percent \(packagePercent) > current_deploy_percent \(state.currentPercent)"
+    if let nextStep = state.nextStepDate {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        message += " (next step \(formatter.string(from: nextStep)))"
+    }
+    return (.notEligible(message), reportEntry)
+}
+
 typealias CatalogDBTable = [String: [String: [Int]]]
 
 /// Creates a dict we use like a database to query the catalogs for info
@@ -483,10 +619,14 @@ func getItemDetail(
     catalogList: [String],
     version itemVersion: String = "",
     skipMinimumOSCheck: Bool = false,
-    suppressWarnings: Bool = false
+    suppressWarnings: Bool = false,
+    skipDeploymentCheck: Bool = false,
+    acceptNotEligible: Bool = false
 ) async -> PlistDict? {
     var rejectedItems = [String]()
+    var foundDeploymentRejection = false
     let machine = await getMachineFacts()
+    let records = DeploymentRecords.shared
 
     /// Returns a boolean to indicate if the current Munki version is high
     /// enough to install this item. If not, also adds the failure reason to
@@ -611,6 +751,41 @@ func getItemDetail(
         return true
     }
 
+    /// Returns a boolean to indicate if this machine can use the item under
+    /// its deployment, if any. Not being eligible is the feature working as intended,
+    /// so it's logged at info level. An invalid deployment is logged as an error.
+    /// Neither adds to the rejected_items list. If acceptNotEligible is true, a machine
+    /// that isn't eligible can use the item anyway. An invalid deployment still fails.
+    func deploymentOK(_ item: PlistDict) -> Bool {
+        if skipDeploymentCheck {
+            return true
+        }
+        let (rejection, reportEntry) = evaluateDeployment(item, machine: machine)
+        let entryKey = "\(item["name"] as? String ?? "") \(item["version"] as? String ?? "")"
+        if acceptNotEligible, case .notEligible = rejection {
+            records.reportEntries[entryKey]?["eligible"] = true
+            return true
+        }
+        // the first entry stays, so a later lookup doesn't undo the line above
+        if let reportEntry, records.reportEntries[entryKey] == nil {
+            records.reportEntries[entryKey] = reportEntry
+        }
+        guard let rejection else {
+            return true
+        }
+        foundDeploymentRejection = true
+        if !records.logged.insert(entryKey).inserted {
+            return false
+        }
+        switch rejection {
+        case let .notEligible(message):
+            display.info(message)
+        case let .invalid(message):
+            display.error(message)
+        }
+        return false
+    }
+
     var version = itemVersion
     var (name, includedVersion) = nameAndVersion(itemName, onlySplitOnHyphens: true)
     if !includedVersion.isEmpty, version.isEmpty {
@@ -659,9 +834,11 @@ func getItemDetail(
                     if munkiVersionOK(item),
                        osVersionOK(item),
                        cpuArchOK(item),
-                       await installableConditionOK(item)
+                       await installableConditionOK(item),
+                       deploymentOK(item)
                     {
                         display.debug1("Found \(item["name"] as? String ?? "<unknown>"), version \(item["version"] as? String ?? "<unknown>") in catalog \(catalogName)")
+                        records.rejectedByDeployment.remove(name)
                         return item
                     }
                 }
@@ -670,6 +847,11 @@ func getItemDetail(
     }
     // if we got this far, we didn't find it
     display.debug1("No applicable item found for name '\(name)'")
+    if foundDeploymentRejection, rejectedItems.isEmpty {
+        records.rejectedByDeployment.insert(name)
+    } else {
+        records.rejectedByDeployment.remove(name)
+    }
     for reason in rejectedItems {
         if suppressWarnings {
             display.debug1(reason)
