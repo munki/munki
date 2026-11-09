@@ -666,8 +666,10 @@ func makepkginfo(_ filepath: String?,
         let rawValues = options.other.supportedArchitectures.map(\.rawValue)
         pkginfo["supported_architectures"] = rawValues
     }
-    if let forceInstallAfterDate = options.force.forceInstallAfterDate {
-        pkginfo["force_install_after_date"] = forceInstallAfterDate
+    if let forceInstallAfterDate = options.force.forceInstallAfterDate,
+       let date = ISO8601DateFormatter().date(from: forceInstallAfterDate)
+    {
+        pkginfo["force_install_after_date"] = date
     }
     if let restartAction = options.override.restartAction {
         pkginfo["RestartAction"] = restartAction.rawValue
