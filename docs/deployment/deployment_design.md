@@ -8,7 +8,7 @@ Roll a new item out to a growing percentage of the fleet over time, instead of t
 
 The core mechanism: each machine has a `deploy_percent` calculated based on its serial number. A version with a `deployment` becomes available to a machine once the machine's `deploy_percent` meets the criteria of the deployment. Until then, Munki uses the next-highest version available to it. The project plan below describes this mechanism in detail.
 
-**A deployment only decides whether a version is available to a machine,** the same way `installable_condition` does. Once a version is available, Munki processes it as it always has, including `requires`, `update_for`, and install order. The one exception is that an item whose deployment includes the machine brings along a required item the machine otherwise couldn't use (see "Required packages" in section 4). A pkginfo with no `deployment` behaves exactly as it did before this feature.
+**A deployment only decides whether a version is available to a machine,** the same way `installable_condition` does. Once a version is available, Munki processes it as it always has, including `requires`, `update_for`, and install order. A pkginfo with no `deployment` behaves exactly as it did before this feature.
 
 ## 1. pkginfo schema
 
@@ -162,14 +162,14 @@ Every machine has two kinds of deploy_percent. Both are a number from 1 to 100, 
 - **Identifier:** the serial number, falling back to `hardware_uuid` if there's no serial. If neither can be read (and no `DeployPercentOverride` pref is set), both values are set to 100, so the machine is in the last group and gets each version once a deployment reaches 100%.
 - **Hash:** the first 8 bytes of SHA-256 as a big-endian integer, so the result is stable across Munki versions. The machine value hashes the identifier, and the package value hashes `identifier:name`. This can't change once released, because that would move every machine to a different group in every running deployment.
 - **Why salt per item:** each item gets a different first group of machines, so the same machines don't get every new release first. The unsalted value gives admins one stable number per machine for predicates and reporting.
-- **Each item follows its own deployment:** that includes items reached through `requires` or `update_for`, hashed with their own names. A deployment on Package A says nothing about Package B, except when Package A's deployment includes the machine and no version of Package B is otherwise available to it. See "Required packages" in section 4.
+- **Each item follows its own deployment:** that includes items reached through `requires` or `update_for`, hashed with their own names. A deployment on Package A says nothing about Package B. See "Required packages" in section 4.
 - **`DeployPercentOverride` pref** (in ManagedInstalls): replaces both values. The machine uses the pinned number for every item, with no per-item hashing. A value outside 1–100 is ignored, with a warning. Admins can use it to decide who goes first, who goes last, or both:
   - **Go first:** a low number (e.g. 1) puts a machine at the front of every deployment, such as IT staff or testers who should catch problems early.
   - **Go last:** 100 puts a machine at the back of every deployment, such as VIPs or other sensitive machines that should only get a version once the rest of the fleet has it.
 - **`managedsoftwareupdate --deploy-percent <n>`:** overrides both values for that run only, the same way `--id` overrides ClientIdentifier for one run. It takes precedence over the `DeployPercentOverride` pref, and a value outside 1–100 is rejected. It's accepted with `--checkonly` and `--installonly`, but only changes the result of a check, because `--installonly` installs what the last check found.
   - **`--deploy-percent 1`:** installs every version whose deployment has started, however low its current_deploy_percent.
   - **`--deploy-percent 100`:** skips every version whose deployment hasn't reached 100% yet.
-  - **It doesn't install before a deployment's `start`.** Before start, current_deploy_percent is 0, so no value gets a machine into the deployment. That keeps the pause described in section 4 (moving `start` later) effective on every machine, other than one that gets the item through a gated item that requires it.
+  - **It doesn't install before a deployment's `start`.** Before start, current_deploy_percent is 0, so no value gets a machine into the deployment. That keeps the pause described in section 4 (moving `start` later) effective on every machine.
   - **It doesn't persist.** The next run, including background `--auto` runs, uses the machine's normal value again. Anything installed during the override stays installed, because a deployment doesn't remove anything. To keep a machine at the front or back permanently, use the `DeployPercentOverride` pref.
 - **Which machines a deployment includes:** a deployment includes a machine when the machine's package_deploy_percent is at or below that version's current_deploy_percent. A version with no `deployment` is only subject to Munki's other checks.
 
@@ -181,7 +181,7 @@ During catalog lookup, a version whose deployment doesn't include the machine is
 
 - **The newest version's deployment includes the machine:** the machine installs the newest version directly, the same as if it had no `deployment`. It never installs an older version first.
 - **The newest version's deployment doesn't include the machine yet, an older version is available:** the machine installs the older version now. Once the deployment includes it, it sees that as a normal update.
-- **The deployment doesn't include the machine yet, no older version exists** (the item's first release has a `deployment`): nothing is installed. It's logged at info level and installs once the deployment includes the machine.
+- **The deployment doesn't include the machine yet, no older version exists** (the item's first release has a `deployment`): nothing is installed. It gets the same warnings as a failed `installable_condition` on every run, and installs once the deployment includes the machine.
 
 ### Existing installs (`managed_installs` / `managed_updates`, item already installed)
 
@@ -199,26 +199,24 @@ During catalog lookup, a version whose deployment doesn't include the machine is
 
 ### Other interactions
 
-- **Existing conditions are checked first:** a version must pass every existing check (`minimum_munki_version`, `minimum_os_version` / `maximum_os_version`, `supported_architectures`, and `installable_condition`) before its `deployment` is evaluated. If any of them fails, the deployment is never evaluated: Munki moves on to the next-highest version, no `not eligible` line is logged, and no `Deployments` report entry is written. This lets admins stop an install with a condition unrelated to the deployment, and means the `not eligible` log line always means "this machine could install it, it's just not its turn yet."
-- **`managed_uninstalls`:** not affected. Removals are never gated, including pinned removals and optional uninstalls.
+- **Existing conditions are checked first:** a version must pass every existing check (`minimum_munki_version`, `minimum_os_version` / `maximum_os_version`, `supported_architectures`, and `installable_condition`) before its `deployment` is evaluated. If any of them fails, the deployment is never evaluated: Munki moves on to the next-highest version, and no `Deployments` report entry is written. This lets admins stop an install with a condition unrelated to the deployment.
+- **`managed_uninstalls`:** a removal by name isn't affected, since it doesn't check availability, the same as for `installable_condition`. A pinned removal and an optional uninstall look up a version like any other lookup, so if no version is available they get a warning and nothing is removed or offered.
 - **`autoremove`:** not affected. It works by item name and doesn't check availability, the same as for `installable_condition`.
 - **`force_install_after_date` on a gated version:** only applies once its deployment includes the machine. If the date has already passed by then, the install is forced right away.
-- **Required packages:** processed the way Munki always has, using whichever versions are available to the machine, with one addition for a gated Package A:
+- **Required packages:** processed the way Munki always has, using whichever versions are available to the machine, the same as for `installable_condition`:
   - If Package A says `requires Package B` and Package B 2.0's deployment doesn't include the machine, Package B 1.0 is used if it's available.
-  - If Package A has a `deployment` that includes the machine, and the only reason no version of Package B is available is that Package B's deployment doesn't include the machine, Package B's highest such version installs with Package A, whatever Package B's schedule says. The same applies down the chain, including through an item with no `deployment`. Each item has its own group number, so without this a new Package B could leave the first machines with Package A unable to install it.
-  - In every other case, including a Package A with no `deployment`, an invalid Package B deployment, and a Package B version that also failed another check, Package A gets the same warning and `Can't install` problem item as when Package B fails `installable_condition`. It installs once Package B is available.
-  - `update_for` items are never brought along.
+  - If no version of Package B is available, Package A gets the same warning and `Can't install` problem item as when Package B fails `installable_condition`, whether or not Package A has a `deployment`. It installs once Package B is available.
+  - Each item has its own group number, so two items on the same schedule don't include the same machines. To avoid `Can't install` errors, set a `deployment` on the main item and none on the items it requires, or finish Package B's deployment before starting Package A's.
+  - `update_for` items follow their own deployment.
   - Munki's existing rule for pinned requirements still applies: once any version of Package B has been processed, `requires Package B-2.0` counts as met, so the first one processed wins.
 
 ### Predicates, logging, and reporting
 
 - **Predicates:** a `deploy_percent` fact is available in `conditional_items` and `installable_condition`. It holds the machine (unsalted) deploy_percent, or the override if one is in effect. It's added in `generatePredicateInfo()` alongside the other computed conditions (e.g. `machine_type`), so it's recorded in the report's existing `Conditions` dict and nowhere else.
-- **Logging:** each version whose deployment doesn't include the machine is logged at info level, e.g. `Firefox 131.0 not eligible: package_deploy_percent 42 > current_deploy_percent 25 (next step 2026-10-14 10:00)`. A deployment not including a machine is the feature working as intended, so it's never logged as a warning or error:
-  - When an older version is available, the fallback happens without any warning.
-  - When no version is available (e.g. the item's first release is gated), the usual "Could not process item … No pkginfo found in catalogs" warning is suppressed if a deployment is the only reason. If anything else also rejected a version (e.g. `minimum_os_version`), the existing warnings are logged as they are today.
-  - Only an invalid `deployment` is logged as an error, since that's a real misconfiguration. The error says what's wrong, so the "Could not process item" warning is suppressed there too.
-  - An item that can't get what it requires still gets Munki's usual warning and `Can't install` problem item, as described under "Required packages" above.
-  - A required item brought along by a gated item logs one info line that names that item.
+- **Logging:** a version whose deployment doesn't include the machine is rejected the same way as a failed `installable_condition`:
+  - When an older version is available, the fallback happens with no log line above debug level. The `Deployments` report entry shows the percents.
+  - When no version is available, each run logs `Rejected item Firefox, version 131.0 with deployment: package_deploy_percent 42 > current_deploy_percent 25 (next step 2026-10-14 10:00)` and the usual "Could not process item … No pkginfo found in catalogs" warning.
+  - An invalid `deployment` is also logged as an error each time it's looked up, as a predicate that raises an exception is.
 - **Overrides are logged:** when the `DeployPercentOverride` pref or `--deploy-percent` is in effect, each run logs it once at info level, e.g. `deploy_percent overridden to 1 by DeployPercentOverride preference`.
 - **ManagedInstallReport** gets two new top-level keys:
   - `Deployments`: one entry for every item version evaluated against a `deployment`, so admins can see the machine's package_deploy_percent for each pending deployment. An invalid `deployment` has no entry, since it has no percents to report, and logs an error instead. (The machine's unsalted `deploy_percent` is already in `Conditions`.)
@@ -230,7 +228,7 @@ During catalog lookup, a version whose deployment doesn't include the machine is
     | `version` | string | version with the `deployment` |
     | `package_deploy_percent` | integer | this machine's salted deploy_percent for this package |
     | `current_deploy_percent` | integer | the deployment's value right now |
-    | `eligible` | boolean | `package_deploy_percent` ≤ `current_deploy_percent`, or `true` when an item whose deployment includes the machine brought this version along |
+    | `eligible` | boolean | `package_deploy_percent` ≤ `current_deploy_percent` |
     | `next_step_date` | date | when current_deploy_percent next increases (absent for `static` deployments once started, and once at 100) |
 
 ## 5. Admin tooling
@@ -332,8 +330,7 @@ By default it only shows deployments that still need attention: `scheduled`, `in
 |---|---|
 | Schedule, current_deploy_percent, and hash logic (pure functions, easy to test) | new `shared/deployment.swift` |
 | Version gating, as the last check in the chain after `installableConditionOK` | `shared/updatecheck/catalogs.swift` |
-| Not warning when a deployment is the only reason an item isn't available, and skipping the check for removals | `shared/updatecheck/analyze.swift` |
-| No changes to `getAutoRemovalItems()`, for the same reason | |
+| No changes to `shared/updatecheck/analyze.swift`, including `getAutoRemovalItems()` | |
 | `deploy_percent` fact | `generatePredicateInfo()` in `shared/facts.swift` |
 | `DeployPercentOverride` pref | `shared/prefs.swift` |
 | `--deploy-percent` run-only override | `managedsoftwareupdate/msuoptions.swift` |
