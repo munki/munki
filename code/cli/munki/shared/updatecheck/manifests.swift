@@ -208,8 +208,9 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
 }
 
 /// Gets the primary client manifest from the server.
+/// Returns its local path and the name it was retrieved as.
 /// Can throw all the same errors as getManifest
-func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
+func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> (path: String, name: String) {
     var clientIdentifier = ""
     if let alternateIdentifier, !alternateIdentifier.isEmpty {
         clientIdentifier = alternateIdentifier
@@ -264,11 +265,11 @@ func getPrimaryManifest(alternateIdentifier: String? = nil) throws -> String {
         }
     }
 
-    // record info and return the path to the manifest
+    // record info and return the path and name of the manifest
     Manifests.shared.set(PRIMARY_MANIFEST_TAG, path: manifest)
     Report.shared.record(clientIdentifier, to: "ManifestName")
     display.detail("Using primary manifest: \(clientIdentifier)")
-    return manifest
+    return (manifest, clientIdentifier)
 }
 
 /// Removes any manifest files that are no longer in use by this client
@@ -357,7 +358,12 @@ func removeFromSelfServeUninstalls(_ itemName: String) {
 /// remove.
 ///
 /// Can be recursive if manifests include other manifests.
-/// Probably doesn't handle circular manifest references well.
+/// includeChain holds the names of the manifests that included this one,
+/// outermost first. manifestName should be the name other manifests use to
+/// include this one; nil means an embedded conditional_items manifest, which
+/// has no includable name. An included manifest whose name is already in the
+/// chain, or is this manifest's own name, is a circular reference, so it is
+/// skipped with a warning.
 ///
 /// manifest can be a path to a manifest file or a dictionary object.
 func processManifest(
@@ -365,8 +371,10 @@ func processManifest(
     forKey key: String,
     installInfo: inout PlistDict,
     parentCatalogs: [String] = [],
-    manifestName: String = "embedded manifest"
+    manifestName: String? = nil,
+    includeChain: [String] = []
 ) async throws {
+    let displayName = manifestName ?? "embedded manifest"
     let manifestCatalogs = manifestdata["catalogs"] as? [String] ?? []
     var catalogList = [String]()
     if !manifestCatalogs.isEmpty {
@@ -377,13 +385,24 @@ func processManifest(
     }
 
     if catalogList.isEmpty {
-        display.warning("Manifest \(manifestName) has no catalogs")
+        display.warning("Manifest \(displayName) has no catalogs")
         return
+    }
+
+    // the chain for anything we include contains this manifest, unless it's
+    // an embedded (conditional_items) one, which has no includable name
+    var chain = includeChain
+    if let manifestName {
+        chain.append(manifestName)
     }
 
     // process all included manifests first
     for includedManifestName in manifestdata["included_manifests"] as? [String] ?? [] {
         if includedManifestName.isEmpty {
+            continue
+        }
+        if chain.contains(includedManifestName) {
+            display.warning("Circular manifest reference: \((chain + [includedManifestName]).joined(separator: " -> ")). Skipping.")
             continue
         }
         let nestedManifestPath = try getManifest(includedManifestName)
@@ -394,13 +413,15 @@ func processManifest(
             atPath: nestedManifestPath,
             forKey: key,
             installInfo: &installInfo,
-            parentCatalogs: catalogList
+            parentCatalogs: catalogList,
+            manifestName: includedManifestName,
+            includeChain: chain
         )
     }
 
     // process conditional items
     if let conditionalItems = manifestdata["conditional_items"] as? [PlistDict] {
-        display.debug1("** Processing conditional_items in \(manifestName)")
+        display.debug1("** Processing conditional_items in \(displayName)")
         // conditionalitems should be an array of dicts
         // each dict has a predicate; the rest consists of the
         // same keys as a manifest
@@ -419,7 +440,8 @@ func processManifest(
                     item,
                     forKey: key,
                     installInfo: &installInfo,
-                    parentCatalogs: catalogList
+                    parentCatalogs: catalogList,
+                    includeChain: chain
                 )
             }
         }
@@ -481,20 +503,26 @@ func processManifest(
 }
 
 /// Process a manifest _file_
+/// manifestName is the name other manifests use to include this one; it
+/// defaults to the file's name. includeChain is as for processManifest above.
 func processManifest(
     atPath manifestPath: String,
     forKey key: String,
     installInfo: inout PlistDict,
-    parentCatalogs: [String] = []
+    parentCatalogs: [String] = [],
+    manifestName: String? = nil,
+    includeChain: [String] = []
 ) async throws {
-    display.debug1("** Processing manifest \(baseName(manifestPath)) for \(key)")
+    let name = manifestName ?? baseName(manifestPath)
+    display.debug1("** Processing manifest \(name) for \(key)")
     if let manifestdata = manifestData(manifestPath) {
         try await processManifest(
             manifestdata,
             forKey: key,
             installInfo: &installInfo,
             parentCatalogs: parentCatalogs,
-            manifestName: baseName(manifestPath)
+            manifestName: name,
+            includeChain: includeChain
         )
     }
 }
