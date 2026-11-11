@@ -233,110 +233,154 @@ struct manifestsTests {
         }
     }
 
-    /// Test that a manifest that includes itself is processed without
-    /// recursing forever
-    @Test func manifestIncludingItselfIsSkipped() async throws {
-        let paths = try cacheTestManifests([
-            "circularA": [
-                "included_manifests": ["circularA"],
-                "featured_items": ["ItemA"],
-            ],
-        ])
-        defer { uncacheTestManifests(Array(paths.keys)) }
-        let manifestPath = try #require(paths["circularA"])
-
-        // via a manifest file, as for included manifests
+    /// Test that a primary manifest that includes itself is skipped
+    /// without being processed again. The primary manifest is processed
+    /// from its data under its own name, as checkForUpdates does, and is
+    /// deliberately not in the Manifests cache: re-entering it would mean
+    /// fetching it, which would throw here.
+    @Test func primaryManifestIncludingItselfIsSkipped() async throws {
+        let primary: PlistDict = [
+            "included_manifests": ["selfIncludingPrimary"],
+            "featured_items": ["PrimaryItem"],
+        ]
         var installInfo = PlistDict()
         try await processManifest(
-            atPath: manifestPath,
-            forKey: "featured_items",
-            installInfo: &installInfo,
-            parentCatalogs: ["testing"]
-        )
-        #expect(installInfo["featured_items"] as? [String] == ["ItemA"])
-
-        // via manifest data, as for the primary manifest
-        let manifestdata = try #require(manifestData(manifestPath))
-        installInfo = PlistDict()
-        try await processManifest(
-            manifestdata,
+            primary,
             forKey: "featured_items",
             installInfo: &installInfo,
             parentCatalogs: ["testing"],
-            manifestName: "circularA"
+            manifestName: "selfIncludingPrimary"
         )
-        #expect(installInfo["featured_items"] as? [String] == ["ItemA"])
+        #expect(installInfo["featured_items"] as? [String] == ["PrimaryItem"])
     }
 
-    /// Test that manifests that include each other are processed without
-    /// recursing forever
-    @Test func manifestsIncludingEachOtherAreSkipped() async throws {
+    /// Test that an included manifest that includes itself is processed
+    /// without recursing forever. The manifest is in the cache, so without
+    /// the guard this would never return; the time limit turns that into
+    /// a failure.
+    @Test(.timeLimit(.minutes(1)))
+    func includedManifestIncludingItselfIsSkipped() async throws {
         let paths = try cacheTestManifests([
-            "circularA": [
-                "included_manifests": ["circularB"],
-                "featured_items": ["ItemA"],
+            "selfIncluding": [
+                "included_manifests": ["selfIncluding"],
+                "featured_items": ["IncludedItem"],
             ],
-            "circularB": [
-                "included_manifests": ["circularA"],
+        ])
+        defer { uncacheTestManifests(Array(paths.keys)) }
+
+        let primary: PlistDict = [
+            "included_manifests": ["selfIncluding"],
+            "featured_items": ["PrimaryItem"],
+        ]
+        var installInfo = PlistDict()
+        try await processManifest(
+            primary,
+            forKey: "featured_items",
+            installInfo: &installInfo,
+            parentCatalogs: ["testing"],
+            manifestName: "selfIncludingParent"
+        )
+        let featuredItems = installInfo["featured_items"] as? [String] ?? []
+        #expect(Set(featuredItems) == ["PrimaryItem", "IncludedItem"])
+    }
+
+    /// Test that two cached manifests that include each other are each
+    /// processed once. As above, a regression here would recurse forever,
+    /// so the test has a time limit.
+    @Test(.timeLimit(.minutes(1)))
+    func cachedManifestsIncludingEachOtherAreSkipped() async throws {
+        let paths = try cacheTestManifests([
+            "cycleB": [
+                "included_manifests": ["cycleC"],
+                "featured_items": ["ItemB"],
+            ],
+            "cycleC": [
+                "included_manifests": ["cycleB"],
+                "featured_items": ["ItemC"],
+            ],
+        ])
+        defer { uncacheTestManifests(Array(paths.keys)) }
+
+        let primary: PlistDict = [
+            "included_manifests": ["cycleB"],
+            "featured_items": ["TopItem"],
+        ]
+        var installInfo = PlistDict()
+        try await processManifest(
+            primary,
+            forKey: "featured_items",
+            installInfo: &installInfo,
+            parentCatalogs: ["testing"],
+            manifestName: "top"
+        )
+        let featuredItems = installInfo["featured_items"] as? [String] ?? []
+        #expect(Set(featuredItems) == ["TopItem", "ItemB", "ItemC"])
+    }
+
+    /// Test that a manifest that includes the primary manifest is caught
+    /// on the first hop, without fetching the primary manifest again
+    @Test func manifestIncludingPrimaryManifestIsSkipped() async throws {
+        let paths = try cacheTestManifests([
+            "mutualB": [
+                "included_manifests": ["mutualA"],
                 "featured_items": ["ItemB"],
             ],
         ])
         defer { uncacheTestManifests(Array(paths.keys)) }
-        let manifestPath = try #require(paths["circularA"])
 
+        // mutualA is the primary manifest and is not in the cache
+        let primary: PlistDict = [
+            "included_manifests": ["mutualB"],
+            "featured_items": ["ItemA"],
+        ]
         var installInfo = PlistDict()
         try await processManifest(
-            atPath: manifestPath,
+            primary,
             forKey: "featured_items",
             installInfo: &installInfo,
-            parentCatalogs: ["testing"]
+            parentCatalogs: ["testing"],
+            manifestName: "mutualA"
         )
         let featuredItems = installInfo["featured_items"] as? [String] ?? []
         #expect(Set(featuredItems) == ["ItemA", "ItemB"])
     }
 
-    /// Test that a conditional item that includes the manifest it is in is
-    /// processed without recursing forever
-    @Test func conditionalItemIncludingItsManifestIsSkipped() async throws {
+    /// Test that a conditional item that includes the primary manifest is
+    /// skipped without fetching the primary manifest again
+    @Test func conditionalItemIncludingPrimaryManifestIsSkipped() async throws {
         let conditionalItem: PlistDict = [
             "condition": "TRUEPREDICATE",
-            "included_manifests": ["circularA"],
+            "included_manifests": ["conditionalPrimary"],
             "featured_items": ["ConditionalItem"],
         ]
-        let paths = try cacheTestManifests([
-            "circularA": [
-                "conditional_items": [conditionalItem],
-                "featured_items": ["ItemA"],
-            ],
-        ])
+        let primary: PlistDict = [
+            "conditional_items": [conditionalItem],
+            "featured_items": ["PrimaryItem"],
+        ]
         // TRUEPREDICATE doesn't need real machine facts, so provide
-        // placeholder info rather than gathering it from this machine
+        // placeholder info rather than gathering it from this machine.
+        // This suite is serialized and is the only one using PredicateInfo.
         let savedPredicateInfo = PredicateInfo.shared.info
         PredicateInfo.shared.info = ["os_vers": "test"]
-        defer {
-            PredicateInfo.shared.info = savedPredicateInfo
-            uncacheTestManifests(Array(paths.keys))
-        }
-        let manifestPath = try #require(paths["circularA"])
+        defer { PredicateInfo.shared.info = savedPredicateInfo }
 
         var installInfo = PlistDict()
         try await processManifest(
-            atPath: manifestPath,
+            primary,
             forKey: "featured_items",
             installInfo: &installInfo,
-            parentCatalogs: ["testing"]
+            parentCatalogs: ["testing"],
+            manifestName: "conditionalPrimary"
         )
         let featuredItems = installInfo["featured_items"] as? [String] ?? []
-        #expect(Set(featuredItems) == ["ItemA", "ConditionalItem"])
+        #expect(Set(featuredItems) == ["PrimaryItem", "ConditionalItem"])
     }
 
-    /// Test that nested included manifests are all processed, including a
-    /// manifest included from more than one place (not a circular reference)
+    /// Test that nested included manifests are all processed, and that a
+    /// manifest included from more than one place isn't treated as a
+    /// circular reference
     @Test func nestedIncludedManifestsAreProcessed() async throws {
         let paths = try cacheTestManifests([
-            "top": [
-                "included_manifests": ["left", "right"],
-            ],
             "left": [
                 "included_manifests": ["shared"],
                 "featured_items": ["LeftItem"],
@@ -350,14 +394,17 @@ struct manifestsTests {
             ],
         ])
         defer { uncacheTestManifests(Array(paths.keys)) }
-        let manifestPath = try #require(paths["top"])
 
+        let primary: PlistDict = [
+            "included_manifests": ["left", "right"],
+        ]
         var installInfo = PlistDict()
         try await processManifest(
-            atPath: manifestPath,
+            primary,
             forKey: "featured_items",
             installInfo: &installInfo,
-            parentCatalogs: ["testing"]
+            parentCatalogs: ["testing"],
+            manifestName: "top"
         )
         let featuredItems = installInfo["featured_items"] as? [String] ?? []
         #expect(Set(featuredItems) == ["LeftItem", "RightItem", "SharedItem"])
