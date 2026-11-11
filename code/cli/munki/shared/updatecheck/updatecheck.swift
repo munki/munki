@@ -145,7 +145,7 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
 }
 
 /// processes the SelfServeManifest if present
-func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistDict) async throws {
+func processSelfServeManifest(mainManifest: PlistDict, mainManifestName: String, installInfo: inout PlistDict) async throws {
     guard let parentCatalogs = mainManifest["catalogs"] as? [String] else {
         display.error("Primary manifest has no catalogs")
         return
@@ -158,7 +158,8 @@ func processSelfServeManifest(mainManifest: PlistDict, installInfo: inout PlistD
     _ = try await processManifest(
         mainManifest,
         forKey: "default_installs",
-        installInfo: &installInfo
+        installInfo: &installInfo,
+        manifestName: mainManifestName
     )
 
     let selfServeManifestPath = selfServiceManifestPath()
@@ -271,11 +272,13 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     var success = true
 
     var mainManifestPath = ""
+    var mainManifestName = ""
     if let localManifestPath {
         mainManifestPath = localManifestPath
+        mainManifestName = baseName(localManifestPath)
     } else {
         do {
-            mainManifestPath = try getPrimaryManifest(alternateIdentifier: clientID)
+            (mainManifestPath, mainManifestName) = try getPrimaryManifest(alternateIdentifier: clientID)
         } catch let err {
             display.error("Could not retrieve managed install primary manifest: \(err.localizedDescription)")
             return .finishedWithErrors
@@ -333,7 +336,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         _ = try await processManifest(
             mainManifest,
             forKey: "managed_installs",
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            manifestName: mainManifestName
         )
         if stopRequested() {
             return .noUpdatesAvailable
@@ -351,7 +355,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         _ = try await processManifest(
             mainManifest,
             forKey: "managed_uninstalls",
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            manifestName: mainManifestName
         )
         if stopRequested() {
             return .noUpdatesAvailable
@@ -379,7 +384,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         _ = try await processManifest(
             mainManifest,
             forKey: "managed_updates",
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            manifestName: mainManifestName
         )
         if stopRequested() {
             return .noUpdatesAvailable
@@ -398,7 +404,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         _ = try await processManifest(
             mainManifest,
             forKey: "optional_uninstalls",
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            manifestName: mainManifestName
         )
         if stopRequested() {
             return .noUpdatesAvailable
@@ -408,7 +415,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         _ = try await processManifest(
             mainManifest,
             forKey: "optional_installs",
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            manifestName: mainManifestName
         )
         if stopRequested() {
             return .noUpdatesAvailable
@@ -418,7 +426,8 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         _ = try await processManifest(
             mainManifest,
             forKey: "featured_items",
-            installInfo: &installInfo
+            installInfo: &installInfo,
+            manifestName: mainManifestName
         )
         if stopRequested() {
             return .noUpdatesAvailable
@@ -444,7 +453,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
 
         // now process any self-serve choices
         try await processSelfServeManifest(
-            mainManifest: mainManifest, installInfo: &installInfo
+            mainManifest: mainManifest, mainManifestName: mainManifestName, installInfo: &installInfo
         )
 
         // filter managed_installs to get items already installed
