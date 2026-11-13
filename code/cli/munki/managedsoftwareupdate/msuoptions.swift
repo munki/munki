@@ -62,6 +62,10 @@ struct MSUConfigOptions: ParsableArguments {
             help: "String to use as ClientIdentifier for this run only.")
     var id: String = ""
 
+    @Option(name: .long,
+            help: ArgumentHelp("Number from 1 to 100 to use as this machine's deploy_percent for every item, for this run only.", valueName: "n"))
+    var deployPercent: Int? = nil
+
     @Flag(name: .long,
           help: "Print the current configuration and exit.")
     var showConfig = false
@@ -77,6 +81,12 @@ struct MSUConfigOptions: ParsableArguments {
     @Flag(name: .long,
           help: "Clear 'bootstrapping' mode for managedsoftwareupdate and exit.")
     var clearBootstrapMode = false
+
+    func validate() throws {
+        if let deployPercent, !(1 ... 100).contains(deployPercent) {
+            throw ValidationError("--deploy-percent must be a number from 1 to 100")
+        }
+    }
 }
 
 struct MSUOtherOptions: ParsableArguments {

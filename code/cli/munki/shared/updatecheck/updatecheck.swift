@@ -253,6 +253,7 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
     autodetectRepoURLIfNeeded()
 
     await Report.shared.record(getMachineFacts(), to: "MachineInfo")
+    logDeployPercentOverride()
 
     // initialize our Munki keychain if we are using custom certs or CAs
     let dummyKeychainObj = MunkiKeychain()
@@ -544,6 +545,15 @@ func checkForUpdates(clientID: String? = nil, localManifestPath: String? = nil) 
         conditions["applications"] = nil
         conditions["catalogs"] = mainManifestCatalogsList
         Report.shared.record(conditions, to: "Conditions")
+
+        // record what deployments decided for this machine
+        let deployments = deploymentReportEntries()
+        if !deployments.isEmpty {
+            Report.shared.record(deployments, to: "Deployments")
+        }
+        if let override = currentDeployPercentOverride() {
+            Report.shared.record(["value": override.value, "source": override.source], to: "DeployPercentOverride")
+        }
 
         // Clean up some directories
         cleanUpCatalogs()

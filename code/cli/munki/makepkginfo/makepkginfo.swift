@@ -42,6 +42,9 @@ struct MakePkgInfo: ParsableCommand {
     @OptionGroup(title: "Forced/Unattended Options")
     var unattendedOptions: UnattendedInstallOptions
 
+    @OptionGroup(title: "Deployment Options")
+    var deploymentOptions: DeploymentOptions
+
     @OptionGroup(title: "Generating 'installs' Items")
     var installsOptions: GeneratingInstallsOptions
 
@@ -76,6 +79,7 @@ struct MakePkgInfo: ParsableCommand {
             dmg: dmgOptions,
             pkg: packageOptions,
             force: unattendedOptions,
+            deployment: deploymentOptions,
             installs: installsOptions,
             type: installerTypeOptions,
             other: additionalOptions,
