@@ -155,13 +155,13 @@ func setPref(_ prefName: String, _ prefValue: Any?) {
                 key, nil, BUNDLE_ID,
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost
             )
-            CFPreferencesAppSynchronize(BUNDLE_ID)
+            CFPreferencesSynchronize(BUNDLE_ID, kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         } else if let value = prefValue as CFPropertyList? {
             CFPreferencesSetValue(
                 key, value, BUNDLE_ID,
                 kCFPreferencesAnyUser, kCFPreferencesCurrentHost
             )
-            CFPreferencesAppSynchronize(BUNDLE_ID)
+            CFPreferencesSynchronize(BUNDLE_ID, kCFPreferencesAnyUser, kCFPreferencesCurrentHost)
         } else {
             // raise error about illegal value?
         }
