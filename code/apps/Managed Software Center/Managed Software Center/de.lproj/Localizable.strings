@@ -38,7 +38,7 @@
 "A restart is required after updating. Log out and update now?" = "Für das Update ist ein Neustart erforderlich. Jetzt abmelden und aktualisieren?";
 
 /* System configuration problem alert detail */
-"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Ein Problem mit der Systemkonfiguration verhindert das korrekte funktionieren der Geführten Softwareaktualisierung. Das aufgetretene Problem ist: ";
+"A systems configuration issue is preventing Managed Software Center from operating correctly. The reported issue is: " = "Ein Problem mit der Systemkonfiguration verhindert das korrekte funktionieren der Managed Software Center. Das aufgetretene Problem ist: ";
 
 /* Additional Pending Updates title */
 "Additional Pending Updates" = "Weitere anstehende Updates";
