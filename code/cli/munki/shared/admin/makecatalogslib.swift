@@ -250,6 +250,10 @@ struct CatalogsMaker {
                     pkginfo[key] = nil
                 }
             }
+            // checked even with --skip-pkg-check, which is about installer items
+            for warning in deploymentWarnings(pkginfo["deployment"]) {
+                warnings.append("WARNING: \(pkginfoIdentifier) \(warning)")
+            }
             // sanity checking
             if !options.skipPkgCheck {
                 let verified = await verify(pkginfoIdentifier, pkginfo)

@@ -31,6 +31,7 @@ struct PkginfoOptions {
     var dmg: DragNDropOptions
     var pkg: ApplePackageOptions
     var force: UnattendedInstallOptions
+    var deployment: DeploymentOptions
     var installs: GeneratingInstallsOptions
     var type: InstallerTypeOptions
     var other: AdditionalPkginfoOptions
@@ -241,6 +242,68 @@ struct UnattendedInstallOptions: ParsableArguments {
             if dateFormatter.date(from: forceInstallAfterDate) == nil {
                 throw ValidationError("Can't parse 'force_install_after_date' into a date!")
             }
+        }
+    }
+}
+
+/// Options for a pkginfo's `deployment`, which rolls a version out to a growing percentage of machines
+struct DeploymentOptions: ParsableArguments {
+    @Option(help: ArgumentHelp("Date, in local time, the deployment starts. DATE format: yyyy-mm-ddThh:mm:ssZ", valueName: "date"))
+    var deploymentStart: String? = nil
+
+    @Option(help: ArgumentHelp("Date, in local time, the deployment reaches 100%. DATE format: yyyy-mm-ddThh:mm:ssZ", valueName: "date"))
+    var deploymentEnd: String? = nil
+
+    @Option(help: ArgumentHelp("Percent of machines to add each weekday hour. Requires --deployment-start.", valueName: "n"))
+    var deploymentPercentPerHour: Int? = nil
+
+    @Option(help: ArgumentHelp("Percent of machines to add each weekday, spread across its hours. Requires --deployment-start.", valueName: "n"))
+    var deploymentPercentPerDay: Int? = nil
+
+    @Option(help: ArgumentHelp("Percent of machines to add each step. Requires --deployment-start and --deployment-step-hours.", valueName: "n"))
+    var deploymentPercentPerStep: Int? = nil
+
+    @Option(help: ArgumentHelp("Fixed percent of machines, raised by hand. --deployment-start is optional.", valueName: "n"))
+    var deploymentPercent: Int? = nil
+
+    @Option(help: ArgumentHelp("Weekday hours each step lasts. Only for --deployment-end and --deployment-percent-per-step.", valueName: "n"))
+    var deploymentStepHours: Int? = nil
+
+    /// Returns a date from an option. Only a Z date is accepted, since pkginfo dates
+    /// mean local time and any other offset would be lost.
+    private func parseDate(_ text: String, optionName: String) throws -> Date {
+        guard text.hasSuffix("Z"), let date = ISO8601DateFormatter().date(from: text) else {
+            throw ValidationError("Can't parse '\(optionName)' into a date!")
+        }
+        return date
+    }
+
+    /// Returns the value for the pkginfo's `deployment` key, or nil if no deployment options were given
+    func pkginfoValue() throws -> PlistDict? {
+        var deployment = PlistDict()
+        if let deploymentStart {
+            deployment["start"] = try parseDate(deploymentStart, optionName: "deployment-start")
+        }
+        if let deploymentEnd {
+            deployment["end"] = try parseDate(deploymentEnd, optionName: "deployment-end")
+        }
+        deployment["percent_per_hour"] = deploymentPercentPerHour
+        deployment["percent_per_day"] = deploymentPercentPerDay
+        deployment["percent_per_step"] = deploymentPercentPerStep
+        deployment["percent"] = deploymentPercent
+        deployment["step_hours"] = deploymentStepHours
+        return deployment.isEmpty ? nil : deployment
+    }
+
+    mutating func validate() throws {
+        guard let deployment = try pkginfoValue() else { return }
+        if deploymentPercent != nil, deploymentStepHours != nil {
+            throw ValidationError("--deployment-step-hours can't be used with --deployment-percent")
+        }
+        do {
+            _ = try Deployment(deployment)
+        } catch {
+            throw ValidationError("\(error)")
         }
     }
 }

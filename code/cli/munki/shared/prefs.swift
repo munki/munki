@@ -93,6 +93,7 @@ let CONFIG_KEY_NAMES = [
     "ClientResourcesFilename",
     "ClientResourceURL",
     "DaysBetweenNotifications",
+    "DeployPercentOverride",
     "DownloadRetries",
     "DownloadRetrySleepSeconds",
     // "EmulateProfileSupport", // since we don't support this any longer, no need to report its value

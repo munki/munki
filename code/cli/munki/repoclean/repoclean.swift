@@ -279,7 +279,7 @@ class RepoCleaner {
                 metakey += "receipts: \(joinedValue)\n"
             }
             metakey = String(metakey.dropLast())
-            let itemData: PlistDict = [
+            var itemData: PlistDict = [
                 "name": name,
                 "version": version,
                 "resource_identifier": pkginfoIdentifier,
@@ -289,6 +289,7 @@ class RepoCleaner {
                 "uninstallpkg_path": uninstallPkgPath,
                 "uninstallpkg_size": uninstallPkgSize,
             ]
+            itemData["deployment"] = pkginfo["deployment"]
             if !pkginfoDB.keys.contains(metakey) {
                 pkginfoDB[metakey] = PlistDict()
             }
@@ -353,8 +354,15 @@ class RepoCleaner {
             var index = 0
             for version in dbItemKeys {
                 var lineInfo = ""
-                index += 1
                 let itemList = dbItem[version] as? [PlistDict] ?? []
+                // machines not yet eligible for a version still need older ones, so an
+                // unfinished deployment is kept and doesn't count toward options.keep.
+                // A day's margin covers time zones, since a deployment's dates are local time.
+                let aDayAgo = Date().addingTimeInterval(-24 * 60 * 60)
+                let unfinishedDeployment = itemList.contains { deploymentIsUnfinished($0["deployment"], now: aDayAgo) }
+                if !unfinishedDeployment {
+                    index += 1
+                }
                 if itemList.isEmpty { continue }
                 let itemName = itemList[0]["name"] as? String ?? "UNKNOWN"
                 let itemNameWithVersion = ItemWithVersion(name: itemName, version: version)
@@ -386,7 +394,7 @@ class RepoCleaner {
                         }
                     }
                     lineInfo = "(REQUIRED by another pkginfo item)"
-                } else if index <= options.keep {
+                } else if unfinishedDeployment || index <= options.keep {
                     for item in itemList {
                         if let pkgPath = item["pkg_path"] as? String,
                            !pkgPath.isEmpty
