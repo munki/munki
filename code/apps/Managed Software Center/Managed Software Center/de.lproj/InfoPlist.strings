@@ -1,5 +1,5 @@
 /* Localized versions of Info.plist keys */
 
-"CFBundleName" = "Geführte Softwareaktualisierung";
-"CFBundleDisplayName" = "Geführte Softwareaktualisierung";
+"CFBundleName" = "Managed Software Center";
+"CFBundleDisplayName" = "Managed Software Center";
 NSHumanReadableCopyright = "Copyright © 2010-2026 The Munki Project\nhttps://github.com/munki/munki";
