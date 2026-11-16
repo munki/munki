@@ -173,43 +173,77 @@ func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     return filteredUpdates
 }
 
+/// Returns the major OS version component; ie 10, 11, 26, 27...
+func majorOSVersion() -> Int {
+    let currentOSVersion = getOSVersion() // just gets major.minor
+    let versionParts = currentOSVersion.components(separatedBy: ".")
+    return Int(versionParts[0]) ?? 0
+}
+
 /// Returns a list of dictionaries describing available Apple updates.
 func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict] {
-    let recommendedUpdates = getRecommendedUpdates() ?? []
     var appleUpdates = [PlistDict]()
-    let rawUpdates = getAvailableSoftwareUpdates()
-    for item in rawUpdates {
-        if let label = item["Label"],
-           let name = item["Title"],
-           let version = item["Version"]
-        {
-            var info = PlistDict()
-            info["Label"] = label
-            // MSC.app filters on productKey so we need to set it
-            info["productKey"] = label
-            info["name"] = name
-            info["display_name"] = name
-            info["description"] = ""
-            info["version_to_install"] = version
-            if let sizeStr = item["Size"] {
-                let size = Int(sizeStr.trimmingCharacters(in: ["K", "i", "B"])) ?? 0
-                if sizeStr.hasSuffix("KiB") {
-                    // size was KiB, convert to KB
-                    info["installer_item_size"] = Int(Double(size) * 1.024)
-                    info["installed_size"] = Int(Double(size) * 1.024)
-                } else {
-                    // size was KB
-                    info["installer_item_size"] = size
-                    info["installed_size"] = size
-                }
-            }
-            if let restartAction = item["Action"],
-               restartAction == "restart"
+    let recommendedUpdates = getRecommendedUpdates() ?? []
+    if majorOSVersion() > 15 {
+        // avoid running `softwareupdate -l` and just get info about available
+        // Apple updates from /Library/Preferences/com.apple.SoftwareUpdate.plist
+        for item in recommendedUpdates {
+            if let productKey = item["Product Key"] as? String,
+               let name = item["Display Name"] as? String,
+               let version = item["Display Version"] as? String,
+               let label = item["Identifier"] as? String
             {
-                info["RestartAction"] = "RequireRestart"
+                var info = PlistDict()
+                info["productKey"] = productKey
+                info["name"] = name
+                info["display_name"] = name
+                info["description"] = ""
+                info["version_to_install"] = version
+                info["Label"] = label
+                if let mobileSoftwareUpdate = item["MobileSoftwareUpdate"] as? Bool,
+                   mobileSoftwareUpdate == true
+                {
+                    info["RestartAction"] = "RequireRestart"
+                }
+                appleUpdates.append(info)
             }
-            info["productKey"] = getProductKey(for: info, recommendedUpdates: recommendedUpdates)
-            appleUpdates.append(info)
+        }
+    } else {
+        // for macOS 14 and earlier, retain prior behavior
+        let rawUpdates = getAvailableSoftwareUpdates()
+        for item in rawUpdates {
+            if let label = item["Label"],
+               let name = item["Title"],
+               let version = item["Version"]
+            {
+                var info = PlistDict()
+                info["Label"] = label
+                // MSC.app filters on productKey so we need to set it
+                info["productKey"] = label
+                info["name"] = name
+                info["display_name"] = name
+                info["description"] = ""
+                info["version_to_install"] = version
+                if let sizeStr = item["Size"] {
+                    let size = Int(sizeStr.trimmingCharacters(in: ["K", "i", "B"])) ?? 0
+                    if sizeStr.hasSuffix("KiB") {
+                        // size was KiB, convert to KB
+                        info["installer_item_size"] = Int(Double(size) * 1.024)
+                        info["installed_size"] = Int(Double(size) * 1.024)
+                    } else {
+                        // size was KB
+                        info["installer_item_size"] = size
+                        info["installed_size"] = size
+                    }
+                }
+                if let restartAction = item["Action"],
+                   restartAction == "restart"
+                {
+                    info["RestartAction"] = "RequireRestart"
+                }
+                info["productKey"] = getProductKey(for: info, recommendedUpdates: recommendedUpdates)
+                appleUpdates.append(info)
+            }
         }
     }
     if shouldFilterMajorOSUpdates {
