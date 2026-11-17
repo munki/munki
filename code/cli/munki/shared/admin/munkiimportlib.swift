@@ -86,13 +86,17 @@ func copyInstallerItemToRepo(_ repo: Repo, itempath: String, version: String, su
 
 /// Saves pkginfo to <munki_repo>/pkgsinfo/subdirectory
 /// Can throw PlistError.writeError, RepoError, or RepoCopyError
-func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = "") async throws -> String {
-    let pkginfoData = try plistToData(pkginfo)
+func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = "", yamlOutput: Bool = false) async throws -> String {
     let destinationPath = ("pkgsinfo" as NSString).appendingPathComponent(subdirectory)
     var pkginfoExt = adminPref("pkginfo_extension") as? String ?? ""
+    if yamlOutput && pkginfoExt.isEmpty {
+        pkginfoExt = ".yaml"
+    }
     if !pkginfoExt.isEmpty, !pkginfoExt.hasPrefix(".") {
         pkginfoExt = "." + pkginfoExt
     }
+    let useYaml = yamlOutput || isYamlFile("file\(pkginfoExt)")
+    let pkginfoData = useYaml ? try yamlToData(pkginfo) : try plistToData(pkginfo)
     var arch = getSingleArch(pkginfo)
     if !arch.isEmpty {
         arch = "-" + arch
@@ -100,7 +104,7 @@ func copyPkgInfoToRepo(_ repo: Repo, pkginfo: PlistDict, subdirectory: String = 
     guard let name = pkginfo["name"] as? String else {
         throw MunkiError("pkginfo is missing value for 'name'")
     }
-    guard let version = pkginfo["version"] as? String else {
+    guard let version = pkginfo.stringValue(forKey: "version") else {
         throw MunkiError("pkginfo is missing value for 'version'")
     }
     var pkginfoName = "\(name)-\(version)\(arch)\(pkginfoExt)"
@@ -156,7 +160,7 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
     }
 
     do {
-        catalogItems = try readPlist(fromData: allCatalog) as? [PlistDict] ?? [PlistDict]()
+        catalogItems = try readData(allCatalog) as? [PlistDict] ?? [PlistDict]()
     } catch let PlistError.readError(description) {
         throw CatalogError.decodeError(
             description: "Could not decode data from catalogs/all: \(description)")
@@ -177,7 +181,7 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
             printStderr("WARNING: pkginfo item missing 'name': \(item)")
             continue
         }
-        guard let version = item["version"] as? String else {
+        guard let version = item.stringValue(forKey: "version") else {
             printStderr("WARNING: pkginfo item missing 'version': \(item)")
             continue
         }
@@ -215,7 +219,7 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
         if let receipts = item["receipts"] as? [PlistDict] {
             for receipt in receipts {
                 if let pkgid = receipt["packageid"] as? String,
-                   let version = receipt["version"] as? String
+                   let version = receipt.stringValue(forKey: "version")
                 {
                     if !pkgidTable.keys.contains(pkgid) {
                         pkgidTable[pkgid] = IndexDict()
@@ -282,7 +286,8 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict?
     if let installerItemHash = pkginfo["installer_item_hash"] as? String,
        let matchingIndexes = catalogDB.hashes[installerItemHash]
     {
-        return catalogDB.items[matchingIndexes[0]]
+        // Return a deep copy to ensure memory independence from catalogDB
+        return independentCopy(of: catalogDB.items[matchingIndexes[0]])
     }
     // do we have an item with matching receipts?
     if let receipts = pkginfo["receipts"] as? [PlistDict] {
@@ -301,7 +306,8 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict?
                                 { $0.keys.contains("packageid") }.map
                                 { $0["packageid"] as? String ?? "" }
                             if Set(testPkgIds) == Set(pkgids) {
-                                return testPkgInfo
+                                // Return a deep copy to ensure memory independence from catalogDB
+                                return independentCopy(of: testPkgInfo)
                             }
                         }
                     }
@@ -324,7 +330,8 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict?
             versions.sort { $0 > $1 }
             let highestVersion = versions[0].value
             if let indexes = possibleMatches[highestVersion] {
-                return catalogDB.items[indexes[0]]
+                // Return a deep copy to ensure memory independence from catalogDB
+                return independentCopy(of: catalogDB.items[indexes[0]])
             }
         }
     }
@@ -338,7 +345,8 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict?
             versions.sort { $0 > $1 }
             let highestVersion = versions[0].value
             if let indexes = possibleMatches[highestVersion] {
-                return catalogDB.items[indexes[0]]
+                // Return a deep copy to ensure memory independence from catalogDB
+                return independentCopy(of: catalogDB.items[indexes[0]])
             }
         }
     }
@@ -721,7 +729,7 @@ func editPkgInfoInExternalEditor(_ pkginfo: PlistDict) -> PlistDict {
         }
         // read edited pkginfo
         do {
-            if let editedPkginfo = try readPlist(fromFile: filePath) as? PlistDict {
+            if let editedPkginfo = try detectFileContent(fromFile: filePath) as? PlistDict {
                 return editedPkginfo
             } else {
                 throw PlistError.readError(description: "Plist has bad format")
