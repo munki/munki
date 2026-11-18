@@ -325,7 +325,8 @@ struct CatalogsMaker {
 
         // write the new catalogs
         for key in catalogs.keys {
-            if !(catalogs[key]?.isEmpty ?? true) {
+            // always write the "all" catalog; all others only if they are not empty
+            if !(catalogs[key]?.isEmpty ?? true) || key == "all" {
                 let catalogIdentifier = "catalogs/" + key
                 do {
                     if let value = catalogs[key] {

@@ -162,8 +162,9 @@ extension GenericItem {
         if my["status"] as? String ?? "" == "will-be-removed" {
             my["display_version_escaped_and_size"] = ""
         } else {
+            let intSize = my["installed_size"] as? Int ?? 0
             let size = my["size"] as? String ?? ""
-            if size.isEmpty {
+            if intSize == 0 || size.isEmpty {
                 my["display_version_escaped_and_size"] = my["display_version_escaped"] as? String ?? ""
             } else {
                 my["display_version_escaped_and_size"] = (my["display_version_escaped"] as? String ?? "") + " • " + size

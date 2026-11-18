@@ -40,9 +40,14 @@ struct MunkiVersion: Equatable, Comparable {
         return components.joined(separator: ".")
     }
 
+    /// number of dot-separated components in a version string
+    private static func componentCount(_ version: String) -> Int {
+        return version.split(separator: ".", omittingEmptySubsequences: true).count
+    }
+
     /// compares two version strings and returns a ComparisonResult
     static func compare(_ lhs: String, _ rhs: String) -> ComparisonResult {
-        let maxCount = max(lhs.count, rhs.count)
+        let maxCount = max(componentCount(lhs), componentCount(rhs))
         let a = pad(lhs, count: maxCount)
         let b = pad(rhs, count: maxCount)
         return a.compare(b, options: .numeric)

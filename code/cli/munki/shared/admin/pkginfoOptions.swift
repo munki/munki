@@ -235,7 +235,7 @@ struct UnattendedInstallOptions: ParsableArguments {
     var forceInstallAfterDate: String? = nil
 
     mutating func validate() throws {
-        // validate options with version strings actually start with a digit
+        // make sure the date string can be parsed
         if let forceInstallAfterDate {
             let dateFormatter = ISO8601DateFormatter()
             if dateFormatter.date(from: forceInstallAfterDate) == nil {

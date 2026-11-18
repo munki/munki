@@ -45,10 +45,13 @@ struct MunkiVersionTests {
             ("1.0", "v1.0v1"),
             ("1.0.1", "v1.0"),
             ("1.0.0", "1.0.0rc6"),
-            ("1.0.0-rc6", "1.0.0"),
+            ("1.0.0", "1.0.0-rc6"),
             ("8.0 (build 6300)", "8.0.1 (build 6301)"),
             ("8.0 (build 6300)", "8.0 (build 6301)"),
-            ("1.1-9", "1.1-10")
+            ("1.1-9", "1.1-10"),
+            ("1.0.0.0.1", "1.0.1"),
+            ("9", "10.2.1"),
+            ("10.2", "10.2.1")
         ]
         for (versionA, versionB) in versionPairs {
             #expect(MunkiVersion(versionA) < MunkiVersion(versionB))
