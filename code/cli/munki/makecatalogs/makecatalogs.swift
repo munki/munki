@@ -41,7 +41,7 @@ struct MakeCatalogs: AsyncParsableCommand {
     @Flag(name: .customLong("check-hashes"),
           help: "Check installer item hashes against the actual hashes of installers specified in installer item locations.")
     var checkHashes = false
-    
+
     @Option(name: [.customLong("repo-url"), .customLong("repo_url")],
             help: "Optional repo URL that takes precedence over the default repo_url specified via preferences.")
     var repoURL = ""
