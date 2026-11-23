@@ -428,19 +428,17 @@ func doRestart(shutdown: Bool = false) {
         } else if !performAuthRestart() {
             doAuthorizedOrNormalRestart()
         }
+    } else if DisplayOptions.munkistatusoutput {
+        // someone is logged in and we're using Managed Software Center.
+        // We need to notify the active user that a restart is required.
+        // We actually should almost never get here; generally Munki knows
+        // a restart is needed before even starting the updates and forces
+        // a logout before applying the updates
+        display.info("Notifying currently logged-in user to restart.")
+        munkiStatusActivate()
+        munkiStatusRestartAlert()
     } else {
-        if DisplayOptions.munkistatusoutput {
-            // someone is logged in and we're using Managed Software Center.
-            // We need to notify the active user that a restart is required.
-            // We actually should almost never get here; generally Munki knows
-            // a restart is needed before even starting the updates and forces
-            // a logout before applying the updates
-            display.info("Notifying currently logged-in user to restart.")
-            munkiStatusActivate()
-            munkiStatusRestartAlert()
-        } else {
-            print("Please restart immediately.")
-        }
+        print("Please restart immediately.")
     }
 }
 

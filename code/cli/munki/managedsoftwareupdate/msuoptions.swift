@@ -46,10 +46,8 @@ struct MSUCommonOptions: ParsableArguments {
     var force = false
 
     mutating func validate() throws {
-        if force {
-            if !installOnly {
-                throw ValidationError("--force only valid with --installonly")
-            }
+        if force, !installOnly {
+            throw ValidationError("--force only valid with --installonly")
         }
         if installOnly, checkOnly {
             throw ValidationError("--installonly and --checkonly are mutually exclusive")
