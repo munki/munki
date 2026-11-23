@@ -106,12 +106,10 @@ func getAvailableSoftwareUpdates() -> [[String: String]] {
     while index < lines.count {
         let currentLine = lines[index]
         index += 1
-        if currentLine.hasPrefix("* Label") {
-            if index < lines.count {
-                let nextLine = lines[index]
-                index += 1
-                updates.append(parseSULines(currentLine, nextLine))
-            }
+        if currentLine.hasPrefix("* Label"), index < lines.count {
+            let nextLine = lines[index]
+            index += 1
+            updates.append(parseSULines(currentLine, nextLine))
         }
     }
     return updates
@@ -258,7 +256,8 @@ func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict
 func findAndRecordAvailableAppleUpdates(shouldFilterMajorOSUpdates: Bool = false) -> Int {
     let appleUpdatesFilePath = managedInstallsDir(subpath: "AppleUpdates.plist")
     let appleUpdates = getAppleUpdatesList(
-        shouldFilterMajorOSUpdates: shouldFilterMajorOSUpdates)
+        shouldFilterMajorOSUpdates: shouldFilterMajorOSUpdates
+    )
     if appleUpdates.isEmpty {
         try? FileManager.default.removeItem(atPath: appleUpdatesFilePath)
         return 0
@@ -331,4 +330,29 @@ func displayAppleUpdateInfo() {
         }
     }
     display.info("(Apple updates must be manually installed with Apple's tools)")
+}
+
+/// Uses a Darwin notification to trigger a softwareupdate background check
+/// Optionally clears some preferences to trigger a scan (and therefore a more thorough check)
+func triggerSUBackgroundCheck(forceScan: Bool = false) {
+    if forceScan {
+        // clear the preferences that track the last check dates
+        for pref in ["LastBackgroundSuccessfulDate", "LastSuccessfulBackgroundMSUScanDate"] {
+            CFPreferencesSetValue(
+                pref as CFString,
+                nil,
+                "com.apple.SoftwareUpdate" as CFString,
+                kCFPreferencesAnyUser,
+                kCFPreferencesCurrentHost
+            )
+        }
+        CFPreferencesSynchronize(
+            "com.apple.SoftwareUpdate" as CFString,
+            kCFPreferencesAnyUser,
+            kCFPreferencesCurrentHost
+        )
+    }
+    let nc = CFNotificationCenterGetDarwinNotifyCenter()
+    let notification = CFNotificationName("com.apple.SoftwareUpdate.TriggerBackgroundCheck" as CFString)
+    CFNotificationCenterPostNotification(nc, notification, nil, nil, true)
 }
