@@ -180,13 +180,11 @@ func setPref(_ prefName: String, _ prefValue: Any?) {
 func pref(_ prefName: String) -> Any? {
     var prefValue: Any?
     prefValue = CFPreferencesCopyAppValue(prefName as CFString, BUNDLE_ID)
-    if prefValue == nil {
-        if let defaultValue = DEFAULT_PREFS[prefName] {
-            prefValue = defaultValue
-            // we're using a default value. We'll write it out to
-            // /Library/Preferences/<BUNDLE_ID>.plist for admin discoverability
-            setPref(prefName, defaultValue)
-        }
+    if prefValue == nil, let defaultValue = DEFAULT_PREFS[prefName] {
+        prefValue = defaultValue
+        // we're using a default value. We'll write it out to
+        // /Library/Preferences/<BUNDLE_ID>.plist for admin discoverability
+        setPref(prefName, defaultValue)
     }
     // prior Python implementation converted dates to strings; we won't do that
     /* if isinstance(pref_value, NSDate):
