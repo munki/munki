@@ -332,8 +332,8 @@ class RepoCleaner {
             }
             let printThis = options.showAll || dbItem.keys.count > options.keep
             var dbItemKeys = Array(dbItem.keys)
-            guard !dbItemKeys.isEmpty else { continue }
-            guard let firstItemList = dbItem[dbItemKeys[0]] as? [PlistDict],
+            guard !dbItemKeys.isEmpty,
+                  let firstItemList = dbItem[dbItemKeys[0]] as? [PlistDict],
                   !firstItemList.isEmpty,
                   let itemName = firstItemList[0]["name"] as? String
             else {
@@ -355,7 +355,9 @@ class RepoCleaner {
                 var lineInfo = ""
                 index += 1
                 let itemList = dbItem[version] as? [PlistDict] ?? []
-                if itemList.isEmpty { continue }
+                if itemList.isEmpty {
+                    continue
+                }
                 let itemName = itemList[0]["name"] as? String ?? "UNKNOWN"
                 let itemNameWithVersion = ItemWithVersion(name: itemName, version: version)
                 if manifestItemsWithVersions.contains(itemNameWithVersion) {
