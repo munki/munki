@@ -102,7 +102,7 @@ import Foundation
 
 // MARK: File repo class
 
-// Implementation of the core file repo
+/// Implementation of the core file repo
 class FileRepo: Repo {
     // MARK: instance variables
 

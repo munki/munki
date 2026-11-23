@@ -37,8 +37,7 @@ private func loadRepoPlugin(at path: String) throws -> RepoPluginBuilder {
         if sym != nil {
             let f: InitFunction = unsafeBitCast(sym, to: InitFunction.self)
             let pluginPointer = f()
-            let builder = Unmanaged<RepoPluginBuilder>.fromOpaque(pluginPointer).takeRetainedValue()
-            return builder
+            return Unmanaged<RepoPluginBuilder>.fromOpaque(pluginPointer).takeRetainedValue()
         } else {
             throw MunkiError("Could not find symbol \(symbolName) in lib: \(path)")
         }
