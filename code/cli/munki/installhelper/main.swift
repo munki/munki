@@ -193,10 +193,7 @@ enum LaunchAgentType {
 /// agents can actually have multiple types, but Munki itself only has normal user agents ("Aqua") and
 /// loginwindow agents, so this implementation is a bit simplistic
 func getLaunchAgentType(_ launchAgentPath: String) -> LaunchAgentType {
-    guard let agentContent = try? readPlist(fromFile: launchAgentPath) as? PlistDict else {
-        return .invalid
-    }
-    guard agentContent["Label"] is String else {
+    guard let agentContent = try? readPlist(fromFile: launchAgentPath) as? PlistDict, agentContent["Label"] is String else {
         return .invalid
     }
     if let sessionType = agentContent["LimitLoadToSessionType"] as? String,
@@ -245,10 +242,8 @@ func getLoggedInUIDs() -> [UInt32] {
     var uidList: [UInt32] = []
     let procList = UNIXProcessList()
     for proc in procList {
-        if proc.command == "loginwindow" {
-            if proc.uid != 0 {
-                uidList.append(proc.uid)
-            }
+        if proc.command == "loginwindow", proc.uid != 0 {
+            uidList.append(proc.uid)
         }
     }
     return uidList
@@ -275,11 +270,11 @@ func reloadUserLaunchAgents(group: String) {
         // second, load jobs from the munki launch agent plists
         let APPUSAGE_PLIST = "/Library/LaunchAgents/\(APPUSAGE_AGENT).plist"
         var plists = getMunkiUserLaunchAgentPlists()
-        if group == "appusage" {
-            // only load APPUSAGE_PLIST
-            if plists.contains(APPUSAGE_PLIST) {
-                plists = [APPUSAGE_PLIST]
-            }
+        if group == "appusage",
+           // only load APPUSAGE_PLIST
+           plists.contains(APPUSAGE_PLIST)
+        {
+            plists = [APPUSAGE_PLIST]
         }
         if group == "launchd" {
             // load all agent plists _except_ APPUSAGE_PLIST
@@ -353,11 +348,11 @@ func reloadLaunchDaemons(group: String) {
     // second, load jobs from the munki launch daemon plists
     let APPUSAGE_PLIST = "/Library/LaunchDaemons/\(APPUSAGE_DAEMON).plist"
     var plists = getMunkiLaunchDaemonPlists()
-    if group == "appusage" {
-        // only load APPUSAGE_PLIST
-        if plists.contains(APPUSAGE_PLIST) {
-            plists = [APPUSAGE_PLIST]
-        }
+    if group == "appusage",
+       // only load APPUSAGE_PLIST
+       plists.contains(APPUSAGE_PLIST)
+    {
+        plists = [APPUSAGE_PLIST]
     }
     if group == "launchd" {
         // load all daemon plists _except_ APPUSAGE_PLIST and our installhelper plists
