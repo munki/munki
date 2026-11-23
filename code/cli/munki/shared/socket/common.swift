@@ -133,8 +133,7 @@ class UNIXDomainSocket {
         if bytesRead <= 0 {
             throw UNIXDomainSocketError.readError
         }
-        let data = Data(buffer[..<bytesRead])
-        return data
+        return Data(buffer[..<bytesRead])
     }
 
     func readString(maxsize: Int = 1024, timeout: Int = 0) throws -> String {
