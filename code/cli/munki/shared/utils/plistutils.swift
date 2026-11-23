@@ -39,12 +39,11 @@ extension PlistError: LocalizedError {
 func deserialize(_ data: Data?) throws -> Any? {
     if data != nil {
         do {
-            let dataObject = try PropertyListSerialization.propertyList(
+            return try PropertyListSerialization.propertyList(
                 from: data!,
                 options: PropertyListSerialization.MutabilityOptions.mutableContainers,
                 format: nil
             )
-            return dataObject
         } catch {
             throw PlistError.readError(description: "\(error)")
         }
@@ -70,12 +69,11 @@ func readPlist(fromString string: String) throws -> Any? {
 /// Attempt to convert a PropertyList object into a data representation
 func serialize(_ plist: Any) throws -> Data {
     do {
-        let plistData = try PropertyListSerialization.data(
+        return try PropertyListSerialization.data(
             fromPropertyList: plist,
             format: PropertyListSerialization.PropertyListFormat.xml,
             options: 0
         )
-        return plistData
     } catch {
         throw PlistError.writeError(description: "\(error)")
     }
