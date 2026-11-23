@@ -47,17 +47,17 @@ func pythonScriptRunning(_ scriptName: String) -> UNIXProcessInfoWithPath? {
             continue
         }
         let executable = (item.path as NSString).lastPathComponent
-        if executable.contains("python") || executable.contains("Python") {
-            // get all the args for this pid
-            if var args = executableAndArgsForPid(item.pid), args.count > 2 {
-                // first value is executable path, drop it
-                // next value is command, drop it
-                args = Array(args.dropFirst(2))
-                // drop leading args that start with a hyphen
-                args = Array(args.drop(while: { $0.hasPrefix("-") }))
-                if args.count > 0, args[0].hasSuffix(scriptName) {
-                    return item
-                }
+        if executable.contains("python") || executable.contains("Python"),
+           // get all the args for this pid
+           var args = executableAndArgsForPid(item.pid), args.count > 2
+        {
+            // first value is executable path, drop it
+            // next value is command, drop it
+            args = Array(args.dropFirst(2))
+            // drop leading args that start with a hyphen
+            args = Array(args.drop(while: { $0.hasPrefix("-") }))
+            if args.count > 0, args[0].hasSuffix(scriptName) {
+                return item
             }
         }
     }
