@@ -18,7 +18,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-/// A helper tool for forced logouts to allow munki to force install items by a certain deadline.
+// A helper tool for forced logouts to allow munki to force install items by a certain deadline.
 
 import AppKit
 import Foundation
@@ -48,10 +48,7 @@ func earliestForceInstallDate() -> Date? {
 
     for (plistName, keyToCheck) in installinfoTypes {
         let plistPath = managedInstallsDir(subpath: plistName)
-        guard let installInfo = try? readPlist(fromFile: installinfopath) as? PlistDict else {
-            continue
-        }
-        guard let installItems = installInfo[keyToCheck] as? [PlistDict] else {
+        guard let installInfo = try? readPlist(fromFile: installinfopath) as? PlistDict, let installItems = installInfo[keyToCheck] as? [PlistDict] else {
             continue
         }
         for install in installItems {
@@ -200,5 +197,5 @@ func main() -> Int32 {
     return 0
 }
 
-/// run it!
+// run it!
 exit(main())
