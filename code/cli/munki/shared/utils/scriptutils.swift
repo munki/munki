@@ -216,22 +216,26 @@ func verifyFileOnlyWritableByMunkiAndRoot(_ path: String) throws {
         attributes = try filemanager.attributesOfItem(atPath: path) as NSDictionary
     } catch {
         throw ExternalScriptError.statusError(
-            detail: "\(path): could not get filesystem attributes")
+            detail: "\(path): could not get filesystem attributes"
+        )
     }
     let owner = attributes.fileOwnerAccountName()
     let group = attributes.fileGroupOwnerAccountName()
     let mode = attributes.filePosixPermissions()
     if !["root", thisProcessOwner].contains(owner) {
         throw ExternalScriptError.insecurePermissions(
-            detail: "\(path) owner is not root or owner of munki process!")
+            detail: "\(path) owner is not root or owner of munki process!"
+        )
     }
     if !["admin", "wheel"].contains(group) {
         throw ExternalScriptError.insecurePermissions(
-            detail: "\(path) group is not in wheel or admin!")
+            detail: "\(path) group is not in wheel or admin!"
+        )
     }
     if UInt16(mode) & S_IWOTH != 0 {
         throw ExternalScriptError.insecurePermissions(
-            detail: "\(path) is world writable!")
+            detail: "\(path) is world writable!"
+        )
     }
 }
 
@@ -239,7 +243,8 @@ func verifyFileOnlyWritableByMunkiAndRoot(_ path: String) throws {
 func verifyExecutable(_ path: String) throws {
     if !FileManager.default.isExecutableFile(atPath: path) {
         throw ExternalScriptError.statusError(
-            detail: "\(path) is not executable")
+            detail: "\(path) is not executable"
+        )
     }
 }
 
@@ -253,17 +258,20 @@ func runExternalScript(_ scriptPath: String, arguments: [String] = [], allowInse
             try verifyFileOnlyWritableByMunkiAndRoot(scriptPath)
         } catch let ExternalScriptError.insecurePermissions(detail) {
             throw ProcessError.error(
-                description: "Skipping execution: \(detail)")
+                description: "Skipping execution: \(detail)"
+            )
         } catch let ExternalScriptError.statusError(detail) {
             throw ProcessError.error(
-                description: "Skipping execution: \(detail)")
+                description: "Skipping execution: \(detail)"
+            )
         }
     }
     do {
         try verifyExecutable(scriptPath)
     } catch let ExternalScriptError.statusError(detail) {
         throw ProcessError.error(
-            description: "Skipping execution: \(detail)")
+            description: "Skipping execution: \(detail)"
+        )
     }
 
     return try await runCliAsync(scriptPath, arguments: arguments, timeout: timeout)
