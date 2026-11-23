@@ -126,13 +126,13 @@ class NotificationHandler: NSObject {
             // use the base filename
             bundleID = (appPath as NSString).lastPathComponent
         }
-        if !appPath.isEmpty {
-            // try to get the version from the bundle's plist
-            if let appInfoPlist = NSDictionary(
-                contentsOfFile: (appPath as NSString).appendingPathComponent("Contents/Info.plist")) as? PlistDict
-            {
-                appVersion = appInfoPlist["CFBundleShortVersionString"] as? String ?? appInfoPlist["CFBundleVersion"] as? String ?? "0"
-            }
+        if !appPath.isEmpty,
+           // try to get the version from the bundle's plist
+           let appInfoPlist = NSDictionary(
+               contentsOfFile: (appPath as NSString).appendingPathComponent("Contents/Info.plist")
+           ) as? PlistDict
+        {
+            appVersion = appInfoPlist["CFBundleShortVersionString"] as? String ?? appInfoPlist["CFBundleVersion"] as? String ?? "0"
         }
         return ["bundle_id": bundleID,
                 "path": appPath,
@@ -142,7 +142,7 @@ class NotificationHandler: NSObject {
     func process(event: String, notification: NSNotification) {
         if let appObject = notification.userInfo?["NSWorkspaceApplicationKey"] as? NSRunningApplication {
             let appDict = getInfoDictForApp(appObject)
-            let _ = try? usage.process(
+            _ = try? usage.process(
                 ["event": event,
                  "app_dict": appDict]
             )
@@ -170,7 +170,7 @@ class NotificationHandler: NSObject {
     /// Handle com.googlecode.munki.managedsoftwareupdate.installrequest
     @objc func requestedItemForInstall(_ notification: NSNotification) {
         if let installInfo = notification.userInfo as? [String: String] {
-            let _ = try? usage.process(
+            _ = try? usage.process(
                 ["event": installInfo["event"] ?? "unknown",
                  "name": installInfo["name"] ?? "unknown",
                  "version": installInfo["version"] ?? "unknown"]
@@ -195,5 +195,5 @@ func main() {
     }
 }
 
-/// run it!
+// run it!
 main()
