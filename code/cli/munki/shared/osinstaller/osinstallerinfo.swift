@@ -25,7 +25,8 @@ import Foundation
 /// Check to see if path appears to be a macOS Install app
 func pathIsInstallMacOSApp(_ path: String) -> Bool {
     let startosinstallPath = (path as NSString).appendingPathComponent(
-        "Contents/Resources/startosinstall")
+        "Contents/Resources/startosinstall"
+    )
     return FileManager.default.fileExists(atPath: startosinstallPath)
 }
 
