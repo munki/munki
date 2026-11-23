@@ -23,12 +23,12 @@ import Foundation
 class MunkiError: Error, CustomStringConvertible {
     private let message: String
 
-    // Creates a new error with the given message.
-    public init(_ message: String) {
+    /// Creates a new error with the given message.
+    init(_ message: String) {
         self.message = message
     }
 
-    public var description: String {
+    var description: String {
         return message
     }
 }
