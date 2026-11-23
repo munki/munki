@@ -208,10 +208,10 @@ func processInstall(
         installInfo["managed_installs"] = managedInstalls
     }
 
-    /// True if the named dependency was recorded as deferred on a low data
-    /// connection (rather than genuinely unavailable). Used to decide whether a
-    /// parent blocked only by low-data-deferred requirements should itself be
-    /// presented as deferred/overridable.
+    // True if the named dependency was recorded as deferred on a low data
+    // connection (rather than genuinely unavailable). Used to decide whether a
+    // parent blocked only by low-data-deferred requirements should itself be
+    // presented as deferred/overridable.
     func dependencyWasLowDataDeferred(_ depItem: String) -> Bool {
         let depName = (depItem as NSString).lastPathComponent
         let (depNameNoVersion, _) = nameAndVersion(depName, onlySplitOnHyphens: true)
@@ -683,7 +683,9 @@ func processManagedUpdate(
         manifestItemName,
         installInfo: installInfo,
         sections: ["managed_updates", "processed_installs", "processed_uninstalls"]
-    ) { return }
+    ) {
+        return
+    }
 
     guard let pkginfo = await getItemDetail(manifestItemName, catalogList: catalogList) else {
         display.warning("Could not process item \(manifestItemName) for update. No pkginfo found in catalogs: \(catalogList) ")
@@ -813,20 +815,18 @@ func processOptionalInstall(
                 catalogList: catalogList,
                 skipMinimumOSCheck: true,
                 suppressWarnings: true
-            ) {
-                if !NSDictionary(dictionary: anotherPkgInfo).isEqual(to: NSDictionary(dictionary: pkginfo)) {
-                    // we found a different item. Replace the one we found
-                    // previously with this one.
-                    pkginfo = anotherPkgInfo
-                    let pkginfoName = pkginfo["name"] as? String ?? "<unknown>"
-                    let pkginfoVersion = pkginfo["version"] as? String ?? "<unknown>"
-                    display.debug1("Found \(pkginfoName), version \(pkginfoVersion) that requires a higher os version")
-                    // insert a note about the OS version requirement
-                    if let minimumOSVersion = pkginfo["minimum_os_version"] {
-                        processedItem["note"] = "Requires macOS version \(minimumOSVersion)."
-                    }
-                    processedItem["update_available"] = true
+            ), !NSDictionary(dictionary: anotherPkgInfo).isEqual(to: NSDictionary(dictionary: pkginfo)) {
+                // we found a different item. Replace the one we found
+                // previously with this one.
+                pkginfo = anotherPkgInfo
+                let pkginfoName = pkginfo["name"] as? String ?? "<unknown>"
+                let pkginfoVersion = pkginfo["version"] as? String ?? "<unknown>"
+                display.debug1("Found \(pkginfoName), version \(pkginfoVersion) that requires a higher os version")
+                // insert a note about the OS version requirement
+                if let minimumOSVersion = pkginfo["minimum_os_version"] {
+                    processedItem["note"] = "Requires macOS version \(minimumOSVersion)."
                 }
+                processedItem["update_available"] = true
             }
         }
     }
@@ -1023,7 +1023,7 @@ func processRemoval(
     installInfo: inout PlistDict
 ) async -> Bool {
     func getReceiptsToRemove(_ item: PlistDict) async -> [String] {
-        /// Returns a list of (installed/present) receipts to remove for item
+        // Returns a list of (installed/present) receipts to remove for item
         if let name = item["name"] as? String {
             let pkgdata = await analyzeInstalledPkgs()
             if let receiptsForName = pkgdata["receipts_for_name"] as? [String: [String]] {
@@ -1034,7 +1034,7 @@ func processRemoval(
     }
 
     func appendToProcessedRemovals(_ item: PlistDict) {
-        /// helper function
+        // helper function
         var removals = installInfo["removals"] as? [PlistDict] ?? []
         removals.append(item)
         installInfo["removals"] = removals

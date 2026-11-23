@@ -109,7 +109,8 @@ func processLocalOnlyManifest(catalogList: [String], installInfo: inout PlistDic
     }
 
     let localOnlyManifestPath = managedInstallsDir(
-        subpath: "manifests/" + localOnlyManifestName)
+        subpath: "manifests/" + localOnlyManifestName
+    )
     if !pathExists(localOnlyManifestPath) {
         display.debug1("LocalOnlyManifest \(localOnlyManifestName) is defined but is not present. Skipping.")
         return

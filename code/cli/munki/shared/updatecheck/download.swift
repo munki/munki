@@ -198,7 +198,7 @@ func cleanUpIconsDir(keepList: [String] = []) {
 }
 
 func getIconHashes() -> [String: String] {
-    /// Attempts to download the dictionary of compiled icon hashes
+    // Attempts to download the dictionary of compiled icon hashes
     let iconsHashesPlist = managedInstallsDir(subpath: "icons/\(ICON_HASHES_PLIST_NAME)")
     do {
         _ = try fetchMunkiResource(
@@ -282,7 +282,7 @@ func downloadIcons(_ itemList: [PlistDict]) {
     cleanUpIconsDir(keepList: iconsToKeep)
 }
 
-/// Download client customization resources (if any).
+// Download client customization resources (if any).
 
 /// Munki's preferences can specify an explicit name under ClientResourcesFilename
 /// if that doesn't exist, use the primary manifest name as the filename.
@@ -330,14 +330,14 @@ func downloadClientResources() {
             display.debug1("Could not retrieve client resources with name \(filename): \(error.localizedDescription)")
         }
     }
-    if downloadedResourcePath.isEmpty {
-        // make sure we don't have an old custom.zip hanging around
-        if pathExists(resourceArchivePath) {
-            do {
-                try FileManager.default.removeItem(atPath: resourceArchivePath)
-            } catch {
-                display.error("Could not remove stale \(resourceArchivePath): \(error.localizedDescription)")
-            }
+    if downloadedResourcePath.isEmpty,
+       // make sure we don't have an old custom.zip hanging around
+       pathExists(resourceArchivePath)
+    {
+        do {
+            try FileManager.default.removeItem(atPath: resourceArchivePath)
+        } catch {
+            display.error("Could not remove stale \(resourceArchivePath): \(error.localizedDescription)")
         }
     }
 }

@@ -200,7 +200,8 @@ func getAllItemsWithName(_ name: String, catalogList: [String]) -> [PlistDict] {
                         // PlistDict (aka [String: Any] is not hashable
                         let itemEncoded = try plistToData(item)
                         let alreadyAddedItem = try itemList.contains(
-                            where: { try plistToData($0) == itemEncoded })
+                            where: { try plistToData($0) == itemEncoded }
+                        )
                         if !alreadyAddedItem {
                             let version = item["version"] as? String ?? "<unknown>"
                             display.debug1("Adding item \(itemName), version \(version) from catalog \(catalogName)...")
@@ -300,9 +301,9 @@ func lookForUpdatesForName(_ manifestname: String,
                            version: String,
                            catalogList: [String]) -> [String]
 {
-    /// Looks for updates for a specific version of an item. Since these
-    /// can appear in manifests and pkginfo as item-version or item--version
-    /// we have to search twice.
+    // Looks for updates for a specific version of an item. Since these
+    // can appear in manifests and pkginfo as item-version or item--version
+    // we have to search twice.
 
     let nameAndVersion = "\(manifestname)-\(version)"
     let altNameAndVersion = "\(manifestname)--\(version)"
@@ -488,9 +489,9 @@ func getItemDetail(
     var rejectedItems = [String]()
     let machine = await getMachineFacts()
 
-    /// Returns a boolean to indicate if the current Munki version is high
-    /// enough to install this item. If not, also adds the failure reason to
-    /// the rejected_items list.
+    // Returns a boolean to indicate if the current Munki version is high
+    // enough to install this item. If not, also adds the failure reason to
+    // the rejected_items list.
     func munkiVersionOK(_ item: PlistDict) -> Bool {
         guard let name = item["name"] as? String,
               let version = item["version"] as? String,
@@ -512,10 +513,10 @@ func getItemDetail(
         return true
     }
 
-    /// Returns a boolean to indicate if the item is ok to install under
-    /// the current OS. If not, also adds the failure reason to the
-    /// rejected_items list. If skipMinimumOSCheck is true, skips the minimum os
-    /// version check.
+    // Returns a boolean to indicate if the item is ok to install under
+    // the current OS. If not, also adds the failure reason to the
+    // rejected_items list. If skipMinimumOSCheck is true, skips the minimum os
+    // version check.
     func osVersionOK(_ item: PlistDict) -> Bool {
         guard let name = item["name"] as? String,
               let version = item["version"] as? String,
@@ -554,9 +555,9 @@ func getItemDetail(
         return true
     }
 
-    /// Returns a boolean to indicate if the item is ok to install under
-    /// the current CPU architecture. If not, also adds the failure reason to
-    /// the rejected_items list.
+    // Returns a boolean to indicate if the item is ok to install under
+    // the current CPU architecture. If not, also adds the failure reason to
+    // the rejected_items list.
     func cpuArchOK(_ item: PlistDict) -> Bool {
         guard let name = item["name"] as? String,
               let version = item["version"] as? String,
@@ -589,9 +590,9 @@ func getItemDetail(
         return true
     }
 
-    /// Returns a boolean to indicate if an installable_condition predicate
-    /// in the current item passes. If not, also adds the failure reason to
-    /// the rejected_items list.
+    // Returns a boolean to indicate if an installable_condition predicate
+    // in the current item passes. If not, also adds the failure reason to
+    // the rejected_items list.
     func installableConditionOK(_ item: PlistDict) async -> Bool {
         guard let name = item["name"] as? String,
               let version = item["version"] as? String
