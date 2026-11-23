@@ -149,20 +149,24 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
         allCatalog = try await repo.get("catalogs/all")
     } catch let error as MunkiError {
         throw CatalogError.readError(
-            description: "Could not read 'all' catalog: \(error.description)")
+            description: "Could not read 'all' catalog: \(error.description)"
+        )
     } catch {
         throw CatalogError.readError(
-            description: "Unexpected error while attempting to read 'all' catalog: \(error)")
+            description: "Unexpected error while attempting to read 'all' catalog: \(error)"
+        )
     }
 
     do {
         catalogItems = try readPlist(fromData: allCatalog) as? [PlistDict] ?? [PlistDict]()
     } catch let PlistError.readError(description) {
         throw CatalogError.decodeError(
-            description: "Could not decode data from catalogs/all: \(description)")
+            description: "Could not decode data from catalogs/all: \(description)"
+        )
     } catch {
         throw CatalogError.decodeError(
-            description: "Unexpected error when decoding data from catalogs/all: \(error)")
+            description: "Unexpected error when decoding data from catalogs/all: \(error)"
+        )
     }
 
     var pkgidTable = [String: IndexDict]()
@@ -248,15 +252,13 @@ func makeCatalogDB(_ repo: Repo) async throws -> CatalogDatabase {
         }
     }
 
-    let catalogDB = CatalogDatabase(
+    return CatalogDatabase(
         hashes: hashTable,
         receipts: pkgidTable,
         applications: appTable,
         installerItems: installerItemTable,
         items: catalogItems
     )
-
-    return catalogDB
 }
 
 /// Looks through repo catalogs looking for matching pkginfo
@@ -287,22 +289,20 @@ func findMatchingPkginfo(_ repo: Repo, _ pkginfo: PlistDict) async -> PlistDict?
     // do we have an item with matching receipts?
     if let receipts = pkginfo["receipts"] as? [PlistDict] {
         let pkgids = receipts.filter { $0.keys.contains("packageid") }.map { $0["packageid"] as? String ?? "" }
-        if !pkgids.isEmpty {
-            if let possibleMatches = catalogDB.receipts[pkgids[0]] {
-                var versions = possibleMatches.keys.map { MunkiVersion($0) }
-                // sort the versions descending
-                versions.sort { $0 > $1 }
-                for version in versions {
-                    guard let testPkgIndexes = possibleMatches[version.value] else { continue }
-                    for index in testPkgIndexes {
-                        let testPkgInfo = catalogDB.items[index]
-                        if let testReceipts = testPkgInfo["receipts"] as? [PlistDict] {
-                            let testPkgIds = testReceipts.filter
-                                { $0.keys.contains("packageid") }.map
-                                { $0["packageid"] as? String ?? "" }
-                            if Set(testPkgIds) == Set(pkgids) {
-                                return testPkgInfo
-                            }
+        if !pkgids.isEmpty, let possibleMatches = catalogDB.receipts[pkgids[0]] {
+            var versions = possibleMatches.keys.map { MunkiVersion($0) }
+            // sort the versions descending
+            versions.sort { $0 > $1 }
+            for version in versions {
+                guard let testPkgIndexes = possibleMatches[version.value] else { continue }
+                for index in testPkgIndexes {
+                    let testPkgInfo = catalogDB.items[index]
+                    if let testReceipts = testPkgInfo["receipts"] as? [PlistDict] {
+                        let testPkgIds = testReceipts.filter
+                            { $0.keys.contains("packageid") }.map
+                            { $0["packageid"] as? String ?? "" }
+                        if Set(testPkgIds) == Set(pkgids) {
+                            return testPkgInfo
                         }
                     }
                 }
@@ -411,10 +411,9 @@ func generatePNGFromStartOSInstallItem(_ repo: Repo, installerDMG: String, itemn
         if let appPath = findInstallMacOSApp(mountpoint),
            let iconPath = findIconForApp(appPath)
         {
-            let repoIconIdentifier = try await convertAndInstallIcon(
+            return try await convertAndInstallIcon(
                 repo, name: itemname, iconPath: iconPath
             )
-            return repoIconIdentifier
         }
         throw MunkiError("Unexpected error generating PNG from installer dmg")
     } catch let error as MunkiError {
@@ -588,8 +587,7 @@ func extractAndCopyIcon(_ repo: Repo, installerItem: String, pkginfo: PlistDict,
             return [importedPath]
         }
     case "":
-        let importedPaths = try await generatePNGsFromPkg(repo, itemPath: installerItem, pkginfo: pkginfo, importMultiple: importMultiple)
-        return importedPaths
+        return try await generatePNGsFromPkg(repo, itemPath: installerItem, pkginfo: pkginfo, importMultiple: importMultiple)
     default:
         throw MunkiError("Can't generate icons for installer_type \(installerType)")
     }

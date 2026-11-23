@@ -20,8 +20,8 @@
 import ArgumentParser
 import Foundation
 
-/// Defines option groups for makepkginfo
-/// These are also used by munkiimport
+// Defines option groups for makepkginfo
+// These are also used by munkiimport
 
 /// Collect all our OptionGroups into a single struct
 /// I don't love this because if options move into different groups we have to change other stuff
@@ -96,10 +96,8 @@ struct OverrideOptions: ParsableArguments {
 
     mutating func validate() throws {
         // validate pkgvers actually starts with a digit
-        if let pkgvers {
-            if !"0123456789".contains(pkgvers.first ?? "X") {
-                throw ValidationError("'pkgvers' must start with a digit!")
-            }
+        if let pkgvers, !"0123456789".contains(pkgvers.first ?? "X") {
+            throw ValidationError("'pkgvers' must start with a digit!")
         }
     }
 }
@@ -328,10 +326,8 @@ struct AdditionalPkginfoOptions: ParsableArguments {
     mutating func validate() throws {
         // validate options with version strings actually start with a digit
         for optionItem in [minimumMunkiVersion, minimumOSVersion, maximumOSVersion] {
-            if let optionItem {
-                if !"0123456789".contains(optionItem.first ?? "X") {
-                    throw ValidationError("Version strings must start with a digit!")
-                }
+            if let optionItem, !"0123456789".contains(optionItem.first ?? "X") {
+                throw ValidationError("Version strings must start with a digit!")
             }
         }
         if catalog.isEmpty {

@@ -61,7 +61,8 @@ struct CatalogsMaker {
             pkgsinfoList = try await repo.list("pkgsinfo")
         } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
-                description: "Error getting list of pkgsinfo items")
+                description: "Error getting list of pkgsinfo items"
+            )
         }
     }
 
@@ -71,7 +72,8 @@ struct CatalogsMaker {
             pkgsList = try await repo.list("pkgs")
         } catch is MunkiError {
             throw MakeCatalogsError.PkginfoAccessError(
-                description: "Error getting list of pkgs items")
+                description: "Error getting list of pkgs items"
+            )
         }
     }
 
@@ -125,7 +127,8 @@ struct CatalogsMaker {
            !["auto", "always", "never"].contains(downloadOnLowData)
         {
             warnings.append(
-                "WARNING: \(identifier) has an invalid download_on_low_data value: \(downloadOnLowData). Valid values are auto, always, never.")
+                "WARNING: \(identifier) has an invalid download_on_low_data value: \(downloadOnLowData). Valid values are auto, always, never."
+            )
         }
         if let installer_type = pkginfo["installer_type"] as? String {
             if ["nopkg", "apple_update_metadata"].contains(installer_type) {
@@ -146,7 +149,8 @@ struct CatalogsMaker {
         let installeritemlocation = pkginfo["installer_item_location"] as? String ?? ""
         if installeritemlocation.isEmpty {
             warnings.append(
-                "WARNING: empty or invalid installer_item_location in \(identifier)")
+                "WARNING: empty or invalid installer_item_location in \(identifier)"
+            )
             return false
         }
 
@@ -199,7 +203,8 @@ struct CatalogsMaker {
         if let uninstalleritemlocation = pkginfo["uninstaller_item_location"] as? String {
             if uninstalleritemlocation.isEmpty {
                 warnings.append(
-                    "WARNING: empty or invalid uninstaller_item_location in \(identifier)")
+                    "WARNING: empty or invalid uninstaller_item_location in \(identifier)"
+                )
                 return false
             }
             // Check if the uninstaller item actually exists
@@ -290,7 +295,8 @@ struct CatalogsMaker {
             warnings.append(
                 "WARNING: There are catalogs with names that differ only by case. " +
                     "This may cause issues depending on the case-sensitivity of the " +
-                    "underlying filesystem: \(duplicateCatalogs)")
+                    "underlying filesystem: \(duplicateCatalogs)"
+            )
         }
     }
 
