@@ -349,7 +349,7 @@ struct MunkiImport: AsyncParsableCommand {
            let name = pkginfo["name"] as? String
         {
             do {
-                let _ = try await convertAndInstallIcon(repo, name: name, iconPath: iconPath)
+                _ = try await convertAndInstallIcon(repo, name: name, iconPath: iconPath)
             } catch let error as MunkiError {
                 printStderr("Error importing \(iconPath): \(error.description)")
             }
