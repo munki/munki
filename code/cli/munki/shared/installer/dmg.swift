@@ -122,7 +122,7 @@ class DittoRunner: AsyncProcessRunner {
         return (lines, remainder)
     }
 
-    // ditto -V progress output goes to stderr(!)
+    /// ditto -V progress output goes to stderr(!)
     override func processError(_ str: String) {
         super.processError(str)
         let (lines, remainder) = linesAndRemainderOf(remainingErrorOutput + str)

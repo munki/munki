@@ -178,9 +178,9 @@ func runInstaller(arguments: [String], environment: [String: String], pkgName: S
     return results.exitcode
 }
 
-// Uses the Apple installer to install the package or metapackage at pkgpath.
-// Returns a tuple:
-//    the installer return code and restart needed as a boolean.
+/// Uses the Apple installer to install the package or metapackage at pkgpath.
+/// Returns a tuple:
+///    the installer return code and restart needed as a boolean.
 func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     var restartNeeded = false
     let packageName = (pkgpath as NSString).lastPathComponent
@@ -235,12 +235,12 @@ func install(_ pkgpath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     return (retcode, restartNeeded)
 }
 
-// The Python version of Munki would actually install _all_ the pkgs from a given
-// directory (which was usually the root of a mounted disk image). This was rarely
-// what was actually wanted. This version just installs the first installable item in
-// the directory.
-// Returns a tuple containing the exit code of the installer process and a boolean
-// indicating if a restart is needed
+/// The Python version of Munki would actually install _all_ the pkgs from a given
+/// directory (which was usually the root of a mounted disk image). This was rarely
+/// what was actually wanted. This version just installs the first installable item in
+/// the directory.
+/// Returns a tuple containing the exit code of the installer process and a boolean
+/// indicating if a restart is needed
 func installFromDirectory(_ directoryPath: String, options: PlistDict = [:]) async -> (Int, Bool) {
     if stopRequested() {
         return (0, false)
