@@ -35,7 +35,8 @@ func getCatalogNames(repo: Repo) async -> [String]? {
 extension ManifestUtil {
     struct ListCatalogs: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Lists available catalogs in Munki repo.")
+            abstract: "Lists available catalogs in Munki repo."
+        )
 
         func run() async throws {
             if let repo = try? connectToRepo(),
@@ -80,7 +81,8 @@ func getInstallerItemNames(repo: Repo, catalogs: [String]) async -> [String] {
 extension ManifestUtil {
     struct ListCatalogItems: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Lists items in the given catalogs.")
+            abstract: "Lists items in the given catalogs."
+        )
 
         @Argument(help: ArgumentHelp(
             "Catalog name",
@@ -95,8 +97,7 @@ extension ManifestUtil {
         }
 
         func run() async throws {
-            guard let repo = RepoConnection.shared.repo else { return }
-            guard let availableCatalogs = await getCatalogNames(repo: repo) else {
+            guard let repo = RepoConnection.shared.repo, let availableCatalogs = await getCatalogNames(repo: repo) else {
                 return
             }
 

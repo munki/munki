@@ -178,7 +178,8 @@ func addIncludedManifest(repo: Repo, manifestName: String, includedManifestName:
 extension ManifestUtil {
     struct AddPkg: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Adds a package to a manifest")
+            abstract: "Adds a package to a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))
@@ -205,7 +206,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct RemovePkg: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Removes a package from a manifest")
+            abstract: "Removes a package from a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))
@@ -232,7 +234,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct MoveInstallToUninstall: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Moves a pkgitem from managed_installs to managed_uninstalls in a manifest")
+            abstract: "Moves a pkgitem from managed_installs to managed_uninstalls in a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))
@@ -255,7 +258,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct AddCatalog: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Adds a catalog to a manifest")
+            abstract: "Adds a catalog to a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))
@@ -278,7 +282,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct RemoveCatalog: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Removes a catalog from a manifest")
+            abstract: "Removes a catalog from a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))
@@ -301,7 +306,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct AddIncludedManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Adds an included manifest to a manifest")
+            abstract: "Adds an included manifest to a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))
@@ -324,7 +330,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct RemoveIncludedManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Removes an included manifest from a manifest")
+            abstract: "Removes an included manifest from a manifest"
+        )
 
         @Option(help: ArgumentHelp("Name of manifest",
                                    valueName: "manifest-name"))

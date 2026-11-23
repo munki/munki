@@ -100,7 +100,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct Configure: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Show and edit configuration for this tool.")
+            abstract: "Show and edit configuration for this tool."
+        )
 
         func run() throws {
             let promptList = [

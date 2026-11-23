@@ -33,7 +33,8 @@ func getManifestNames(repo: Repo) async -> [String]? {
 extension ManifestUtil {
     struct ListManifests: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Lists available manifest in Munki repo.")
+            abstract: "Lists available manifest in Munki repo."
+        )
 
         @Argument(help: ArgumentHelp(
             "String to match manifest names similar to file name globbing. To avoid the shell expanding wildcards, wrap the string in quotes.",
@@ -42,8 +43,7 @@ extension ManifestUtil {
         var globString: String = ""
 
         func run() async throws {
-            guard let repo = RepoConnection.shared.repo else { return }
-            guard let manifestNames = await getManifestNames(repo: repo)
+            guard let repo = RepoConnection.shared.repo, let manifestNames = await getManifestNames(repo: repo)
             else {
                 return
             }
