@@ -20,14 +20,14 @@ import Testing
 
 struct headerDictFromListTests {
     /// Test basic splitting a string into header name and value
-    @Test func parsesAuthHeader() async throws {
+    @Test func parsesAuthHeader() {
         let headers = ["Authorization: Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)
         #expect(headerDict["Authorization"] == "Basic foobarbaz")
     }
 
     /// Test string with no colon separator
-    @Test func ignoresBadlyFormattedString() async throws {
+    @Test func ignoresBadlyFormattedString() {
         let headers = ["Authorization Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)
         // headerDict should contain only a value for User-Agent and nothing else
@@ -35,14 +35,14 @@ struct headerDictFromListTests {
     }
 
     /// Ensure extra spaces after the colon are trimmed
-    @Test func parsesAuthHeaderWithExtraWhitespace() async throws {
+    @Test func parsesAuthHeaderWithExtraWhitespace() {
         let headers = ["Authorization:    Basic foobarbaz"]
         let headerDict = headerDictFromList(headers)
         #expect(headerDict["Authorization"] == "Basic foobarbaz")
     }
 
     /// Tests for issue in https://github.com/munki/munki/issues/1296/
-    @Test func parsesValueContainingColon() async throws {
+    @Test func parsesValueContainingColon() {
         let headers = ["Referer: https://foo.com"]
         let headerDict = headerDictFromList(headers)
         #expect(headerDict["Referer"] == "https://foo.com")

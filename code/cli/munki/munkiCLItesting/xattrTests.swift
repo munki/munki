@@ -36,7 +36,7 @@ struct xattrTests {
         // #expect(xattrs.isEmpty)
 
         let xattrName = "com.googlecode.munki.test"
-        let xattrValue = "Hello, World!".data(using: .utf8)!
+        let xattrValue = try #require("Hello, World!".data(using: .utf8))
 
         try setXattr(named: xattrName, data: xattrValue, atPath: unwrappedFilepath)
         xattrs = (try? listXattrs(atPath: unwrappedFilepath)) ?? []

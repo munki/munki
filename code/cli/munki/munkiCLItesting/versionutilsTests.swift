@@ -20,21 +20,21 @@ import Testing
 
 struct MunkiVersionTests {
     /// Two versions, differing only by the number of appended ".0"s should compare as equal
-    @Test func versionsCompareEqual() async throws {
+    @Test func versionsCompareEqual() {
         let version1 = MunkiVersion("1.0")
         let version2 = MunkiVersion("1.0.0.0")
         #expect(version1 == version2)
     }
 
     /// Test that version comparison is numeric and not alpha
-    @Test func versionsCompareNumeric() async throws {
+    @Test func versionsCompareNumeric() {
         let version1 = MunkiVersion("1.2")
         let version2 = MunkiVersion("1.10")
         #expect(version1 < version2)
     }
 
     /// Test that other comparisons return expected results
-    @Test func testOtherComparisons() async throws {
+    @Test func otherComparisons() {
         let versionPairs = [
             ("1.0", "1.0b1"),
             ("1.0b1", "1.0b2"),
@@ -51,7 +51,7 @@ struct MunkiVersionTests {
             ("1.1-9", "1.1-10"),
             ("1.0.0.0.1", "1.0.1"),
             ("9", "10.2.1"),
-            ("10.2", "10.2.1")
+            ("10.2", "10.2.1"),
         ]
         for (versionA, versionB) in versionPairs {
             #expect(MunkiVersion(versionA) < MunkiVersion(versionB))
@@ -69,7 +69,7 @@ struct trimVersionStringTests {
     ///   10.0.0.1 -> 10.0.0.1
     ///   10.0.0-abc1 -> 10.0.0-abc1
     ///   10.0.0-abc1.0 -> 10.0.0-abc1
-    @Test func removesExtraZeros() async throws {
+    @Test func removesExtraZeros() {
         #expect(trimVersionString("10.0.0.0") == "10.0")
         #expect(trimVersionString("10.0.0.1") == "10.0.0.1")
         #expect(trimVersionString("10.0.0-abc1") == "10.0.0-abc1")

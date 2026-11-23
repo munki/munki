@@ -54,46 +54,44 @@ struct appleupdatesTests {
         while index < lines.count {
             let currentLine = lines[index]
             index += 1
-            if currentLine.hasPrefix("* Label") {
-                if index < lines.count {
-                    let nextLine = lines[index]
-                    index += 1
-                    updates.append(parseSULines(currentLine, nextLine))
-                }
+            if currentLine.hasPrefix("* Label"), index < lines.count {
+                let nextLine = lines[index]
+                index += 1
+                updates.append(parseSULines(currentLine, nextLine))
             }
         }
     }
 
-    @Test func parsingSULinesResultsInExpectedNumberofUpdates() async throws {
+    @Test func parsingSULinesResultsInExpectedNumberofUpdates() {
         #expect(updates.count == 3)
     }
 
-    @Test func parsingSULinesGetsExpectedLabel() async throws {
+    @Test func parsingSULinesGetsExpectedLabel() throws {
         try #require(updates.count > 0, "Did not parse any updates")
         #expect(updates[0]["Label"] == "Safari17.6MontereyAuto-17.6")
     }
 
-    @Test func parsingSULinesGetsExpectedTitle() async throws {
+    @Test func parsingSULinesGetsExpectedTitle() throws {
         try #require(updates.count > 0, "Did not parse any updates")
         #expect(updates[0]["Title"] == "Safari")
     }
 
-    @Test func parsingSULinesGetsExpectedVersion() async throws {
+    @Test func parsingSULinesGetsExpectedVersion() throws {
         try #require(updates.count > 1, "Did not parse at least two updates")
         #expect(updates[1]["Version"] == "12.7.6")
     }
 
-    @Test func parsingSULinesGetsExpectedSize() async throws {
+    @Test func parsingSULinesGetsExpectedSize() throws {
         try #require(updates.count > 1, "Did not parse at least two updates")
         #expect(updates[1]["Size"] == "1765616K")
     }
 
-    @Test func parsingSULinesGetsExpectedAction() async throws {
+    @Test func parsingSULinesGetsExpectedAction() throws {
         try #require(updates.count > 2, "Did not parse at least three updates")
         #expect(updates[2]["Action"] == "restart")
     }
 
-    @Test func productKeyIsExpected() async throws {
+    @Test func productKeyIsExpected() throws {
         try #require(updates.count > 0, "Did not parse any updates")
         let name = try #require(updates[0]["Title"], "Update did not have Title")
         let version = try #require(updates[0]["Version"], "Update did not have Title")
@@ -104,7 +102,7 @@ struct appleupdatesTests {
         #expect(getProductKey(for: item, recommendedUpdates: recommendedUpdates) == "062-47822")
     }
 
-    @Test func productKeyIsNil() async throws {
+    @Test func productKeyIsNil() {
         let item: PlistDict = [
             "name": "Foo",
             "version_to_install": "1.0",

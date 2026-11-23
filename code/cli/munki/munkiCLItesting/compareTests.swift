@@ -20,7 +20,7 @@ import Testing
 
 struct compareVersionsTests {
     /// Test "obvious" .same, .older, .newer functionality
-    @Test func checkSameOlderNewer() async throws {
+    @Test func checkSameOlderNewer() {
         #expect(compareVersions("10.15", "10.15.0") == .same)
         #expect(compareVersions("10.15", "10.15.1") == .older)
         #expect(compareVersions("10.15.1", "10.15") == .newer)
@@ -29,7 +29,7 @@ struct compareVersionsTests {
 
 struct compareUsingVersionScriptTests {
     /// if version_script returns the same version as the item version, compareUsingVersionScript should return .same
-    @Test func scriptSameVersionReturnSame() async throws {
+    @Test func scriptSameVersionReturnSame() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -42,7 +42,7 @@ struct compareUsingVersionScriptTests {
     }
 
     /// if version_script returns a higher version than the item version, compareUsingVersionScript should return .newer
-    @Test func scriptHigherVersionReturnsNewer() async throws {
+    @Test func scriptHigherVersionReturnsNewer() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -55,7 +55,7 @@ struct compareUsingVersionScriptTests {
     }
 
     /// if version_script returns a lower version than the item version, compareUsingVersionScript should return .older
-    @Test func scriptLowerVersionReturnsOlder() async throws {
+    @Test func scriptLowerVersionReturnsOlder() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -68,7 +68,7 @@ struct compareUsingVersionScriptTests {
     }
 
     /// if version_script returns empty result, compareUsingVersionScript should return .notPresent
-    @Test func scriptWithEmptyResultReturnsNotPresent() async throws {
+    @Test func scriptWithEmptyResultReturnsNotPresent() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -81,7 +81,7 @@ struct compareUsingVersionScriptTests {
     }
 
     /// if version_script exits non-zero, compareUsingVersionScript should return .notPresent
-    @Test func scriptWithErrorReturnsNotPresent() async throws {
+    @Test func scriptWithErrorReturnsNotPresent() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",

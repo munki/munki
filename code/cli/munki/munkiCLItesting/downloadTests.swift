@@ -8,7 +8,7 @@
 import Testing
 
 struct downloadTests {
-    @Test func getDownloadCachePathTests() async throws {
+    @Test func getDownloadCachePathTests() {
         #expect(
             getDownloadCachePath("http://munki.local/repo/pkgs/bar.pkg") == managedInstallsDir(subpath: "Cache/bar.pkg")
         )

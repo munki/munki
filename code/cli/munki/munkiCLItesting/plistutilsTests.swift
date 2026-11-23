@@ -51,7 +51,7 @@ private let PLIST_DICT: PlistDict = [
 
 struct readPlistTests {
     /// Test that we can read a known plist from a file
-    @Test func readPlistFromFileReturnsExpected() async throws {
+    @Test func readPlistFromFileReturnsExpected() throws {
         let manifestPath = try #require(
             TestingResource.path(for: "test_manifest.plist"),
             "Could not get path for test manifest"
@@ -67,7 +67,7 @@ struct readPlistTests {
     }
 
     /// Test that we parse a plist from a string with expected results
-    @Test func readPlistFromStringReturnsExpected() async throws {
+    @Test func readPlistFromStringReturnsExpected() throws {
         let plist = try #require(
             readPlist(fromString: PLIST_STRING_WITH_TABS) as? PlistDict,
             "Could not parse test manifest string"
@@ -82,7 +82,7 @@ struct readPlistTests {
 
 struct writePlistTests {
     /// Test that we can correctly write plist data to a file
-    @Test func writePlistCreatesExpectedFile() async throws {
+    @Test func writePlistCreatesExpectedFile() throws {
         let filepath = tempFile()
         let unwrappedFilepath = try #require(filepath, "Can't create temporary filepath")
         try #require(
@@ -104,7 +104,7 @@ struct writePlistTests {
 
 struct plistToStringTests {
     /// Test that converting a PlistDict to a string produces the expected result
-    @Test func returnsExpected() async throws {
+    @Test func returnsExpected() throws {
         let convertedPlist = try #require(
             try? plistToString(PLIST_DICT),
             "Failed to convert plist data to string format"
@@ -115,7 +115,7 @@ struct plistToStringTests {
 
 struct parseFirstPlistTests {
     /// Test that we can find the first plist in a string that also contains non-plist lines
-    @Test func returnsExpected() async throws {
+    @Test func returnsExpected() {
         let notPlistText = "This is not a plist.\n"
         let testText = notPlistText + PLIST_STRING_WITH_TABS + notPlistText
         let (parsed, remainingText) = parseFirstPlist(fromString: testText)

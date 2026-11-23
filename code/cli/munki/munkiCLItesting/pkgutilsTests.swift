@@ -20,7 +20,7 @@ import Testing
 
 struct nameAndVersionTests {
     /// general tests that nameAndVersion splits strings as expected
-    @Test func splitsAsExpected() throws {
+    @Test func splitsAsExpected() {
         #expect(nameAndVersion("foo-1.2.3") == ("foo", "1.2.3"))
         #expect(nameAndVersion("foo--1.2.3") == ("foo", "1.2.3"))
         #expect(nameAndVersion("foo-1.2.3-1") == ("foo-1.2.3", "1"))
@@ -40,7 +40,7 @@ struct nameAndVersionTests {
 
 struct hadValidExtensionTests {
     /// Test that valid package extensions are correctly detected
-    @Test func validPackageExtensions() throws {
+    @Test func validPackageExtensions() {
         #expect(hasValidPackageExt("foo.pkg") == true)
         #expect(hasValidPackageExt("foo.PKG") == true)
         #expect(hasValidPackageExt("foo.mpkg") == true)
@@ -50,7 +50,7 @@ struct hadValidExtensionTests {
     }
 
     /// Test that invalid package extensions are correctly detected
-    @Test func invalidPackageExtensions() throws {
+    @Test func invalidPackageExtensions() {
         #expect(hasValidPackageExt("foo.bar") == false)
         #expect(hasValidPackageExt("foo.pkg.bar") == false)
         #expect(hasValidPackageExt("foo.mpkg.bar") == false)
@@ -59,7 +59,7 @@ struct hadValidExtensionTests {
     }
 
     /// Test that valid disk image extensions are correctly detected
-    @Test func validDiskImageExtensions() throws {
+    @Test func validDiskImageExtensions() {
         #expect(hasValidDiskImageExt("foo.dmg") == true)
         #expect(hasValidDiskImageExt("foo.DMG") == true)
         #expect(hasValidDiskImageExt("foo.iso") == true)
@@ -69,7 +69,7 @@ struct hadValidExtensionTests {
     }
 
     /// Test that invalid disk image extensions are correctly detected
-    @Test func invalidDiskImageExtensions() throws {
+    @Test func invalidDiskImageExtensions() {
         #expect(hasValidDiskImageExt("foo.pkg") == false)
         #expect(hasValidDiskImageExt("foo.mpkg") == false)
         #expect(hasValidDiskImageExt("foo.dmg.pkg") == false)
@@ -177,7 +177,7 @@ struct DistFileTests {
     }
 
     /// Ensure we get expected value for product version
-    @Test func getProductVersionFromDistIsExpected() async throws {
+    @Test func getProductVersionFromDistIsExpected() throws {
         let unwrappedDistPath = try #require(
             distPath, "Failed to create temporary distribution file"
         )
@@ -185,7 +185,7 @@ struct DistFileTests {
     }
 
     /// Ensure we get expected value for minimum OS version
-    @Test func getMinOSVersFromDistIsExpected() async throws {
+    @Test func getMinOSVersFromDistIsExpected() throws {
         let unwrappedDistPath = try #require(
             distPath, "Failed to create temporary distribution file"
         )
@@ -193,7 +193,7 @@ struct DistFileTests {
     }
 
     /// Ensure we get the expected receipts from the sample distribution
-    @Test func receiptsFromDistFileExpectedCount() async throws {
+    @Test func receiptsFromDistFileExpectedCount() throws {
         let unwrappedDistPath = try #require(
             distPath, "Failed to create temporary distribution file"
         )
@@ -318,17 +318,17 @@ struct getVersionStringTests {
     ]
 
     /// Ensure getVersionString returns the CFBundleShortVersionString value
-    @Test func getVersionStringReturnsCFBundleShortVersionString() async throws {
+    @Test func getVersionStringReturnsCFBundleShortVersionString() {
         #expect(getVersionString(plist: plist1) == "1.2.3")
     }
 
     /// Ensure getVersionString returns the CFBundleVersion if CFBundleShortVersionString is not defined
-    @Test func getVersionStringReturnsCFBundleVersion() async throws {
+    @Test func getVersionStringReturnsCFBundleVersion() {
         #expect(getVersionString(plist: plist2) == "456")
     }
 
     /// Ensure getVersionString returns the value for specific key
-    @Test func getVersionStringReturnsValueForCustomKey() async throws {
+    @Test func getVersionStringReturnsValueForCustomKey() {
         #expect(getVersionString(plist: plist1, key: "RandomVersionKey") == "7.8.9")
     }
 }
