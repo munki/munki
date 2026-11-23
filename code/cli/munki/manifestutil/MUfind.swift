@@ -44,15 +44,13 @@ func findTextInManifests(repo: Repo, findText: String, section: String = "") asy
                         }
                     }
                 }
-            } else if let item = manifest[key] as? String {
-                if item.uppercased().contains(findText.uppercased()) {
-                    count += 1
-                    if section.isEmpty {
-                        // print section along with manifest name
-                        print("\(name) (\(key)): \(item)")
-                    } else {
-                        print("\(name): \(item)")
-                    }
+            } else if let item = manifest[key] as? String, item.uppercased().contains(findText.uppercased()) {
+                count += 1
+                if section.isEmpty {
+                    // print section along with manifest name
+                    print("\(name) (\(key)): \(item)")
+                } else {
+                    print("\(name): \(item)")
                 }
             }
         }
@@ -64,7 +62,8 @@ func findTextInManifests(repo: Repo, findText: String, section: String = "") asy
 extension ManifestUtil {
     struct Find: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Finds text in manifests")
+            abstract: "Finds text in manifests"
+        )
 
         @Option(help: ArgumentHelp("Limit the search to a specific manifest section",
                                    valueName: "manifest-section"))

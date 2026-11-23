@@ -85,7 +85,8 @@ func removeQuarantineXattrFromItem(_ path: String) {
         }
     } catch {
         display.warning(
-            "Failed to remove quarantine xattr for \(path): \(error.localizedDescription)")
+            "Failed to remove quarantine xattr for \(path): \(error.localizedDescription)"
+        )
     }
 }
 

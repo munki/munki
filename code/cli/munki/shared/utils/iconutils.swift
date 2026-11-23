@@ -113,7 +113,8 @@ func findIconForApp(_ appPath: String) -> String? {
         iconFilename += ".icns"
     }
     let iconPath = (appPath as NSString).appendingPathComponent(
-        "Contents/Resources/\(iconFilename)")
+        "Contents/Resources/\(iconFilename)"
+    )
     if pathIsRegularFile(iconPath) || pathIsSymlink(iconPath) {
         return iconPath
     }

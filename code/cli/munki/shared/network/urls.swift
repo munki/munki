@@ -73,16 +73,15 @@ func munkiRepoURL(_ type: String = "", resource: String = "", munkiRepoURL: Stri
         munkiBaseURL + "/" + encodedType + "/"
     }
     // if a more specific URL has been defined in preferences, use that
-    if let key = map[type] {
-        if let testURL = pref(key) as? String,
-           !testURL.isEmpty
-        {
-            // add a trailing slash if needed
-            if testURL.hasSuffix("/") || testURL.hasSuffix("?") {
-                typeURL = testURL
-            } else {
-                typeURL = testURL + "/"
-            }
+    if let key = map[type],
+       let testURL = pref(key) as? String,
+       !testURL.isEmpty
+    {
+        // add a trailing slash if needed
+        if testURL.hasSuffix("/") || testURL.hasSuffix("?") {
+            typeURL = testURL
+        } else {
+            typeURL = testURL + "/"
         }
     }
     if resource.isEmpty {

@@ -114,10 +114,8 @@ class ProcessRunner {
         }
         let inputPipe = Pipe()
         inputPipe.fileHandleForWriting.writeabilityHandler = { fh in
-            if !stdIn.isEmpty {
-                if let data = stdIn.data(using: .utf8) {
-                    fh.write(data)
-                }
+            if !stdIn.isEmpty, let data = stdIn.data(using: .utf8) {
+                fh.write(data)
             }
             try? fh.close()
             fh.writeabilityHandler = nil
@@ -172,10 +170,10 @@ class ProcessRunner {
         // delegate?.processUpdated()
     }
 
-    // making this a separate method so the non-timeout calls
-    // don't need to worry about catching exceptions
-    // NOTE: the timeout here is _not_ an idle timeout;
-    // it's the maximum time the process can run
+    /// making this a separate method so the non-timeout calls
+    /// don't need to worry about catching exceptions
+    /// NOTE: the timeout here is _not_ an idle timeout;
+    /// it's the maximum time the process can run
     func run(timeout: Int = -1) throws {
         var deadline: Double?
         if !task.isRunning {
@@ -197,14 +195,12 @@ class ProcessRunner {
         // task.waitUntilExit()
         while task.isRunning {
             // loop until process exits
-            if let deadline {
-                if get_uptime() >= deadline {
-                    results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
-                    task.terminate()
-                    results.exitcode = Int.max // maybe we should define a specific code
-                    results.timedOut = true
-                    throw ProcessError.timeout
-                }
+            if let deadline, get_uptime() >= deadline {
+                results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                task.terminate()
+                results.exitcode = Int.max // maybe we should define a specific code
+                results.timedOut = true
+                throw ProcessError.timeout
             }
             usleep(10000)
         }
@@ -428,10 +424,8 @@ class AsyncProcessRunner {
         }
         let inputPipe = Pipe()
         inputPipe.fileHandleForWriting.writeabilityHandler = { fh in
-            if !stdIn.isEmpty {
-                if let data = stdIn.data(using: .utf8) {
-                    fh.write(data)
-                }
+            if !stdIn.isEmpty, let data = stdIn.data(using: .utf8) {
+                fh.write(data)
             }
             fh.closeFile()
             fh.writeabilityHandler = nil
@@ -492,10 +486,10 @@ class AsyncProcessRunner {
         delegate?.processUpdated()
     }
 
-    // making this a separate method so the non-timeout calls
-    // don't need to worry about catching exceptions
-    // NOTE: the timeout here is _not_ an idle timeout;
-    // it's the maximum time the process can run
+    /// making this a separate method so the non-timeout calls
+    /// don't need to worry about catching exceptions
+    /// NOTE: the timeout here is _not_ an idle timeout;
+    /// it's the maximum time the process can run
     func run(timeout: Int = -1) async throws {
         var deadline: Double?
         if !task.isRunning {
@@ -519,14 +513,12 @@ class AsyncProcessRunner {
         // task.waitUntilExit()
         while task.isRunning {
             // loop until process exits
-            if let deadline {
-                if get_uptime() >= deadline {
-                    results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
-                    task.terminate()
-                    results.exitcode = Int.max // maybe we should define a specific code
-                    results.timedOut = true
-                    throw ProcessError.timeout
-                }
+            if let deadline, get_uptime() >= deadline {
+                results.failureDetail.append("ERROR: \(task.executableURL?.path ?? "") timed out after \(timeout) seconds")
+                task.terminate()
+                results.exitcode = Int.max // maybe we should define a specific code
+                results.timedOut = true
+                throw ProcessError.timeout
             }
             await Task.yield()
         }

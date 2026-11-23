@@ -40,7 +40,7 @@ struct predicateTests {
         "product_name": "MacBook Pro (14-inch, 2023)",
     ]
 
-    @Test func predicateEvaluatesAsTrueTests() async throws {
+    @Test func predicateEvaluatesAsTrueTests() {
         #expect(predicateEvaluatesAsTrue(
             "arch == 'arm64'", infoObject: info
         ))
@@ -61,7 +61,7 @@ struct predicateTests {
         ))
     }
 
-    @Test func predicateEvaluatesAsFalseTests() async throws {
+    @Test func predicateEvaluatesAsFalseTests() {
         #expect(predicateEvaluatesAsTrue(
             "arch == 'x86_64'", infoObject: info
         ) == false)
@@ -77,21 +77,18 @@ struct predicateTests {
         #expect(predicateEvaluatesAsTrue(
             "date < CAST('2016-03-02T00:00:00Z', 'NSDate')",
             infoObject: info
-        ) == false
-        )
+        ) == false)
         #expect(predicateEvaluatesAsTrue(
             "machine_type == 'laptop' AND os_vers_major < 10",
             infoObject: info
-        ) == false
-        )
+        ) == false)
     }
 
-    @Test func predicateEvaluatesAsFalseWithUndefinedValue() async throws {
+    @Test func predicateEvaluatesAsFalseWithUndefinedValue() {
         #expect(predicateEvaluatesAsTrue(
             "undefined_key == 'Hello'",
             infoObject: info
-        ) == false
-        )
+        ) == false)
     }
 }
 

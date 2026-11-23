@@ -140,7 +140,6 @@ func requiresRestartForUninstall(_ item: PlistDict) -> Bool {
     return ["RequireRestart", "RecommendRestart"].contains(restartAction)
 }
 
-
 /// Process an Apple package for install. Returns retcode, needs_restart
 func handleApplePackageInstall(pkginfo: PlistDict, itemPath: String, isUninstallPkg: Bool = false) async -> (Int, Bool) {
     if pkginfo["suppress_bundle_relocation"] as? Bool ?? false {
@@ -433,16 +432,16 @@ func installWithInstallInfo(
         }
 
         // cleanup unneeded install_items
-        if !stillNeeded, retcode == 0 {
-            // remove the item from the install cache
-            // (if it's still there)
-            if pathExists(installerItemPath) {
-                try? FileManager.default.removeItem(atPath: installerItemPath)
-                if hasValidDiskImageExt(installerItemPath) {
-                    let shadowFile = installerItemPath + ".shadow"
-                    if pathExists(shadowFile) {
-                        try? FileManager.default.removeItem(atPath: shadowFile)
-                    }
+        if !stillNeeded, retcode == 0,
+           // remove the item from the install cache
+           // (if it's still there)
+           pathExists(installerItemPath)
+        {
+            try? FileManager.default.removeItem(atPath: installerItemPath)
+            if hasValidDiskImageExt(installerItemPath) {
+                let shadowFile = installerItemPath + ".shadow"
+                if pathExists(shadowFile) {
+                    try? FileManager.default.removeItem(atPath: shadowFile)
                 }
             }
         }
@@ -528,7 +527,8 @@ func uninstallItem(_ item: PlistDict) async -> (Int, Bool) {
             return (-99, false)
         }
         (retcode, needToRestart) = await handleApplePackageInstall(
-            pkginfo: item, itemPath: uninstallerItemPath, isUninstallPkg: true)
+            pkginfo: item, itemPath: uninstallerItemPath, isUninstallPkg: true
+        )
     case "remove_copied_items":
         if let itemsToRemove = item["items_to_remove"] as? [PlistDict] {
             if !removeCopiedItems(itemsToRemove) {
@@ -688,7 +688,8 @@ func doInstallsAndRemovals(
 
     // no sleep assertion
     let caffeinator = Caffeinator(
-        reason: "managedsoftwareupdate is installing software")
+        reason: "managedsoftwareupdate is installing software"
+    )
 
     let installInfoPath = managedInstallsDir(subpath: "InstallInfo.plist")
     if pathExists(installInfoPath),

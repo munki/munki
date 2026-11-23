@@ -86,10 +86,8 @@ class UNIXDomainSocketServer {
         guard let socket = serverSocket else {
             throw UNIXDomainSocketError.socketError
         }
-        if timeout > 0 {
-            if !dataAvailable(socket: socket.fd, timeout: timeout) {
-                throw UNIXDomainSocketError.timeoutError
-            }
+        if timeout > 0, !dataAvailable(socket: socket.fd, timeout: timeout) {
+            throw UNIXDomainSocketError.timeoutError
         }
         try await acceptConnection()
     }

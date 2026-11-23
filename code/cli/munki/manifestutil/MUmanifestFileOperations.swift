@@ -99,7 +99,8 @@ func deleteManifest(repo: Repo, name: String) async -> Bool {
 extension ManifestUtil {
     struct NewManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Creates a new empty manifest")
+            abstract: "Creates a new empty manifest"
+        )
 
         @Argument(help: ArgumentHelp(
             "Name for the newly-created manifest",
@@ -118,7 +119,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct CopyManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Copies a manifest")
+            abstract: "Copies a manifest"
+        )
 
         @Argument(help: ArgumentHelp(
             "Name of the source manifest",
@@ -147,7 +149,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct RenameManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Renames a manifest")
+            abstract: "Renames a manifest"
+        )
 
         @Argument(help: ArgumentHelp(
             "Name of the source manifest",
@@ -177,7 +180,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct DeleteManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Deletes a manifest")
+            abstract: "Deletes a manifest"
+        )
 
         @Argument(help: ArgumentHelp(
             "Name of the manifest to be deleted",

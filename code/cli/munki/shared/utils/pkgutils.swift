@@ -259,8 +259,7 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
         }
         for dir in searchDirs {
             let searchDir = (pkgpath as NSString).appendingPathComponent(dir)
-            guard pathIsDirectory(searchDir) else { continue }
-            guard let dirlist = try? filemanager.contentsOfDirectory(atPath: searchDir) else { continue }
+            guard pathIsDirectory(searchDir), let dirlist = try? filemanager.contentsOfDirectory(atPath: searchDir) else { continue }
             for item in dirlist {
                 let itempath = (searchDir as NSString).appendingPathComponent(item)
                 guard pathIsDirectory(itempath) else { continue }
@@ -291,23 +290,24 @@ func getBundlePackageInfo(_ pkgpath: String) -> PlistDict {
 
 /// Extracts product version from a Distribution file
 func getProductVersionFromDist(_ filepath: String) -> String {
-    guard let data = NSData(contentsOfFile: filepath) else { return "" }
-    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
-    guard let products = try? doc.nodes(forXPath: "//product") else { return "" }
-    if products.isEmpty { return "" }
-    guard let product = products.first as? XMLElement else { return "" }
-    guard let versionAttr = product.attribute(forName: "version") else { return "" }
+    guard let data = NSData(contentsOfFile: filepath), let doc = try? XMLDocument(data: data as Data, options: []), let products = try? doc.nodes(forXPath: "//product") else { return "" }
+    if products.isEmpty {
+        return ""
+    }
+    guard let product = products.first as? XMLElement, let versionAttr = product.attribute(forName: "version") else { return "" }
     return versionAttr.stringValue ?? ""
 }
 
 /// Attempts to get a minimum os version
 func getMinOSVersFromDist(_ filepath: String) -> String {
-    guard let data = NSData(contentsOfFile: filepath) else { return "" }
-    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return "" }
-    guard let volumeChecks = try? doc.nodes(forXPath: "//volume-check") else { return "" }
-    if volumeChecks.isEmpty { return "" }
+    guard let data = NSData(contentsOfFile: filepath), let doc = try? XMLDocument(data: data as Data, options: []), let volumeChecks = try? doc.nodes(forXPath: "//volume-check") else { return "" }
+    if volumeChecks.isEmpty {
+        return ""
+    }
     guard let allowedOSVersions = try? volumeChecks.first?.nodes(forXPath: "child::allowed-os-versions") else { return "" }
-    if allowedOSVersions.isEmpty { return "" }
+    if allowedOSVersions.isEmpty {
+        return ""
+    }
     guard let osVersions = try? allowedOSVersions.first?.nodes(forXPath: "child::os-version") else { return "" }
     var minOSVersionStrings = [String]()
     for osVersion in osVersions {
@@ -326,13 +326,11 @@ func getMinOSVersFromDist(_ filepath: String) -> String {
     return ""
 }
 
-// Parses a PackageInfo file and returns a package receipt
-// No official Apple documentation on the format of this file, but
-// http://s.sudre.free.fr/Stuff/Ivanhoe/FLAT.html has some
+/// Parses a PackageInfo file and returns a package receipt
+/// No official Apple documentation on the format of this file, but
+/// http://s.sudre.free.fr/Stuff/Ivanhoe/FLAT.html has some
 func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict? {
-    guard let data = NSData(contentsOfFile: filepath) else { return PlistDict() }
-    guard let doc = try? XMLDocument(data: data as Data, options: []) else { return PlistDict() }
-    guard let nodes = try? doc.nodes(forXPath: "//pkg-info") else { return PlistDict() }
+    guard let data = NSData(contentsOfFile: filepath), let doc = try? XMLDocument(data: data as Data, options: []), let nodes = try? doc.nodes(forXPath: "//pkg-info") else { return PlistDict() }
     for node in nodes {
         guard let element = node as? XMLElement else { continue }
         if let identifierAttr = element.attribute(forName: "identifier"),
@@ -351,13 +349,11 @@ func receiptFromPackageInfoFile(_ filepath: String) -> PlistDict? {
                 pkginfo["minimum_os_version"] = minOSVersion
             }
             if let payloads = try? element.nodes(forXPath: "child::payload"),
-               let payload = payloads.first as? XMLElement
+               let payload = payloads.first as? XMLElement,
+               let sizeAttr = payload.attribute(forName: "installKBytes"),
+               let size = sizeAttr.stringValue
             {
-                if let sizeAttr = payload.attribute(forName: "installKBytes") {
-                    if let size = sizeAttr.stringValue {
-                        pkginfo["installed_size"] = Int(size)
-                    }
-                }
+                pkginfo["installed_size"] = Int(size)
             }
             if !pkginfo.isEmpty {
                 return pkginfo
@@ -392,29 +388,20 @@ func receiptsFromDistFile(_ filepath: String) -> [PlistDict] {
      */
     var info = [PlistDict]()
     var pkgrefDict = [String: PlistDict]()
-    guard let data = NSData(contentsOfFile: filepath) else { return info }
-    guard let doc = try? XMLDocument(data: data as Data, options: []) else {
-        return info
-    }
-    guard let nodes = try? doc.nodes(forXPath: "//pkg-ref") else {
+    guard let data = NSData(contentsOfFile: filepath), let doc = try? XMLDocument(data: data as Data, options: []), let nodes = try? doc.nodes(forXPath: "//pkg-ref") else {
         return info
     }
     for node in nodes {
-        guard let element = node as? XMLElement else { continue }
-        guard let idAttr = element.attribute(forName: "id") else { continue }
+        guard let element = node as? XMLElement, let idAttr = element.attribute(forName: "id") else { continue }
         if let pkgid = idAttr.stringValue {
             if !pkgrefDict.keys.contains(pkgid) {
                 pkgrefDict[pkgid] = ["packageid": pkgid]
             }
-            if let versAttr = element.attribute(forName: "version") {
-                if let version = versAttr.stringValue {
-                    pkgrefDict[pkgid]?["version"] = version
-                }
+            if let versAttr = element.attribute(forName: "version"), let version = versAttr.stringValue {
+                pkgrefDict[pkgid]?["version"] = version
             }
-            if let sizeAttr = element.attribute(forName: "installKBytes") {
-                if let size = sizeAttr.stringValue {
-                    pkgrefDict[pkgid]?["installed_size"] = Int(size)
-                }
+            if let sizeAttr = element.attribute(forName: "installKBytes"), let size = sizeAttr.stringValue {
+                pkgrefDict[pkgid]?["installed_size"] = Int(size)
             }
             element.normalizeAdjacentTextNodesPreservingCDATA(false)
             var textvalue = ""
@@ -469,7 +456,8 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                 )
                 if extractResults.exitcode == 0 {
                     let packageInfoPath = getAbsolutePath(
-                        (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
+                        (pkgTmpDir as NSString).appendingPathComponent(tocEntry)
+                    )
                     if let receipt = receiptFromPackageInfoFile(packageInfoPath) {
                         // no installed_size means no payload
                         // payload-free pkgs don't actually record a receipt
@@ -485,7 +473,8 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                     }
                 } else {
                     printStderr(
-                        "WARNING: An error occurred while extracting \(tocEntry): \(tocResults.error)")
+                        "WARNING: An error occurred while extracting \(tocEntry): \(tocResults.error)"
+                    )
                 }
             }
         }
@@ -497,7 +486,8 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                 )
                 if extractResults.exitcode == 0 {
                     let distributionPath = getAbsolutePath(
-                        (pkgTmpDir as NSString).appendingPathComponent(tocEntry))
+                        (pkgTmpDir as NSString).appendingPathComponent(tocEntry)
+                    )
                     productVersion = getProductVersionFromDist(distributionPath)
                     minimumOSVersion = getMinOSVersFromDist(distributionPath)
                     if receiptarray.isEmpty {
@@ -506,7 +496,8 @@ func getFlatPackageInfo(_ pkgpath: String) -> PlistDict {
                     break
                 } else {
                     printStderr(
-                        "WARNING: An error occurred while extracting \(tocEntry): \(tocResults.error)")
+                        "WARNING: An error occurred while extracting \(tocEntry): \(tocResults.error)"
+                    )
                 }
             }
         }
@@ -715,12 +706,11 @@ func generateInstalledPackages() async -> [String: String] {
             if pliststr.isEmpty {
                 break
             }
-            if let plist = try? readPlist(fromString: pliststr) as? PlistDict {
-                if let pkgid = plist["pkgid"] as? String,
-                   let version = plist["pkg-version"] as? String
-                {
-                    installedpkgs[pkgid] = version
-                }
+            if let plist = try? readPlist(fromString: pliststr) as? PlistDict,
+               let pkgid = plist["pkgid"] as? String,
+               let version = plist["pkg-version"] as? String
+            {
+                installedpkgs[pkgid] = version
             }
         }
     }

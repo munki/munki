@@ -164,7 +164,8 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
     // make sure the destination is available to store it
     if !prepareManifestDestination(manifestLocalPath, cacheRoot: manifestCacheRoot) {
         throw ManifestError.notRetrieved(
-            "Could not prepare local storage for manifest")
+            "Could not prepare local storage for manifest"
+        )
     }
 
     // try to get the manifest from the server
@@ -198,7 +199,8 @@ func getManifest(_ name: String, suppressErrors: Bool = false) throws -> String 
         display.error("Manifest returned for \(name) is invalid.")
         try? FileManager.default.removeItem(atPath: manifestLocalPath)
         throw ManifestError.invalid(
-            "Manifest returned for \(name) is invalid: \(error.localizedDescription)")
+            "Manifest returned for \(name) is invalid: \(error.localizedDescription)"
+        )
     }
 
     // got a valid plist
@@ -349,8 +351,8 @@ func removeFromSelfServeInstalls(_ itemName: String) {
 }
 
 func removeFromSelfServeUninstalls(_ itemName: String) {
-    /// Remove the given itemname from the self-serve manifest's
-    /// managed_uninstalls list
+    // Remove the given itemname from the self-serve manifest's
+    // managed_uninstalls list
     removeItemFromSelfServeSection(itemname: itemName, section: "managed_uninstalls")
 }
 

@@ -377,5 +377,5 @@ func main() async -> Int32 {
     return 0
 }
 
-/// run it!
+// run it!
 await exit(main())

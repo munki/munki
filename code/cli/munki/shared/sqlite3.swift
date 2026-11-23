@@ -20,11 +20,11 @@
 import Foundation
 import SQLite3
 
-/// Yes this is yet another wrapper around the SQLite3 C API.
-/// Munki doesn't need a wide range of functionality, and I'm porting from python's sqlite3
-/// implementation, which doesn't necessarily map well to some of the existing sqlite3 packages
-/// for Swift.
-/// We might revisit this in the future.
+// Yes this is yet another wrapper around the SQLite3 C API.
+// Munki doesn't need a wide range of functionality, and I'm porting from python's sqlite3
+// implementation, which doesn't necessarily map well to some of the existing sqlite3 packages
+// for Swift.
+// We might revisit this in the future.
 
 /// Some common SQLite3 status codes to share with calling code
 /// so it does not also have to import sqlite3
@@ -37,14 +37,14 @@ enum SQL3Status {
 
 /// General error class for errors
 struct SQL3Error: Error, CustomStringConvertible {
-    public internal(set) var message: String
+    internal(set) var message: String
 
     /// Creates a new error with the given message.
-    public init(_ message: String) {
+    init(_ message: String) {
         self.message = message
     }
 
-    public var description: String {
+    var description: String {
         return message
     }
 }

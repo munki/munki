@@ -77,11 +77,9 @@ func getClientCertCredential(
         // distinguishedNames is an array of Data blobs
         // each blob is DER encoded
         for dnData in distinguishedNames {
-            if let rootNode = try? ASN1Any(derEncoded: [UInt8](dnData)) {
-                if let dn = try? DistinguishedName(asn1Any: rootNode) {
-                    expectedIssuers.append(dn)
-                    log("Accepted certificate-issuing authority: \(dn.description)")
-                }
+            if let rootNode = try? ASN1Any(derEncoded: [UInt8](dnData)), let dn = try? DistinguishedName(asn1Any: rootNode) {
+                expectedIssuers.append(dn)
+                log("Accepted certificate-issuing authority: \(dn.description)")
             }
         }
     }

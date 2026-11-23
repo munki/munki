@@ -54,12 +54,11 @@ func bundleIDsFromInstallsList(_ pkginfo: PlistDict) -> [String] {
     }
 
     let installsList = pkginfo["installs"] as? [PlistDict] ?? []
-    let bundleIDs = installsList.filter {
+    return installsList.filter {
         installsItemHasAppBundleIdentifier($0)
     }.map {
         $0["CFBundleIdentifier"] as? String ?? ""
     }
-    return bundleIDs
 }
 
 /// Determines if an optional install item should be removed due to lack of use.

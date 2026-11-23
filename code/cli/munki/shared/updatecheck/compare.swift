@@ -317,7 +317,8 @@ func getInstalledPackageVersion(_ pkgid: String) -> String? {
         }
         if foundpkgid == pkgid {
             display.debug1(
-                "\tThis machine has \(pkgid), version \(foundversion)")
+                "\tThis machine has \(pkgid), version \(foundversion)"
+            )
             return foundversion
         }
     }

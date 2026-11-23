@@ -19,7 +19,7 @@
 
 import Foundation
 
-// A class to return a shared temp directory, and to clean it up when we exit
+/// A class to return a shared temp directory, and to clean it up when we exit
 class TempDir {
     static let shared = TempDir()
 

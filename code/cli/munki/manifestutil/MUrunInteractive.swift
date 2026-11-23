@@ -172,7 +172,9 @@ class TabCompleter {
 /// sudo log stream --predicate 'subsystem == "com.googlecode.munki.manifestutil.tabCompleter"'
 private let DEBUG_LOGGING = false
 func debugLog(_ message: String) {
-    if !DEBUG_LOGGING { return }
+    if !DEBUG_LOGGING {
+        return
+    }
     // log to Apple unified logging
     if #available(macOS 11.0, *) {
         let subsystem = "com.googlecode.munki.manifestutil.tabCompleter"
@@ -286,7 +288,9 @@ extension ManifestUtil {
                 let commandLine = getInput(prompt: "> ") ?? ""
 
                 var args = tokenize(commandLine)
-                if args.isEmpty { continue }
+                if args.isEmpty {
+                    continue
+                }
                 add_history(commandLine)
 
                 guard let subcommand = subcommands[args[0]] else {

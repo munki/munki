@@ -48,12 +48,10 @@ func printPlistItem(_ label: String, _ value: Any?, indent: Int = 0) {
             for subkey in dict.keys.sorted() {
                 printPlistItem(subkey, dict[subkey], indent: indent + 1)
             }
+        } else if !label.isEmpty {
+            print("\(INDENTSPACE)\(label): \(value)")
         } else {
-            if !label.isEmpty {
-                print("\(INDENTSPACE)\(label): \(value)")
-            } else {
-                print("\(INDENTSPACE)\(value)")
-            }
+            print("\(INDENTSPACE)\(value)")
         }
     }
 }
@@ -89,7 +87,8 @@ func expandIncludedManifests(repo: Repo, manifest: PlistDict) async -> PlistDict
 extension ManifestUtil {
     struct DisplayManifest: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Displays a manifest.")
+            abstract: "Displays a manifest."
+        )
 
         @Flag(name: .shortAndLong,
               help: "Expand included manifests.")
@@ -127,7 +126,8 @@ extension ManifestUtil {
 extension ManifestUtil {
     struct ExpandIncludedManifests: AsyncParsableCommand {
         static var configuration = CommandConfiguration(
-            abstract: "Displays a manifest, expanding included manifests.")
+            abstract: "Displays a manifest, expanding included manifests."
+        )
 
         @Flag(name: .shortAndLong,
               help: "Display manifest in XML format.")

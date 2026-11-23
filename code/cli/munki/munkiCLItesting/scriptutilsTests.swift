@@ -120,7 +120,7 @@ struct runScriptAndReturnResultsTests {
 }
 
 struct runEmbeddedScriptTests {
-    @Test func returnsZero() async throws {
+    @Test func returnsZero() async {
         let exitCode = await runEmbeddedScript(
             name: "postinstall_script", pkginfo: PKGINFO
         )
@@ -129,7 +129,7 @@ struct runEmbeddedScriptTests {
 }
 
 struct runEmbeddedScriptAndReturnResultsTests {
-    @Test func returnsExpected() async throws {
+    @Test func returnsExpected() async {
         let results = await runEmbeddedScriptAndReturnResults(
             name: "version_script", pkginfo: PKGINFO
         )

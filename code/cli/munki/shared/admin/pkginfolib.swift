@@ -177,9 +177,15 @@ func createPkgInfoForFolderWithApps(
         destFolderName = destitemname
         itemsToCopyItem["destination_item"] = destitemname
     }
-    if let user = options.dmg.user { itemsToCopyItem["user"] = user }
-    if let group = options.dmg.group { itemsToCopyItem["group"] = group }
-    if let mode = options.dmg.mode { itemsToCopyItem["mode"] = mode }
+    if let user = options.dmg.user {
+        itemsToCopyItem["user"] = user
+    }
+    if let group = options.dmg.group {
+        itemsToCopyItem["group"] = group
+    }
+    if let mode = options.dmg.mode {
+        itemsToCopyItem["mode"] = mode
+    }
 
     let folderInstallPath = (destinationpath as NSString).appendingPathComponent(destFolderName)
     let folderpath = (mountpoint as NSString).appendingPathComponent(folderName)
@@ -191,7 +197,9 @@ func createPkgInfoForFolderWithApps(
     for appName in appNames {
         let apppath = (folderpath as NSString).appendingPathComponent(appName)
         var installsItem = createInstallsItem(apppath)
-        if installsItem.isEmpty { continue }
+        if installsItem.isEmpty {
+            continue
+        }
         installsItem["path"] = (folderInstallPath as NSString).appendingPathComponent(appName)
         installsItems.append(installsItem)
 
@@ -257,7 +265,9 @@ func createPkgInfoForDragNDrop(_ mountpoint: String, options: PkginfoOptions) th
     // If --item pointed at a folder (not an app), treat it as a folder-with-apps
     if !dragNDropItem.isEmpty {
         var mountpointPattern = mountpoint
-        if !mountpointPattern.hasSuffix("/") { mountpointPattern += "/" }
+        if !mountpointPattern.hasSuffix("/") {
+            mountpointPattern += "/"
+        }
         var resolvedItem = dragNDropItem
         if resolvedItem.hasPrefix(mountpointPattern) {
             // remove mountpoint sequence to make relative path

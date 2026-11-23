@@ -67,15 +67,15 @@ func getIPAddresses(_ kind: String) async -> [String] {
         return ipAddresses
     }
     do {
-        if let plist = try readPlist(fromString: result.output) as? [PlistDict] {
-            // system_profiler xml is an array
-            if let items = plist[0]["_items"] as? [PlistDict] {
-                for item in items {
-                    if let addressType = item[kind] as? PlistDict,
-                       let addresses = addressType["Addresses"] as? [String]
-                    {
-                        ipAddresses += addresses
-                    }
+        if let plist = try readPlist(fromString: result.output) as? [PlistDict],
+           // system_profiler xml is an array
+           let items = plist[0]["_items"] as? [PlistDict]
+        {
+            for item in items {
+                if let addressType = item[kind] as? PlistDict,
+                   let addresses = addressType["Addresses"] as? [String]
+                {
+                    ipAddresses += addresses
                 }
             }
         }
@@ -207,10 +207,9 @@ func hardwareModel() -> String {
     if err2 != 0 {
         return "UNKNOWN"
     }
-    let str = buffer.withMemoryRebound(to: CChar.self, capacity: size) { ptr in
+    return buffer.withMemoryRebound(to: CChar.self, capacity: size) { ptr in
         return String(cString: ptr)
     }
-    return str
 }
 
 /// Returns true if this Mac has an Intel processor that supports 64bit code
@@ -253,12 +252,11 @@ func hostname() -> String {
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
 
-    let str = withUnsafeMutablePointer(to: &systemInfo.nodename) { p in
+    return withUnsafeMutablePointer(to: &systemInfo.nodename) { p in
         p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
             return String(cString: p2)
         }
     }
-    return str
 }
 
 /// Returns platform (arch) ("x86_64", "arm64")
@@ -267,12 +265,11 @@ func platform() -> String {
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
 
-    let str = withUnsafeMutablePointer(to: &systemInfo.machine) { p in
+    return withUnsafeMutablePointer(to: &systemInfo.machine) { p in
         p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
             return String(cString: p2)
         }
     }
-    return str
 }
 
 /// Returns uname's version string
@@ -281,12 +278,11 @@ func uname_version() -> String {
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
 
-    let str = withUnsafeMutablePointer(to: &systemInfo.version) { p in
+    return withUnsafeMutablePointer(to: &systemInfo.version) { p in
         p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
             return String(cString: p2)
         }
     }
-    return str
 }
 
 /// Returns uname's system string. (Pretty much always returns "Darwin")
@@ -295,12 +291,11 @@ func uname_sysname() -> String {
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
 
-    let str = withUnsafeMutablePointer(to: &systemInfo.sysname) { p in
+    return withUnsafeMutablePointer(to: &systemInfo.sysname) { p in
         p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
             return String(cString: p2)
         }
     }
-    return str
 }
 
 /// Returns uname's release string (Darwin version)
@@ -309,12 +304,11 @@ func uname_release() -> String {
     uname(&systemInfo)
     let size = Int(_SYS_NAMELEN) // is 256 on Darwin
 
-    let str = withUnsafeMutablePointer(to: &systemInfo.release) { p in
+    return withUnsafeMutablePointer(to: &systemInfo.release) { p in
         p.withMemoryRebound(to: CChar.self, capacity: size) { p2 in
             return String(cString: p2)
         }
     }
-    return str
 }
 
 /// Returns true if we're running on Apple silicon

@@ -125,7 +125,7 @@ func getSize(_ path: String) -> Int {
     return 0
 }
 
-// Returns absolute path to item referred to by path
+/// Returns absolute path to item referred to by path
 func getAbsolutePath(_ path: String) -> String {
     if (path as NSString).isAbsolutePath {
         return ((path as NSString).standardizingPath as NSString).resolvingSymlinksInPath
@@ -267,9 +267,7 @@ func listFilesRecursively(_ top: String, followLinks: Bool = true, skipDotFiles:
         }
         // avoids a stat call for most directory entries
         let entryType = dir_entry.pointee.d_type
-        guard let entryName else { continue }
-        guard entryName != "." else { continue }
-        guard entryName != ".." else { continue }
+        guard let entryName, entryName != ".", entryName != ".." else { continue }
         if skipDotFiles, entryName.hasPrefix(".") {
             continue
         }

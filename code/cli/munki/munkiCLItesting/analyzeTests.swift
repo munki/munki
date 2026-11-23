@@ -147,7 +147,7 @@ struct blockingApplicationsForItemTests {
 
 struct shouldDeferDownloadForLowDataTests {
     /// Not on a low data connection: never defer, even a large "never" item
-    @Test func notOnLowDataNeverDefers() async throws {
+    @Test func notOnLowDataNeverDefers() {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
@@ -156,7 +156,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// download_on_low_data "always" does not defer when the threshold is positive
-    @Test func alwaysDoesNotDefer() async throws {
+    @Test func alwaysDoesNotDefer() {
         let pkginfo: PlistDict = ["download_on_low_data": "always"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
@@ -165,7 +165,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// download_on_low_data "never" always defers on a low data connection
-    @Test func neverDefers() async throws {
+    @Test func neverDefers() {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
@@ -174,7 +174,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// a negative threshold disables low-data deferrals
-    @Test func autoThresholdDisabledDownloads() async throws {
+    @Test func autoThresholdDisabledDownloads() {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
@@ -183,7 +183,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// a negative threshold disables even explicit low-data pkginfo rules
-    @Test func disabledThresholdIgnoresNever() async throws {
+    @Test func disabledThresholdIgnoresNever() {
         let pkginfo: PlistDict = ["download_on_low_data": "never"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 999_999,
@@ -192,7 +192,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// a zero threshold defers auto/default downloads
-    @Test func zeroThresholdDefersAutoDownloads() async throws {
+    @Test func zeroThresholdDefersAutoDownloads() {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
@@ -201,7 +201,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// download_on_low_data "always" can override a zero threshold
-    @Test func alwaysOverridesZeroThreshold() async throws {
+    @Test func alwaysOverridesZeroThreshold() {
         let pkginfo: PlistDict = ["download_on_low_data": "always"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 1,
@@ -210,7 +210,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// auto, item larger than the threshold, defers
-    @Test func autoOverThresholdDefers() async throws {
+    @Test func autoOverThresholdDefers() {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 250_001,
@@ -219,7 +219,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// auto, item at or under the threshold, downloads
-    @Test func autoUnderThresholdDownloads() async throws {
+    @Test func autoUnderThresholdDownloads() {
         let pkginfo: PlistDict = ["download_on_low_data": "auto"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 250_000,
@@ -228,7 +228,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// An absent key is treated as auto (follows the threshold)
-    @Test func absentKeyFollowsThreshold() async throws {
+    @Test func absentKeyFollowsThreshold() {
         let pkginfo = PlistDict()
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 300_000,
@@ -237,7 +237,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// An unrecognized value is treated as auto (follows the threshold)
-    @Test func unknownValueFollowsThreshold() async throws {
+    @Test func unknownValueFollowsThreshold() {
         let pkginfo: PlistDict = ["download_on_low_data": "bogus"]
         #expect(shouldDeferDownloadForLowData(
             pkginfo, installerItemSize: 100,
@@ -246,7 +246,7 @@ struct shouldDeferDownloadForLowDataTests {
     }
 
     /// A reached force_install_after_date wins over "never"
-    @Test func passedDeadlineDownloads() async throws {
+    @Test func passedDeadlineDownloads() {
         let pkginfo: PlistDict = [
             "download_on_low_data": "never",
             "force_install_after_date": Date(timeIntervalSinceNow: -86400),
@@ -268,40 +268,40 @@ struct itemInInstallInfoTests {
     ]
 
     /// Tests that given item is *not* in the list as expected
-    @Test func itemIsNotInInstallInfo() async throws {
+    @Test func itemIsNotInInstallInfo() {
         let item: PlistDict = ["name": "NotAnApp"]
         #expect(itemInInstallInfo(item, theList: installInfo) == false)
     }
 
     /// Tests that given item *is*  in the list as expected
-    @Test func itemIsInInstallInfo() async throws {
+    @Test func itemIsInInstallInfo() {
         let item: PlistDict = ["name": "Firefox"]
         #expect(itemInInstallInfo(item, theList: installInfo) == true)
     }
 
     /// Tests that the given item is in the list as the same version or higher as expected
-    @Test func itemInInstallInfoIsSameOrNewer() async throws {
+    @Test func itemInInstallInfoIsSameOrNewer() {
         let testVersion = "98.0"
         let item: PlistDict = ["name": "Firefox", "version": testVersion]
         #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == true)
     }
 
     /// Tests that the given item is in the list but is a lower version as expected
-    @Test func itemInInstallInfoIsNotSameOrNewer() async throws {
+    @Test func itemInInstallInfoIsNotSameOrNewer() {
         let testVersion = "101.0"
         let item: PlistDict = ["name": "Firefox", "version": testVersion]
         #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == false)
     }
 
     /// Tests that the given item is in the list (as not yet installed) as the same version or higher as expected
-    @Test func notInstalledItemInInstallInfoIsSameOrNewer() async throws {
+    @Test func notInstalledItemInInstallInfoIsSameOrNewer() {
         let testVersion = "199.0"
         let item: PlistDict = ["name": "GoogleChrome", "version": testVersion]
         #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == true)
     }
 
     /// Tests that the given item is in the list (as not yet installed) but is a lower version as expected
-    @Test func notInstalledItemInInstallInfoIsNotSameOrNewer() async throws {
+    @Test func notInstalledItemInInstallInfoIsNotSameOrNewer() {
         let testVersion = "201.0"
         let item: PlistDict = ["name": "GoogleChrome", "version": testVersion]
         #expect(itemInInstallInfo(item, theList: installInfo, version: testVersion) == false)
@@ -310,7 +310,7 @@ struct itemInInstallInfoTests {
 
 struct isAppleItemTests {
     /// startosinstall items should return true
-    @Test func startOSinstallItemReturnsTrue() async throws {
+    @Test func startOSinstallItemReturnsTrue() {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -320,7 +320,7 @@ struct isAppleItemTests {
     }
 
     /// non startosinstall items should return false
-    @Test func nonStartOSinstallItemReturnsFalse() async throws {
+    @Test func nonStartOSinstallItemReturnsFalse() {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -336,7 +336,7 @@ struct isAppleItemTests {
     }
 
     /// Item with an apple pkg receipt should return true
-    @Test func appleReceiptReturnsTrue() async throws {
+    @Test func appleReceiptReturnsTrue() {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -348,7 +348,7 @@ struct isAppleItemTests {
     }
 
     /// Item with an installs item containing an Apple bundle identifier should return true
-    @Test func appleInstallsItemReturnsTrue() async throws {
+    @Test func appleInstallsItemReturnsTrue() {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -376,7 +376,7 @@ struct alreadyProcessedTests {
     ]
 
     /// Tests that alreadyProcessed() returns expected results
-    @Test func itemInInstallInfoAsExpected() async throws {
+    @Test func itemInInstallInfoAsExpected() {
         #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["managed_installs", "optional_installs"]) == true)
         #expect(alreadyProcessed("Firefox", installInfo: installInfo, sections: ["managed_installs"]) == true)
         #expect(alreadyProcessed("GoogleChrome", installInfo: installInfo, sections: ["managed_installs"]) == true)

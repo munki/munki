@@ -104,17 +104,17 @@ func diskImageForMountPoint(_ path: String) -> String? {
     if let images = info["images"] as? [PlistDict] {
         // "images" is an array of dicts
         for image in images {
-            if let imagePath = image["image-path"] as? String {
-                if let systemEntities = image["system-entities"] as? [PlistDict] {
-                    // "system-entities" is an array of dicts
-                    for entity in systemEntities {
-                        if let mountpoint = entity["mount-point"] as? String {
-                            // there's a mount-point for this!
-                            if path == mountpoint {
-                                // our path is this mountpoint
-                                return imagePath
-                            }
-                        }
+            if let imagePath = image["image-path"] as? String,
+               let systemEntities = image["system-entities"] as? [PlistDict]
+            {
+                // "system-entities" is an array of dicts
+                for entity in systemEntities {
+                    if let mountpoint = entity["mount-point"] as? String,
+                       // there's a mount-point for this!
+                       path == mountpoint
+                    {
+                        // our path is this mountpoint
+                        return imagePath
                     }
                 }
             }
@@ -129,18 +129,17 @@ func mountPointForDiskImage(_ dmgPath: String) -> String? {
     if let images = info["images"] as? [PlistDict] {
         // "images" is an array of dicts
         for image in images {
-            if let imagePath = image["image-path"] as? String {
-                // "image-path" is path to dmg file
-                if imagePath == dmgPath {
-                    // this is our disk image
-                    if let systemEntities = image["system-entities"] as? [PlistDict] {
-                        // "system-entities" is an array of dicts
-                        for entity in systemEntities {
-                            if let mountpoint = entity["mount-point"] as? String {
-                                // there's a mount-point for this!
-                                return mountpoint
-                            }
-                        }
+            if let imagePath = image["image-path"] as? String,
+               // "image-path" is path to dmg file
+               imagePath == dmgPath,
+               // this is our disk image
+               let systemEntities = image["system-entities"] as? [PlistDict]
+            {
+                // "system-entities" is an array of dicts
+                for entity in systemEntities {
+                    if let mountpoint = entity["mount-point"] as? String {
+                        // there's a mount-point for this!
+                        return mountpoint
                     }
                 }
             }

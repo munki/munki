@@ -199,7 +199,7 @@ struct pathIsRegularFileTests {
         #expect(!pathIsRegularFile("/this/path/does/not/exist"))
     }
 
-    @Test func directoryReturnsFalse() throws {
+    @Test func directoryReturnsFalse() {
         #expect(!pathIsRegularFile("/"))
     }
 
@@ -274,12 +274,12 @@ struct dirNameTests {
 }
 
 struct verifyPathOwnershipAndPermissionsTests {
-    // / is owned by root, has group wheel, and is not world-writable
+    /// / is owned by root, has group wheel, and is not world-writable
     @Test func filesystemRootIsTrue() {
         #expect(verifyPathOwnershipAndPermissions("/") == true)
     }
 
-    // /private/tmp is world-writable
+    /// /private/tmp is world-writable
     @Test func tmpDirIsFalse() {
         #expect(verifyPathOwnershipAndPermissions("/private/tmp") == false)
     }

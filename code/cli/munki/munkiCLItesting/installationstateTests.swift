@@ -20,7 +20,7 @@ import Testing
 
 struct installedStateTests {
     /// a pkginfo item with "OnDemand" == true should always be considered as not installed
-    @Test func onDemandReturnsNotInstalled() async throws {
+    @Test func onDemandReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -30,7 +30,7 @@ struct installedStateTests {
     }
 
     /// If an installcheck_script returns 0, consider the item not installed
-    @Test func installCheckScriptZeroExitReturnsNotInstalled() async throws {
+    @Test func installCheckScriptZeroExitReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -43,7 +43,7 @@ struct installedStateTests {
     }
 
     /// If an installcheck_script returns non-zero, consider the item installed
-    @Test func installCheckScriptNonZeroExitReturnsInstalled() async throws {
+    @Test func installCheckScriptNonZeroExitReturnsInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -56,7 +56,7 @@ struct installedStateTests {
     }
 
     /// If version_script returns a higher version than the item's version, return .newerVersionInstalled
-    @Test func versionScriptHigherVersionExitReturnsNewerVersionInstalled() async throws {
+    @Test func versionScriptHigherVersionExitReturnsNewerVersionInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -69,7 +69,7 @@ struct installedStateTests {
     }
 
     /// If version_script returns the same version as the item's version, return .thisVersionInstalled
-    @Test func versionScriptSameVersionExitReturnsThisVersionInstalled() async throws {
+    @Test func versionScriptSameVersionExitReturnsThisVersionInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -82,7 +82,7 @@ struct installedStateTests {
     }
 
     /// If version_script returns a lower version than the item's version, return .thisVersionNotInstalled
-    @Test func versionScriptLowerVersionReturnsNotInstalled() async throws {
+    @Test func versionScriptLowerVersionReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -95,7 +95,7 @@ struct installedStateTests {
     }
 
     /// If version_script returns nothing, return .thisVersionNotInstalled
-    @Test func versionScriptNoOutputReturnsNotInstalled() async throws {
+    @Test func versionScriptNoOutputReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -108,7 +108,7 @@ struct installedStateTests {
     }
 
     /// If version_script returns only whitespace, return .thisVersionNotInstalled
-    @Test func versionScriptWhitespaceOutputReturnsNotInstalled() async throws {
+    @Test func versionScriptWhitespaceOutputReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -121,7 +121,7 @@ struct installedStateTests {
     }
 
     /// If version_script exits non-zero, return .thisVersionNotInstalled
-    @Test func versionScriptErrorReturnsNotInstalled() async throws {
+    @Test func versionScriptErrorReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -134,7 +134,7 @@ struct installedStateTests {
     }
 
     /// If a receipt is not present, return .thisVersionNotInstalled
-    @Test func receiptNotPresentReturnsNotInstalled() async throws {
+    @Test func receiptNotPresentReturnsNotInstalled() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -149,7 +149,7 @@ struct installedStateTests {
     }
 
     /// if receipt present and higher version, return .newerVersionInstalled
-    @Test func receiptPresentReturnsInstalled() async throws {
+    @Test func receiptPresentReturnsInstalled() async {
         // this depends on a receipt installed by Apple that is present
         // on macOS Sequoia and Tahoe, but might go away in the future...
         let item: PlistDict = [
@@ -166,7 +166,7 @@ struct installedStateTests {
     }
 
     /// if receipts array is empty (and no other installed criteria), return .thisVersionInstalled
-    @Test func emptyReceiptsArrayReturnsInstalled() async throws {
+    @Test func emptyReceiptsArrayReturnsInstalled() async {
         // If there's no way to determine what's installed,
         // installedState() returns .thisVersionInstalled so that
         // Munki does _not_ try to install
@@ -179,7 +179,7 @@ struct installedStateTests {
     }
 
     /// if install array is defined but empty, ignore it and fall through to considering receipts
-    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async {
         // If the installs array is empty, the check should fail though to
         // use the receipts array, and should return .thisVersionNotInstalled
         let item: PlistDict = [
@@ -199,7 +199,7 @@ struct installedStateTests {
 
 struct someVersionInstalledTests {
     /// someVersionInstalled() with an OnDemand item should return false
-    @Test func itemIsOnDemandReturnsFalse() async throws {
+    @Test func itemIsOnDemandReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -209,7 +209,7 @@ struct someVersionInstalledTests {
     }
 
     /// If an installcheck_script returns 0, consider the item not installed
-    @Test func installCheckScriptZeroExitReturnsFalse() async throws {
+    @Test func installCheckScriptZeroExitReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -222,7 +222,7 @@ struct someVersionInstalledTests {
     }
 
     /// If an installcheck_script returns non-zero, consider the item installed
-    @Test func installCheckScriptNonZeroExitReturnsTrue() async throws {
+    @Test func installCheckScriptNonZeroExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -235,7 +235,7 @@ struct someVersionInstalledTests {
     }
 
     /// If version_script returns a higher version than the item's version, return true
-    @Test func versionScriptHigherVersionExitReturnsTrue() async throws {
+    @Test func versionScriptHigherVersionExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -248,7 +248,7 @@ struct someVersionInstalledTests {
     }
 
     /// If version_script returns the same version as the item's version, return true
-    @Test func versionScriptSameVersionExitReturnsTrue() async throws {
+    @Test func versionScriptSameVersionExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -261,7 +261,7 @@ struct someVersionInstalledTests {
     }
 
     /// If version_script returns a lower version than the item's version, return true
-    @Test func versionScriptLowerVersionExitReturnsTrue() async throws {
+    @Test func versionScriptLowerVersionExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -274,7 +274,7 @@ struct someVersionInstalledTests {
     }
 
     /// If version_script returns nothing, return false
-    @Test func versionScriptNoOutputReturnsFalse() async throws {
+    @Test func versionScriptNoOutputReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -287,7 +287,7 @@ struct someVersionInstalledTests {
     }
 
     /// If version_script returns only whitespace, return false
-    @Test func versionScriptWhitespaceOutputReturnsFalse() async throws {
+    @Test func versionScriptWhitespaceOutputReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -300,7 +300,7 @@ struct someVersionInstalledTests {
     }
 
     /// If version_script exits non-zero, return false
-    @Test func versionScriptErrorReturnsFalse() async throws {
+    @Test func versionScriptErrorReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -313,7 +313,7 @@ struct someVersionInstalledTests {
     }
 
     /// if install array is defined but empty, ignore it and fall through to considering receipts
-    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async {
         // If the installs array is empty, the check should fail though to
         // use the receipts array, and should return false
         let item: PlistDict = [
@@ -333,7 +333,7 @@ struct someVersionInstalledTests {
 
 struct evidenceThisIsInstalledTests {
     /// someVersionInstalled() with an OnDemand item should return false
-    @Test func itemIsOnDemandReturnsFalse() async throws {
+    @Test func itemIsOnDemandReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -343,7 +343,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If an uninstallcheck_script returns 0, consider the item not installed
-    @Test func uninstallCheckScriptZeroExitReturnsTrue() async throws {
+    @Test func uninstallCheckScriptZeroExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -356,7 +356,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If an uninstallcheck_script returns non-zero, consider the item installed
-    @Test func uninstallCheckScriptNonZeroExitReturnsFalse() async throws {
+    @Test func uninstallCheckScriptNonZeroExitReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -369,7 +369,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If an installcheck_script returns 0, consider the item not installed
-    @Test func installCheckScriptZeroExitReturnsFalse() async throws {
+    @Test func installCheckScriptZeroExitReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -382,7 +382,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If an installcheck_script returns non-zero, consider the item installed
-    @Test func installCheckScriptNonZeroExitReturnsTrue() async throws {
+    @Test func installCheckScriptNonZeroExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -395,7 +395,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If version_script returns a higher version than the item's version, return true
-    @Test func versionScriptHigherVersionExitReturnsTrue() async throws {
+    @Test func versionScriptHigherVersionExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -408,7 +408,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If version_script returns the same version as the item's version, return true
-    @Test func versionScriptSameVersionExitReturnsTrue() async throws {
+    @Test func versionScriptSameVersionExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -421,7 +421,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If version_script returns a lower version than the item's version, return true
-    @Test func versionScriptLowerVersionExitReturnsTrue() async throws {
+    @Test func versionScriptLowerVersionExitReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -434,7 +434,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If version_script returns nothing, return false
-    @Test func versionScriptNoOutputReturnsFalse() async throws {
+    @Test func versionScriptNoOutputReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -447,7 +447,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If version_script returns only whitespace, return false
-    @Test func versionScriptWhitespaceOutputReturnsFalse() async throws {
+    @Test func versionScriptWhitespaceOutputReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -460,7 +460,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If version_script exits non-zero, return false
-    @Test func versionScriptErrorReturnsFalse() async throws {
+    @Test func versionScriptErrorReturnsFalse() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -473,7 +473,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If item is a startosinstall item, return true
-    @Test func startOSInstallItemReturnsTrue() async throws {
+    @Test func startOSInstallItemReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -483,7 +483,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// If item is a startosinstall item, return true
-    @Test func stageOSInstallerItemReturnsTrue() async throws {
+    @Test func stageOSInstallerItemReturnsTrue() async {
         let item: PlistDict = [
             "name": "Foo",
             "version": "1.2.3",
@@ -493,7 +493,7 @@ struct evidenceThisIsInstalledTests {
     }
 
     /// if install array is defined but empty, ignore it and fall through to considering receipts
-    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async throws {
+    @Test func emptyInstallArrayAndNonexistentReceiptReturnsNotInstalled() async {
         // If the installs array is empty, the check should fail though to
         // use the receipts array, and should return false
         let item: PlistDict = [

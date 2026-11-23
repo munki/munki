@@ -267,14 +267,13 @@ func savePendingUpdateTimes() {
 
 /// Prints info about available updates
 func displayUpdateInfo() {
-    //
+    ///
     /// Displays logout/restart info for item if present and also updates our report
     func displayAndRecordRestartInfo(_ item: PlistDict, isRemoval: Bool = false) {
-        let restartAction: String
-        if isRemoval, let restartActionForUninstall = item["RestartActionForUninstall"] as? String {
-            restartAction = restartActionForUninstall
+        let restartAction: String = if isRemoval, let restartActionForUninstall = item["RestartActionForUninstall"] as? String {
+            restartActionForUninstall
         } else {
-            restartAction = item["RestartAction"] as? String ?? ""
+            item["RestartAction"] as? String ?? ""
         }
         if ["RequireRestart", "RecommendRestart"].contains(restartAction) {
             display.info("       *Restart required")
@@ -370,10 +369,7 @@ func forceInstallPackageCheck() -> ForceInstallStatus {
 
     for (infoPlist, plistKey) in installInfoTypes {
         let infoPlistPath = managedInstallsDir(subpath: infoPlist)
-        guard var installInfo = (try? readPlist(fromFile: infoPlistPath)) as? PlistDict else {
-            continue
-        }
-        guard let installList = installInfo[plistKey] as? [PlistDict] else {
+        guard var installInfo = (try? readPlist(fromFile: infoPlistPath)) as? PlistDict, let installList = installInfo[plistKey] as? [PlistDict] else {
             continue
         }
         var writeback = false

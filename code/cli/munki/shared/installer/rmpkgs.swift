@@ -122,8 +122,7 @@ struct PkgData {
 
 /// Inserts a pkg row into the db, returns rowid
 /// (which should be an alias for the integer primary key "pkg_key")
-func insertPkgDataIntoPkgDB(pkgdata: PkgData
-) throws {
+func insertPkgDataIntoPkgDB(pkgdata: PkgData) throws {
     let connection = try SQL3Connection(pkgDBPath())
     try connection.execute("PRAGMA journal_mode = WAL;")
     try connection.execute("PRAGMA synchronous = normal;")
@@ -167,7 +166,9 @@ func insertFileInfoIntoPkgDB(
     let uid = 0
     let gid = 0
     for file in pkgdata.files {
-        if file.isEmpty { continue }
+        if file.isEmpty {
+            continue
+        }
         var path = file
         if !pkgdata.ppath.isEmpty {
             // prepend ppath
@@ -255,12 +256,12 @@ func getBomFilesForPkg(_ pkgid: String) -> [String]? {
 
 /// Returns a list of files installed by pkg
 func getFilesForPkg(_ pkgid: String) async throws -> [String] {
-    if !pkgid.hasPrefix("com.apple.") {
-        // try to use lsbom to get the list of files
-        // (this is faster than using pkgutil)
-        if let bomFileList = getBomFilesForPkg(pkgid) {
-            return bomFileList
-        }
+    if !pkgid.hasPrefix("com.apple."),
+       // try to use lsbom to get the list of files
+       // (this is faster than using pkgutil)
+       let bomFileList = getBomFilesForPkg(pkgid)
+    {
+        return bomFileList
     }
     // use pkgutil to get the list of files
     let result = try await runCliAsync("/usr/sbin/pkgutil", arguments: ["--files", pkgid], timeout: 10)
@@ -299,12 +300,11 @@ func importFromPkgutil() async throws {
         if pliststr.isEmpty {
             break
         }
-        if let plist = try? readPlist(fromString: pliststr) as? PlistDict {
-            if plist["pkgid"] as? String != nil,
-               plist["pkg-version"] as? String != nil
-            {
-                pkglist.append(plist)
-            }
+        if let plist = try? readPlist(fromString: pliststr) as? PlistDict,
+           plist["pkgid"] as? String != nil,
+           plist["pkg-version"] as? String != nil
+        {
+            pkglist.append(plist)
         }
     }
     // import each package into the receipt database
