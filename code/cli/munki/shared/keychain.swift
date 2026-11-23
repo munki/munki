@@ -83,7 +83,7 @@ func getMunkiServerCertInfo() -> [String: String] {
 }
 
 extension String {
-    // remove a suffix if it exists
+    /// remove a suffix if it exists
     func deletingSuffix(_ suffix: String) -> String {
         guard hasSuffix(suffix) else { return self }
         return String(dropLast(suffix.count))
@@ -146,10 +146,8 @@ func getCommonNameFromCertData(_ certData: Data) -> String? {
 /// Returns the common name for the client cert, if any
 func getClientCertCommonName() -> String? {
     let certInfo = getMunkiClientCertInfo()
-    if let certPath = certInfo["client_cert_path"] as? String {
-        if let certData = try? pemCertData(certPath) {
-            return getCommonNameFromCertData(certData)
-        }
+    if let certPath = certInfo["client_cert_path"] as? String, let certData = try? pemCertData(certPath) {
+        return getCommonNameFromCertData(certData)
     }
     return nil
 }
