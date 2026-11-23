@@ -158,7 +158,9 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
                     // attempt to ensure we have network before continuing
                     detectNetworkHardware()
                     for _ in 0 ... 60 {
-                        if networkUp() { break }
+                        if networkUp() {
+                            break
+                        }
                         display.minorStatus("Waiting for network...")
                         usleep(1_000_000)
                     }
@@ -363,7 +365,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         }
     }
 
-    // Do our actual install/removal tasks
+    /// Do our actual install/removal tasks
     private mutating func handleInstallTasks() async {
         // Complex logic here to handle lots of install scenarios
         // and options
@@ -581,10 +583,18 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
             print("NOTE: managedsoftwareupdate is configured to process Apple Software Updates only.")
         }
 
+        // trigger a background Apple softwareupdate check if appropriate
+        if osMajorVersion() > 14,
+           ["custom", "manualcheck"].contains(runtype),
+           shouldDoAppleUpdates(appleUpdatesOnly: appleupdatesonly)
+        {
+            triggerSUBackgroundCheck(forceScan: true)
+        }
+
         let updateCheckResult = try await doMunkiUpdateCheck(skipCheck: skipMunkiCheck)
         appleUpdateCount = doAppleUpdateCheckIfAppropriate(
-            appleUpdatesOnly: appleupdatesonly)
-
+            appleUpdatesOnly: appleupdatesonly
+        )
         // display any available update info
         if updateCheckResult == .updatesAvailable {
             displayUpdateInfo()

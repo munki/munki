@@ -32,6 +32,11 @@ func getOSVersion(onlyMajorMinor: Bool = true) -> String {
     }
 }
 
+/// Returns the major OS version component as an integer; ie 10, 11, 26, 27...
+func osMajorVersion() -> Int {
+    return ProcessInfo().operatingSystemVersion.majorVersion
+}
+
 /// Returns console user (the current GUI user)
 func getConsoleUser() -> String {
     return SCDynamicStoreCopyConsoleUser(nil, nil, nil) as? String ?? ""

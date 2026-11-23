@@ -171,18 +171,11 @@ func filterOutMajorOSUpgrades(_ appleUpdates: [PlistDict]) -> [PlistDict] {
     return filteredUpdates
 }
 
-/// Returns the major OS version component; ie 10, 11, 26, 27...
-func majorOSVersion() -> Int {
-    let currentOSVersion = getOSVersion() // just gets major.minor
-    let versionParts = currentOSVersion.components(separatedBy: ".")
-    return Int(versionParts[0]) ?? 0
-}
-
 /// Returns a list of dictionaries describing available Apple updates.
 func getAppleUpdatesList(shouldFilterMajorOSUpdates: Bool = false) -> [PlistDict] {
     var appleUpdates = [PlistDict]()
     let recommendedUpdates = getRecommendedUpdates() ?? []
-    if majorOSVersion() > 15 {
+    if osMajorVersion() > 15 {
         // avoid running `softwareupdate -l` and just get info about available
         // Apple updates from /Library/Preferences/com.apple.SoftwareUpdate.plist
         for item in recommendedUpdates {
