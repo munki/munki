@@ -37,8 +37,7 @@ private func loadMiddlewarePlugin(at path: String) throws -> MiddlewarePluginBui
         if sym != nil {
             let f: InitFunction = unsafeBitCast(sym, to: InitFunction.self)
             let pluginPointer = f()
-            let builder = Unmanaged<MiddlewarePluginBuilder>.fromOpaque(pluginPointer).takeRetainedValue()
-            return builder
+            return Unmanaged<MiddlewarePluginBuilder>.fromOpaque(pluginPointer).takeRetainedValue()
         } else {
             throw MunkiError("Could not find symbol \(symbolName) in lib: \(path)")
         }

@@ -19,12 +19,12 @@
 
 import Foundation
 
-// XATTR name storing the ETAG of the file when downloaded via http(s).
-// let XATTR_ETAG = "com.googlecode.munki.etag"
-// XATTR name storing the sha256 of the file after original download by munki.
+/// XATTR name storing the ETAG of the file when downloaded via http(s).
+/// let XATTR_ETAG = "com.googlecode.munki.etag"
+/// XATTR name storing the sha256 of the file after original download by munki.
 let XATTR_SHA = "com.googlecode.munki.sha256"
 
-// default value for User-Agent header
+/// default value for User-Agent header
 let DEFAULT_USER_AGENT = "managedsoftwareupdate/\(getVersion()) Darwin/\(uname_release())"
 
 enum FetchError: Error {
@@ -124,7 +124,8 @@ func verifySoftwarePackageIntegrity(_ path: String, expectedHash: String, always
             }
             // mode is "hash"
             display.warning(
-                "Expected hash value missing for \(itemName) -- package integrity verification skipped.")
+                "Expected hash value missing for \(itemName) -- package integrity verification skipped."
+            )
             return (true, calculatedHash)
         }
     default:
@@ -204,7 +205,7 @@ func getURL(
     message: String = "",
     onlyIfNewer: Bool = false,
     resume: Bool = false,
-    followRedirects: String = "none",
+    followRedirects: String = "none"
 ) throws -> [String: String] {
     let tempDownloadPath = destinationPath + ".download"
     if pathExists(tempDownloadPath), !resume {
@@ -363,7 +364,7 @@ func getHTTPfileIfChangedAtomically(
     customHeaders: [String]? = nil,
     message: String = "",
     resume: Bool = false,
-    followRedirects: String = "none",
+    followRedirects: String = "none"
 ) throws -> Bool {
     var getOnlyIfNewer = false
     if pathExists(destinationPath) {
@@ -552,7 +553,7 @@ func getResourceIfChangedAtomically(
     message: String = "",
     resume: Bool = false,
     verify: Bool = false,
-    followRedirects: String? = nil,
+    followRedirects: String? = nil
 ) throws -> Bool {
     guard let resolvedURL = URL(string: url) else {
         throw FetchError.connection(errorCode: -1, description: "Invalid URL: \(url)")

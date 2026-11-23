@@ -48,7 +48,7 @@ struct GurlOptions {
 class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
     var options: GurlOptions
     var resume = false
-    var headers: [String: String]? = nil
+    var headers: [String: String]?
     var status: Int = 0 // HTTP(S) status code
     var error: NSError?
     var SSLerror: Int = 0
@@ -93,16 +93,15 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
         if options.canResume,
            let storedData = getStoredHeaders(),
            storedData["expected-length"] != nil,
-           storedData.keys.contains("last-modified") || storedData.keys.contains("etag")
+           storedData.keys.contains("last-modified") || storedData.keys.contains("etag"),
+           // we're allowed to resume and we have a partial file with enough
+           // data to attempt a resume
+           let attributes = try? FileManager.default.attributesOfItem(atPath: options.destinationPath)
         {
-            // we're allowed to resume and we have a partial file with enough
-            // data to attempt a resume
-            if let attributes = try? FileManager.default.attributesOfItem(atPath: options.destinationPath) {
-                resume = true
-                let filesize = (attributes as NSDictionary).fileSize()
-                let byteRange = "bytes=\(filesize)-"
-                request.setValue(byteRange, forHTTPHeaderField: "Range")
-            }
+            resume = true
+            let filesize = (attributes as NSDictionary).fileSize()
+            let byteRange = "bytes=\(filesize)-"
+            request.setValue(byteRange, forHTTPHeaderField: "Range")
         }
 
         // if downloadOnlyIfChanged is true, set up appropriate headers
@@ -242,14 +241,12 @@ class Gurl: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionData
             try? destination.close()
         }
         if let error {
-            if let urlError = error as? URLError {
-                if restartFailedResume, urlError.errorCode == -999 {
-                    // we canceled a resume attempt; start over with a fresh attempt
-                    session = nil
-                    restartFailedResume = false
-                    start()
-                    return
-                }
+            if let urlError = error as? URLError, restartFailedResume, urlError.errorCode == -999 {
+                // we canceled a resume attempt; start over with a fresh attempt
+                session = nil
+                restartFailedResume = false
+                start()
+                return
             }
             recordError(error as NSError)
         } else {
