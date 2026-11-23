@@ -227,7 +227,7 @@ class ApplicationUsageQuery {
     var conn: SQL3Connection?
     var logger: MunkiLogger
 
-    // open connection to DB
+    /// open connection to DB
     init(logger: MunkiLogger) {
         self.logger = logger
         do {
@@ -238,7 +238,7 @@ class ApplicationUsageQuery {
         }
     }
 
-    // close connection to DB
+    /// close connection to DB
     deinit {
         if let conn {
             try? conn.close()
