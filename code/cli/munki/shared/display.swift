@@ -73,7 +73,7 @@ func displayPercentDone(current: Int, maximum: Int) {
 
 /// a class to display messages to the user and also write to a log
 class DisplayAndLog: MunkiLogger {
-    // can't override "standard", can't use "default", so...
+    /// can't override "standard", can't use "default", so...
     static let main = DisplayAndLog(logname: MAIN_LOG_NAME)
 
     var verbose: Int {

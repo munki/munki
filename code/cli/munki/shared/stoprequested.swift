@@ -22,7 +22,7 @@ import Foundation
 /// Returns true if requested a stop (generally by clicking a cancel or stop button in the GUI)
 func stopRequested() -> Bool {
     class StopRequested {
-        // an elaborate way to avoid a naked global variable
+        /// an elaborate way to avoid a naked global variable
         static let shared = StopRequested()
 
         var stopRequested = false

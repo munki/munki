@@ -136,7 +136,7 @@ func munkiLogRotateMainLog() {
 /// The "classic" UNIX logging levels each have a method, though traditionally Munki has
 /// not used many of these levels.
 class MunkiLogger {
-    // an easy way to get the standard logger. can't use the name "default"
+    /// an easy way to get the standard logger. can't use the name "default"
     static let standard = MunkiLogger(logname: MAIN_LOG_NAME)
 
     let logname: String

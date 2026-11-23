@@ -164,7 +164,7 @@ class LaunchdJob {
     }
 
     deinit {
-        /// Attempt to clean up
+        // Attempt to clean up
         if cleanUpAtExit {
             if !plistPath.isEmpty {
                 _ = runCLI("/bin/launchctl", arguments: ["unload", plistPath])

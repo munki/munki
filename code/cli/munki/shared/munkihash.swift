@@ -25,9 +25,11 @@
 import Foundation
 
 #if !canImport(ObjectiveC)
-    // Linux has no Obj-C runtime; autoreleasepool is a no-op shim
+    /// Linux has no Obj-C runtime; autoreleasepool is a no-op shim
     @inline(__always)
-    func autoreleasepool<T>(_ body: () -> T) -> T { body() }
+    func autoreleasepool<T>(_ body: () -> T) -> T {
+        body()
+    }
 #endif
 
 // put all the hashing functions here
