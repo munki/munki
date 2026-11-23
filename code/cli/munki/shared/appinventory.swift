@@ -61,12 +61,12 @@ func findAppsInDirs(_ dirList: [String]) -> [[String: String]] {
             let bundleID = result.value(forAttribute: NSMetadataItemCFBundleIdentifierKey) as? String ?? ""
             let version = result.value(forAttribute: NSMetadataItemVersionKey) as? String ?? ""
 
-            if bundleID.isEmpty, version.isEmpty {
-                // both bundleid and version are missing. is this really an app?
-                if pathIsRegularFile(path), !pathIsExecutableFile(path) {
-                    // it's a file, but not executable, so can't really be an app
-                    continue
-                }
+            if bundleID.isEmpty, version.isEmpty,
+               // both bundleid and version are missing. is this really an app?
+               pathIsRegularFile(path), !pathIsExecutableFile(path)
+            {
+                // it's a file, but not executable, so can't really be an app
+                continue
             }
 
             appList.append(
@@ -91,11 +91,8 @@ func spotlightInstalledApps() -> [[String: String]] {
 @_silgen_name("_LSCopyAllApplicationURLs") func LSCopyAllApplicationURLs(_: UnsafeMutablePointer<NSMutableArray?>) -> OSStatus
 func launchServicesInstalledApps() -> [String] {
     var apps: NSMutableArray?
-    if LSCopyAllApplicationURLs(&apps) == 0 {
-        if let appURLs = (apps! as NSArray) as? [URL] {
-            let pathsArray = appURLs.map(\.path)
-            return pathsArray
-        }
+    if LSCopyAllApplicationURLs(&apps) == 0, let appURLs = (apps! as NSArray) as? [URL] {
+        return appURLs.map(\.path)
     }
     return [String]()
 }
