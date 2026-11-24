@@ -681,6 +681,9 @@ func makepkginfo(_ filepath: String?,
     {
         pkginfo["force_install_after_date"] = date
     }
+    if let deployment = try options.deployment.pkginfoValue() {
+        pkginfo["deployment"] = deployment
+    }
     if let restartAction = options.override.restartAction {
         pkginfo["RestartAction"] = restartAction.rawValue
     }

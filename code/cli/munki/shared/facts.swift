@@ -182,6 +182,9 @@ func generatePredicateInfo() async -> PlistDict {
     }
     infoObject["os_build_last_component"] = lastBuildComponent
 
+    // this machine's unsalted deploy_percent
+    infoObject["deploy_percent"] = deployPercentFact(machine: infoObject)
+
     // laptop or desktop?
     if hasInternalBattery() {
         infoObject["machine_type"] = "laptop"

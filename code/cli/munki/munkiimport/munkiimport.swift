@@ -45,6 +45,9 @@ struct MunkiImport: AsyncParsableCommand {
     @OptionGroup(title: "Forced/Unattended Options")
     var unattendedOptions: UnattendedInstallOptions
 
+    @OptionGroup(title: "Deployment Options")
+    var deploymentOptions: DeploymentOptions
+
     @OptionGroup(title: "Generating 'installs' Items")
     var installsOptions: GeneratingInstallsOptions
 
@@ -135,6 +138,7 @@ struct MunkiImport: AsyncParsableCommand {
             dmg: dmgOptions,
             pkg: packageOptions,
             force: unattendedOptions,
+            deployment: deploymentOptions,
             installs: installsOptions,
             type: installerTypeOptions,
             other: additionalOptions,

@@ -76,6 +76,7 @@ struct forceInstallAfterDateTests {
             dmg: .parse([]),
             pkg: .parse([]),
             force: .parse(["--force_install_after_date", "2030-01-01T12:00:00Z"]),
+            deployment: .parse([]),
             installs: .parse([]),
             type: .parse([]),
             other: .parse([]),

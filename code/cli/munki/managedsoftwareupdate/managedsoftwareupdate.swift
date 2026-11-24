@@ -547,6 +547,7 @@ struct ManagedSoftwareUpdate: AsyncParsableCommand {
         try processLaunchdOptions()
         try ensureMunkiDirsExist()
         configureDisplayOptions()
+        DeploymentRecords.shared.commandLineDeployPercent = configOptions.deployPercent
         await doCleanupTasks(runType: runtype)
         initializeReport()
 
